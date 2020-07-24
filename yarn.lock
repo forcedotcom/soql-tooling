@@ -1343,10 +1343,10 @@
     tslint-microsoft-contrib "^5.2.1"
     typescript "~3.7.4"
 
-"@salesforce/soql-parser@0.14.0":
-  version "0.14.0"
-  resolved "http://platform-cli-registry.eng.sfdc.net:4880/@salesforce%2fsoql-parser/-/soql-parser-0.14.0.tgz#b437cb4305848e20be71ed21451f808087f7854d"
-  integrity sha512-J9M0mwXg185HnZeCfKvQ6LiTDTb3p8/DJUM0nTmbdkm2sABSv8eSqcMozo8l17QIqA+x2ndO9nHeChaKDKx+uA==
+"@salesforce/soql-parser@0.15.0":
+  version "0.15.0"
+  resolved "http://platform-cli-registry.eng.sfdc.net:4880/@salesforce%2fsoql-parser/-/soql-parser-0.15.0.tgz#9e9c09386877b6c966887647a367de6eb5d21989"
+  integrity sha512-hT7mAOPLJ6TU0sS1M3FSJR413vjOSW4IP92XTxBxNb4HPurCYKB7oFRVjiCUNXOIOiiOkY8dutXOotFYSMYjzg==
   dependencies:
     antlr4 "4.8.0"
 

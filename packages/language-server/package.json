@@ -8,7 +8,7 @@
     "test": "jest --runInBand"
   },
   "dependencies": {
-    "@salesforce/soql-parser": "0.14.0",
+    "@salesforce/soql-parser": "0.15.0",
     "antlr4": "4.8.0",
     "vscode-languageserver": "6.1.1",
     "vscode-languageserver-textdocument": "1.0.1"
