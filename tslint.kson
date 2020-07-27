@@ -1,0 +1,9 @@
+{
+  "extends": ["@salesforce/dev-config/tslint"],
+  "linterOptions": {
+    "exclude": ["packages/**/*.json"]
+  },
+  "rules": {
+    "quotemark": [true, "single"]
+  }
+}
