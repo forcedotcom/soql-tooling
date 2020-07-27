@@ -3,6 +3,9 @@
     "description": "SOQL Builder UI with LWC",
     "version": "0.0.1",
     "author": "Salesforce",
+    "publishConfig": {
+        "registry": "http://platform-cli-registry.eng.sfdc.net:4880/"
+    },
     "dependencies": {},
     "devDependencies": {
         "@types/jest": "^26.0.6",
@@ -21,6 +24,7 @@
     "license": "MIT",
     "scripts": {
         "build": "lwc-services build -m production",
+        "publish:lwc": "npm publish . --tag @salesforce/soql-builder-ui",
         "lint": "eslint ./src/**/*.ts",
         "prettier": "prettier --write \"**/*.{css,html,js,json,md,ts,yaml,yml}\"",
         "prettier:verify": "prettier --list-different \"**/*.{css,html,js,json,md,ts,yaml,yml}\"",
