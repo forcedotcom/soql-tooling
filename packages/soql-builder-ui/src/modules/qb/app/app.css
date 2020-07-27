@@ -1,0 +1,6 @@
+main {
+    margin: 10px 10px;
+    border: 2px solid blue;
+    display: flex;
+    flex-direction: column;
+}

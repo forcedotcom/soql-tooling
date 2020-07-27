@@ -1,0 +1,13 @@
+label {
+    margin-right: 10px;
+}
+
+select {
+    width: 200px;
+}
+
+.from-container {
+    margin-top: 10px;
+    height: 50px;
+    border: 2px solid green;
+}
