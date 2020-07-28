@@ -1,11 +1,8 @@
 {
-    "name": "app",
+    "name": "@salesforce/soql-builder-ui",
     "description": "SOQL Builder UI with LWC",
     "version": "0.0.1",
     "author": "Salesforce",
-    "publishConfig": {
-        "registry": "http://platform-cli-registry.eng.sfdc.net:4880/"
-    },
     "dependencies": {},
     "devDependencies": {
         "@types/jest": "^26.0.6",
