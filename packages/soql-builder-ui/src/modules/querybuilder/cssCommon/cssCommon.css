@@ -1,0 +1,16 @@
+.section-container {
+  display: flex;
+  min-width: 100%;
+  margin-bottom: 10px;
+}
+
+.section_label-container {
+  width: 60px;
+}
+
+.section_selection-container {
+}
+
+.select-long {
+  min-width: 400px;
+}

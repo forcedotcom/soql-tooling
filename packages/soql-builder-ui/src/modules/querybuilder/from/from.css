@@ -1,0 +1,13 @@
+@import 'querybuilder/cssCommon';
+
+label {
+  padding-right: 10px;
+}
+
+select {
+  width: 400px;
+}
+
+.from-container {
+  height: 50px;
+}
