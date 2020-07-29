@@ -1,7 +1,7 @@
 main {
     display: block;
-    max-width: 1080px;
-    margin: 10px 10px;
+    max-width: 70rem;
+    margin: 2rem 2rem;
 }
 
 .row {
