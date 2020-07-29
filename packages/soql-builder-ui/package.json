@@ -21,7 +21,7 @@
     "license": "MIT",
     "scripts": {
         "build": "lwc-services build -m production",
-        "publish:lwc": "npm publish . --tag @salesforce/soql-builder-ui",
+        "publish:lwc": "npm publish . --tag @salesforce/soql-builder-ui --access public",
         "lint": "eslint ./src/**/*.ts",
         "prettier": "prettier --write \"**/*.{css,html,js,json,md,ts,yaml,yml}\"",
         "prettier:verify": "prettier --list-different \"**/*.{css,html,js,json,md,ts,yaml,yml}\"",
