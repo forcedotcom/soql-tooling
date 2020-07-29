@@ -1,0 +1,12 @@
+<template
+    ><div class="query-preview-container">
+        <div>
+            <pre>
+                SELECT Name, AccountNumber, Type, NumberOfEmployees, BillingCity,
+                BillingCountry, BillingStreet, Website, Merchant_Type_c FROM Account
+                WHERE (NumberOfEmployees >= 50 AND Type != ‘Prospect’) OR
+                Merchant_Type_c = ‘Wholesale’ ORDER BY AccountNumber ASC
+            </pre>
+        </div>
+    </div>
+</template>

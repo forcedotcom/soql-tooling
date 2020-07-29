@@ -1,0 +1,9 @@
+.query-preview-container {
+    display: inline-block;
+    width: 500px;
+    border: 1px solid grey;
+}
+pre {
+    padding: 10px;
+    white-space: pre-wrap;
+}

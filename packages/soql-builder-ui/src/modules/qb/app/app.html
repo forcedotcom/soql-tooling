@@ -1,7 +1,16 @@
 <template>
     <main>
-        <qb-header></qb-header>
-        <qb-from></qb-from>
-        main container!!!
+        <header>
+            <qb-header></qb-header>
+        </header>
+        <div class="row">
+            <section class="column query-builder">
+                <qb-from></qb-from>
+                <qb-fields></qb-fields>
+            </section>
+            <section class="column query-preview">
+                <qb-query-preview></qb-query-preview>
+            </section>
+        </div>
     </main>
 </template>

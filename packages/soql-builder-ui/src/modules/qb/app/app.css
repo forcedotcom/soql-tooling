@@ -1,6 +1,24 @@
 main {
+    display: block;
+    max-width: 1080px;
     margin: 10px 10px;
-    border: 2px solid blue;
+}
+
+.row {
     display: flex;
+    min-height: 100vh;
+}
+
+.column {
+    display: flex;
+    flex: 50%;
+}
+
+.column.query-builder {
     flex-direction: column;
+}
+
+.column.query-preview {
+    display: flex;
+    justify-content: flex-end;
 }
