@@ -1,7 +1,7 @@
 {
     "name": "@salesforce/soql-builder-ui",
     "description": "SOQL Builder UI with LWC",
-    "version": "0.0.1",
+    "version": "0.0.2",
     "author": "Salesforce",
     "dependencies": {},
     "devDependencies": {
@@ -19,6 +19,7 @@
         "lwc"
     ],
     "license": "MIT",
+    "main": "dist/",
     "scripts": {
         "build": "lwc-services build -m production",
         "publish:lwc": "npm publish . --tag @salesforce/soql-builder-ui --access public",
