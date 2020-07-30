@@ -23,13 +23,11 @@ export class ToolingService {
     return mockMDT.sObjects;
   }
 
-  getCompletionItems(sObject: string): string[] {
+  getCompletionItemsFor(sObject: string): string[] {
     // use object name to return list of fields
     const fieldsInObject = mockMDT.fields[sObject] as string[];
 
-    return fieldsInObject
-      ? fieldsInObject
-      : [`could not get fields for ${sObject}`];
+    return fieldsInObject ? fieldsInObject : [];
   }
 
   upDateFields() {}

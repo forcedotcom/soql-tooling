@@ -1,3 +1,12 @@
-import { LightningElement } from 'lwc';
+import { LightningElement, api } from 'lwc';
+export default class Fields extends LightningElement {
+  @api fields: string[];
+  selectedFields: string[] = [];
 
-export default class Fields extends LightningElement {}
+  handleFieldSelection(e) {
+    e.preventDefault();
+    this.selectedFields = [...e.target.options]
+      .filter((option) => option.selected)
+      .map((option) => option.value);
+  }
+}

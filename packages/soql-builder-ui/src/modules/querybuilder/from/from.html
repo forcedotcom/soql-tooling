@@ -4,7 +4,11 @@
       <label>From</label>
     </div>
     <div class="section_selection-container">
-      <select name="sobject-select" class="select-long">
+      <select
+        name="sobject-select"
+        class="select-long"
+        onchange={handleSobjectSelection}
+      >
         <option>--- Select an sObject ---</option>
         <template for:each={sobjects} for:item="sObject">
           <option key={sObject} value={sObject}>{sObject}</option>
