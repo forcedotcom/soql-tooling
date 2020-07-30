@@ -30,5 +30,7 @@ export class ToolingService {
     return fieldsInObject ? fieldsInObject : [];
   }
 
-  upDateFields() {}
+  upDateModel() {
+    // take the state from LWC components and store in this.model
+  }
 }
