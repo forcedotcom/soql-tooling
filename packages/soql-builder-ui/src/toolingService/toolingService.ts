@@ -2,19 +2,20 @@ import { mockMDT } from './mockMetadata';
 
 export class ToolingService {
   public sObjects: string[];
-  //   private TOOLING_MODEL: object = {
-  //     query: {
-  //       sObject: {
-  //         value: ''
-  //       },
-  //       fields: {
-  //         value: []
-  //       }
-  //     }
-  //   };
+  public model: object;
 
   constructor() {
     this.sObjects = this.getSObjectDefinitions();
+    this.model = {
+      query: {
+        sObject: {
+          value: ''
+        },
+        fields: {
+          value: []
+        }
+      }
+    };
   }
 
   getSObjectDefinitions() {
@@ -24,8 +25,7 @@ export class ToolingService {
 
   getCompletionItems(sObject: string): string[] {
     // use object name to return list of fields
-    // @ts-ignore
-    const fieldsInObject = mockMDT.fields[sObject];
+    const fieldsInObject = mockMDT.fields[sObject] as string[];
 
     return fieldsInObject
       ? fieldsInObject
