@@ -2,13 +2,15 @@
   "name": "@salesforce/soql-language-server",
   "version": "0.1.0",
   "description": "SOQL Language Server",
-  "main": "index.js",
+  "engines": {
+    "node": "*"
+  },
   "scripts": {
     "build": "tsc --project .",
     "test": "jest --runInBand"
   },
   "dependencies": {
-    "@salesforce/soql-parser": "0.15.0",
+    "@salesforce/soql-parser": "0.16.0",
     "antlr4": "4.8.0",
     "vscode-languageserver": "6.1.1",
     "vscode-languageserver-textdocument": "1.0.1"
@@ -21,7 +23,7 @@
     "typescript": "3.9.7"
   },
   "repository": {
-    "type": "git" ,
+    "type": "git",
     "url": "git+https://github.com/forcedotcom/soql-language-server.git"
   },
   "keywords": [
