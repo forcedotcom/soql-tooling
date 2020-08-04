@@ -1,7 +1,15 @@
 import { LightningElement, api } from 'lwc';
 
 export default class From extends LightningElement {
-  @api sobjects;
+  @api sobjects: string[];
+  @api selected: string;
+  get filteredSObjects() {
+    return this.sobjects.filter((sobject) => { return sobject !== this.selected; })
+  }
+
+  get hasSelected() {
+    return this.selected && this.selected.length;
+  }
 
   handleSobjectSelection(e) {
     e.preventDefault();

@@ -1,18 +1,19 @@
 <template>
   <main>
     <header>
-      <querybuilder-header></querybuilder-header>
+      <querybuilder-header onsave={handleSave}></querybuilder-header>
     </header>
     <div class="row">
       <section class="column query-builder">
         <querybuilder-from
           onobjectselected={handleObjectChange}
           sobjects={sObjects}
+          selected={model.sObject}
         ></querybuilder-from>
-        <querybuilder-fields fields={fields}></querybuilder-fields>
+        <querybuilder-fields selected-fields={model.fields} fields={fields} onfieldselected={handleFieldSelected} onfieldremoved={handleFieldRemoved}></querybuilder-fields>
       </section>
       <section class="column query-preview">
-        <querybuilder-query-preview></querybuilder-query-preview>
+        <querybuilder-query-preview query={model}></querybuilder-query-preview>
       </section>
     </div>
   </main>

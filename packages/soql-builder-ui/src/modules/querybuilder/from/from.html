@@ -9,8 +9,14 @@
         class="select-long"
         onchange={handleSobjectSelection}
       >
-        <option>--- Select an sObject ---</option>
-        <template for:each={sobjects} for:item="sObject">
+      <!-- this is an unfortunate limitation of lwc.  probably need to implement lightning-combobox here -->
+       <template if:true={hasSelected}>
+          <option key={selected} value={selected}>{selected}</option>
+         </template>
+         <template if:false={hasSelected}>
+           <option>--- Select an sObject ---</option>
+         </template>
+        <template for:each={filteredSObjects} for:item="sObject">
           <option key={sObject} value={sObject}>{sObject}</option>
         </template>
       </select>
