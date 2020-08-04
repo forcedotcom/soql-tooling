@@ -1,6 +1,6 @@
 {
   "name": "@salesforce/soql-language-server",
-  "version": "0.1.0",
+  "version": "0.2.1",
   "description": "SOQL Language Server",
   "engines": {
     "node": "*"
@@ -15,6 +15,9 @@
     "vscode-languageserver": "6.1.1",
     "vscode-languageserver-textdocument": "1.0.1"
   },
+  "bundledDependencies": [
+    "@salesforce/soql-parser"
+  ],
   "devDependencies": {
     "@types/antlr4": "4.7.2",
     "@types/jest": "22.2.3",
