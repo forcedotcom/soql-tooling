@@ -39,18 +39,20 @@ export class ModelService {
         this.model.next(this.getQuery().set("fields", this.getFields().filter( (item) => { return item !== field}) as List<string>) as SoqlQueryModel);
     }
 
+    // BELOW HERE IS JUST TEMPORARY SAVE FUNCTIONALITY TO TEST RE_HYDRATIONG THE UI BASED ON AN EXISTING QUERY
     public save() {
-        localStorage.setItem("soql", this.toString());
+        localStorage.setItem("soql", JSON.stringify(this.getQuery().toJS()));
     }
 
     public read() {
-        const saved = localStorage.getItem("soql");
+        let saved = localStorage.getItem("soql");
         try {
             if (saved) {
                 return JSON.parse(saved);
             }
         } catch(e) {
             console.error(e);
+            saved = undefined;
         }
         return saved;
     }

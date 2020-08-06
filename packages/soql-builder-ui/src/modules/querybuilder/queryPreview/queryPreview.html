@@ -1,8 +1,8 @@
 <template
     ><div class="query-preview-container">
         <div>
-            <pre>{queryPreview}</pre>
-            <pre>
+            <pre style="border: 1px dashed red; margin: 1rem;">Query Model: {queryPreview}</pre>
+            <pre style="color: grey;">
                 SELECT Name, AccountNumber, Type, NumberOfEmployees, BillingCity,
                 BillingCountry, BillingStreet, Website, Merchant_Type_c FROM Account
                 WHERE (NumberOfEmployees >= 50 AND Type != ‘Prospect’) OR

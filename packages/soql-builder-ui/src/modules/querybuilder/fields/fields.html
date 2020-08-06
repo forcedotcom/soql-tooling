@@ -10,7 +10,7 @@
         onchange={handleFieldSelection}
         multiple
       >
-        <option>--- Select Fields ---</option>
+        <option disabled>--- Select Fields ---</option>
         <template for:each={fields} for:item="field">
           <option key={field} value={field}>{field}</option>
         </template>
