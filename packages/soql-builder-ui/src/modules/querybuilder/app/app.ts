@@ -1,6 +1,7 @@
 import { LightningElement, track } from 'lwc';
 import { ToolingService } from '../../../toolingService/toolingService';
-import { ModelService } from '../../../modelService/modelService';
+// eslint-disable-next-line no-unused-vars
+import { ModelService, SoqlQueryModel } from '../../../modelService/modelService';
 
 export default class App extends LightningElement {
   sObjects: string[];
@@ -9,9 +10,14 @@ export default class App extends LightningElement {
   modelService = new ModelService();
 
   @track
-  query = this.modelService.getQuery();
+  query: SoqlQueryModel;
+
 
   connectedCallback() {
+    this.modelService.query.subscribe({
+      next: (query) => {
+        this.query = query;
+    }});
     this.sObjects = this.toolingService.sObjects;
   }
 
@@ -22,19 +28,16 @@ export default class App extends LightningElement {
   }
 
   handleObjectChange(e) {
-    const sObject = e.detail.selectedSobject;
-    this.fields = this.toolingService.getCompletionItemsFor(sObject);
-    this.query = this.modelService.setSObject(sObject);
+    this.fields = this.toolingService.getCompletionItemsFor(e.detail.selectedSobject);
+    this.modelService.setSObject(e.detail.selectedSobject);
   }
 
   handleFieldSelected(e) {
-    const field = e.detail.field;
-    this.query = this.modelService.addField(field);
+    this.modelService.addField(e.detail.field);
   }
 
   handleFieldRemoved(e) {
-    const field = e.detail.field;
-    this.query = this.modelService.removeField(field);
+    this.modelService.removeField(e.detail.field);
   }
 
   handleSave() {

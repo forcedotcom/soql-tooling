@@ -1,5 +1,7 @@
 /* eslint-disable no-unused-vars */
 import { fromJS, List, Map, Set } from "immutable";
+import { BehaviorSubject, Observable } from 'rxjs';
+import { map } from "rxjs/operators";
 
 export interface SoqlQueryModel extends Map<string, string | List<string>> {
     sObject: string;
@@ -29,7 +31,8 @@ export interface SoqlQueryModel extends Map<string, string | List<string>> {
 // }
 export class ModelService {
 
-    private query: SoqlQueryModel;
+    private model: BehaviorSubject<SoqlQueryModel>;
+    public query: Observable<SoqlQueryModel>;
     private defaultQueryModel: Map<string, string | List<string>>;
 
     constructor() {
@@ -37,33 +40,29 @@ export class ModelService {
             sObject: '',
             fields: List<string>([])
         })
-        this.query = fromJS(this.read() || this.defaultQueryModel);
+        this.model = new BehaviorSubject(fromJS(this.read() || this.defaultQueryModel));
+        this.query = this.model.pipe(map(soqlQueryModel => soqlQueryModel.toJS()))
     }
-
-    // RxJs Observable here.
     public getQuery() {
-        return this.query.toJS();
+        return this.model.getValue();
     }
     public getFields() {
-        return (this.query.get("fields") as List<string>);
+        return (this.getQuery().get("fields") as List<string>);
     }
     public setSObject(sObject: string) {
-        this.query = fromJS(this.defaultQueryModel).set("sObject", sObject) as SoqlQueryModel;
-        return this.getQuery();
+        this.model.next(fromJS(this.defaultQueryModel).set("sObject", sObject));
     }
 
     public addField(field: string) {
-        this.query = this.query.set("fields", this.getFields().toSet().add(field).toList()) as SoqlQueryModel;
-        return this.getQuery();
+        this.model.next(this.getQuery().set("fields", this.getFields().toSet().add(field).toList()) as SoqlQueryModel);
     }
 
     public removeField(field: string) {
-        this.query = this.query.set("fields", this.getFields().filter( (item) => { return item !== field}) as List<string>) as SoqlQueryModel;
-        return this.getQuery();
+        this.model.next(this.getQuery().set("fields", this.getFields().filter( (item) => { return item !== field}) as List<string>) as SoqlQueryModel);
     }
 
     public toString() {
-        return JSON.stringify((this.query).toJS())
+        return JSON.stringify((this.getQuery()).toJS())
     }
 
     public save() {
