@@ -1,34 +1,12 @@
 /* eslint-disable no-unused-vars */
-import { fromJS, List, Map, Set } from "immutable";
-import { BehaviorSubject, Observable } from 'rxjs';
+import { fromJS, List, Map } from "immutable";
+import { BehaviorSubject, Observable } from "rxjs";
 import { map } from "rxjs/operators";
 
 export interface SoqlQueryModel extends Map<string, string | List<string>> {
     sObject: string;
     fields: List<string>;
 }
-
-// class QueryModel implements SoqlQueryModel {
-//     sObject: string;
-//     fields: List<string>; 
-//     constructor(json?: SoqlQueryModel) {
-//         this.sObject = '';
-//         this.fields = List([]) ;
-//         if (json) {
-//             const newMap = fromJS(json);
-//             Object.assign(this, newMap);
-//         }
-//     }
-//     copy() {
-//         const queryModel = new QueryModel();
-//         queryModel.sObject = this.sObject;
-//         queryModel.fields = this.fields;
-//         return queryModel;
-//     }
-//     toString(): string {
-//         return JSON.stringify(this);
-//     }
-// }
 export class ModelService {
 
     private model: BehaviorSubject<SoqlQueryModel>;
@@ -41,9 +19,9 @@ export class ModelService {
             fields: List<string>([])
         })
         this.model = new BehaviorSubject(fromJS(this.read() || this.defaultQueryModel));
-        this.query = this.model.pipe(map(soqlQueryModel => soqlQueryModel.toJS()))
+        this.query = this.model.pipe(map(soqlQueryModel => (soqlQueryModel as Map).toJS()))
     }
-    public getQuery() {
+    public getQuery(): Map {
         return this.model.getValue();
     }
     public getFields() {
@@ -59,10 +37,6 @@ export class ModelService {
 
     public removeField(field: string) {
         this.model.next(this.getQuery().set("fields", this.getFields().filter( (item) => { return item !== field}) as List<string>) as SoqlQueryModel);
-    }
-
-    public toString() {
-        return JSON.stringify((this.getQuery()).toJS())
     }
 
     public save() {

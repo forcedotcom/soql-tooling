@@ -1,7 +1,7 @@
 import { LightningElement, track } from 'lwc';
-import { ToolingService } from '../../../toolingService/toolingService';
+import { ToolingService } from '../services/toolingService';
 // eslint-disable-next-line no-unused-vars
-import { ModelService, SoqlQueryModel } from '../../../modelService/modelService';
+import { ModelService, SoqlQueryModel } from '../services/modelService';
 
 export default class App extends LightningElement {
   sObjects: string[];

@@ -1,4 +1,4 @@
-import { JsonMap } from '@salesforce/ts-types';
+import { JsonMap } from './@salesforce/ts-types';
 
 interface MockMetadata {
   fields: JsonMap;
