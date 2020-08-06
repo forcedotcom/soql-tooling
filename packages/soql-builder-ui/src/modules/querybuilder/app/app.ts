@@ -9,32 +9,32 @@ export default class App extends LightningElement {
   modelService = new ModelService();
 
   @track
-  model = this.modelService.getQuery();
+  query = this.modelService.getQuery();
 
   connectedCallback() {
     this.sObjects = this.toolingService.sObjects;
   }
 
   renderedCallback() {
-    if (this.model && this.model.sObject && this.model.sObject.length) {
-      this.fields = this.toolingService.getCompletionItemsFor(this.model.sObject);
+    if (this.query && this.query.sObject && this.query.sObject.length) {
+      this.fields = this.toolingService.getCompletionItemsFor(this.query.sObject);
     }
   }
 
   handleObjectChange(e) {
     const sObject = e.detail.selectedSobject;
     this.fields = this.toolingService.getCompletionItemsFor(sObject);
-    this.model = this.modelService.setSObject(sObject);
+    this.query = this.modelService.setSObject(sObject);
   }
 
   handleFieldSelected(e) {
     const field = e.detail.field;
-    this.model = this.modelService.addField(field);
+    this.query = this.modelService.addField(field);
   }
 
   handleFieldRemoved(e) {
     const field = e.detail.field;
-    this.model = this.modelService.removeField(field);
+    this.query = this.modelService.removeField(field);
   }
 
   handleSave() {

@@ -1,69 +1,73 @@
-import { JsonMap } from "@salesforce/ts-types";
+/* eslint-disable no-unused-vars */
+import { fromJS, List, Map, Set } from "immutable";
 
-export type SoqlQueryModel = {
+export interface SoqlQueryModel extends Map<string, string | List<string>> {
     sObject: string;
-    fields: string[];
+    fields: List<string>;
 }
 
-class QueryModel implements SoqlQueryModel {
-    sObject: string;
-    fields: string[]; 
-    constructor(json?: SoqlQueryModel) {
-        this.sObject = '';
-        this.fields = [] as string[] ;
-        if (json) {
-            Object.assign(this, json);
-        }
-    }
-    copy() {
-        const queryModel = new QueryModel();
-        queryModel.sObject = this.sObject;
-        queryModel.fields = this.fields;
-        return queryModel;
-    }
-    toString(): string {
-        return JSON.stringify(this);
-    }
-}
+// class QueryModel implements SoqlQueryModel {
+//     sObject: string;
+//     fields: List<string>; 
+//     constructor(json?: SoqlQueryModel) {
+//         this.sObject = '';
+//         this.fields = List([]) ;
+//         if (json) {
+//             const newMap = fromJS(json);
+//             Object.assign(this, newMap);
+//         }
+//     }
+//     copy() {
+//         const queryModel = new QueryModel();
+//         queryModel.sObject = this.sObject;
+//         queryModel.fields = this.fields;
+//         return queryModel;
+//     }
+//     toString(): string {
+//         return JSON.stringify(this);
+//     }
+// }
 export class ModelService {
 
-    private query: QueryModel;
+    private query: SoqlQueryModel;
+    private defaultQueryModel: Map<string, string | List<string>>;
 
     constructor() {
-        this.query = new QueryModel(this.read());
+        this.defaultQueryModel = Map({
+            sObject: '',
+            fields: List<string>([])
+        })
+        this.query = fromJS(this.read() || this.defaultQueryModel);
     }
 
+    // RxJs Observable here.
     public getQuery() {
-        return this.query;
+        return this.query.toJS();
+    }
+    public getFields() {
+        return (this.query.get("fields") as List<string>);
     }
     public setSObject(sObject: string) {
-        const queryModel = new QueryModel();
-        queryModel.sObject = sObject;
-        this.query = queryModel;
-        return this.query;
+        this.query = fromJS(this.defaultQueryModel).set("sObject", sObject) as SoqlQueryModel;
+        return this.getQuery();
     }
 
     public addField(field: string) {
-        if (this.query.fields.includes(field)) {
-            return this.query;
-        }
-        const queryModel = this.query.copy();
-        queryModel.fields = this.query.fields.concat(field);
-        this.query = queryModel;
-        return this.query;
+        this.query = this.query.set("fields", this.getFields().toSet().add(field).toList()) as SoqlQueryModel;
+        return this.getQuery();
     }
 
     public removeField(field: string) {
-        const queryModel = this.query.copy();
-        queryModel.fields = queryModel.fields.filter((existingField) => {
-            return existingField !== field;
-        });
-        this.query = queryModel;
-        return this.query;
+        this.query = this.query.set("fields", this.getFields().filter( (item) => { return item !== field}) as List<string>) as SoqlQueryModel;
+        return this.getQuery();
+    }
+
+    public toString() {
+        return JSON.stringify((this.query).toJS())
     }
 
     public save() {
-        localStorage.setItem("soql", this.query.toString());
+        localStorage.setItem("soql", this.toString());
     }
 
     public read() {

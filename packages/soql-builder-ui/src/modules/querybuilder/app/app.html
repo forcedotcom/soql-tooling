@@ -8,12 +8,12 @@
         <querybuilder-from
           onobjectselected={handleObjectChange}
           sobjects={sObjects}
-          selected={model.sObject}
+          selected={query.sObject}
         ></querybuilder-from>
-        <querybuilder-fields selected-fields={model.fields} fields={fields} onfieldselected={handleFieldSelected} onfieldremoved={handleFieldRemoved}></querybuilder-fields>
+        <querybuilder-fields selected-fields={query.fields} fields={fields} onfieldselected={handleFieldSelected} onfieldremoved={handleFieldRemoved}></querybuilder-fields>
       </section>
       <section class="column query-preview">
-        <querybuilder-query-preview query={model}></querybuilder-query-preview>
+        <querybuilder-query-preview query={query}></querybuilder-query-preview>
       </section>
     </div>
   </main>
