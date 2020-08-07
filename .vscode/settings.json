@@ -1,0 +1,18 @@
+{
+  "files.exclude": {
+    "**/.git": true,
+    "**/.svn": true,
+    "**/.hg": true,
+    "**/CVS": true,
+    "**/.DS_Store": true,
+    "**/.vscode-test": true
+  },
+  "search.exclude": {
+    "**/out": true
+  },
+  "typescript.tsdk": "./node_modules/typescript/lib",
+  "editor.tabSize": 2,
+  "editor.formatOnSave": true,
+  "rewrap.wrappingColumn": 80,
+  "prettier.singleQuote": true
+}
