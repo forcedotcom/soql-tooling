@@ -1,34 +1,39 @@
 import { LightningElement, track } from 'lwc';
-import { ToolingService } from '../services/toolingService';
+import { ToolingSDK } from '../services/toolingSDK';
 // eslint-disable-next-line no-unused-vars
-import { ModelService, SoqlQueryModel } from '../services/modelService';
+import {
+  ToolingModelService,
+  ToolingModelJson
+} from '../services/toolingModelService';
 
 export default class App extends LightningElement {
   sObjects: string[];
   @track fields: string[] = [];
-  toolingService = new ToolingService();
-  modelService = new ModelService();
+  toolingSDK = new ToolingSDK();
+  modelService = new ToolingModelService();
 
   @track
-  query: SoqlQueryModel;
-
+  query: ToolingModelJson;
 
   connectedCallback() {
     this.modelService.query.subscribe({
       next: (query) => {
         this.query = query;
-    }});
-    this.sObjects = this.toolingService.sObjects;
+      }
+    });
+    this.sObjects = this.toolingSDK.sObjects;
   }
 
   renderedCallback() {
     if (this.query && this.query.sObject && this.query.sObject.length) {
-      this.fields = this.toolingService.getCompletionItemsFor(this.query.sObject);
+      this.fields = this.toolingSDK.getCompletionItemsFor(this.query.sObject);
     }
   }
 
   handleObjectChange(e) {
-    this.fields = this.toolingService.getCompletionItemsFor(e.detail.selectedSobject);
+    this.fields = this.toolingSDK.getCompletionItemsFor(
+      e.detail.selectedSobject
+    );
     this.modelService.setSObject(e.detail.selectedSobject);
   }
 

@@ -1,10 +1,10 @@
-import { ModelService, SoqlModelJson } from './modelService';
+import { ToolingModelService, ToolingModelJson } from './toolingModelService';
 describe('Tooling Model Service', () => {
-  let modelService: ModelService;
+  let modelService: ToolingModelService;
   let mockField1 = 'field1';
   let mockField2 = 'field2';
   let mockSobject = 'sObject1';
-  let query: SoqlModelJson;
+  let query: ToolingModelJson;
 
   function checkForEmptyModel() {
     let toolingModel = modelService.getModel().toJS();
@@ -13,7 +13,7 @@ describe('Tooling Model Service', () => {
   }
 
   beforeEach(() => {
-    modelService = new ModelService();
+    modelService = new ToolingModelService();
     checkForEmptyModel();
 
     modelService.query.subscribe((val) => {

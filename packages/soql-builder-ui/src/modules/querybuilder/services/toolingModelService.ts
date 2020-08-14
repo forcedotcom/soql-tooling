@@ -5,31 +5,33 @@ import { map } from 'rxjs/operators';
 import { JsonMap } from '@salesforce/ts-types';
 
 // This is to satisfy TS and stay dry
-export type IMap = Map<string, string | List<string>>;
+type IMap = Map<string, string | List<string>>;
 // Private immutable interface
-interface SoqlQueryModel extends IMap {
+interface ToolingModel extends IMap {
   sObject: string;
   fields: List<string>;
 }
 // Public inteface for accessing modelService.query
-export interface SoqlModelJson extends JsonMap {
+export interface ToolingModelJson extends JsonMap {
   sObject: string;
   fields: string[];
 }
 
-export class ModelService {
-  private model: BehaviorSubject<SoqlQueryModel>;
-  public query: Observable<SoqlModelJson>;
-  private defaultQueryModel: IMap;
+export class ToolingModelService {
+  private model: BehaviorSubject<ToolingModel>;
+  public query: Observable<ToolingModelJson>;
+  private toolingModelTemplate: ToolingModelJson;
 
   constructor() {
-    this.defaultQueryModel = Map({
+    this.toolingModelTemplate = {
       sObject: '',
-      fields: List<string>([])
-    });
+      fields: []
+    } as ToolingModelJson;
+
     this.model = new BehaviorSubject(
-      fromJS(this.read() || this.defaultQueryModel)
+      fromJS(this.read() || this.toolingModelTemplate)
     );
+
     this.query = this.model.pipe(
       map((soqlQueryModel) => (soqlQueryModel as IMap).toJS())
     );
@@ -42,29 +44,34 @@ export class ModelService {
   private getFields() {
     return this.getModel().get('fields') as List<string>;
   }
-
+  // This method is destructive, will clear any selections except sObject.
   public setSObject(sObject: string) {
-    this.model.next(fromJS(this.defaultQueryModel).set('sObject', sObject));
+    const emptyModel = fromJS(this.toolingModelTemplate);
+    const newModelWithSelection = emptyModel.set('sObject', sObject);
+
+    this.model.next(newModelWithSelection);
   }
 
   public addField(field: string) {
-    this.model.next(
-      this.getModel().set(
-        'fields',
-        this.getFields().toSet().add(field).toList()
-      ) as SoqlQueryModel
-    );
+    const currentModel = this.getModel();
+    const newModelWithAddedField = currentModel.set(
+      'fields',
+      this.getFields().toSet().add(field).toList()
+    ) as ToolingModel;
+
+    this.model.next(newModelWithAddedField);
   }
 
   public removeField(field: string) {
-    this.model.next(
-      this.getModel().set(
-        'fields',
-        this.getFields().filter((item) => {
-          return item !== field;
-        }) as List<string>
-      ) as SoqlQueryModel
-    );
+    const currentModel = this.getModel();
+    const newModelWithFieldRemoved = currentModel.set(
+      'fields',
+      this.getFields().filter((item) => {
+        return item !== field;
+      }) as List<string>
+    ) as ToolingModel;
+
+    this.model.next(newModelWithFieldRemoved);
   }
 
   // BELOW HERE IS JUST TEMPORARY SAVE FUNCTIONALITY TO TEST RE_HYDRATIONG THE UI BASED ON AN EXISTING QUERY

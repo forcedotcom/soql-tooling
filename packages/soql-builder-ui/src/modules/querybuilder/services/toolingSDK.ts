@@ -1,6 +1,6 @@
 import { mockMDT } from './mockMetadata';
 
-export class ToolingService {
+export class ToolingSDK {
   public sObjects: string[];
 
   constructor() {
