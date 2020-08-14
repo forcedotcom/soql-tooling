@@ -1,4 +1,6 @@
-import Header from 'querybuilder/header';
+// @ts-ignore
+import { createElement } from 'lwc';
+import Header from './header';
 
 describe('Header', () => {
   afterEach(() => {
@@ -7,12 +9,9 @@ describe('Header', () => {
     }
   });
   it('fires a save event', () => {
-    customElements.define(
-      'querybuilder-header',
-      Header.CustomElementConstructor
-    );
-    const header = document.createElement('querybuilder-header');
-
+    const header = createElement('querybuilder-header', {
+      is: Header
+    });
     document.body.appendChild(header);
 
     const handler = jest.fn();

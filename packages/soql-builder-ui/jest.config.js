@@ -1,7 +1,8 @@
-const BASE = require('../../jest.config.base');
+const { jestConfig } = require('lwc-services/lib/config/jestConfig');
 
 module.exports = {
-  ...BASE,
+  ...jestConfig,
+  testMatch: ['**/*.+(spec|test).(ts|js)'],
   displayName: 'soql-builder-ui',
   verbose: true,
   preset: '@lwc/jest-preset'
