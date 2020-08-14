@@ -11,6 +11,7 @@ module.exports = {
       ...BASE,
       displayName: "soql-builder-ui",
       rootDir: "<rootDir>/packages/soql-builder-ui",
+      preset: "@lwc/jest-preset",
     },
   ],
 };
