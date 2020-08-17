@@ -10,6 +10,8 @@
 import { Org } from '@salesforce/core';
 import { xhr, XHROptions, XHRResponse } from 'request-light';
 
+// This interface is the same as the SObject interface described in the
+// sobjects-faux-generator: https://github.com/forcedotcom/salesforcedx-vscode/blob/develop/packages/salesforcedx-sobjects-faux-generator/src/describe/sObjectDescribe.ts
 export interface SObject {
   actionOverrides: any[];
   activateable: boolean;
