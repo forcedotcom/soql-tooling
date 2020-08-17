@@ -26,10 +26,7 @@ export class SObjectService {
 
   public async describeSObject(name: string): Promise<SObject> {
     const result = await new SObjectDescribeAPI(this.org).describeSObject(name);
-    if (result.result) {
-      return Promise.resolve(result.result);
-    }
-    return Promise.reject();
+    return result.result ? Promise.resolve(result.result) : Promise.reject();
   }
 
   public async describeSObjects(names: string[]): Promise<SObject[]> {
@@ -47,29 +44,22 @@ export class SObjectService {
         return Promise.reject(error);
       }
     }
-    const fetchedSObjects: SObject[] = [];
-    fetchedResults.forEach((result) => {
-      if (result.result) {
-        fetchedSObjects.push(result.result);
-      }
-    });
-    return fetchedSObjects;
+    return fetchedResults
+      .map((result) => result.result)
+      .filter((sobject) => !!sobject) as SObject[];
   }
 
   public async retrieveSObjectNames(
     type: SObjectType = SObjectType.ALL
   ): Promise<string[]> {
-    const sobjectNames: string[] = [];
     const describeResult = await this.org.getConnection().describeGlobal();
-    describeResult.sobjects.forEach((sobject) => {
-      if (
-        type === SObjectType.ALL ||
-        (type === SObjectType.CUSTOM && sobject.custom === true) ||
-        (type === SObjectType.STANDARD && sobject.custom !== true)
-      ) {
-        sobjectNames.push(sobject.name);
-      }
-    });
-    return sobjectNames;
+    return describeResult.sobjects
+      .filter(
+        (sobject) =>
+          type === SObjectType.ALL ||
+          (type === SObjectType.CUSTOM && sobject.custom === true) ||
+          (type === SObjectType.STANDARD && sobject.custom !== true)
+      )
+      .map((sobject) => sobject.name);
   }
 }
