@@ -7,7 +7,7 @@
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
-import { Org } from '@salesforce/core';
+import { Connection } from '@salesforce/core';
 import { xhr, XHROptions, XHRResponse } from 'request-light';
 
 // This interface is the same as the SObject interface described in the
@@ -172,7 +172,7 @@ export type SubResponse = { statusCode: number; result: SObject };
 export type BatchResponse = { hasErrors: boolean; results: SubResponse[] };
 
 export class SObjectDescribeAPI {
-  private readonly org: Org;
+  private readonly connection: Connection;
 
   // URL constants
   private readonly SERVICESPATH: string = 'services/data';
@@ -192,8 +192,8 @@ export class SObjectDescribeAPI {
     'Sforce-Call-Options': `client=${this.CLIENT_ID}`,
   };
 
-  public constructor(org: Org) {
-    this.org = org;
+  public constructor(connection: Connection) {
+    this.connection = connection;
   }
 
   public async describeSObject(
@@ -203,18 +203,8 @@ export class SObjectDescribeAPI {
     try {
       let response: XHRResponse;
       let options: XHROptions;
-      try {
-        options = this.buildSingleXHROptions(sObjectName, lastRefreshDate);
-        response = await this.runRequest(options);
-      } catch (e) {
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-        if ('status' in e && e.status !== 401) {
-          throw e;
-        }
-        await this.org.refreshAuth();
-        options = this.buildSingleXHROptions(sObjectName, lastRefreshDate);
-        response = await this.runRequest(options);
-      }
+      options = this.buildSingleXHROptions(sObjectName, lastRefreshDate);
+      response = await this.runRequest(options);
 
       // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access,@typescript-eslint/no-unsafe-assignment
       const timestamp: string = response.headers['date'];
@@ -243,18 +233,8 @@ export class SObjectDescribeAPI {
     try {
       let response: XHRResponse;
       let options: XHROptions;
-      try {
-        options = this.buildBatchXHROptions(types, nextToProcess);
-        response = await this.runRequest(options);
-      } catch (e) {
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-        if ('status' in e && e.status !== 401) {
-          throw e;
-        }
-        await this.org.refreshAuth();
-        options = this.buildBatchXHROptions(types, nextToProcess);
-        response = await this.runRequest(options);
-      }
+      options = this.buildBatchXHROptions(types, nextToProcess);
+      response = await this.runRequest(options);
 
       // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access,@typescript-eslint/no-unsafe-assignment
       const timestamp: string = response.headers['date'];
@@ -292,7 +272,7 @@ export class SObjectDescribeAPI {
   ): string {
     const urlElements = [];
     if (fullUrl) {
-      urlElements.push(this.org.getConnection().instanceUrl, this.SERVICESPATH);
+      urlElements.push(this.connection.instanceUrl, this.SERVICESPATH);
     }
     urlElements.push(
       this.getVersion(),
@@ -305,7 +285,7 @@ export class SObjectDescribeAPI {
 
   protected buildBatchRequestURL(): string {
     const batchUrlElements = [
-      this.org.getConnection().instanceUrl,
+      this.connection.instanceUrl,
       this.SERVICESPATH,
       this.getVersion(),
       this.BATCH,
@@ -340,7 +320,7 @@ export class SObjectDescribeAPI {
   ): XHROptions {
     // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     let additionalHeaders: any = {
-      Authorization: `OAuth ${this.org.getConnection().accessToken}`,
+      Authorization: `OAuth ${this.connection.accessToken}`,
     };
     if (lastRefreshDate) {
       // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
@@ -370,7 +350,7 @@ export class SObjectDescribeAPI {
       url: this.buildBatchRequestURL(),
       headers: {
         ...this.commonHeaders,
-        Authorization: `OAuth ${this.org.getConnection().accessToken}`,
+        Authorization: `OAuth ${this.connection.accessToken}`,
       },
       data: JSON.stringify(batchRequest),
     } as XHROptions;

@@ -4,7 +4,7 @@
  * Licensed under the BSD 3-Clause license.
  * For full license text, see LICENSE.txt file in the repo root or https://opensource.org/licenses/BSD-3-Clause
  */
-import { Org, Connection, AuthInfo } from '@salesforce/core';
+import { Connection, AuthInfo } from '@salesforce/core';
 import { MockTestOrgData, testSetup } from '@salesforce/core/lib/testSetup';
 import { createSandbox, SinonSandbox } from 'sinon';
 import { SObjectDescribeAPI, DescribeSObjectResult } from './sobjectApi';
@@ -14,7 +14,7 @@ import { SObjectService, SObjectType } from './sobjectService';
 const $$ = testSetup();
 
 describe('SObjectService', () => {
-  let mockOrg: Org;
+  let mockConnection: Connection;
   let sObjectService: SObjectService;
   let sandboxStub: SinonSandbox;
   const testData = new MockTestOrgData();
@@ -24,14 +24,12 @@ describe('SObjectService', () => {
     $$.setConfigStubContents('AuthInfoConfig', {
       contents: await testData.getConfig(),
     });
-    mockOrg = await Org.create({
-      connection: await Connection.create({
-        authInfo: await AuthInfo.create({
-          username: testData.username,
-        }),
+    mockConnection = await Connection.create({
+      authInfo: await AuthInfo.create({
+        username: testData.username,
       }),
     });
-    sObjectService = new SObjectService(mockOrg);
+    sObjectService = new SObjectService(mockConnection);
   });
 
   afterEach(() => {
@@ -40,7 +38,7 @@ describe('SObjectService', () => {
 
   it('should retrieve all object names when object type is ALL', async () => {
     sandboxStub
-      .stub(sObjectService.org.getConnection(), 'describeGlobal')
+      .stub(sObjectService.connection, 'describeGlobal')
       .returns(Promise.resolve(SObjectTestData.globalDesc));
     const expectedValue = ['Simon', 'Garfunkel'];
     const actualValue = await sObjectService.retrieveSObjectNames(
@@ -51,7 +49,7 @@ describe('SObjectService', () => {
 
   it('should retrieve standard object names when object type is STANDARD', async () => {
     sandboxStub
-      .stub(sObjectService.org.getConnection(), 'describeGlobal')
+      .stub(sObjectService.connection, 'describeGlobal')
       .returns(Promise.resolve(SObjectTestData.globalDesc));
     const expectedValue = ['Simon'];
     const actualValue = await sObjectService.retrieveSObjectNames(
@@ -62,7 +60,7 @@ describe('SObjectService', () => {
 
   it('should retrieve custom object names when object type is CUSTOM', async () => {
     sandboxStub
-      .stub(sObjectService.org.getConnection(), 'describeGlobal')
+      .stub(sObjectService.connection, 'describeGlobal')
       .returns(Promise.resolve(SObjectTestData.globalDesc));
     const expectedValue = ['Garfunkel'];
     const actualValue = await sObjectService.retrieveSObjectNames(
@@ -72,9 +70,7 @@ describe('SObjectService', () => {
   });
 
   it('should reject when getting object names fails', async () => {
-    sandboxStub
-      .stub(sObjectService.org.getConnection(), 'describeGlobal')
-      .rejects();
+    sandboxStub.stub(sObjectService.connection, 'describeGlobal').rejects();
     await expect(sObjectService.retrieveSObjectNames()).rejects.toThrow();
   });
 

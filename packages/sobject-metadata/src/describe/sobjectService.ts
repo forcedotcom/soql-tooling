@@ -4,7 +4,7 @@
  * Licensed under the BSD 3-Clause license.
  * For full license text, see LICENSE.txt file in the repo root or https://opensource.org/licenses/BSD-3-Clause
  */
-import { Org } from '@salesforce/core';
+import { Connection } from '@salesforce/core';
 import {
   DescribeSObjectResult,
   SObject,
@@ -18,20 +18,22 @@ export enum SObjectType {
 }
 
 export class SObjectService {
-  public readonly org: Org;
+  public readonly connection: Connection;
 
-  public constructor(org: Org) {
-    this.org = org;
+  public constructor(connection: Connection) {
+    this.connection = connection;
   }
 
   public async describeSObject(name: string): Promise<SObject> {
-    const result = await new SObjectDescribeAPI(this.org).describeSObject(name);
+    const result = await new SObjectDescribeAPI(
+      this.connection
+    ).describeSObject(name);
     return result.result ? Promise.resolve(result.result) : Promise.reject();
   }
 
   public async describeSObjects(names: string[]): Promise<SObject[]> {
     // TODO: make cancellable?
-    const describeAPI = new SObjectDescribeAPI(this.org);
+    const describeAPI = new SObjectDescribeAPI(this.connection);
     let fetchedResults: DescribeSObjectResult[] = [];
     let j = 0;
     while (j < names.length) {
@@ -52,7 +54,7 @@ export class SObjectService {
   public async retrieveSObjectNames(
     type: SObjectType = SObjectType.ALL
   ): Promise<string[]> {
-    const describeResult = await this.org.getConnection().describeGlobal();
+    const describeResult = await this.connection.describeGlobal();
     return describeResult.sobjects
       .filter(
         (sobject) =>
