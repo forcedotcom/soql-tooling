@@ -4,11 +4,13 @@ export default class From extends LightningElement {
   @api sobjects: string[];
   @api selected: string;
   get filteredSObjects() {
-    return this.sobjects.filter((sobject) => { return sobject !== this.selected; })
+    return this.sobjects.filter((sobject) => {
+      return sobject !== this.selected;
+    });
   }
 
   get hasSelected() {
-    return this.selected && this.selected.length;
+    return !!this.selected;
   }
 
   handleSobjectSelection(e) {

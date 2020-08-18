@@ -1,6 +1,6 @@
 // @ts-ignore
 import { createElement } from 'lwc';
-import Header from './header';
+import Header from 'querybuilder/header';
 
 describe('Header', () => {
   afterEach(() => {
@@ -8,7 +8,8 @@ describe('Header', () => {
       document.body.removeChild(document.body.firstChild);
     }
   });
-  it('fires a save event', () => {
+
+  it('emits a save event', () => {
     const header = createElement('querybuilder-header', {
       is: Header
     });
