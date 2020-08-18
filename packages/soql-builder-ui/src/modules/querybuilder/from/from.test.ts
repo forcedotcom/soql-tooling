@@ -34,7 +34,9 @@ describe('From', () => {
     document.body.appendChild(from);
 
     const allOptions = Array.from(from.shadowRoot.querySelectorAll('option'));
-    const optionValues = allOptions.map((option) => option.value);
+    const optionValues = allOptions.map(
+      (option: HTMLOptionElement) => option.value
+    );
     const areOptionsUnique = (options) =>
       Array.isArray(options) && new Set(options).size === options.length;
 

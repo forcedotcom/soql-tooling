@@ -23,6 +23,7 @@ describe('Tooling Model Service', () => {
 
   it('can set an SObject selection', () => {
     modelService.setSObject(mockSobject);
+
     expect(query!.sObject).toBe(mockSobject);
   });
 
