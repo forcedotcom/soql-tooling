@@ -25,6 +25,13 @@
       "port": 9229
     },
     {
+      "name": "Debug Tests - LWC",
+      "type": "node",
+      "cwd": "${workspaceRoot}/packages/soql-builder-ui",
+      "request": "launch",
+      "preLaunchTask": "lwc-services-debug"
+    },
+    {
       "name": "Debug Tests - Language Server",
       "type": "node",
       "request": "launch",
