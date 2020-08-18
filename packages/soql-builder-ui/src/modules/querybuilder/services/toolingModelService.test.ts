@@ -26,7 +26,7 @@ describe('Tooling Model Service', () => {
     expect(query!.sObject).toBe(mockSobject);
   });
 
-  it('Can Add, Delete Fields', () => {
+  it('can Add, Delete Fields', () => {
     // Add
     modelService.addField(mockField1);
     modelService.addField(mockField2);
