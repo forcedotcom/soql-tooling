@@ -14,14 +14,18 @@ export default class App extends LightningElement {
 
 
   connectedCallback() {
-    this.modelService.query.subscribe({
-      next: (query) => {
-        this.query = query;
-    }});
+    this.modelService.query.subscribe((query: SoqlQueryModel) => { 
+      this.query = query;
+      this.synchronizeWithSobject();
+    } );
     this.sObjects = this.toolingService.sObjects;
   }
 
   renderedCallback() {
+    this.synchronizeWithSobject();
+  }
+
+  synchronizeWithSobject() {
     if (this.query && this.query.sObject && this.query.sObject.length) {
       this.fields = this.toolingService.getCompletionItemsFor(this.query.sObject);
     }
