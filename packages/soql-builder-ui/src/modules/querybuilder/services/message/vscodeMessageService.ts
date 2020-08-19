@@ -40,13 +40,11 @@ export class VscodeMessageService implements IMessageService {
         });
         this.setState(query);
         setTimeout(() => {
-            console.log('setting listen back to true');
             this.listen = true;
         }, 2000);
     }
     public getState() {
         let state = this.vscode.getState();
-        console.log('state: ', typeof state, state);
         if (state && typeof state === 'string') {
             try {
                 state = JSON.parse(state);
@@ -54,12 +52,10 @@ export class VscodeMessageService implements IMessageService {
                 console.error('could not parse state');
             }
         }
-        console.log('state is: ', state);
         return state;
     }
 
     public setState(state: JsonMap) {
-        console.log('saving state: ', state);
         this.vscode.setState(JSON.stringify(state));
     }
 }
