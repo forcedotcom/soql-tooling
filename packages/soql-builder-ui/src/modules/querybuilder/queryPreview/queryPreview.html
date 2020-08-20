@@ -1,7 +1,16 @@
+<!-- 
+  Copyright (c) 2020, salesforce.com, inc.
+  All rights reserved.
+  Licensed under the BSD 3-Clause license.
+  For full license text, see LICENSE.txt file in the repo root or https://opensource.org/licenses/BSD-3-Clause
+   
+ -->
+
 <template
     ><div class="query-preview-container">
         <div>
-            <pre>
+            <pre style="border: 1px dashed red; margin: 1rem;">Query Model: {queryPreview}</pre>
+            <pre style="color: grey;">
                 SELECT Name, AccountNumber, Type, NumberOfEmployees, BillingCity,
                 BillingCountry, BillingStreet, Website, Merchant_Type_c FROM Account
                 WHERE (NumberOfEmployees >= 50 AND Type != ‘Prospect’) OR

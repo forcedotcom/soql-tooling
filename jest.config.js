@@ -12,5 +12,10 @@ module.exports = {
       displayName: "sobject-metadata",
       rootDir: "<rootDir>/packages/sobject-metadata",
     },
+    {
+      displayName: "soql-builder-ui",
+      rootDir: "<rootDir>/packages/soql-builder-ui",
+      preset: "@lwc/jest-preset",
+    },
   ],
 };

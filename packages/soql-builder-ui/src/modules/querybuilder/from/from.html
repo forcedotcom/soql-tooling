@@ -1,14 +1,33 @@
+<!-- 
+  Copyright (c) 2020, salesforce.com, inc.
+  All rights reserved.
+  Licensed under the BSD 3-Clause license.
+  For full license text, see LICENSE.txt file in the repo root or https://opensource.org/licenses/BSD-3-Clause
+   
+ -->
+
 <template>
-    <div class="section-container">
-        <div class="section_label-container">
-            <label>From</label>
-        </div>
-        <div class="section_selection-container">
-            <select class="select-long">
-                <option>Account</option>
-                <option>Workspace</option>
-                <option>Opportunities</option>
-            </select>
-        </div>
+  <div class="section-container">
+    <div class="section_label-container">
+      <label>From</label>
     </div>
+    <div class="section_selection-container">
+      <select
+        name="sobject-select"
+        class="select-long"
+        onchange={handleSobjectSelection}
+      >
+      <!-- this is an unfortunate limitation of lwc.  probably need to implement lightning-combobox here -->
+       <template if:true={hasSelected}>
+          <option key={selected} value={selected}>{selected}</option>
+         </template>
+         <template if:false={hasSelected}>
+           <option>--- Select an sObject ---</option>
+         </template>
+        <template for:each={filteredSObjects} for:item="sObject">
+          <option key={sObject} value={sObject}>{sObject}</option>
+        </template>
+      </select>
+    </div>
+  </div>
 </template>
