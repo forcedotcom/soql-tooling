@@ -1,0 +1,14 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "type": "npm",
+      "script": "test:unit:debug",
+      "path": "packages/soql-builder-ui/",
+      "group": "test",
+      "label": "lwc-services-debug",
+      "detail": "lwc-services test:unit --debug",
+      "isBackground": false
+    }
+  ]
+}

@@ -1,0 +1,58 @@
+{
+  "debug.node.autoAttach": "on",
+  "license-header-manager.excludeExtensions": [
+    ".sh",
+    ".js",
+    "**.test.**",
+    "**.spect.**"
+  ],
+  "license-header-manager.excludeFolders": [
+    "node_modules",
+    "coverage",
+    "dist",
+    "docs",
+    "scripts",
+    "lib"
+  ],
+  "files.exclude": {
+    "**/.git": true,
+    "**/.svn": true,
+    "**/.hg": true,
+    "**/CVS": true,
+    "**/.DS_Store": true
+  },
+  "search.exclude": {
+    "**/dist": true,
+    "**/lib": true
+  },
+  "editor.tabSize": 2,
+  "prettier.singleQuote": true,
+  "rewrap.wrappingColumn": 80,
+  "yaml.format.singleQuote": true,
+  "editor.formatOnSave": true,
+  "editor.codeActionsOnSave": {
+    "source.fixAll.tslint": true
+  },
+  "files.trimTrailingWhitespace": true,
+  "files.insertFinalNewline": true,
+  "files.trimFinalNewlines": true,
+  "todohighlight.isCaseSensitive": false,
+  "todohighlight.include": ["**/*.ts", "**/*.html", "**/*.css", "**/*.scss"],
+  "todohighlight.exclude": [
+    "**/node_modules/**",
+    "**/dist/**",
+    "**/.vscode/**",
+    "**/*.min.*",
+    "**/*.map",
+    "**/lib/**"
+  ],
+  "todohighlight.keywords": [
+    "TODO:",
+    "NOTE:",
+    {
+      "text": "i18n:",
+      "color": "white",
+      "backgroundColor": "green"
+    }
+  ]
+}
