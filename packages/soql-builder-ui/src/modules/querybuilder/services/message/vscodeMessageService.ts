@@ -3,13 +3,17 @@ import { IMessageService, SoqlEditorEvent } from './iMessageService';
 import { fromEvent, Observable } from 'rxjs';
 import { filter, map, pluck, tap, distinctUntilChanged } from 'rxjs/operators';
 import { getWindow, getVscode } from '../globals';
+import { ToolingService } from '../toolingService';
+import { SoqlQueryModel } from '../modelService';
 
 export class VscodeMessageService implements IMessageService {
     private vscode;
     public message: Observable<SoqlEditorEvent>;
     private listen = true;
+    private toolingService: ToolingService;
     constructor() {
         this.vscode = getVscode();
+        this.toolingService = new ToolingService();
         const source = fromEvent(getWindow(), 'message');
         this.message = source.pipe(
             filter(() => { return this.listen; }), // we chill for a while after sending a message
@@ -19,14 +23,16 @@ export class VscodeMessageService implements IMessageService {
                 return newEvent.message === JSON.stringify(oldEvent.message) }), // and only changes
             map((event) => {
                 try {
-                    event.message = JSON.parse(event.message);
+                    event.message = JSON.parse(event.message as string) as SoqlQueryModel;
                     return event;
                 } catch(e) {
-                    console.error('message is not parsable', e);
+                    // we can just ignore this.  likely, user is typeing and json is not valid.
                 }
                 return event;
             }),// parse it.
-            filter((event) => { return typeof event.message === 'object'; })); // make sure it's a successful parse.
+            filter((event) => { return typeof event.message === 'object'; }),// make sure it's a successful parse.
+            filter((event) => { return this.toolingService.sObjects.includes((event.message as unknown as SoqlQueryModel).sObject); })// And an existing sObject and not a fragment
+        );
         this.sendActivatedMessage();
     }
     public sendActivatedMessage() {

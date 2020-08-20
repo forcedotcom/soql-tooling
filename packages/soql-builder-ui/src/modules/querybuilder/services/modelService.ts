@@ -23,7 +23,7 @@ export class ModelService {
         })
         this.messageService = MessageServiceFactory.create();
         const state = this.restore();
-        console.log('did we get state?', typeof state, state);
+        console.log('STATE IS: ', state);
         this.model = new BehaviorSubject(fromJS(state || this.defaultQueryModel));
         this.query = this.model.pipe(map(soqlQueryModel => {
             return (soqlQueryModel as Map).toJS()

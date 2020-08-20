@@ -14,7 +14,7 @@ export default class App extends LightningElement {
 
 
   connectedCallback() {
-    this.modelService.query.subscribe((query: SoqlQueryModel) => { 
+    this.modelService.query.subscribe((query: SoqlQueryModel) => {
       this.query = query;
       this.synchronizeWithSobject();
     } );
