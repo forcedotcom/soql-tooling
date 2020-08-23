@@ -19,6 +19,9 @@ export class VscodeMessageService implements IMessageService {
     public message: Observable<SoqlEditorEvent>;
     private listen = true;
     private toolingSdk: ToolingSDK;
+    public static ACTIVATED_TYPE = 'activated';
+    public static QUERY_TYPE = 'query';
+    public static UPDATE_TYPE = 'update';
     constructor() {
         this.vscode = getVscode();
         this.toolingSdk = new ToolingSDK();
@@ -26,7 +29,7 @@ export class VscodeMessageService implements IMessageService {
         this.message = source.pipe(
             filter(() => { return this.listen; }), // we chill for a while after sending a message
             pluck('data'), // all we care about is the innner data
-            filter((event: SoqlEditorEvent) => { return event.type === 'update';}), // all we care about is update events
+            filter((event: SoqlEditorEvent) => { return event.type === VscodeMessageService.UPDATE_TYPE;}), // all we care about is update events
             distinctUntilChanged((prev: SoqlEditorEvent, curr: SoqlEditorEvent) => { 
                 return curr.message === JSON.stringify(prev.message) }), // and only changes
             map((event) => {
@@ -44,12 +47,12 @@ export class VscodeMessageService implements IMessageService {
         this.sendActivatedMessage();
     }
     public sendActivatedMessage() {
-        this.vscode.postMessage({type: 'activated'});
+        this.vscode.postMessage({type: VscodeMessageService.ACTIVATED_TYPE});
     }
     public sendMessage(query: JsonMap) {
         this.listen = false;
         this.vscode.postMessage({
-            type: 'query',
+            type: VscodeMessageService.QUERY_TYPE,
             message: JSON.stringify(query),
         });
         this.setState(query);

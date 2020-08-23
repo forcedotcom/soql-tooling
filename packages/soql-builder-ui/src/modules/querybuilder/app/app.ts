@@ -16,9 +16,9 @@ import {
 
 export default class App extends LightningElement {
   @track
-  public sObjects: string[];
+  sObjects: string[];
   @track 
-  public fields: string[] = [];
+  fields: string[] = [];
   toolingSDK = new ToolingSDK();
   modelService = new ToolingModelService();
 
