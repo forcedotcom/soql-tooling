@@ -1,24 +1,36 @@
-import { LightningElement, track } from 'lwc';
-import { ToolingService } from '../services/toolingService';
+/* 
+ *  Copyright (c) 2020, salesforce.com, inc.
+ *  All rights reserved.
+ *  Licensed under the BSD 3-Clause license.
+ *  For full license text, see LICENSE.txt file in the repo root or https://opensource.org/licenses/BSD-3-Clause
+ *   
+ */
+
+import { LightningElement, track, api } from 'lwc';
+import { ToolingSDK } from '../services/toolingSDK';
 // eslint-disable-next-line no-unused-vars
-import { ModelService, SoqlQueryModel } from '../services/modelService';
+import {
+  ToolingModelService,
+  ToolingModelJson
+} from '../services/toolingModelService';
 
 export default class App extends LightningElement {
-  sObjects: string[];
-  @track fields: string[] = [];
-  toolingService = new ToolingService();
-  modelService = new ModelService();
+  @track
+  public sObjects: string[];
+  @track 
+  public fields: string[] = [];
+  toolingSDK = new ToolingSDK();
+  modelService = new ToolingModelService();
 
   @track
-  query: SoqlQueryModel;
-
+  query: ToolingModelJson;
 
   connectedCallback() {
-    this.modelService.query.subscribe((query: SoqlQueryModel) => {
+    this.modelService.query.subscribe((query: ToolingModelJson) => {
       this.query = query;
       this.synchronizeWithSobject();
     } );
-    this.sObjects = this.toolingService.sObjects;
+    this.sObjects = this.toolingSDK.sObjects;
   }
 
   renderedCallback() {
@@ -27,12 +39,14 @@ export default class App extends LightningElement {
 
   synchronizeWithSobject() {
     if (this.query && this.query.sObject && this.query.sObject.length) {
-      this.fields = this.toolingService.getCompletionItemsFor(this.query.sObject);
+      this.fields = this.toolingSDK.getCompletionItemsFor(this.query.sObject);
     }
   }
 
   handleObjectChange(e) {
-    this.fields = this.toolingService.getCompletionItemsFor(e.detail.selectedSobject);
+    this.fields = this.toolingSDK.getCompletionItemsFor(
+      e.detail.selectedSobject
+    );
     this.modelService.setSObject(e.detail.selectedSobject);
   }
 

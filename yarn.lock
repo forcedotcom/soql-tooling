@@ -2782,10 +2782,10 @@
     eslint-plugin-jest "~23.8.2"
     eslint-restricted-globals "~0.2.0"
 
-"@salesforce/soql-parser@0.15.0":
-  version "0.15.0"
-  resolved "http://platform-cli-registry.eng.sfdc.net:4880/@salesforce%2fsoql-parser/-/soql-parser-0.15.0.tgz#9e9c09386877b6c966887647a367de6eb5d21989"
-  integrity sha512-hT7mAOPLJ6TU0sS1M3FSJR413vjOSW4IP92XTxBxNb4HPurCYKB7oFRVjiCUNXOIOiiOkY8dutXOotFYSMYjzg==
+"@salesforce/soql-parser@0.16.0":
+  version "0.16.0"
+  resolved "http://platform-cli-registry.eng.sfdc.net:4880/@salesforce%2fsoql-parser/-/soql-parser-0.16.0.tgz#54c9620bd32eb1c8bac6c0a956d80968ae294829"
+  integrity sha512-4FwREKkAE8ehrfd5y2VVJB7+0KioxHPysvJamve+xGvPBeXrGRJMBpTr/mAe8gxeAP//thpOV3Z2Za8/QTP4sg==
   dependencies:
     antlr4 "4.8.0"
 

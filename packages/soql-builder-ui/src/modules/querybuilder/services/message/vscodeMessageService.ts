@@ -1,37 +1,45 @@
+/* 
+ *  Copyright (c) 2020, salesforce.com, inc.
+ *  All rights reserved.
+ *  Licensed under the BSD 3-Clause license.
+ *  For full license text, see LICENSE.txt file in the repo root or https://opensource.org/licenses/BSD-3-Clause
+ *   
+ */
+
 import { JsonMap } from '@salesforce/ts-types';
 import { IMessageService, SoqlEditorEvent } from './iMessageService';
 import { fromEvent, Observable } from 'rxjs';
 import { filter, map, pluck, tap, distinctUntilChanged } from 'rxjs/operators';
 import { getWindow, getVscode } from '../globals';
-import { ToolingService } from '../toolingService';
-import { SoqlQueryModel } from '../modelService';
+import { ToolingSDK } from '../toolingSDK';
+import { ToolingModelJson } from '../toolingModelService';
 
 export class VscodeMessageService implements IMessageService {
     private vscode;
     public message: Observable<SoqlEditorEvent>;
     private listen = true;
-    private toolingService: ToolingService;
+    private toolingSdk: ToolingSDK;
     constructor() {
         this.vscode = getVscode();
-        this.toolingService = new ToolingService();
+        this.toolingSdk = new ToolingSDK();
         const source = fromEvent(getWindow(), 'message');
         this.message = source.pipe(
             filter(() => { return this.listen; }), // we chill for a while after sending a message
             pluck('data'), // all we care about is the innner data
             filter((event: SoqlEditorEvent) => { return event.type === 'update';}), // all we care about is update events
-            distinctUntilChanged((oldEvent: SoqlEditorEvent, newEvent: SoqlEditorEvent) => { 
-                return newEvent.message === JSON.stringify(oldEvent.message) }), // and only changes
+            distinctUntilChanged((prev: SoqlEditorEvent, curr: SoqlEditorEvent) => { 
+                return curr.message === JSON.stringify(prev.message) }), // and only changes
             map((event) => {
                 try {
-                    event.message = JSON.parse(event.message as string) as SoqlQueryModel;
+                    event.message = JSON.parse(event.message as string) as ToolingModelJson;
                     return event;
                 } catch(e) {
-                    // we can just ignore this.  likely, user is typeing and json is not valid.
+                    // we can just ignore this.  likely, user is typing and json is not valid.
                 }
                 return event;
             }),// parse it.
             filter((event) => { return typeof event.message === 'object'; }),// make sure it's a successful parse.
-            filter((event) => { return this.toolingService.sObjects.includes((event.message as unknown as SoqlQueryModel).sObject); })// And an existing sObject and not a fragment
+            filter((event) => { return this.toolingSdk.sObjects.includes((event.message as unknown as ToolingModelJson).sObject); })// And an existing sObject and not a fragment
         );
         this.sendActivatedMessage();
     }
