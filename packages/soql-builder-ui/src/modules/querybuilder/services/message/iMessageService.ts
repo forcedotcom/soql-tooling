@@ -8,12 +8,6 @@
 
 import { Observable } from 'rxjs';
 import { JsonMap } from '@salesforce/ts-types';
-import { ToolingModelJson } from '../toolingModelService';
-
-export interface SoqlEditorEvent {
-  type: string;
-  message: string | ToolingModelJson;
-}
 
 export interface IMessageService {
   message: Observable<SoqlEditorEvent>;

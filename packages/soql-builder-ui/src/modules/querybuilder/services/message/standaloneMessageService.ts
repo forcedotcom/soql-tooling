@@ -6,10 +6,11 @@
  *
  */
 
-import { IMessageService, SoqlEditorEvent } from './iMessageService';
+import { IMessageService } from './iMessageService';
 import { JsonMap } from '@salesforce/ts-types';
 import { getLocalStorage } from '../globals';
 import { BehaviorSubject } from 'rxjs';
+import { SoqlEditorEvent } from './soqlEditorEvent';
 
 export class StandaloneMessageService implements IMessageService {
   public message: BehaviorSubject<SoqlEditorEvent>;

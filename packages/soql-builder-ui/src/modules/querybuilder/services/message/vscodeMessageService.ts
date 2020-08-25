@@ -7,12 +7,13 @@
  */
 
 import { JsonMap } from '@salesforce/ts-types';
-import { IMessageService, SoqlEditorEvent } from './iMessageService';
+import { IMessageService } from './iMessageService';
 import { fromEvent, Observable } from 'rxjs';
 import { filter, map, pluck, distinctUntilChanged } from 'rxjs/operators';
 import { getWindow, getVscode } from '../globals';
 import { ToolingSDK } from '../toolingSDK';
 import { ToolingModelJson } from '../toolingModelService';
+import { SoqlEditorEvent } from './soqlEditorEvent';
 
 export enum MessageType {
   ACTIVATED = 'activated',
