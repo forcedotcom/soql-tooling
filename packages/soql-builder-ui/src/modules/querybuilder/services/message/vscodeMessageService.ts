@@ -9,7 +9,7 @@
 import { JsonMap } from '@salesforce/ts-types';
 import { IMessageService, SoqlEditorEvent } from './iMessageService';
 import { fromEvent, Observable } from 'rxjs';
-import { filter, map, pluck, tap, distinctUntilChanged } from 'rxjs/operators';
+import { filter, map, pluck, distinctUntilChanged } from 'rxjs/operators';
 import { getWindow, getVscode } from '../globals';
 import { ToolingSDK } from '../toolingSDK';
 import { ToolingModelJson } from '../toolingModelService';
@@ -31,37 +31,65 @@ export class VscodeMessageService implements IMessageService {
     this.toolingSdk = new ToolingSDK();
     const source = fromEvent(getWindow(), 'message');
     this.message = source.pipe(
-      filter(() => {
-        return this.listen;
-      }), // we chill for a while after sending a message
-      pluck('data'), // all we care about is the innner data
-      filter((event: SoqlEditorEvent) => {
-        return event.type === MessageType.UPDATE;
-      }), // all we care about is update events
-      distinctUntilChanged((prev: SoqlEditorEvent, curr: SoqlEditorEvent) => {
-        return curr.message === JSON.stringify(prev.message);
-      }), // and only changes
-      map((event) => {
-        try {
-          event.message = JSON.parse(
-            event.message as string
-          ) as ToolingModelJson;
-          return event;
-        } catch (e) {
-          // we can just ignore this.  likely, user is typing and json is not valid.
-        }
-        return event;
-      }), // parse it.
-      filter((event) => {
-        return typeof event.message === 'object';
-      }), // make sure it's a successful parse.
-      filter((event) => {
-        return this.toolingSdk.sObjects.includes(
-          ((event.message as unknown) as ToolingModelJson).sObject
-        );
-      }) // And an existing sObject and not a fragment
+      this.afterMessageDelay(),
+      this.onlyDataProperty(),
+      this.onlyUpdateEventTypes(),
+      this.onlyIfChanged(),
+      this.parseEventMessage(),
+      this.onlyIfValidJson(),
+      this.onlyValidSObjects()
     );
     this.sendActivatedMessage();
+  }
+
+  private afterMessageDelay() {
+    return filter(() => {
+      return this.listen;
+    });
+  }
+
+  private onlyDataProperty() {
+    return pluck('data');
+  }
+
+  private onlyUpdateEventTypes() {
+    return filter((event: SoqlEditorEvent) => {
+      return event.type === MessageType.UPDATE;
+    });
+  }
+
+  private onlyIfChanged() {
+    return distinctUntilChanged(
+      (prev: SoqlEditorEvent, curr: SoqlEditorEvent) => {
+        return curr.message === JSON.stringify(prev.message);
+      }
+    );
+  }
+
+  private onlyIfValidJson() {
+    return filter((event: SoqlEditorEvent) => {
+      return typeof event.message === 'object';
+    });
+  }
+
+  private parseEventMessage() {
+    return map((event: SoqlEditorEvent) => {
+      try {
+        event.message = JSON.parse(event.message as string) as ToolingModelJson;
+        return event;
+      } catch (e) {
+        // we can just ignore this.  likely, user is typing and json is not valid.
+      }
+      return event;
+    });
+  }
+
+  private onlyValidSObjects() {
+    return filter((event: SoqlEditorEvent) => {
+      return this.toolingSdk.sObjects.includes(
+        ((event.message as unknown) as ToolingModelJson).sObject
+      );
+    });
   }
 
   public sendActivatedMessage() {
