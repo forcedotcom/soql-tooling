@@ -1,17 +1,16 @@
 {
-    "$schema": "http://json.schemastore.org/tsconfig",
-    "compilerOptions": {
-      "emitDecoratorMetadata": true,
-      "experimentalDecorators": true,
-      "preserveConstEnums": true,
-      "strict": true,
-      "resolveJsonModule": true,
-      "lib": ["es2018", "dom", "esnext.asynciterable"],
-      "module": "commonjs",
-      "moduleResolution": "node",
-      "target": "es2017",
-      "sourceMap": true
-    },
-    "exclude": ["node_modules"]
-  }
-  
+  "$schema": "http://json.schemastore.org/tsconfig",
+  "compilerOptions": {
+    "emitDecoratorMetadata": true,
+    "experimentalDecorators": true,
+    "preserveConstEnums": true,
+    "strict": true,
+    "resolveJsonModule": true,
+    "lib": ["es2018", "dom", "esnext.asynciterable"],
+    "module": "commonjs",
+    "moduleResolution": "node",
+    "target": "es2017",
+    "sourceMap": true
+  },
+  "exclude": ["node_modules", "../../node_modules"]
+}
