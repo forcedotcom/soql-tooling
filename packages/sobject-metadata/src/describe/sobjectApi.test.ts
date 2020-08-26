@@ -6,7 +6,7 @@
  */
 import { Connection, AuthInfo } from '@salesforce/core';
 import { MockTestOrgData, testSetup } from '@salesforce/core/lib/testSetup';
-import * as RL from 'request-light';
+import { RequestInfo } from 'jsforce';
 import { createSandbox, SinonSandbox } from 'sinon';
 import {
   BatchRequest,
@@ -41,21 +41,16 @@ class SObjectDescribeAPITestWrap extends SObjectDescribeAPI {
   public doBuildSingleXHROptions(
     sObjectName: string,
     lastRefreshDate?: string
-  ): RL.XHROptions {
+  ): RequestInfo {
     return this.buildSingleXHROptions(sObjectName, lastRefreshDate);
   }
 
   public doBuildBatchXHROptions(
     types: string[],
     nextToProcess: number
-  ): RL.XHROptions {
+  ): RequestInfo {
     return this.buildBatchXHROptions(types, nextToProcess);
   }
-
-  public async doRunRequest(options: RL.XHROptions): Promise<RL.XHRResponse> {
-    return this.runRequest(options);
-  }
-
   public doGetVersion(): string {
     return this.getVersion();
   }
@@ -116,13 +111,10 @@ describe('SObjectDescribeAPI', () => {
 
   it('should create the correct sobject describe request (when last refresh date not specified)', () => {
     const sObjectName = 'George';
-    const expectedValue: RL.XHROptions = {
-      type: 'GET',
+    const expectedValue = {
+      method: 'GET',
       url: sObjectAPI.doBuildSObjectDescribeURL(sObjectName, true),
       headers: {
-        Accept: 'application/json',
-        Authorization: `OAuth ${mockConnection.accessToken}`,
-        'Content-Type': 'application/json',
         'Sforce-Call-Options': `client=sfdx-vscode`,
         'User-Agent': 'salesforcedx-extension',
       },
@@ -134,13 +126,10 @@ describe('SObjectDescribeAPI', () => {
   it('should create the correct sobject describe request (when last refresh date specified)', () => {
     const sObjectName = 'Ringo';
     const timestamp = 'Fri, 07 Aug 2020 12:00:00 GMT';
-    const expectedValue: RL.XHROptions = {
-      type: 'GET',
+    const expectedValue = {
+      method: 'GET',
       url: sObjectAPI.doBuildSObjectDescribeURL(sObjectName, true),
       headers: {
-        Accept: 'application/json',
-        Authorization: `OAuth ${mockConnection.accessToken}`,
-        'Content-Type': 'application/json',
         'If-Modified-Since': timestamp,
         'Sforce-Call-Options': `client=sfdx-vscode`,
         'User-Agent': 'salesforcedx-extension',
@@ -169,17 +158,14 @@ describe('SObjectDescribeAPI', () => {
 
   it('should create the correct batch request', () => {
     const sObjectNames = ['Paul', 'John', 'George', 'Ringo'];
-    const expectedValue: RL.XHROptions = {
-      type: 'POST',
+    const expectedValue = {
+      method: 'POST',
       url: sObjectAPI.doBuildBatchRequestURL(),
       headers: {
-        Accept: 'application/json',
-        Authorization: `OAuth ${mockConnection.accessToken}`,
-        'Content-Type': 'application/json',
         'Sforce-Call-Options': `client=sfdx-vscode`,
         'User-Agent': 'salesforcedx-extension',
       },
-      data: JSON.stringify(sObjectAPI.doBuildBatchRequestBody(sObjectNames, 0)),
+      body: JSON.stringify(sObjectAPI.doBuildBatchRequestBody(sObjectNames, 0)),
     };
     const actualValue = sObjectAPI.doBuildBatchXHROptions(sObjectNames, 0);
     expect(actualValue).toEqual(expectedValue);
@@ -197,14 +183,16 @@ describe('SObjectDescribeAPI', () => {
         },
       ],
     };
-    const resp: RL.XHRResponse = {
+    const resp = {
       status: 200,
-      responseText: JSON.stringify(batchResp),
+      body: JSON.stringify(batchResp),
       headers: {
         date: timestamp,
       },
     };
-    sandboxStub.stub(RL, 'xhr').returns(Promise.resolve(resp));
+    sandboxStub
+      .stub(mockConnection, 'requestRaw')
+      .returns(Promise.resolve(resp));
     const expectedValue: DescribeSObjectResult[] = [
       { sObjectName, result: SObjectTestData.customSObject, timestamp },
     ];
@@ -215,14 +203,16 @@ describe('SObjectDescribeAPI', () => {
   it('should return sobject description when request is successful', async () => {
     const sObjectName = SObjectTestData.customSObject.name;
     const timestamp = 'Fri, 07 Aug 2020 12:00:00 GMT';
-    const resp: RL.XHRResponse = {
+    const resp = {
       status: 200,
-      responseText: JSON.stringify(SObjectTestData.customSObject),
+      body: JSON.stringify(SObjectTestData.customSObject),
       headers: {
         date: timestamp,
       },
     };
-    sandboxStub.stub(RL, 'xhr').returns(Promise.resolve(resp));
+    sandboxStub
+      .stub(mockConnection, 'requestRaw')
+      .returns(Promise.resolve(resp));
     const expectedValue: DescribeSObjectResult = {
       sObjectName,
       result: SObjectTestData.customSObject,
@@ -235,14 +225,16 @@ describe('SObjectDescribeAPI', () => {
   it('should return empty sobject description when refresh unneeded and request is successful', async () => {
     const sObjectName = SObjectTestData.customSObject.name;
     const timestamp = 'Fri, 07 Aug 2020 12:00:00 GMT';
-    const resp: RL.XHRResponse = {
+    const resp = {
       status: 304,
       responseText: '',
       headers: {
         date: timestamp,
       },
     };
-    sandboxStub.stub(RL, 'xhr').returns(Promise.resolve(resp));
+    sandboxStub
+      .stub(mockConnection, 'requestRaw')
+      .returns(Promise.resolve(resp));
     const expectedValue: DescribeSObjectResult = {
       sObjectName,
       result: undefined,
@@ -258,14 +250,16 @@ describe('SObjectDescribeAPI', () => {
   it('should reject when batch request fails', async () => {
     const sObjectName = SObjectTestData.customSObject.name;
     const timestamp = 'Fri, 07 Aug 2020 12:00:00 GMT';
-    const resp500: RL.XHRResponse = {
+    const resp500 = {
       status: 500,
       responseText: 'ERROR',
       headers: {
         date: timestamp,
       },
     };
-    sandboxStub.stub(RL, 'xhr').returns(Promise.reject(resp500));
+    sandboxStub
+      .stub(mockConnection, 'requestRaw')
+      .returns(Promise.reject(resp500));
     await expect(
       sObjectAPI.describeSObjectBatch([sObjectName], 0)
     ).rejects.toBe(resp500.responseText);
@@ -274,14 +268,16 @@ describe('SObjectDescribeAPI', () => {
   it('should reject when request fails', async () => {
     const sObjectName = SObjectTestData.customSObject.name;
     const timestamp = 'Fri, 07 Aug 2020 12:00:00 GMT';
-    const resp500: RL.XHRResponse = {
+    const resp500 = {
       status: 500,
       responseText: 'ERROR',
       headers: {
         date: timestamp,
       },
     };
-    sandboxStub.stub(RL, 'xhr').returns(Promise.reject(resp500));
+    sandboxStub
+      .stub(mockConnection, 'requestRaw')
+      .returns(Promise.reject(resp500));
     await expect(sObjectAPI.describeSObject(sObjectName)).rejects.toBe(
       resp500.responseText
     );

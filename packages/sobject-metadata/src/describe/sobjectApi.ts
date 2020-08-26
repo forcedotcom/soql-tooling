@@ -8,7 +8,9 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
 import { Connection } from '@salesforce/core';
-import { xhr, XHROptions, XHRResponse } from 'request-light';
+import { RequestInfo } from 'jsforce';
+import { SObjectType } from './sobjectService';
+import { Z_UNKNOWN } from 'zlib';
 
 // This interface is the same as the SObject interface described in the
 // sobjects-faux-generator: https://github.com/forcedotcom/salesforcedx-vscode/blob/develop/packages/salesforcedx-sobjects-faux-generator/src/describe/sObjectDescribe.ts
@@ -168,7 +170,17 @@ export enum SObjectCategory {
 
 export type SubRequest = { method: string; url: string };
 export type BatchRequest = { batchRequests: SubRequest[] };
+export type DescribeResponse = {
+  statusCode: number;
+  headers: { [key: string]: string };
+  body: string;
+};
 export type SubResponse = { statusCode: number; result: SObject };
+export type BatchRawResponse = {
+  statusCode: number;
+  headers: { [key: string]: string };
+  body: string;
+};
 export type BatchResponse = { hasErrors: boolean; results: SubResponse[] };
 
 export class SObjectDescribeAPI {
@@ -186,8 +198,6 @@ export class SObjectDescribeAPI {
   private readonly CLIENT_ID: string = 'sfdx-vscode';
 
   private readonly commonHeaders = {
-    'Content-Type': 'application/json',
-    Accept: 'application/json',
     'User-Agent': 'salesforcedx-extension',
     'Sforce-Call-Options': `client=${this.CLIENT_ID}`,
   };
@@ -201,21 +211,21 @@ export class SObjectDescribeAPI {
     lastRefreshDate?: string
   ): Promise<DescribeSObjectResult> {
     try {
-      let response: XHRResponse;
-      let options: XHROptions;
+      let response: DescribeResponse;
+      let options: RequestInfo;
       options = this.buildSingleXHROptions(sObjectName, lastRefreshDate);
-      response = await this.runRequest(options);
+      response = ((await this.connection.requestRaw(
+        options
+      )) as unknown) as DescribeResponse;
 
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access,@typescript-eslint/no-unsafe-assignment
-      const timestamp: string = response.headers['date'];
-      let sObject: SObject | undefined;
-      if (response.responseText && response.responseText.length > 0) {
-        sObject = JSON.parse(response.responseText) as SObject;
-      }
+      const sObject = response.body
+        ? (JSON.parse(response.body) as SObject)
+        : undefined;
+
       return Promise.resolve({
         sObjectName,
         result: sObject,
-        timestamp,
+        timestamp: response.headers['date'],
       });
     } catch (error) {
       // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
@@ -231,14 +241,16 @@ export class SObjectDescribeAPI {
     nextToProcess: number
   ): Promise<DescribeSObjectResult[]> {
     try {
-      let response: XHRResponse;
-      let options: XHROptions;
+      let response: BatchRawResponse;
+      let options: RequestInfo;
       options = this.buildBatchXHROptions(types, nextToProcess);
-      response = await this.runRequest(options);
+      response = ((await this.connection.requestRaw(
+        options
+      )) as unknown) as BatchRawResponse;
 
       // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access,@typescript-eslint/no-unsafe-assignment
       const timestamp: string = response.headers['date'];
-      const batchResponse = JSON.parse(response.responseText) as BatchResponse;
+      const batchResponse = JSON.parse(response.body) as BatchResponse;
       const fetchedObjects: DescribeSObjectResult[] = [];
       let i = nextToProcess;
       for (const sr of batchResponse.results) {
@@ -317,20 +329,17 @@ export class SObjectDescribeAPI {
   protected buildSingleXHROptions(
     sObjectName: string,
     lastRefreshDate?: string
-  ): XHROptions {
+  ): RequestInfo {
     // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-    let additionalHeaders: any = {
-      Authorization: `OAuth ${this.connection.accessToken}`,
-    };
+    let additionalHeaders: any = {};
     if (lastRefreshDate) {
       // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
       additionalHeaders = {
-        ...additionalHeaders,
         'If-Modified-Since': lastRefreshDate,
       };
     }
     return {
-      type: 'GET',
+      method: 'GET',
       url: this.buildSObjectDescribeURL(sObjectName, true),
       // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
       headers: {
@@ -343,21 +352,16 @@ export class SObjectDescribeAPI {
   protected buildBatchXHROptions(
     types: string[],
     nextToProcess: number
-  ): XHROptions {
+  ): RequestInfo {
     const batchRequest = this.buildBatchRequestBody(types, nextToProcess);
     return {
-      type: 'POST',
+      method: 'POST',
       url: this.buildBatchRequestURL(),
       headers: {
         ...this.commonHeaders,
-        Authorization: `OAuth ${this.connection.accessToken}`,
       },
-      data: JSON.stringify(batchRequest),
-    } as XHROptions;
-  }
-
-  protected async runRequest(options: XHROptions): Promise<XHRResponse> {
-    return xhr(options);
+      body: JSON.stringify(batchRequest),
+    };
   }
 
   protected getVersion(): string {
