@@ -10,6 +10,9 @@ import { fromJS, List, Map } from 'immutable';
 import { BehaviorSubject, Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { JsonMap } from '@salesforce/ts-types';
+import { MessageServiceFactory } from "./message/messageServiceFactory";
+import { IMessageService, SoqlEditorEvent } from "./message/iMessageService";
+
 
 // This is to satisfy TS and stay dry
 type IMap = Map<string, string | List<string>>;
@@ -28,20 +31,25 @@ export class ToolingModelService {
   private model: BehaviorSubject<ToolingModel>;
   public query: Observable<ToolingModelJson>;
   private toolingModelTemplate: ToolingModelJson;
+  private messageService: IMessageService;
 
   constructor() {
+    this.messageService = MessageServiceFactory.create();
+
     this.toolingModelTemplate = {
       sObject: '',
       fields: []
     } as ToolingModelJson;
 
     this.model = new BehaviorSubject(
-      fromJS(this.read() || this.toolingModelTemplate)
+      fromJS(this.restore() || this.toolingModelTemplate)
     );
 
     this.query = this.model.pipe(
       map((soqlQueryModel) => (soqlQueryModel as IMap).toJS())
     );
+
+    this.messageService.message.subscribe(this.onMessage.bind(this));
   }
 
   public getModel(): IMap {
@@ -57,6 +65,7 @@ export class ToolingModelService {
     const newModelWithSelection = emptyModel.set('sObject', sObject);
 
     this.model.next(newModelWithSelection);
+    this.save();
   }
 
   public addField(field: string) {
@@ -67,6 +76,7 @@ export class ToolingModelService {
     ) as ToolingModel;
 
     this.model.next(newModelWithAddedField);
+    this.save();
   }
 
   public removeField(field: string) {
@@ -79,29 +89,30 @@ export class ToolingModelService {
     ) as ToolingModel;
 
     this.model.next(newModelWithFieldRemoved);
+    this.save();
   }
 
-  // BELOW HERE IS JUST TEMPORARY SAVE FUNCTIONALITY TO TEST RE_HYDRATIONG THE UI BASED ON AN EXISTING QUERY
-  public save() {
-    localStorage.setItem('soql', JSON.stringify(this.getModel().toJS()));
-  }
-
-  public read() {
-    let saved;
-    try {
-      if (localStorage) {
-        saved = localStorage.getItem('soql');
-      }
-      if (saved) {
-        return JSON.parse(saved);
-      }
-    } catch (e) {
-      saved = null;
+  private onMessage(event: SoqlEditorEvent) {
+    if (event && event.type) {
+        switch(event.type) {
+            case 'update': {
+                let message = event.message;
+                    const model = fromJS(message);
+                    this.model.next(model);
+                break;
+            }
+            default: console.log('message type not expected');
+        }
     }
-    return saved;
-  }
+    
+}
 
-  public clear() {
-    localStorage.clear();
-  }
+public save() {
+  this.messageService.sendMessage(this.getModel().toJS());
+}
+
+public restore() {
+  const state = this.messageService.getState();
+  return state;
+}
 }

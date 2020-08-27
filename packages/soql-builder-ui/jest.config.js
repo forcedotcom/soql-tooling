@@ -10,5 +10,8 @@ module.exports = {
   ...jestConfig,
   testMatch: ['**/*.+(spec|test).(ts|js)'],
   displayName: 'soql-builder-ui',
-  verbose: true
+  verbose: true,
+  setupFiles: [
+    "<rootDir>/src/jestSetup/setupTests.ts"
+  ]
 };

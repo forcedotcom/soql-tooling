@@ -22,9 +22,11 @@ describe('Tooling Model Service', () => {
 
   beforeEach(() => {
     modelService = new ToolingModelService();
+    modelService.save = jest.fn();
     checkForEmptyModel();
+    query = undefined;
 
-    modelService.query.subscribe((val) => {
+    modelService.query.subscribe(val => {
       query = val;
     });
   });
@@ -35,7 +37,8 @@ describe('Tooling Model Service', () => {
     expect(query!.sObject).toBe(mockSobject);
   });
 
-  it('can Add, Delete Fields', () => {
+  it('can Add, Delete Fields and saves changes',  () => {
+    expect(query!.fields.length).toEqual(0);
     // Add
     modelService.addField(mockField1);
     modelService.addField(mockField2);
@@ -46,5 +49,9 @@ describe('Tooling Model Service', () => {
     modelService.removeField(mockField1);
     expect(query!.fields.length).toBe(1);
     expect(query!.fields).toContain(mockField2);
+    // verify saves
+    expect(modelService.save).toHaveBeenCalledTimes(3);
+    
   });
+
 });

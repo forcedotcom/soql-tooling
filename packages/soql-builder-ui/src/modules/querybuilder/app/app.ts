@@ -1,9 +1,9 @@
-/* 
+/*
  *  Copyright (c) 2020, salesforce.com, inc.
  *  All rights reserved.
  *  Licensed under the BSD 3-Clause license.
  *  For full license text, see LICENSE.txt file in the repo root or https://opensource.org/licenses/BSD-3-Clause
- *   
+ *
  */
 
 import { LightningElement, track } from 'lwc';
@@ -15,8 +15,10 @@ import {
 } from '../services/toolingModelService';
 
 export default class App extends LightningElement {
+  @track
   sObjects: string[];
-  @track fields: string[] = [];
+  @track
+  fields: string[] = [];
   toolingSDK = new ToolingSDK();
   modelService = new ToolingModelService();
 
@@ -24,15 +26,18 @@ export default class App extends LightningElement {
   query: ToolingModelJson;
 
   connectedCallback() {
-    this.modelService.query.subscribe({
-      next: (query) => {
-        this.query = query;
-      }
+    this.modelService.query.subscribe((query: ToolingModelJson) => {
+      this.query = query;
+      this.synchronizeWithSobject();
     });
     this.sObjects = this.toolingSDK.sObjects;
   }
 
   renderedCallback() {
+    this.synchronizeWithSobject();
+  }
+
+  synchronizeWithSobject() {
     if (this.query && this.query.sObject && this.query.sObject.length) {
       this.fields = this.toolingSDK.getCompletionItemsFor(this.query.sObject);
     }
