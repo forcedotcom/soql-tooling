@@ -22,4 +22,23 @@ export namespace SoqlModelUtils {
     }
     return false;
   }
+
+  export function containsError(model: object): boolean {
+    if (
+      'errors' in model &&
+      Array.isArray((model as any).errors) &&
+      (model as any).errors.length > 0
+    ) {
+      return true;
+    }
+    for (const property in model) {
+      if (typeof (model as any)[property] === 'object') {
+        const hasError = containsError((model as any)[property]);
+        if (hasError) {
+          return true;
+        }
+      }
+    }
+    return false;
+  }
 }
