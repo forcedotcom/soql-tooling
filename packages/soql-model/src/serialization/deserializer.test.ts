@@ -27,6 +27,7 @@ const testQueryModel = {
   bind: { unmodeledSyntax: 'BIND field1 = 5' },
   recordTrackingType: { unmodeledSyntax: 'FOR VIEW' },
   update: { unmodeledSyntax: 'UPDATE TRACKING' },
+  errors: [],
 };
 
 const fromWithUnmodeledSyntax = {
@@ -47,6 +48,7 @@ describe('ModelDeserializer should', () => {
         ],
       },
       from: testQueryModel.from,
+      errors: testQueryModel.errors,
     };
     const actual = new ModelDeserializer(
       'SELECT field1, field2 FROM object1'
@@ -63,6 +65,7 @@ describe('ModelDeserializer should', () => {
         ],
       },
       from: fromWithUnmodeledSyntax,
+      errors: testQueryModel.errors,
     };
     const actual = new ModelDeserializer(
       'SELECT field1, field2 FROM object1 AS objectAs USING SCOPE everything'
@@ -82,6 +85,7 @@ describe('ModelDeserializer should', () => {
         ],
       },
       from: testQueryModel.from,
+      errors: testQueryModel.errors,
     };
     const actual = new ModelDeserializer(
       'SELECT field1, field2, field3 alias3, (SELECT fieldA FROM objectA), TYPEOF obj WHEN typeX THEN fieldX ELSE fieldY END FROM object1'
@@ -93,6 +97,7 @@ describe('ModelDeserializer should', () => {
     const expected = {
       select: selectCountUnmdeledSyntax,
       from: testQueryModel.from,
+      errors: testQueryModel.errors,
     };
     const actual = new ModelDeserializer(
       'SELECT COUNT() FROM object1'
@@ -107,5 +112,16 @@ describe('ModelDeserializer should', () => {
         'WHERE field1 = 5 WITH DATA CATEGORY cat__c AT val__c GROUP BY field1 ORDER BY field2 DESC NULLS LAST LIMIT 20 OFFSET 2 BIND field1 = 5 FOR VIEW UPDATE TRACKING'
     ).deserialize();
     expect(actual).toEqual(expected);
+  });
+
+  it('model parse errors with partial parse results as ModelErrors within query', () => {
+    const expectedErrors = 1;
+    const model = new ModelDeserializer('SELECT FROM object1').deserialize();
+    expect(model.errors).toBeDefined();
+    expect(model.errors?.length).toEqual(expectedErrors);
+  });
+
+  it('model parse errors with no parse results as thrown error', () => {
+    expect(() => new ModelDeserializer('').deserialize()).toThrow();
   });
 });

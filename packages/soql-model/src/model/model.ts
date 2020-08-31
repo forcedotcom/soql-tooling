@@ -4,9 +4,17 @@
  * Licensed under the BSD 3-Clause license.
  * For full license text, see LICENSE.txt file in the repo root or https://opensource.org/licenses/BSD-3-Clause
  */
+import * as Parser from '@salesforce/soql-parser';
+
+export interface ModelError {
+  message: string;
+  lineNumber: number;
+  charInLine: number;
+}
 
 export interface SoqlModelObject {
   toSoqlSyntax(options?: SyntaxOptions): string;
+  errors?: ModelError[];
 }
 
 export class SyntaxOptions {

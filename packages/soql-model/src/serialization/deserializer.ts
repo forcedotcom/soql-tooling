@@ -38,14 +38,24 @@ class Parse2Model {
     });
     const result = parser.parseQuery(this.soqlSyntax);
     const parseTree = result.getParseTree();
+    const errors = result.getParserErrors();
     if (parseTree) {
       const queryListener = new QueryListener();
       parseTree.enterRule(queryListener);
       query = queryListener.getQuery();
     }
 
-    if (!query) {
-      throw Error('Could not generate query model');
+    const modelErrors: Soql.ModelError[] = errors.map((error) => {
+      return {
+        message: error.getMessage(),
+        lineNumber: error.getLineNumber(),
+        charInLine: error.getCharacterPositionInLine(),
+      };
+    });
+    if (query) {
+      query.errors = modelErrors;
+    } else {
+      throw Error(JSON.stringify(modelErrors));
     }
     return query;
   }
@@ -97,7 +107,9 @@ class QueryListener extends SoqlParserListener {
   }
 
   public enterSoqlFromClause(ctx: Parser.SoqlFromClauseContext): void {
-    ctx.soqlFromExprs().enterRule(this);
+    if (ctx.soqlFromExprs()) {
+      ctx.soqlFromExprs().enterRule(this);
+    }
   }
 
   public enterSoqlSelectExprs(ctx: Parser.SoqlSelectExprsContext): void {
@@ -221,6 +233,14 @@ class QueryListener extends SoqlParserListener {
   }
 
   public toUnmodeledSyntax(start: Token, stop: Token): Soql.UnmodeledSyntax {
+    if (!stop && start) {
+      // some error states can cause this situation
+      stop = start;
+    }
+    if (stop.stop < start.start) {
+      // EOF token can cause this situation
+      return new Impl.UnmodeledSyntaxImpl('');
+    }
     const text = start.getInputStream().getText(start.start, stop.stop);
     return new Impl.UnmodeledSyntaxImpl(text);
   }
