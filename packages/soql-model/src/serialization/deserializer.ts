@@ -18,17 +18,6 @@ export class ModelDeserializer {
     this.soqlSyntax = soqlSyntax;
   }
   public deserialize(): Soql.Query {
-    return new Parse2Model(this.soqlSyntax).generateModel();
-  }
-}
-
-class Parse2Model {
-  protected soqlSyntax: string;
-  public constructor(soqlSyntax: string) {
-    this.soqlSyntax = soqlSyntax;
-  }
-
-  public generateModel(): Soql.Query {
     let query: Soql.Query | undefined;
 
     const parser = SOQLParser({
@@ -60,7 +49,6 @@ class Parse2Model {
     return query;
   }
 }
-
 class QueryListener extends SoqlParserListener {
   public query?: Soql.Query;
   public select?: Soql.Select;

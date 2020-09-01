@@ -6,17 +6,8 @@
  */
 
 import * as os from 'os';
-import * as Soql from './model';
-
-abstract class SoqlModelObjectImpl {
-  public getSyntaxOptions(options?: Soql.SyntaxOptions): Soql.SyntaxOptions {
-    if (options) {
-      return options;
-    } else {
-      return new Soql.SyntaxOptions();
-    }
-  }
-}
+import * as Soql from '../model';
+import { SoqlModelObjectImpl } from './soqlModelObjectImpl';
 
 export class QueryImpl extends SoqlModelObjectImpl implements Soql.Query {
   public select: Soql.Select;
@@ -108,83 +99,5 @@ export class QueryImpl extends SoqlModelObjectImpl implements Soql.Query {
       )}${os.EOL}`;
     }
     return syntax;
-  }
-}
-
-export class FromImpl extends SoqlModelObjectImpl implements Soql.From {
-  public sobjectName: string;
-  public as?: Soql.UnmodeledSyntax;
-  public using?: Soql.UnmodeledSyntax;
-  public constructor(
-    sobjectName: string,
-    as?: Soql.UnmodeledSyntax,
-    using?: Soql.UnmodeledSyntax
-  ) {
-    super();
-    this.sobjectName = sobjectName;
-    this.as = as;
-    this.using = using;
-  }
-  public toSoqlSyntax(options?: Soql.SyntaxOptions): string {
-    let syntax = `FROM ${this.sobjectName}`;
-    if (this.as) {
-      syntax += ` ${this.as.toSoqlSyntax(options)}`;
-    }
-    if (this.using) {
-      syntax += ` ${this.using.toSoqlSyntax(options)}`;
-    }
-    return syntax;
-  }
-}
-
-export class SelectExprsImpl extends SoqlModelObjectImpl
-  implements Soql.SelectExprs {
-  public selectExpressions: Soql.SelectExpression[];
-  public constructor(selectExpressions: Soql.SelectExpression[]) {
-    super();
-    this.selectExpressions = selectExpressions;
-  }
-  public toSoqlSyntax(options?: Soql.SyntaxOptions): string {
-    let syntax: string = 'SELECT ';
-    let first: boolean = true;
-    if (this.selectExpressions.length > 0) {
-      this.selectExpressions.forEach((selectExpression) => {
-        if (!first) {
-          syntax += ', ';
-        }
-        syntax += selectExpression.toSoqlSyntax(options);
-        first = false;
-      });
-    } else {
-      syntax += '*';
-    }
-    return syntax;
-  }
-}
-
-export class FieldRefImpl extends SoqlModelObjectImpl implements Soql.FieldRef {
-  public fieldName: string;
-  public alias?: Soql.UnmodeledSyntax;
-  public constructor(fieldName: string, alias?: Soql.UnmodeledSyntax) {
-    super();
-    this.fieldName = fieldName;
-    this.alias = alias;
-  }
-  public toSoqlSyntax(options?: Soql.SyntaxOptions): string {
-    return this.alias
-      ? `${this.fieldName} ${this.alias.toSoqlSyntax(options)}`
-      : this.fieldName;
-  }
-}
-
-export class UnmodeledSyntaxImpl extends SoqlModelObjectImpl
-  implements Soql.UnmodeledSyntax {
-  public unmodeledSyntax: string;
-  public constructor(syntax: string) {
-    super();
-    this.unmodeledSyntax = syntax;
-  }
-  public toSoqlSyntax(options?: Soql.SyntaxOptions): string {
-    return this.unmodeledSyntax;
   }
 }
