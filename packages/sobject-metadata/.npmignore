@@ -3,3 +3,5 @@ scripts/
 jest.config.js
 tsconfig.json
 package-lock.json
+.eslintrc.json
+.eslintignore
