@@ -5,6 +5,7 @@
   "engines": {
     "node": "*"
   },
+  "main": "lib/",
   "scripts": {
     "build": "tsc --project .",
     "test": "jest --runInBand"
