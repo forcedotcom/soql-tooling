@@ -1,6 +1,6 @@
 {
   "name": "@salesforce/sobject-metadata",
-  "version": "0.1.0",
+  "version": "0.1.4",
   "description": "Retrieve Salesforce object metadata from connected org",
   "scripts": {
     "build": "tsc --project .",
@@ -16,6 +16,7 @@
     "sobject",
     "salesforce"
   ],
+  "main": "lib/",
   "author": "Salesforce",
   "license": "BSD-3-Clause",
   "dependencies": {
