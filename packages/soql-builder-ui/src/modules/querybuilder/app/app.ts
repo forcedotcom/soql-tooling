@@ -58,7 +58,12 @@ export default class App extends LightningElement {
     this.modelService.removeField(e.detail.field);
   }
 
-  handleSave() {
+  handleRunQuery() {
+    // TODO: Hook up run query with the connection object W-7989627
+    /*
+     leaving this for standalone app development
+     saves to local storage
+     */
     this.modelService.save();
   }
 }
