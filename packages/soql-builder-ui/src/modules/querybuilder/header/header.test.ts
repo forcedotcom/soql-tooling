@@ -21,14 +21,14 @@ describe('Header', () => {
     }
   });
 
-  it('emits a save event', () => {
+  it('emits a run event', () => {
     document.body.appendChild(header);
 
     const handler = jest.fn();
-    header.addEventListener('save', handler);
+    header.addEventListener('runquery', handler);
 
-    const saveBtn = header.shadowRoot.querySelector('.run-button');
-    saveBtn.click();
+    const runQueryBtn = header.shadowRoot.querySelector('.run-button');
+    runQueryBtn.click();
 
     return Promise.resolve().then(() => {
       expect(handler).toHaveBeenCalled();
