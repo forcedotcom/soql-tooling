@@ -1,9 +1,9 @@
-/* 
+/*
  *  Copyright (c) 2020, salesforce.com, inc.
  *  All rights reserved.
  *  Licensed under the BSD 3-Clause license.
  *  For full license text, see LICENSE.txt file in the repo root or https://opensource.org/licenses/BSD-3-Clause
- *   
+ *
  */
 
 // @ts-ignore
@@ -27,7 +27,7 @@ describe('Header', () => {
     const handler = jest.fn();
     header.addEventListener('save', handler);
 
-    const saveBtn = header.shadowRoot.querySelector('.save-button');
+    const saveBtn = header.shadowRoot.querySelector('.run-button');
     saveBtn.click();
 
     return Promise.resolve().then(() => {
