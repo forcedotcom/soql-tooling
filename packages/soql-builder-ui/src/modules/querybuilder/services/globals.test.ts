@@ -6,9 +6,9 @@
  *
  */
 
-import { getWindow, hasVscode, getVscode } from './globals';
+import { getWindow, hasVscode } from './globals';
 import { getLocalStorage } from './globals';
-describe.only('Globals should', () => {
+describe('Globals should', () => {
   it('expose window', () => {
     expect(getWindow()).toBeTruthy();
   });
