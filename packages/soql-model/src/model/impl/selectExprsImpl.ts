@@ -27,7 +27,7 @@ export class SelectExprsImpl extends SoqlModelObjectImpl
         first = false;
       });
     } else {
-      syntax += '*';
+      syntax += '';
     }
     return syntax;
   }

@@ -19,7 +19,7 @@ describe('SelectExprsImpl should', () => {
     expect(actual).toEqual(expected);
   });
   it('return SELECT * when there are no select expressions for toSoqlSyntax()', () => {
-    const expected = 'SELECT *';
+    const expected = 'SELECT ';
     const actual = new Impl.SelectExprsImpl([]).toSoqlSyntax();
     expect(actual).toEqual(expected);
   });

@@ -38,7 +38,7 @@ describe('QueryImpl should', () => {
     expect(actual).toEqual(expected);
   });
   it('return query string, one line per clause with all but SELECT clause indented for toSoqlSyntax()', () => {
-    const expected = 'SELECT *\n' + '  FROM songs\n' + '  paint it black\n';
+    const expected = 'SELECT \n' + '  FROM songs\n' + '  paint it black\n';
     const actual = new Impl.QueryImpl(
       new Impl.SelectExprsImpl([]),
       new Impl.FromImpl('songs'),
