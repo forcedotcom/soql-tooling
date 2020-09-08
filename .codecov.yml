@@ -1,0 +1,10 @@
+coverage:
+  # See http://docs.codecov.io/docs/ignoring-paths
+  ignore:
+    # compiled output
+    - '**/out'
+    # dependencies
+    - '**/node_modules'
+    # IDEs and editors
+    - '.vscode'
+    # other (more specific)
