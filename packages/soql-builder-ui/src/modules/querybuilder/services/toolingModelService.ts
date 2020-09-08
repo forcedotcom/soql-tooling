@@ -1,18 +1,17 @@
-/* 
+/*
  *  Copyright (c) 2020, salesforce.com, inc.
  *  All rights reserved.
  *  Licensed under the BSD 3-Clause license.
  *  For full license text, see LICENSE.txt file in the repo root or https://opensource.org/licenses/BSD-3-Clause
- *   
+ *
  */
 
 import { fromJS, List, Map } from 'immutable';
 import { BehaviorSubject, Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { JsonMap } from '@salesforce/ts-types';
-import { MessageServiceFactory } from "./message/messageServiceFactory";
-import { IMessageService, SoqlEditorEvent } from "./message/iMessageService";
-
+import { IMessageService } from './message/iMessageService';
+import { SoqlEditorEvent, MessageType } from './message/soqlEditorEvent';
 
 // This is to satisfy TS and stay dry
 type IMap = Map<string, string | List<string>>;
@@ -33,23 +32,30 @@ export class ToolingModelService {
   private toolingModelTemplate: ToolingModelJson;
   private messageService: IMessageService;
 
-  constructor() {
-    this.messageService = MessageServiceFactory.create();
-
+  constructor(messageService: IMessageService) {
+    this.messageService = messageService;
     this.toolingModelTemplate = {
       sObject: '',
       fields: []
     } as ToolingModelJson;
 
-    this.model = new BehaviorSubject(
-      fromJS(this.restore() || this.toolingModelTemplate)
-    );
-
+    this.model = new BehaviorSubject(fromJS(this.toolingModelTemplate));
+    this.model.subscribe(this.saveViewState.bind(this));
     this.query = this.model.pipe(
-      map((soqlQueryModel) => (soqlQueryModel as IMap).toJS())
+      map((soqlQueryModel) => {
+        try {
+          return (soqlQueryModel as IMap).toJS();
+        } catch (e) {
+          console.error('Unexpected Error in SOQL model: ' + e);
+          return this.toolingModelTemplate;
+        }
+      })
     );
+    this.query.subscribe(this.generateQuery.bind(this));
 
-    this.messageService.message.subscribe(this.onMessage.bind(this));
+    this.messageService.messagesFromBackend.subscribe(
+      this.onMessage.bind(this)
+    );
   }
 
   public getModel(): IMap {
@@ -65,7 +71,6 @@ export class ToolingModelService {
     const newModelWithSelection = emptyModel.set('sObject', sObject);
 
     this.model.next(newModelWithSelection);
-    this.save();
   }
 
   public addField(field: string) {
@@ -76,7 +81,6 @@ export class ToolingModelService {
     ) as ToolingModel;
 
     this.model.next(newModelWithAddedField);
-    this.save();
   }
 
   public removeField(field: string) {
@@ -89,30 +93,47 @@ export class ToolingModelService {
     ) as ToolingModel;
 
     this.model.next(newModelWithFieldRemoved);
-    this.save();
   }
 
   private onMessage(event: SoqlEditorEvent) {
     if (event && event.type) {
-        switch(event.type) {
-            case 'update': {
-                let message = event.message;
-                    const model = fromJS(message);
-                    this.model.next(model);
-                break;
-            }
-            default: console.log('message type not expected');
+      switch (event.type) {
+        case MessageType.UPDATE: {
+          const message = event.message;
+          const updatedModel = fromJS(message);
+          if (!updatedModel.equals(this.model.getValue())) {
+            this.model.next(updatedModel);
+          }
+          break;
         }
+      }
     }
-    
-}
+  }
 
-public save() {
-  this.messageService.sendMessage(this.getModel().toJS());
-}
+  public saveViewState(model: ToolingModel) {
+    try {
+      this.messageService.setState((model as IMap).toJS());
+    } catch (e) {
+      console.error(e);
+    }
+  }
 
-public restore() {
-  const state = this.messageService.getState();
-  return state;
-}
+  public generateQuery(jsModel: ToolingModelJson) {
+    try {
+      this.messageService.sendMessage({
+        type: MessageType.QUERY,
+        message: jsModel
+      });
+    } catch (e) {
+      console.error(e);
+    }
+  }
+
+  public restoreViewState() {
+    this.model.next(this.getSavedState());
+  }
+  private getSavedState() {
+    const savedState = this.messageService.getState();
+    return fromJS(savedState || this.toolingModelTemplate);
+  }
 }
