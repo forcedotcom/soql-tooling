@@ -1,7 +1,45 @@
 version: 2.1
+
 orbs:
   node: circleci/node@3.0.0
+
+_refs:
+  install: &install
+    name: Install dependencies
+    command: |
+      npm --version
+      node --version
+      npm install
+
+variables:
+  - &node-build-image
+    - image: circleci/node:12.16.1-stretch
+
+jobs:
+  build:
+    docker: *node-build-image
+    environment:
+      PACKAGE_PATH: 'packages/soql-builder-ui'
+    steps:
+      - checkout
+      - restore_cache:
+          key: dependency-cache-{{ checksum "yarn.lock" }}
+      - run: yarn
+      - save_cache:
+          key: dependency-cache-{{ checksum "yarn.lock" }}
+          paths:
+            - ./node_modules
+      - run:
+          name: Run LWC Unit Tests
+          command: |
+            echo 'Running LWC Unit Tests'
+            cd $PACKAGE_PATH
+            yarn test
+      #- slack/status:
+      #    fail_only: true
+
 workflows:
-  node-tests:
+  version: 2
+  commit-workflow:
     jobs:
-      - node/test
+      - build
