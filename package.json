@@ -16,6 +16,7 @@
     "@salesforce/dev-config": "file:./SNAPSHOTS/@salesforce/dev-config-1.0.6-SNAPSHOT",
     "@type/jsforce": "file:./SNAPSHOTS/@types/jsforce-1.9.5-SNAPSHOT",
     "@types/dev-config": "file:./SNAPSHOTS/@types/node-10.11.2-SNAPSHOT",
+    "@salesforce/soql-parser": "file:./SNAPSHOTS/soql-parser-0.16.0.tgz",
     "lerna": "^3.19.0",
     "tslint": "^5.8.0",
     "typescript": "^3.7.2"
