@@ -16,7 +16,6 @@ import { SoqlEditorEvent, MessageType } from './soqlEditorEvent';
 export class VscodeMessageService implements IMessageService {
   private vscode;
   public messagesFromBackend: Observable<SoqlEditorEvent>;
-  private listen = true;
 
   constructor() {
     this.vscode = getVscode();
