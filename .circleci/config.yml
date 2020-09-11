@@ -123,14 +123,13 @@ workflows:
   version: 2
   commit-workflow:
     jobs:
-      #- soql-builder-ui
-      #- language-server
-      #- sobject-metadata
-      #- soql-model
-      - notify_slack
-      #- notify_slack:
-      #    requires:
-      #      - soql-builder-ui
-      #      - language-server
-      #      - sobject-metadata
-      #      - soql-model
+      - soql-builder-ui
+      - language-server
+      - sobject-metadata
+      - soql-model
+      - notify_slack:
+          requires:
+            - soql-builder-ui
+            - language-server
+            - sobject-metadata
+            - soql-model
