@@ -36,15 +36,22 @@ export default class App extends LightningElement {
   }
 
   connectedCallback() {
-    this.modelService.query.subscribe((query: ToolingModelJson) => {
-      this.query = query;
+    this.modelService.query.subscribe((newQuery: ToolingModelJson) => {
+      const previousSObject = this.query ? this.query.sObject : undefined;
+      this.query = newQuery;
+      if (previousSObject !== this.query.sObject) {
+        this.onSObjectChanged(this.query.sObject);
+      }
     });
 
     this.toolingSDK.sobjects.subscribe((objs: string[]) => {
       this.sObjects = objs;
     });
     this.toolingSDK.sobjectMetadata.subscribe((sobjectMetadata: any) => {
-      this.fields = sobjectMetadata.fields.map((f) => f.name);
+      this.fields =
+        sobjectMetadata && sobjectMetadata.fields
+          ? sobjectMetadata.fields.map((f) => f.name)
+          : [];
     });
 
     this.toolingSDK.loadSObjectDefinitions();
@@ -52,17 +59,20 @@ export default class App extends LightningElement {
   }
 
   renderedCallback() {
-    //    this.synchronizeWithSobject();
+    //  this.synchronizeWithSobject();
   }
 
   handleObjectChange(e) {
     const selectedSObjectName = e.detail.selectedSobject;
-    this.fields = [];
+    this.onSObjectChanged(selectedSObjectName);
+  }
 
-    if (selectedSObjectName) {
-      this.toolingSDK.loadSObjectMetatada(selectedSObjectName);
+  onSObjectChanged(sobjectName: string) {
+    this.fields = [];
+    if (sobjectName) {
+      this.toolingSDK.loadSObjectMetatada(sobjectName);
     }
-    this.modelService.setSObject(selectedSObjectName);
+    this.modelService.setSObject(sobjectName);
   }
 
   handleFieldSelected(e) {

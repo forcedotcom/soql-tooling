@@ -8,7 +8,7 @@
 
 import { fromJS, List, Map } from 'immutable';
 import { BehaviorSubject, Observable } from 'rxjs';
-import { map } from 'rxjs/operators';
+import { map, filter } from 'rxjs/operators';
 import { JsonMap } from '@salesforce/ts-types';
 import { IMessageService } from './message/iMessageService';
 import { SoqlEditorEvent, MessageType } from './message/soqlEditorEvent';
@@ -98,9 +98,9 @@ export class ToolingModelService {
   private onMessage(event: SoqlEditorEvent) {
     if (event && event.type) {
       switch (event.type) {
-        case MessageType.UPDATE: {
-          const message = event.message;
-          const updatedModel = fromJS(message);
+        case MessageType.TEXT_SOQL_CHANGED: {
+          const soqlJSModel = event.payload;
+          const updatedModel = fromJS(soqlJSModel);
           if (!updatedModel.equals(this.model.getValue())) {
             this.model.next(updatedModel);
           }
@@ -121,8 +121,8 @@ export class ToolingModelService {
   public generateQuery(jsModel: ToolingModelJson) {
     try {
       this.messageService.sendMessage({
-        type: MessageType.QUERY,
-        message: jsModel
+        type: MessageType.UI_SOQL_CHANGED,
+        payload: jsModel
       });
     } catch (e) {
       console.error(e);

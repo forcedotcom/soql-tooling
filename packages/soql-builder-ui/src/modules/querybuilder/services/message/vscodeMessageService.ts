@@ -38,7 +38,7 @@ export class VscodeMessageService implements IMessageService {
     });
   }
   public sendActivatedMessage() {
-    this.vscode.postMessage({ type: MessageType.ACTIVATED });
+    this.vscode.postMessage({ type: MessageType.UI_ACTIVATED });
   }
 
   public async sendMessage(event: SoqlEditorEvent) {

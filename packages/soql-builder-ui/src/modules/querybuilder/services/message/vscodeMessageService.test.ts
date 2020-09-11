@@ -20,11 +20,11 @@ describe('VscodeMessageService', () => {
     sObject: 'Account',
     fields: []
   };
-  let postMessagePayload = (type?: string, message?: string) => {
+  let postMessagePayload = (type?: string, payload?: string) => {
     return {
       data: {
-        type: type || MessageType.UPDATE,
-        message: message || accountQuery
+        type: type || MessageType.TEXT_SOQL_CHANGED,
+        payload: payload || accountQuery
       }
     };
   };
@@ -48,7 +48,7 @@ describe('VscodeMessageService', () => {
     new VscodeMessageService();
     expect(vsCodeApi.postMessage).toHaveBeenCalled();
     expect(vsCodeApi.postMessage).toHaveBeenCalledWith({
-      type: MessageType.ACTIVATED
+      type: MessageType.UI_ACTIVATED
     });
   });
 
@@ -62,7 +62,7 @@ describe('VscodeMessageService', () => {
     const messageEvent = new MessageEvent(messageType, postMessagePayload());
     window.dispatchEvent(messageEvent);
     expect(listener).toHaveBeenCalled();
-    expect(listener.mock.calls[0][0].message.sObject).toEqual(
+    expect(listener.mock.calls[0][0].payload.sObject).toEqual(
       accountQuery.sObject
     );
   });

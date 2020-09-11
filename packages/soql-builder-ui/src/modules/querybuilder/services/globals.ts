@@ -20,7 +20,7 @@ export function hasVscode() {
   return 'undefined' !== typeof acquireVsCodeApi;
 }
 
-let vsCode = null;
+let vsCode = undefined;
 
 export function getVscode() {
   if (hasVscode()) {

@@ -27,15 +27,13 @@ export class ToolingSDK {
     if (event && event.type) {
       switch (event.type) {
         case MessageType.SOBJECTS_RESPONSE: {
-          this.sobjects.next(event.message as string[]);
+          this.sobjects.next(event.payload as string[]);
           break;
         }
         case MessageType.SOBJECT_METADATA_RESPONSE: {
-          this.sobjectMetadata.next(event.message);
+          this.sobjectMetadata.next(event.payload);
           break;
         }
-        default:
-          console.log('Tooling SDK: message type not expected');
       }
     }
   }
@@ -47,7 +45,7 @@ export class ToolingSDK {
   loadSObjectMetatada(sobjectName: string) {
     this.messageService.sendMessage({
       type: MessageType.SOBJECT_METADATA_REQUEST,
-      message: sobjectName
+      payload: sobjectName
     });
   }
 }
