@@ -30,9 +30,9 @@ jobs:
           paths:
             - ./node_modules
       - run:
-          name: Run LWC Unit Tests
+          name: Run SOQL builder UI Unit Tests
           command: |
-            echo 'Running LWC Unit Tests'
+            echo 'Run SOQL builder UI Unit Tests'
             cd $PACKAGE_PATH
             yarn test
       #- slack/status:
@@ -54,7 +54,29 @@ jobs:
       - run:
           name: 'Language Server: Run LWC Unit Tests'
           command: |
-            echo 'Running LWC Unit Tests'
+            echo 'Language Server: Run LWC Unit Tests'
+            cd $PACKAGE_PATH
+            yarn test
+      #- slack/status:
+      #    fail_only: true
+
+  sobject-metadata:
+    docker: *node-build-image
+    environment:
+      PACKAGE_PATH: 'packages/sobject-metadata'
+    steps:
+      - checkout
+      - restore_cache:
+          key: dependency-cache-{{ checksum "yarn.lock" }}
+      - run: yarn
+      - save_cache:
+          key: dependency-cache-{{ checksum "yarn.lock" }}
+          paths:
+            - ./node_modules
+      - run:
+          name: 'Run Sobject Metadata Server Unit Tests'
+          command: |
+            echo 'Run Sobject Metadata Server Unit Tests'
             cd $PACKAGE_PATH
             yarn test
       #- slack/status:
@@ -66,3 +88,4 @@ workflows:
     jobs:
       - soql-builder-ui
       - language-server
+      - sobject-metadata
