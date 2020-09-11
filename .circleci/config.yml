@@ -16,7 +16,7 @@ variables:
     - image: circleci/node:12.16.1-stretch
 
 jobs:
-  build:
+  soql-builder-ui:
     docker: *node-build-image
     environment:
       PACKAGE_PATH: 'packages/soql-builder-ui'
@@ -38,8 +38,31 @@ jobs:
       #- slack/status:
       #    fail_only: true
 
+  language-server:
+    docker: *node-build-image
+    environment:
+      PACKAGE_PATH: 'packages/language-server'
+    steps:
+      - checkout
+      - restore_cache:
+          key: dependency-cache-{{ checksum "yarn.lock" }}
+      - run: yarn
+      - save_cache:
+          key: dependency-cache-{{ checksum "yarn.lock" }}
+          paths:
+            - ./node_modules
+      - run:
+          name: 'Language Server: Run LWC Unit Tests'
+          command: |
+            echo 'Running LWC Unit Tests'
+            cd $PACKAGE_PATH
+            yarn test
+      #- slack/status:
+      #    fail_only: true
+
 workflows:
   version: 2
   commit-workflow:
     jobs:
-      - build
+      - soql-builder-ui
+      - language-server
