@@ -5,14 +5,6 @@ orbs:
   sfdx: circleci/salesforce-sfdx@1.0.0
   slack: circleci/slack@3.4.2
 
-_refs:
-  install: &install
-    name: Install dependencies
-    command: |
-      npm --version
-      node --version
-      npm install
-
 variables:
   - &node-build-image
     - image: circleci/node:12.16.1-stretch
