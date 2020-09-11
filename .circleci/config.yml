@@ -111,7 +111,10 @@ jobs:
     docker: *node-build-image
     steps:
       - slack/notify:
-          webhook: '${SLACK_WEBHOOK}'
+      - run:
+          name: 'Run SOQL Model Server Unit Tests'
+          command: |
+            echo 'CIRCLE_USERNAME:: ${CIRCLE_USERNAME}, ${CIRCLE_WORKFLOW_ID}'
           channel: web-tools-bot
           title: "Success: ${CIRCLE_USERNAME}'s commit-workflow"
           title_link: 'https://circleci.com/workflow-run/${CIRCLE_WORKFLOW_ID}'
