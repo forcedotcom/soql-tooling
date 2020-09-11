@@ -82,6 +82,28 @@ jobs:
       #- slack/status:
       #    fail_only: true
 
+  soql-model:
+    docker: *node-build-image
+    environment:
+      PACKAGE_PATH: 'packages/soql-model'
+    steps:
+      - checkout
+      - restore_cache:
+          key: dependency-cache-{{ checksum "yarn.lock" }}
+      - run: yarn
+      - save_cache:
+          key: dependency-cache-{{ checksum "yarn.lock" }}
+          paths:
+            - ./node_modules
+      - run:
+          name: 'Run SOQL Model Server Unit Tests'
+          command: |
+            echo 'Run SOQL Model Server Unit Tests'
+            cd $PACKAGE_PATH
+            yarn test
+      #- slack/status:
+      #    fail_only: true
+
 workflows:
   version: 2
   commit-workflow:
@@ -89,3 +111,4 @@ workflows:
       - soql-builder-ui
       - language-server
       - sobject-metadata
+      - soql-model
