@@ -1,6 +1,9 @@
 version: 2.1
 
 orbs:
+  codecov: codecov/codecov@1.0.4
+  sfdx: circleci/salesforce-sfdx@1.0.0
+  slack: circleci/slack@3.4.2
   node: circleci/node@3.0.0
 
 _refs:
@@ -104,6 +107,19 @@ jobs:
       #- slack/status:
       #    fail_only: true
 
+  notify_slack:
+    docker: *node-build-image
+    steps:
+      - slack/notify:
+          channel: web-tools-bot
+          title: "Success: ${CIRCLE_USERNAME}'s commit-workflow"
+          title_link: 'https://circleci.com/workflow-run/${CIRCLE_WORKFLOW_ID}'
+          color: '#9bcd9b'
+          message: "${CIRCLE_USERNAME}'s workflow <https://circleci.com/workflow-run/${CIRCLE_WORKFLOW_ID}|commit-workflow> in ${CIRCLE_PROJECT_USERNAME}/${CIRCLE_PROJECT_REPONAME}\n(${CIRCLE_BRANCH})"
+          include_project_field: false
+          include_visit_job_action: false
+          include_job_number_field: false
+
 workflows:
   version: 2
   commit-workflow:
@@ -112,3 +128,9 @@ workflows:
       - language-server
       - sobject-metadata
       - soql-model
+      - notify_slack:
+          requires:
+            - soql-builder-ui
+            - language-server
+            - sobject-metadata
+            - soql-model
