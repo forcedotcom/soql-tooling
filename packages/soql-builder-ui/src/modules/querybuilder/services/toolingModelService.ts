@@ -51,7 +51,9 @@ export class ToolingModelService {
         }
       })
     );
-    this.query.subscribe(this.generateQuery.bind(this));
+    this.query
+      .pipe(filter((soqlQueryModel) => !soqlQueryModel['$$changedFromText']))
+      .subscribe(this.sendQueryToEditor.bind(this));
 
     this.messageService.messagesFromBackend.subscribe(
       this.onMessage.bind(this)
@@ -102,7 +104,7 @@ export class ToolingModelService {
           const soqlJSModel = event.payload;
           const updatedModel = fromJS(soqlJSModel);
           if (!updatedModel.equals(this.model.getValue())) {
-            this.model.next(updatedModel);
+            this.model.next(updatedModel.set('$$changedFromText', true));
           }
           break;
         }
@@ -118,7 +120,7 @@ export class ToolingModelService {
     }
   }
 
-  public generateQuery(jsModel: ToolingModelJson) {
+  private sendQueryToEditor(jsModel: ToolingModelJson) {
     try {
       this.messageService.sendMessage({
         type: MessageType.UI_SOQL_CHANGED,

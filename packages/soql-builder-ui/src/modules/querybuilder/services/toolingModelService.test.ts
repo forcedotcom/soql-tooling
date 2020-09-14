@@ -9,6 +9,8 @@
 import { ToolingModelService, ToolingModelJson } from './toolingModelService';
 import { VscodeMessageService } from './message/vscodeMessageService';
 import { IMessageService } from './message/iMessageService';
+import { MessageType } from './message/soqlEditorEvent';
+import { getWindow } from './globals';
 
 describe('Tooling Model Service', () => {
   let modelService: ToolingModelService;
@@ -27,6 +29,7 @@ describe('Tooling Model Service', () => {
   beforeEach(() => {
     messageService = new VscodeMessageService();
     messageService.setState = jest.fn();
+    messageService.sendMessage = jest.fn();
     modelService = new ToolingModelService(messageService);
 
     checkForEmptyModel();
@@ -60,5 +63,33 @@ describe('Tooling Model Service', () => {
     expect(query!.fields).toContain(mockField2);
     // verify saves
     expect(messageService.setState).toHaveBeenCalledTimes(4);
+  });
+
+  it('Only changes made to model are sent downwards to the backend', () => {
+    // Modifications to the model originated on the UI should be send down through the message service to the backend
+    modelService.addField(mockField1);
+    modelService.addField(mockField2);
+    expect(query!.fields.length).toBe(2);
+    expect(query!.fields).toContain(mockField1);
+    expect(query!.fields).toContain(mockField2);
+
+    expect(messageService.sendMessage).toHaveBeenCalledTimes(3);
+
+    // Modifications to the model originated on the backend should NOT be sent back through the message service to the backend
+    (messageService.sendMessage as jest.Mock).mockReset();
+    const messageEvent = new MessageEvent('message', {
+      data: {
+        type: MessageType.TEXT_SOQL_CHANGED,
+        payload: {
+          sObject: 'Account',
+          fields: []
+        }
+      }
+    });
+    getWindow().dispatchEvent(messageEvent);
+    expect(query!.fields.length).toBe(0);
+    expect(query.sObject).toBe('Account');
+
+    expect(messageService.sendMessage).toHaveBeenCalledTimes(0);
   });
 });
