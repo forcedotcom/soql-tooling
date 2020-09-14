@@ -1,8 +1,6 @@
 version: 2.1
 
 orbs:
-  codecov: codecov/codecov@1.0.4
-  sfdx: circleci/salesforce-sfdx@1.0.0
   slack: circleci/slack@3.4.2
 
 variables:
@@ -29,8 +27,6 @@ jobs:
             echo 'Run SOQL builder UI Unit Tests'
             cd $PACKAGE_PATH
             yarn test
-      #- slack/status:
-      #    fail_only: true
 
   language-server:
     docker: *node-build-image
@@ -51,8 +47,6 @@ jobs:
             echo 'Language Server: Run LWC Unit Tests'
             cd $PACKAGE_PATH
             yarn test
-      #- slack/status:
-      #    fail_only: true
 
   sobject-metadata:
     docker: *node-build-image
@@ -73,8 +67,6 @@ jobs:
             echo 'Run Sobject Metadata Server Unit Tests'
             cd $PACKAGE_PATH
             yarn test
-      #- slack/status:
-      #    fail_only: true
 
   soql-model:
     docker: *node-build-image
@@ -95,8 +87,6 @@ jobs:
             echo 'Run SOQL Model Server Unit Tests'
             cd $PACKAGE_PATH
             yarn test
-      #- slack/status:
-      #    fail_only: true
 
   notify_slack:
     docker: *node-build-image
