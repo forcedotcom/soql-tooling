@@ -11,7 +11,7 @@ import { JsonMap } from '@salesforce/ts-types';
 import { SoqlEditorEvent } from './soqlEditorEvent';
 
 export interface IMessageService {
-  messagesFromBackend: Observable<SoqlEditorEvent>;
+  messagesToUI: Observable<SoqlEditorEvent>;
   sendMessage(message: SoqlEditorEvent): void;
   setState(state: JsonMap): void;
   getState(): JsonMap;

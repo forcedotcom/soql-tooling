@@ -15,12 +15,12 @@ import { SoqlEditorEvent, MessageType } from './soqlEditorEvent';
 
 export class VscodeMessageService implements IMessageService {
   private vscode;
-  public messagesFromBackend: Observable<SoqlEditorEvent>;
+  public messagesToUI: Observable<SoqlEditorEvent>;
 
   constructor() {
     this.vscode = getVscode();
     const source = fromEvent(getWindow(), 'message');
-    this.messagesFromBackend = source.pipe(
+    this.messagesToUI = source.pipe(
       this.onlyDataProperty(),
       this.onlyIfValidEditorEvent()
     );

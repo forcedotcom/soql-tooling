@@ -38,7 +38,7 @@ describe('VscodeMessageService', () => {
     vsCodeApi = acquireVsCodeApi();
     listener = jest.fn();
     vscodeMessageService = new VscodeMessageService();
-    vscodeMessageService.messagesFromBackend.subscribe(listener);
+    vscodeMessageService.messagesToUI.subscribe(listener);
   });
 
   it('calls postMessage with activated type immediately when created', () => {

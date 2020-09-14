@@ -18,9 +18,7 @@ export class ToolingSDK {
 
   constructor(messageService: IMessageService) {
     this.messageService = messageService;
-    this.messageService.messagesFromBackend.subscribe(
-      this.onMessage.bind(this)
-    );
+    this.messageService.messagesToUI.subscribe(this.onMessage.bind(this));
   }
 
   private onMessage(event: SoqlEditorEvent) {

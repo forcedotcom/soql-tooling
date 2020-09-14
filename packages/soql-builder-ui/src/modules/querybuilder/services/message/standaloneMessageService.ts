@@ -13,11 +13,11 @@ import { BehaviorSubject } from 'rxjs';
 import { SoqlEditorEvent } from './soqlEditorEvent';
 
 export class StandaloneMessageService implements IMessageService {
-  public messagesFromBackend: BehaviorSubject<SoqlEditorEvent>;
+  public messagesToUI: BehaviorSubject<SoqlEditorEvent>;
   public localStorage;
   constructor() {
     this.localStorage = getLocalStorage();
-    this.messagesFromBackend = new BehaviorSubject(undefined);
+    this.messagesToUI = new BehaviorSubject(undefined);
   }
   public sendMessage(event: SoqlEditorEvent) {
     console.log(

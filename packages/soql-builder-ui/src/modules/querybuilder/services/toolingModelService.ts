@@ -53,9 +53,7 @@ export class ToolingModelService {
     );
     this.query.subscribe(this.generateQuery.bind(this));
 
-    this.messageService.messagesFromBackend.subscribe(
-      this.onMessage.bind(this)
-    );
+    this.messageService.messagesToUI.subscribe(this.onMessage.bind(this));
   }
 
   public getModel(): IMap {
