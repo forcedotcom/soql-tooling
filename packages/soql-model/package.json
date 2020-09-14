@@ -33,5 +33,9 @@
     "model"
   ],
   "author": "Salesforce",
+  "publishConfig": {
+    "access": "public",
+    "registry": "http://registry.npmjs.org/"
+  },
   "license": "BSD-3-Clause"
 }
