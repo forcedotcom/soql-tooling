@@ -13,9 +13,9 @@
     "jsforce": "^1.9.1"
   },
   "devDependencies": {
-    "@salesforce/dev-config": "^1.2.0",
-    "@types/jsforce": "^1.9.5",
-    "@types/node": "^10.11.2",
+    "jsforce": "1.9.3",
+    "@types/jsforce": "1.9.2",
+    "@salesforce/dev-config": "1.4.1",
     "lerna": "^3.19.0",
     "tslint": "^5.8.0",
     "typescript": "^3.7.2"
