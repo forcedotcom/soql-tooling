@@ -8,10 +8,11 @@
 
 import { Observable } from 'rxjs';
 import { JsonMap } from '@salesforce/ts-types';
+import { SoqlEditorEvent } from './soqlEditorEvent';
 
 export interface IMessageService {
-  message: Observable<SoqlEditorEvent>;
-  sendMessage(message: string): void;
+  messagesToUI: Observable<SoqlEditorEvent>;
+  sendMessage(message: SoqlEditorEvent): void;
   setState(state: JsonMap): void;
   getState(): JsonMap;
 }

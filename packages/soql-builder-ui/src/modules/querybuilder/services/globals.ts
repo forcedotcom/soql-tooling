@@ -20,11 +20,17 @@ export function hasVscode() {
   return 'undefined' !== typeof acquireVsCodeApi;
 }
 
+let vsCode = undefined;
+
 export function getVscode() {
   if (hasVscode()) {
     // @ts-ignore
     // eslint-disable-next-line no-undef
-    return acquireVsCodeApi();
+    if (!vsCode) {
+      vsCode = acquireVsCodeApi();
+    }
+
+    return vsCode;
   }
   return false;
 }
