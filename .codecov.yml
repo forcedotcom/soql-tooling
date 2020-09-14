@@ -1,0 +1,26 @@
+coverage:
+  # See http://docs.codecov.io/docs/ignoring-paths
+  flags:
+    - soql-model:
+      path:
+        - packages/soql-model
+    - sobject-metadata:
+      path:
+        - packages/sobject-metadata
+    - language-server:
+      path:
+        - packages/language-server
+    - soql-builder-ui:
+      path:
+        - packages/soql-builder-ui
+  ignore:
+    # compiled output
+    - '**/out'
+    # dependencies
+    - '**/node_modules'
+    # IDEs and editors
+    - '.vscode'
+    # other (more specific)
+    - 'packages/salesforcedx-visualforce-markup-language-server/src/beautify' # This folder contains generated files that we have embedded
+    - 'packages/salesforcedx-visualforce-markup-language-server/src/parser/htmlTags.ts' # This file is a collection of all HTML tags
+    - 'packages/salesforcedx-visualforce-markup-language-server/src/parser/visualforceTags.ts' # This file is a collection of all Visualforce tags
