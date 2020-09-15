@@ -50,7 +50,7 @@ jobs:
           command: |
             echo 'Language Server: Run LWC Unit Tests'
             cd $PACKAGE_PATH
-            yarn test
+            yarn run test:unit:coverage
       - run:
           name: Upload coverage report to Codecov
           command: bash <(curl -s https://codecov.io/bash) -F language-server -t ${CODECOV_TOKEN}
@@ -73,7 +73,7 @@ jobs:
           command: |
             echo 'Run Sobject Metadata Server Unit Tests'
             cd $PACKAGE_PATH
-            yarn test
+            yarn run test:unit:coverage
       - run:
           name: Upload coverage report to Codecov
           command: bash <(curl -s https://codecov.io/bash) -F sobject-metadata -t ${CODECOV_TOKEN}
@@ -96,7 +96,7 @@ jobs:
           command: |
             echo 'Run SOQL Model Server Unit Tests'
             cd $PACKAGE_PATH
-            yarn test
+            yarn run test:unit:coverage
       - run:
           name: Upload coverage report to Codecov
           command: bash <(curl -s https://codecov.io/bash) -F soql-model -t ${CODECOV_TOKEN}
