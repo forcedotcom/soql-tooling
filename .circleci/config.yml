@@ -9,11 +9,10 @@ variables:
     - image: circleci/node:12.16.1-stretch
 
 jobs:
-  #soql-builder-ui:
-  build:
+  soql-builder-ui:
     docker: *node-build-image
     environment:
-      PACKAGE_PATH: 'packages/language-server'
+      PACKAGE_PATH: 'packages/soql-builder-ui'
     steps:
       - checkout
       - restore_cache:
@@ -31,67 +30,76 @@ jobs:
             yarn run test:unit:coverage
       - run:
           name: Upload coverage report to Codecov
+          command: bash <(curl -s https://codecov.io/bash) -F soql-builder-ui -t ${CODECOV_TOKEN}
+
+  language-server:
+    docker: *node-build-image
+    environment:
+      PACKAGE_PATH: 'packages/language-server'
+    steps:
+      - checkout
+      - restore_cache:
+          key: dependency-cache-{{ checksum "yarn.lock" }}
+      - run: yarn
+      - save_cache:
+          key: dependency-cache-{{ checksum "yarn.lock" }}
+          paths:
+            - ./node_modules
+      - run:
+          name: 'Language Server: Run LWC Unit Tests'
+          command: |
+            echo 'Language Server: Run LWC Unit Tests'
+            cd $PACKAGE_PATH
+            yarn test
+      - run:
+          name: Upload coverage report to Codecov
           command: bash <(curl -s https://codecov.io/bash) -F language-server -t ${CODECOV_TOKEN}
-#  language-server:
-#    docker: *node-build-image
-#    environment:
-#      PACKAGE_PATH: 'packages/language-server'
-#    steps:
-#      - checkout
-#      - restore_cache:
-#          key: dependency-cache-{{ checksum "yarn.lock" }}
-#      - run: yarn
-#      - save_cache:
-#          key: dependency-cache-{{ checksum "yarn.lock" }}
-#          paths:
-#            - ./node_modules
-#      - run:
-#          name: 'Language Server: Run LWC Unit Tests'
-#          command: |
-#            echo 'Language Server: Run LWC Unit Tests'
-#            cd $PACKAGE_PATH
-#            yarn test
 
-#  sobject-metadata:
-#    docker: *node-build-image
-#    environment:
-#      PACKAGE_PATH: 'packages/sobject-metadata'
-#    steps:
-#      - checkout
-#      - restore_cache:
-#          key: dependency-cache-{{ checksum "yarn.lock" }}
-#      - run: yarn
-#      - save_cache:
-#          key: dependency-cache-{{ checksum "yarn.lock" }}
-#          paths:
-#            - ./node_modules
-#      - run:
-#          name: 'Run Sobject Metadata Server Unit Tests'
-#          command: |
-#            echo 'Run Sobject Metadata Server Unit Tests'
-#            cd $PACKAGE_PATH
-#            yarn test
+  sobject-metadata:
+    docker: *node-build-image
+    environment:
+      PACKAGE_PATH: 'packages/sobject-metadata'
+    steps:
+      - checkout
+      - restore_cache:
+          key: dependency-cache-{{ checksum "yarn.lock" }}
+      - run: yarn
+      - save_cache:
+          key: dependency-cache-{{ checksum "yarn.lock" }}
+          paths:
+            - ./node_modules
+      - run:
+          name: 'Run Sobject Metadata Server Unit Tests'
+          command: |
+            echo 'Run Sobject Metadata Server Unit Tests'
+            cd $PACKAGE_PATH
+            yarn test
+      - run:
+          name: Upload coverage report to Codecov
+          command: bash <(curl -s https://codecov.io/bash) -F sobject-metadata -t ${CODECOV_TOKEN}
 
-#  soql-model:
-#    docker: *node-build-image
-#    environment:
-#      PACKAGE_PATH: 'packages/soql-model'
-#    steps:
-#      - checkout
-#      - restore_cache:
-#          key: dependency-cache-{{ checksum "yarn.lock" }}
-#      - run: yarn
-#      - save_cache:
-#          key: dependency-cache-{{ checksum "yarn.lock" }}
-#          paths:
-#            - ./node_modules
-#      - run:
-#          name: 'Run SOQL Model Server Unit Tests'
-#          command: |
-#            echo 'Run SOQL Model Server Unit Tests'
-#            cd $PACKAGE_PATH
-#            yarn test
-
+  soql-model:
+    docker: *node-build-image
+    environment:
+      PACKAGE_PATH: 'packages/soql-model'
+    steps:
+      - checkout
+      - restore_cache:
+          key: dependency-cache-{{ checksum "yarn.lock" }}
+      - run: yarn
+      - save_cache:
+          key: dependency-cache-{{ checksum "yarn.lock" }}
+          paths:
+            - ./node_modules
+      - run:
+          name: 'Run SOQL Model Server Unit Tests'
+          command: |
+            echo 'Run SOQL Model Server Unit Tests'
+            cd $PACKAGE_PATH
+            yarn test
+      - run:
+          name: Upload coverage report to Codecov
+          command: bash <(curl -s https://codecov.io/bash) -F soql-model -t ${CODECOV_TOKEN}
 #notify_slack:
 #  docker: *node-build-image
 #  steps:
@@ -105,14 +113,14 @@ jobs:
 #        include_visit_job_action: false
 #        include_job_number_field: false
 
-#workflows:
-#  version: 2
-#  commit-workflow:
-#    jobs:
-#      - soql-builder-ui
-#- language-server
-#- sobject-metadata
-#- soql-model
+workflows:
+  version: 2
+  commit-workflow:
+    jobs:
+      - soql-builder-ui
+      - language-server
+      - sobject-metadata
+      - soql-model
 # - notify_slack:
 #    requires:
 #      - soql-builder-ui
