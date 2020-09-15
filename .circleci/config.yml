@@ -13,7 +13,7 @@ jobs:
   build:
     docker: *node-build-image
     environment:
-      PACKAGE_PATH: 'packages/soql-builder-ui'
+      PACKAGE_PATH: 'packages/language-server'
     steps:
       - checkout
       - restore_cache:
@@ -31,7 +31,7 @@ jobs:
             yarn run test:unit:coverage
       - run:
           name: Upload coverage report to Codecov
-          command: bash <(curl -s https://codecov.io/bash) -F soql-builder-ui -t ${CODECOV_TOKEN}
+          command: bash <(curl -s https://codecov.io/bash) -F language-server -t ${CODECOV_TOKEN}
 #  language-server:
 #    docker: *node-build-image
 #    environment:
