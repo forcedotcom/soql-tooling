@@ -95,7 +95,7 @@ jobs:
             cd $PACKAGE_PATH
             yarn run test:unit:coverage
       - codecov/upload:
-          flags: soql-model
+          file: coverage/coverage-final.json
 
   notify_slack:
     docker: *node-build-image
