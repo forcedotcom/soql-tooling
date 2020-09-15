@@ -100,18 +100,18 @@ jobs:
       - run:
           name: Upload coverage report to Codecov
           command: bash <(curl -s https://codecov.io/bash) -F soql-model -t ${CODECOV_TOKEN}
-#notify_slack:
-#  docker: *node-build-image
-#  steps:
-#    - slack/notify:
-#        channel: web-tools-bot
-#        title: "Success: ${CIRCLE_USERNAME}'s commit-workflow"
-#        title_link: 'https://circleci.com/workflow-run/${CIRCLE_WORKFLOW_ID}'
-#        color: '#9bcd9b'
-#        message: "${CIRCLE_USERNAME}'s workflow <https://circleci.com/workflow-run/${CIRCLE_WORKFLOW_ID}|commit-workflow> in ${CIRCLE_PROJECT_USERNAME}/${CIRCLE_PROJECT_REPONAME}\n(${CIRCLE_BRANCH})"
-#        include_project_field: false
-#        include_visit_job_action: false
-#        include_job_number_field: false
+  notify_slack:
+    docker: *node-build-image
+    steps:
+      - slack/notify:
+          channel: web-tools-bot
+          title: "Success: ${CIRCLE_USERNAME}'s commit-workflow"
+          title_link: 'https://circleci.com/workflow-run/${CIRCLE_WORKFLOW_ID}'
+          color: '#9bcd9b'
+          message: "${CIRCLE_USERNAME}'s workflow <https://circleci.com/workflow-run/${CIRCLE_WORKFLOW_ID}|commit-workflow> in ${CIRCLE_PROJECT_USERNAME}/${CIRCLE_PROJECT_REPONAME}\n(${CIRCLE_BRANCH})"
+          include_project_field: false
+          include_visit_job_action: false
+          include_job_number_field: false
 
 workflows:
   version: 2
@@ -121,9 +121,9 @@ workflows:
       - language-server
       - sobject-metadata
       - soql-model
-# - notify_slack:
-#    requires:
-#      - soql-builder-ui
-#      - language-server
-#      - sobject-metadata
-#      - soql-model
+      - notify_slack:
+          requires:
+            - soql-builder-ui
+            - language-server
+            - sobject-metadata
+            - soql-model
