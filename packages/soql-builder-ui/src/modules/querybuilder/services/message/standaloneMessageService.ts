@@ -13,14 +13,16 @@ import { BehaviorSubject } from 'rxjs';
 import { SoqlEditorEvent } from './soqlEditorEvent';
 
 export class StandaloneMessageService implements IMessageService {
-  public message: BehaviorSubject<SoqlEditorEvent>;
+  public messagesToUI: BehaviorSubject<SoqlEditorEvent>;
   public localStorage;
   constructor() {
     this.localStorage = getLocalStorage();
-    this.message = new BehaviorSubject(undefined);
+    this.messagesToUI = new BehaviorSubject(undefined);
   }
-  public sendMessage(query: JsonMap) {
-    this.localStorage.setItem('query', JSON.stringify(query));
+  public sendMessage(event: SoqlEditorEvent) {
+    console.log(
+      'StandaloneMessageService. Message ignored. Type:' + event.type
+    );
   }
   public getState(): JsonMap {
     let state = this.localStorage.getItem('query');
