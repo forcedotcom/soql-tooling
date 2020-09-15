@@ -30,6 +30,7 @@ jobs:
             yarn run test:unit:coverage
       - codecov/upload:
           flags: soql-builder-ui
+          file: coverage/coverage-final.json
 
   language-server:
     docker: *node-build-image
@@ -52,6 +53,7 @@ jobs:
             yarn run test:unit:coverage
       - codecov/upload:
           flags: language-server
+          file: coverage/coverage-final.json
 
   sobject-metadata:
     docker: *node-build-image
@@ -74,6 +76,7 @@ jobs:
             yarn run test:unit:coverage
       - codecov/upload:
           flags: sobject-metadata
+          file: coverage/coverage-final.json
 
   soql-model:
     docker: *node-build-image
@@ -95,6 +98,7 @@ jobs:
             cd $PACKAGE_PATH
             yarn run test:unit:coverage
       - codecov/upload:
+          file: coverage/coverage-final.json
           flags: soql-model
 
   notify_slack:
