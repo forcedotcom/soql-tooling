@@ -94,7 +94,7 @@ jobs:
             echo 'Run SOQL Model Server Unit Tests'
             cd $PACKAGE_PATH
             yarn run test:unit:coverage
-       - codecov/upload:
+      - codecov/upload:
           flags: soql-model
 
   notify_slack:
