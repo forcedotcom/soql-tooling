@@ -1,0 +1,7 @@
+coverage:
+  # See http://docs.codecov.io/docs/ignoring-paths
+  ignore:
+    # dependencies
+    - '**/node_modules'
+    # IDEs and editors
+    - '.vscode'
