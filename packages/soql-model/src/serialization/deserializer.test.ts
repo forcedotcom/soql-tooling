@@ -6,6 +6,7 @@
  */
 
 import { ModelDeserializer } from './deserializer';
+import { ErrorType } from '../model/model';
 
 const testQueryModel = {
   select: {
@@ -109,7 +110,7 @@ describe('ModelDeserializer should', () => {
     const expected = testQueryModel;
     const actual = new ModelDeserializer(
       'SELECT field1, field2, field3 alias3, (SELECT fieldA FROM objectA), TYPEOF obj WHEN typeX THEN fieldX ELSE fieldY END FROM object1 ' +
-        'WHERE field1 = 5 WITH DATA CATEGORY cat__c AT val__c GROUP BY field1 ORDER BY field2 DESC NULLS LAST LIMIT 20 OFFSET 2 BIND field1 = 5 FOR VIEW UPDATE TRACKING'
+      'WHERE field1 = 5 WITH DATA CATEGORY cat__c AT val__c GROUP BY field1 ORDER BY field2 DESC NULLS LAST LIMIT 20 OFFSET 2 BIND field1 = 5 FOR VIEW UPDATE TRACKING'
     ).deserialize();
     expect(actual).toEqual(expected);
   });
@@ -119,6 +120,16 @@ describe('ModelDeserializer should', () => {
     const model = new ModelDeserializer('SELECT FROM object1').deserialize();
     expect(model.errors).toBeDefined();
     expect(model.errors?.length).toEqual(expectedErrors);
+  });
+
+  it('identify no selections error', () => {
+    const expectedType = ErrorType.NOSELECTIONS;
+    const model = new ModelDeserializer('SELECT FROM object1').deserialize();
+    if (model.errors && model.errors.length === 1) {
+      expect(model.errors[0].type).toEqual(expectedType);
+    } else {
+      fail();
+    }
   });
 
   it('model parse errors with no parse results as thrown error', () => {

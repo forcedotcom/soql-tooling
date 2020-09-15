@@ -5,12 +5,16 @@
  * For full license text, see LICENSE.txt file in the repo root or https://opensource.org/licenses/BSD-3-Clause
  */
 
-import { SOQLParser } from '@salesforce/soql-parser';
+import { SOQLParser, ParserError } from '@salesforce/soql-parser';
 import { SoqlParserListener } from '@salesforce/soql-parser/lib/SoqlParserListener';
 import * as Parser from '@salesforce/soql-parser/lib/SoqlParser';
+import { Messages } from '../messages/messages';
 import * as Soql from '../model/model';
 import * as Impl from '../model/impl';
 import { ParserRuleContext, Token } from 'antlr4';
+import { ErrorNodeImpl } from 'antlr4/tree/Tree';
+import { NoViableAltException } from 'antlr4/error/Errors';
+
 
 export class ModelDeserializer {
   protected soqlSyntax: string;
@@ -34,13 +38,8 @@ export class ModelDeserializer {
       query = queryListener.getQuery();
     }
 
-    const modelErrors: Soql.ModelError[] = errors.map((error) => {
-      return {
-        message: error.getMessage(),
-        lineNumber: error.getLineNumber(),
-        charInLine: error.getCharacterPositionInLine(),
-      };
-    });
+    const errorIdentifer = new ErrorIdentifier(parseTree);
+    const modelErrors = errors.map(error => errorIdentifer.identifyError(error));
     if (query) {
       query.errors = modelErrors;
     } else {
@@ -49,6 +48,77 @@ export class ModelDeserializer {
     return query;
   }
 }
+
+class ErrorIdentifier {
+  protected parseTree: ParserRuleContext;
+  protected nodesWithExceptions: ParserRuleContext[];
+  constructor(parseTree: ParserRuleContext) {
+    this.parseTree = parseTree;
+    this.nodesWithExceptions = [];
+    this.findExceptions(parseTree);
+  }
+
+  public identifyError(error: ParserError): Soql.ModelError {
+    if (this.isNoSelectionsError(error)) {
+      return {
+        type: Soql.ErrorType.NOSELECTIONS,
+        message: Messages.error_noSelections,
+        lineNumber: error.getLineNumber(),
+        charInLine: error.getCharacterPositionInLine()
+      };
+    }
+    return {
+      type: Soql.ErrorType.UNKNOWN,
+      message: error.getMessage(),
+      lineNumber: error.getLineNumber(),
+      charInLine: error.getCharacterPositionInLine()
+    }
+  }
+
+  protected isNoSelectionsError(error: ParserError): boolean {
+    const context = this.matchErrorToContext(error);
+    return context instanceof Parser.SoqlSelectClauseContext
+      && context.exception instanceof NoViableAltException
+      && !this.hasNonErrorChildren(context);
+  }
+
+  protected findExceptions(context: ParserRuleContext): void {
+    if (context.exception) {
+      this.nodesWithExceptions.push(context);
+    }
+    if (context.getChildCount() > 0) {
+      for (let i = 0; i < context.getChildCount(); i++) {
+        const child = context.getChild(i);
+        if (child instanceof ParserRuleContext) {
+          this.findExceptions(child as ParserRuleContext);
+        }
+      }
+    }
+  }
+
+  protected matchErrorToContext(error: ParserError): ParserRuleContext | undefined {
+    for (let i = 0; i < this.nodesWithExceptions.length; i++) {
+      const node = this.nodesWithExceptions[i];
+      if (node.exception.offendingToken === error.getToken()) {
+        return node;
+      }
+    }
+    return undefined;
+  }
+
+  protected hasNonErrorChildren(context: ParserRuleContext): boolean {
+    if (context.getChildCount() > 0) {
+      for (let i = 0; i < context.getChildCount(); i++) {
+        const child = context.getChild(i);
+        if (!(child instanceof ErrorNodeImpl)) {
+          return true;
+        }
+      }
+    }
+    return false
+  }
+}
+
 class QueryListener extends SoqlParserListener {
   public query?: Soql.Query;
   public select?: Soql.Select;
@@ -76,9 +146,9 @@ class QueryListener extends SoqlParserListener {
     }
     const using = ctx.soqlUsingClause()
       ? this.toUnmodeledSyntax(
-          ctx.soqlUsingClause().start,
-          ctx.soqlUsingClause().stop
-        )
+        ctx.soqlUsingClause().start,
+        ctx.soqlUsingClause().stop
+      )
       : undefined;
     this.from = new Impl.FromImpl(sobjectName, as, using);
   }

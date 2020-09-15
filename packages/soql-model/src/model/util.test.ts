@@ -7,7 +7,7 @@
 
 import { SoqlModelUtils } from './util';
 import * as Impl from './impl';
-import { Query } from './model';
+import { ErrorType, Query } from './model';
 
 describe('SoqlModelUtils should', () => {
   it('return true if SOQL query model contains unmodeled syntax', () => {
@@ -38,7 +38,7 @@ describe('SoqlModelUtils should', () => {
       new Impl.SelectExprsImpl([new Impl.FieldRefImpl('field1')]),
       new Impl.FromImpl('object1')
     );
-    model.errors = [{ message: 'ERROR', lineNumber: 1, charInLine: 1 }];
+    model.errors = [{ type: ErrorType.UNKNOWN, message: 'ERROR', lineNumber: 1, charInLine: 1 }];
 
     const actual = SoqlModelUtils.containsError(model);
     expect(actual).toBeTruthy();
