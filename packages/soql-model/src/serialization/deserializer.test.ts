@@ -132,7 +132,13 @@ describe('ModelDeserializer should', () => {
     }
   });
 
-  it('model parse errors with no parse results as thrown error', () => {
-    expect(() => new ModelDeserializer('').deserialize()).toThrow();
+  it('identify empty statement error', () => {
+    const expectedType = ErrorType.EMPTY;
+    const model = new ModelDeserializer('').deserialize();
+    if (model.errors && model.errors.length === 1) {
+      expect(model.errors[0].type).toEqual(expectedType);
+    } else {
+      fail();
+    }
   });
 });

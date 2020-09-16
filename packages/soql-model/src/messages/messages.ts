@@ -6,5 +6,6 @@
  */
 
 export namespace Messages {
+  export const error_empty = 'Incomplete SOQL statement. The SELECT and FROM clauses are required.'
   export const error_noSelections = 'Incomplete SELECT clause. The SELECT clause must contain at least one SELECT expression.';
 }

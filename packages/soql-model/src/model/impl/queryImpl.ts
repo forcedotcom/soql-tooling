@@ -10,8 +10,8 @@ import * as Soql from '../model';
 import { SoqlModelObjectImpl } from './soqlModelObjectImpl';
 
 export class QueryImpl extends SoqlModelObjectImpl implements Soql.Query {
-  public select: Soql.Select;
-  public from: Soql.From;
+  public select?: Soql.Select;
+  public from?: Soql.From;
   public where?: Soql.Where;
   public with?: Soql.With;
   public groupBy?: Soql.GroupBy;
@@ -22,8 +22,8 @@ export class QueryImpl extends SoqlModelObjectImpl implements Soql.Query {
   public recordTrackingType?: Soql.RecordTrackingType;
   public update?: Soql.Update;
   public constructor(
-    select: Soql.Select,
-    from: Soql.From,
+    select?: Soql.Select,
+    from?: Soql.From,
     where?: Soql.Where,
     soqlwith?: Soql.With,
     groupBy?: Soql.GroupBy,
@@ -49,10 +49,15 @@ export class QueryImpl extends SoqlModelObjectImpl implements Soql.Query {
   }
   public toSoqlSyntax(options?: Soql.SyntaxOptions): string {
     const _options = this.getSyntaxOptions(options);
-    let syntax = `${this.select.toSoqlSyntax(_options)}${os.EOL}`;
-    syntax += `${' '.repeat(_options.indent)}${this.from.toSoqlSyntax(
-      _options
-    )}${os.EOL}`;
+    let syntax = '';
+    if (this.select) {
+      syntax += `${this.select.toSoqlSyntax(_options)}${os.EOL}`;
+    }
+    if (this.from) {
+      syntax += `${' '.repeat(_options.indent)}${this.from.toSoqlSyntax(
+        _options
+      )}${os.EOL}`;
+    }
     if (this.where) {
       syntax += `${' '.repeat(_options.indent)}${this.where.toSoqlSyntax(
         _options
