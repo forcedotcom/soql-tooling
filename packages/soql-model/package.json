@@ -8,7 +8,8 @@
   "main": "lib/",
   "scripts": {
     "build": "tsc --project .",
-    "test": "jest --runInBand"
+    "test": "jest --runInBand",
+    "test:unit:coverage": "jest --runInBand --coverage"
   },
   "dependencies": {
     "@salesforce/soql-parser": "file:../../Dependencies/soql-parser-0.16.0.tgz",
