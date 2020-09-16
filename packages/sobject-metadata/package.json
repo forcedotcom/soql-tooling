@@ -5,7 +5,8 @@
   "scripts": {
     "build": "tsc --project .",
     "lint": "eslint ./src/**/*.ts",
-    "test": "jest --runInBand"
+    "test": "jest --runInBand",
+    "test:unit:coverage": "jest --runInBand --coverage"
   },
   "repository": {
     "type": "git",

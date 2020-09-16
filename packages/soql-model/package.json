@@ -8,10 +8,11 @@
   "main": "lib/",
   "scripts": {
     "build": "tsc --project .",
-    "test": "jest --runInBand"
+    "test": "jest --runInBand",
+    "test:unit:coverage": "jest --runInBand --coverage"
   },
   "dependencies": {
-    "@salesforce/soql-parser": "0.16.0",
+    "@salesforce/soql-parser": "file:../../Dependencies/soql-parser-0.16.0.tgz",
     "antlr4": "4.8.0"
   },
   "bundledDependencies": [
@@ -33,5 +34,9 @@
     "model"
   ],
   "author": "Salesforce",
+  "publishConfig": {
+    "access": "public",
+    "registry": "http://registry.npmjs.org/"
+  },
   "license": "BSD-3-Clause"
 }

@@ -7,10 +7,11 @@
   },
   "scripts": {
     "build": "tsc --project .",
-    "test": "jest --runInBand"
+    "test": "jest --runInBand",
+    "test:unit:coverage": "jest --runInBand --coverage"
   },
   "dependencies": {
-    "@salesforce/soql-parser": "0.16.0",
+    "@salesforce/soql-parser": "file:../../Dependencies/soql-parser-0.16.0.tgz",
     "antlr4": "4.8.0",
     "vscode-languageserver": "6.1.1",
     "vscode-languageserver-textdocument": "1.0.1"
