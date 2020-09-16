@@ -8,7 +8,7 @@
 
 import { fromJS, List, Map } from 'immutable';
 import { BehaviorSubject, Observable } from 'rxjs';
-import { map, filter } from 'rxjs/operators';
+import { map } from 'rxjs/operators';
 import { JsonMap } from '@salesforce/ts-types';
 import { IMessageService } from './message/iMessageService';
 import { SoqlEditorEvent, MessageType } from './message/soqlEditorEvent';
@@ -130,6 +130,7 @@ export class ToolingModelService {
   public restoreViewState() {
     this.model.next(this.getSavedState());
   }
+
   private getSavedState() {
     const savedState = this.messageService.getState();
     return fromJS(savedState || this.toolingModelTemplate);

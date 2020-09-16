@@ -47,6 +47,7 @@ export default class App extends LightningElement {
     this.toolingSDK.sobjects.subscribe((objs: string[]) => {
       this.sObjects = objs;
     });
+
     this.toolingSDK.sobjectMetadata.subscribe((sobjectMetadata: any) => {
       this.fields =
         sobjectMetadata && sobjectMetadata.fields
@@ -56,10 +57,6 @@ export default class App extends LightningElement {
 
     this.toolingSDK.loadSObjectDefinitions();
     this.modelService.restoreViewState();
-  }
-
-  renderedCallback() {
-    //  this.synchronizeWithSobject();
   }
 
   handleObjectChange(e) {
