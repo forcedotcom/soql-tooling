@@ -269,14 +269,17 @@ class QueryListener extends SoqlParserListener {
           .soqlSelectExprs()
           .enterRule(this);
         this.select = new Impl.SelectExprsImpl(this.selectExpressions);
-      } else {
+      } else if (selectCtx instanceof Parser.SoqlSelectCountClauseContext) {
         // not a modeled case
         this.select = this.toUnmodeledSyntax(selectCtx.start, selectCtx.stop);
+      } else {
+        // no selections
+        this.select = new Impl.SelectExprsImpl([]);
       }
-      const fromCtx = ctx.soqlFromClause();
-      if (fromCtx) {
-        fromCtx.enterRule(this);
-      }
+    }
+    const fromCtx = ctx.soqlFromClause();
+    if (fromCtx) {
+      fromCtx.enterRule(this);
     }
 
     const whereCtx = ctx.soqlWhereClause();
