@@ -4,11 +4,11 @@
 
 var model = require('../lib');
 
-var query = 'SELECT field1, field2 FROM object1';
+// var query = 'SELECT field1, field2 FROM object1';
 // var query =
 //   'SELECT field1, field2, field3 alias3, (SELECT fieldA FROM objectA), TYPEOF obj WHEN typeX THEN fieldX ELSE fieldY END FROM object1 ' +
 //   'WHERE field1 = 5 WITH DATA CATEGORY cat__c AT val__c GROUP BY field1 ORDER BY field2 DESC NULLS LAST LIMIT 20 OFFSET 2 BIND field1 = 5 FOR VIEW UPDATE TRACKING';
-//var query = 'SELECT FROM object1';
+var query = 'SELECT FROM object1';
 
 var deserializer = new model.ModelDeserializer(query);
 var queryModel = deserializer.deserialize();

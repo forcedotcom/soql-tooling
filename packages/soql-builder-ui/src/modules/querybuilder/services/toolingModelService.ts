@@ -24,19 +24,24 @@ interface ToolingModel extends IMap {
 export interface ToolingModelJson extends JsonMap {
   sObject: string;
   fields: string[];
+  errors: string[];
+  unsupported: string[];
 }
 
 export class ToolingModelService {
   private model: BehaviorSubject<ToolingModel>;
   public query: Observable<ToolingModelJson>;
-  private toolingModelTemplate: ToolingModelJson;
+  public toolingModelTemplate: ToolingModelJson;
   private messageService: IMessageService;
+  private latest: ToolingModelJson;
 
   constructor(messageService: IMessageService) {
     this.messageService = messageService;
     this.toolingModelTemplate = {
       sObject: '',
-      fields: []
+      fields: [],
+      errors: [],
+      unsupported: []
     } as ToolingModelJson;
 
     this.model = new BehaviorSubject(fromJS(this.toolingModelTemplate));
@@ -51,7 +56,9 @@ export class ToolingModelService {
         }
       })
     );
-    this.query.subscribe(this.generateQuery.bind(this));
+    this.query.subscribe((query) => {
+      this.latest = query;
+    });
 
     this.messageService.messagesToUI.subscribe(this.onMessage.bind(this));
   }
@@ -69,6 +76,8 @@ export class ToolingModelService {
     const newModelWithSelection = emptyModel.set('sObject', sObject);
 
     this.model.next(newModelWithSelection);
+    console.log('pending query change from setSObject');
+    this.generateQuery();
   }
 
   public addField(field: string) {
@@ -79,6 +88,8 @@ export class ToolingModelService {
     ) as ToolingModel;
 
     this.model.next(newModelWithAddedField);
+    console.log('pending query change from addField');
+    this.generateQuery();
   }
 
   public removeField(field: string) {
@@ -91,6 +102,8 @@ export class ToolingModelService {
     ) as ToolingModel;
 
     this.model.next(newModelWithFieldRemoved);
+    console.log('pending query change from removeField');
+    this.generateQuery();
   }
 
   private onMessage(event: SoqlEditorEvent) {
@@ -104,6 +117,8 @@ export class ToolingModelService {
           }
           break;
         }
+        default:
+          break;
       }
     }
   }
@@ -116,11 +131,12 @@ export class ToolingModelService {
     }
   }
 
-  public generateQuery(jsModel: ToolingModelJson) {
+  public generateQuery() {
+    console.log('outgoing query change: ', JSON.stringify(this.latest));
     try {
       this.messageService.sendMessage({
         type: MessageType.UI_SOQL_CHANGED,
-        payload: jsModel
+        payload: this.latest
       });
     } catch (e) {
       console.error(e);

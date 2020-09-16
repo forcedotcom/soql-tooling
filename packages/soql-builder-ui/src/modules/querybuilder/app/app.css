@@ -7,26 +7,26 @@
  */
 
 main {
-    display: block;
-    max-width: 70rem;
-    margin: 2rem 2rem;
+  display: block;
+  max-width: 70rem;
+  margin: 2rem 2rem;
 }
 
 .row {
-    display: flex;
-    min-height: 100vh;
+  display: flex;
+  min-height: 100vh;
 }
 
 .column {
-    display: flex;
-    flex: 50%;
+  display: flex;
+  flex: 50%;
 }
 
 .column.query-builder {
-    flex-direction: column;
+  flex-direction: column;
 }
 
 .column.query-preview {
-    display: flex;
-    justify-content: flex-end;
+  display: flex;
+  justify-content: flex-end;
 }

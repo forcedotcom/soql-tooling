@@ -9,7 +9,12 @@
 <template>
   <div class="section-container">
     <div class="section_label-container">
-      <label>Fields</label>
+      <label
+        >Fields
+        <template if:true={hasError}
+          ><span class="text-color-required">*</span></template
+        ></label
+      >
     </div>
     <div class="section_selection-container">
       <select

@@ -1,0 +1,40 @@
+{
+  "name": "@salesforce/soql-parser",
+  "version": "0.16.0",
+  "description": "Typescript SOQL Parser",
+  "main": "./lib/index.js",
+  "scripts": {
+    "clean": "rm -rf node_modules && rm -rf lib && rm -rf grammar && rm -rf *.tgz",
+    "initialize": "npm install",
+    "compile": "npm run compile:pregen && npm run genjs && npm run compile:postgen",
+    "compile:pregen": "tsc --project tsconfig-pregen.json",
+    "compile:postgen": "tsc --project tsconfig-postgen.json",
+    "genjs": "npm run genjs:prepgrammar && npm run genjs:lexer && npm run genjs:parser",
+    "genjs:prepgrammar": "rm -rf grammar && mkdir grammar && cp ../antlr4/com/salesforce/soql/*.g4 grammar && cp ../antlr4_imports/javascript/*.g4 grammar",
+    "genjs:lexer": "npm run genjs:prepgrammar && antlr4-tool grammar/SoqlLexer.g4 -o lib",
+    "genjs:parser": "npm run genjs:prepgrammar && antlr4-tool grammar/SoqlParser.g4 -o lib",
+    "test": "jest --runInBand",
+    "package": "npm pack",
+    "deploy": "npm publish"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git@git.soma.salesforce.com:enterprise-api/soql-parser.git"
+  },
+  "author": "Salesforce",
+  "license": "BSD-3-Clause",
+  "dependencies": {
+    "antlr4": "4.8.0"
+  },
+  "devDependencies": {
+    "@types/antlr4": "4.7.2",
+    "@types/jest": "22.2.3",
+    "antlr4-tool": "1.1.1",
+    "jest": "26.1.0",
+    "ts-jest": "26.1.2",
+    "typescript": "^3.9.6"
+  },
+  "publishConfig": {
+    "registry": "http://platform-cli-registry.eng.sfdc.net:4880/"
+  }
+}

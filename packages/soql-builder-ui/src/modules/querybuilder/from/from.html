@@ -9,21 +9,25 @@
 <template>
   <div class="section-container">
     <div class="section_label-container">
-      <label>From</label>
+      <label
+        >From<template if:true={hasError}
+          ><span class="text-color-required">*</span></template
+        ></label
+      >
     </div>
     <div class="section_selection-container">
       <select
         name="sobject-select"
         class="select-long"
-        onchange={handleSobjectSelection}
+        onclick={handleSobjectSelection}
       >
-      <!-- this is an unfortunate limitation of lwc.  probably need to implement lightning-combobox here -->
-       <template if:true={hasSelected}>
+        <!-- this is an unfortunate limitation of lwc.  probably need to implement lightning-combobox here -->
+        <template if:true={hasSelected}>
           <option key={selected} value={selected}>{selected}</option>
-         </template>
-         <template if:false={hasSelected}>
-           <option>--- Select an sObject ---</option>
-         </template>
+        </template>
+        <template if:false={hasSelected}>
+          <option value="">--- Select an sObject ---</option>
+        </template>
         <template for:each={filteredSObjects} for:item="sObject">
           <option key={sObject} value={sObject}>{sObject}</option>
         </template>

@@ -13,16 +13,19 @@
     </header>
     <div class="row">
       <section class="column query-builder">
+        Errors: {hasUnknownError}, Unsupported {hasUnsupported}
         <querybuilder-from
           onobjectselected={handleObjectChange}
           sobjects={sObjects}
           selected={query.sObject}
+          has-error={hasFromError}
         ></querybuilder-from>
         <querybuilder-fields
           selected-fields={query.fields}
           fields={fields}
           onfieldselected={handleFieldSelected}
           onfieldremoved={handleFieldRemoved}
+          has-error={hasFieldsError}
         ></querybuilder-fields>
       </section>
       <section class="column query-preview">
