@@ -16,6 +16,10 @@ import {
   ToolingModelJson
 } from '../services/toolingModelService';
 import { IMessageService } from '../services/message/iMessageService';
+import {
+  MessageType,
+  SoqlEditorEvent
+} from '../services/message/soqlEditorEvent';
 
 export default class App extends LightningElement {
   @track
@@ -24,15 +28,16 @@ export default class App extends LightningElement {
   fields: string[] = [];
   toolingSDK: ToolingSDK;
   modelService: ToolingModelService;
+  messageService: IMessageService;
 
   @track
   query: ToolingModelJson;
 
   constructor() {
     super();
-    const messageService: IMessageService = MessageServiceFactory.create();
-    this.toolingSDK = new ToolingSDK(messageService);
-    this.modelService = new ToolingModelService(messageService);
+    this.messageService = MessageServiceFactory.create();
+    this.toolingSDK = new ToolingSDK(this.messageService);
+    this.modelService = new ToolingModelService(this.messageService);
   }
 
   connectedCallback() {
@@ -81,10 +86,7 @@ export default class App extends LightningElement {
   }
 
   handleRunQuery() {
-    // TODO: Hook up run query with the connection object W-7989627
-    /*
-     leaving this for standalone app development
-     saves to local storage
-     */
+    const runQueryEvent: SoqlEditorEvent = { type: MessageType.RUN_SOQL_QUERY };
+    this.messageService.sendMessage(runQueryEvent);
   }
 }
