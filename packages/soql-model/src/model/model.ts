@@ -17,7 +17,10 @@ export interface ModelError {
 export enum ErrorType {
   UNKNOWN = 'UNKNOWN',
   EMPTY = 'EMPTY',
-  NOSELECTIONS = 'NOSELECTIONS'
+  NOSELECT = 'NOSELECT',
+  NOSELECTIONS = 'NOSELECTIONS',
+  NOFROM = 'NOFROM',
+  INCOMPLETEFROM = 'INCOMPLETEFROM'
 }
 
 export interface SoqlModelObject {

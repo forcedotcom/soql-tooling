@@ -132,6 +132,36 @@ describe('ModelDeserializer should', () => {
     }
   });
 
+  it('identify no SELECT clause error', () => {
+    const expectedType = ErrorType.NOSELECT;
+    const model = new ModelDeserializer('FROM object1').deserialize();
+    if (model.errors && model.errors.length === 1) {
+      expect(model.errors[0].type).toEqual(expectedType);
+    } else {
+      fail();
+    }
+  });
+
+  it('identify incomplete FROM clause error', () => {
+    const expectedType = ErrorType.INCOMPLETEFROM;
+    const model = new ModelDeserializer('SELECT A FROM ').deserialize();
+    if (model.errors && model.errors.length === 1) {
+      expect(model.errors[0].type).toEqual(expectedType);
+    } else {
+      fail();
+    }
+  });
+
+  it('identify no FROM clause error', () => {
+    const expectedType = ErrorType.NOFROM;
+    const model = new ModelDeserializer('SELECT A').deserialize();
+    if (model.errors && model.errors.length === 1) {
+      expect(model.errors[0].type).toEqual(expectedType);
+    } else {
+      fail();
+    }
+  });
+
   it('identify empty statement error', () => {
     const expectedType = ErrorType.EMPTY;
     const model = new ModelDeserializer('').deserialize();
