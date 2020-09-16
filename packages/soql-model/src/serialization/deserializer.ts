@@ -59,6 +59,14 @@ class ErrorIdentifier {
   }
 
   public identifyError(error: ParserError): Soql.ModelError {
+    if (this.isEmptyError(error)) {
+      return {
+        type: Soql.ErrorType.EMPTY,
+        message: Messages.error_empty,
+        lineNumber: error.getLineNumber(),
+        charInLine: error.getCharacterPositionInLine()
+      };
+    }
     if (this.isNoSelectionsError(error)) {
       return {
         type: Soql.ErrorType.NOSELECTIONS,
@@ -73,6 +81,10 @@ class ErrorIdentifier {
       lineNumber: error.getLineNumber(),
       charInLine: error.getCharacterPositionInLine()
     }
+  }
+
+  protected isEmptyError(error: ParserError): boolean {
+    return this.parseTree.start.type === Token.EOF;
   }
 
   protected isNoSelectionsError(error: ParserError): boolean {
@@ -157,11 +169,10 @@ class QueryListener extends SoqlParserListener {
     const fromExprContexts = ctx.getTypedRuleContexts(
       Parser.SoqlFromExprContext
     );
-    if (!fromExprContexts || fromExprContexts.length !== 1) {
-      throw Error('FROM clause is incorrectly specified');
+    if (fromExprContexts && fromExprContexts.length === 1) {
+      const fromCtx = fromExprContexts[0];
+      fromCtx.enterRule(this);
     }
-    const fromCtx = fromExprContexts[0];
-    fromCtx.enterRule(this);
   }
 
   public enterSoqlFromClause(ctx: Parser.SoqlFromClauseContext): void {
@@ -204,26 +215,24 @@ class QueryListener extends SoqlParserListener {
 
   public enterSoqlInnerQuery(ctx: Parser.SoqlInnerQueryContext): void {
     const selectCtx = ctx.soqlSelectClause();
-    if (!selectCtx) {
-      throw Error('No select clause');
+    if (selectCtx) {
+      // normally we would want to selectCtx.enterRule(this) and delegate to
+      // other functions but the antr4-tool's typescript definitions are not
+      // perfect for listeners; workaround by type-checking
+      if (selectCtx instanceof Parser.SoqlSelectExprsClauseContext) {
+        (selectCtx as Parser.SoqlSelectExprsClauseContext)
+          .soqlSelectExprs()
+          .enterRule(this);
+        this.select = new Impl.SelectExprsImpl(this.selectExpressions);
+      } else {
+        // not a modeled case
+        this.select = this.toUnmodeledSyntax(selectCtx.start, selectCtx.stop);
+      }
+      const fromCtx = ctx.soqlFromClause();
+      if (fromCtx) {
+        fromCtx.enterRule(this);
+      }
     }
-    // normally we would want to selectCtx.enterRule(this) and delegate to
-    // other functions but the antr4-tool's typescript definitions are not
-    // perfect for listeners; workaround by type-checking
-    if (selectCtx instanceof Parser.SoqlSelectExprsClauseContext) {
-      (selectCtx as Parser.SoqlSelectExprsClauseContext)
-        .soqlSelectExprs()
-        .enterRule(this);
-      this.select = new Impl.SelectExprsImpl(this.selectExpressions);
-    } else {
-      // not a modeled case
-      this.select = this.toUnmodeledSyntax(selectCtx.start, selectCtx.stop);
-    }
-    const fromCtx = ctx.soqlFromClause();
-    if (!fromCtx) {
-      throw Error('No from clause');
-    }
-    fromCtx.enterRule(this);
 
     const whereCtx = ctx.soqlWhereClause();
     if (whereCtx) {
@@ -269,21 +278,19 @@ class QueryListener extends SoqlParserListener {
   public enterSoqlQuery(ctx: Parser.SoqlQueryContext): void {
     const innerCtx = ctx.soqlInnerQuery();
     innerCtx.enterRule(this);
-    if (this.select && this.from) {
-      this.query = new Impl.QueryImpl(
-        this.select,
-        this.from,
-        this.where,
-        this.with,
-        this.groupBy,
-        this.orderBy,
-        this.limit,
-        this.offset,
-        this.bind,
-        this.recordTrackingType,
-        this.update
-      );
-    }
+    this.query = new Impl.QueryImpl(
+      this.select,
+      this.from,
+      this.where,
+      this.with,
+      this.groupBy,
+      this.orderBy,
+      this.limit,
+      this.offset,
+      this.bind,
+      this.recordTrackingType,
+      this.update
+    );
   }
 
   public getQuery(): Soql.Query | undefined {

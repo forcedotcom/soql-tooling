@@ -16,6 +16,7 @@ export interface ModelError {
 
 export enum ErrorType {
   UNKNOWN = 'UNKNOWN',
+  EMPTY = 'EMPTY',
   NOSELECTIONS = 'NOSELECTIONS'
 }
 
@@ -30,8 +31,8 @@ export class SyntaxOptions {
 }
 
 export interface Query extends SoqlModelObject {
-  select: Select;
-  from: From;
+  select?: Select;
+  from?: From;
   where?: Where;
   with?: With;
   groupBy?: GroupBy;
