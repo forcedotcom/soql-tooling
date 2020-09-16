@@ -13,7 +13,7 @@ import * as Soql from '../model/model';
 import * as Impl from '../model/impl';
 import { ParserRuleContext, Token } from 'antlr4';
 import { ErrorNodeImpl } from 'antlr4/tree/Tree';
-import { NoViableAltException } from 'antlr4/error/Errors';
+import { NoViableAltException, InputMismatchException } from 'antlr4/error/Errors';
 
 
 export class ModelDeserializer {
@@ -67,10 +67,34 @@ class ErrorIdentifier {
         charInLine: error.getCharacterPositionInLine()
       };
     }
+    if (this.isNoSelectClauseError(error)) {
+      return {
+        type: Soql.ErrorType.NOSELECT,
+        message: Messages.error_noSelections,
+        lineNumber: error.getLineNumber(),
+        charInLine: error.getCharacterPositionInLine()
+      };
+    }
     if (this.isNoSelectionsError(error)) {
       return {
         type: Soql.ErrorType.NOSELECTIONS,
         message: Messages.error_noSelections,
+        lineNumber: error.getLineNumber(),
+        charInLine: error.getCharacterPositionInLine()
+      };
+    }
+    if (this.isNoFromClauseError(error)) {
+      return {
+        type: Soql.ErrorType.NOFROM,
+        message: Messages.error_noFrom,
+        lineNumber: error.getLineNumber(),
+        charInLine: error.getCharacterPositionInLine()
+      };
+    }
+    if (this.isIncompleteFromError(error)) {
+      return {
+        type: Soql.ErrorType.INCOMPLETEFROM,
+        message: Messages.error_incompleteFrom,
         lineNumber: error.getLineNumber(),
         charInLine: error.getCharacterPositionInLine()
       };
@@ -87,11 +111,32 @@ class ErrorIdentifier {
     return this.parseTree.start.type === Token.EOF;
   }
 
+  protected isNoSelectClauseError(error: ParserError): boolean {
+    const context = this.matchErrorToContext(error);
+    return context instanceof Parser.SoqlSelectClauseContext
+      && context.exception instanceof InputMismatchException
+      && !this.hasNonErrorChildren(context);
+  }
+
   protected isNoSelectionsError(error: ParserError): boolean {
     const context = this.matchErrorToContext(error);
     return context instanceof Parser.SoqlSelectClauseContext
       && context.exception instanceof NoViableAltException
       && !this.hasNonErrorChildren(context);
+  }
+
+  protected isNoFromClauseError(error: ParserError): boolean {
+    const context = this.matchErrorToContext(error);
+    return context instanceof Parser.SoqlFromClauseContext
+      && context.exception instanceof InputMismatchException
+      && !this.hasNonErrorChildren(context);
+  }
+
+  protected isIncompleteFromError(error: ParserError): boolean {
+    const context = this.matchErrorToContext(error);
+    return context instanceof Parser.SoqlIdentifierContext
+      && context.parentCtx instanceof Parser.SoqlFromExprContext
+      && context.exception instanceof InputMismatchException;
   }
 
   protected findExceptions(context: ParserRuleContext): void {
