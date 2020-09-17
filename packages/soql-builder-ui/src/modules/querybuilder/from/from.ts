@@ -12,6 +12,7 @@ export default class From extends LightningElement {
   @api sobjects: string[];
   @api selected: string;
   @api hasError = false;
+  @api isLoading = false;
   get filteredSObjects() {
     return this.sobjects.filter((sobject) => {
       return sobject !== this.selected;
@@ -20,6 +21,11 @@ export default class From extends LightningElement {
 
   get hasSelected() {
     return !!this.selected;
+  }
+
+  get defaultOptionText() {
+    // TODO: i18n
+    return this.isLoading ? '...loading...' : '--- Select an Object ---';
   }
 
   handleSobjectSelection(e) {

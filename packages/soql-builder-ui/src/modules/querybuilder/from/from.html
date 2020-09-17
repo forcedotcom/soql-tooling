@@ -19,19 +19,22 @@
       <select
         name="sobject-select"
         class="select-long"
-        onclick={handleSobjectSelection}
+        onchange={handleSobjectSelection}
       >
         <!-- this is an unfortunate limitation of lwc.  probably need to implement lightning-combobox here -->
         <template if:true={hasSelected}>
           <option key={selected} value={selected}>{selected}</option>
         </template>
         <template if:false={hasSelected}>
-          <option value="">--- Select an sObject ---</option>
+          <option value="">{defaultOptionText}</option>
         </template>
         <template for:each={filteredSObjects} for:item="sObject">
           <option key={sObject} value={sObject}>{sObject}</option>
         </template>
       </select>
+      <template if:true={isLoading}
+        ><div class="text-color-required">...loading...</div></template
+      >
     </div>
   </div>
 </template>

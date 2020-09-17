@@ -31,9 +31,14 @@ export default class App extends LightningElement {
       : 0;
   }
 
+  get blockQueryBuilder() {
+    return this.hasUnknownError || this.hasUnsupported;
+  }
   hasFieldsError = false;
   hasFromError = false;
   hasUnknownError = true;
+  isFromLoading = false;
+  isFieldsLoading = false;
 
   @track
   query: ToolingModelJson;
@@ -48,25 +53,26 @@ export default class App extends LightningElement {
 
   connectedCallback() {
     this.modelService.query.subscribe((newQuery: ToolingModelJson) => {
-      this.inspectErrors(this.query.errors);
+      console.log('incoming query change: ', JSON.stringify(newQuery));
+      this.inspectErrors(newQuery.errors);
       if (this.hasUnknownError === false) {
         this.loadSObjectMetadata(newQuery);
       }
-      console.log('incoming query change: ', JSON.stringify(this.query));
       this.query = newQuery;
     });
 
     this.toolingSDK.sobjects.subscribe((objs: string[]) => {
+      this.isFromLoading = false;
       this.sObjects = objs;
     });
     this.toolingSDK.sobjectMetadata.subscribe((sobjectMetadata: any) => {
+      this.isFieldsLoading = false;
       this.fields =
         sobjectMetadata && sobjectMetadata.fields
           ? sobjectMetadata.fields.map((f) => f.name)
           : [];
     });
-
-    this.toolingSDK.loadSObjectDefinitions();
+    this.loadSObjectDefinitions();
     this.modelService.restoreViewState();
   }
 
@@ -74,15 +80,39 @@ export default class App extends LightningElement {
     //  this.synchronizeWithSobject();
   }
 
+  loadSObjectDefinitions() {
+    this.isFromLoading = true;
+    this.toolingSDK.loadSObjectDefinitions();
+  }
+
   loadSObjectMetadata(newQuery) {
+    console.log('loadSObjectMetadata: ');
     // need to handle a new sobject or a change in sobject;
     const previousSObject = this.query ? this.query.sObject : '';
     const newSObject = newQuery.sObject;
     if (!newSObject.length) {
+      console.log('loadSObjectMetadata: ', 'newSObject is empty');
+      this.fields = [];
       return;
     }
     if (previousSObject.length === 0 || previousSObject !== newSObject) {
-      this.toolingSDK.loadSObjectMetatada(newSObject);
+      console.log(
+        'loadSObjectMetadata: ',
+        previousSObject.length,
+        previousSObject !== newSObject,
+        previousSObject,
+        newSObject
+      );
+      this.onSObjectChanged(newSObject);
+    } else if (
+      previousSObject === newSObject &&
+      this.fields.length === 0 &&
+      this.isFieldsLoading === false
+    ) {
+      console.log('loading sobject metadata because fields are empty');
+      this.onSObjectChanged(newSObject);
+    } else {
+      console.log('loadSObjectMetadata: did not pass tests');
     }
   }
 
@@ -90,13 +120,18 @@ export default class App extends LightningElement {
     this.hasFieldsError = false;
     this.hasFromError = false;
     this.hasUnknownError = false;
+    console.log('inspecting errors: ', JSON.stringify(errors));
     errors.forEach((error) => {
+      console.log('     errors: ', error.type);
       // replace with imported types after fernando's work
       if (error.type === 'NOSELECTIONS') {
+        console.log('    hasFieldsError');
         this.hasFieldsError = true;
       } else if (error.type === 'INCOMPLETEFROM') {
+        console.log('    hasFromError');
         this.hasFromError = true;
       } else {
+        console.log('    hasUnknownError');
         this.hasUnknownError = true;
       }
     });
@@ -105,13 +140,15 @@ export default class App extends LightningElement {
   handleObjectChange(e) {
     const selectedSObjectName = e.detail.selectedSobject;
     this.onSObjectChanged(selectedSObjectName);
+    // when triggered by the ui, send message
+    this.modelService.setSObject(selectedSObjectName);
   }
 
   onSObjectChanged(sobjectName: string) {
-    this.fields = [];
     if (sobjectName) {
+      this.fields = [];
+      this.isFieldsLoading = true;
       this.toolingSDK.loadSObjectMetatada(sobjectName);
-      this.modelService.setSObject(sobjectName);
     }
   }
 
