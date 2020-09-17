@@ -26,7 +26,7 @@
           onobjectselected={handleObjectChange}
           sobjects={sObjects}
           selected={query.sObject}
-          has-error={hasFromError}
+          has-error={hasRecoverableFromError}
           is-loading={isFromLoading}
         ></querybuilder-from>
         <querybuilder-fields
@@ -34,7 +34,7 @@
           fields={fields}
           onfieldselected={handleFieldSelected}
           onfieldremoved={handleFieldRemoved}
-          has-error={hasFieldsError}
+          has-error={hasRecoverableFieldsError}
           is-loading={isFieldsLoading}
         ></querybuilder-fields>
       </section>

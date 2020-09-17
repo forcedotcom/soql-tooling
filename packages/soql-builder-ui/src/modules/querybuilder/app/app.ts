@@ -10,12 +10,18 @@ import { LightningElement, track } from 'lwc';
 import { ToolingSDK } from '../services/toolingSDK';
 import { MessageServiceFactory } from '../services/message/messageServiceFactory';
 
-// eslint-disable-next-line no-unused-vars
 import {
   ToolingModelService,
+  // eslint-disable-next-line no-unused-vars
   ToolingModelJson
 } from '../services/toolingModelService';
+// eslint-disable-next-line no-unused-vars
 import { IMessageService } from '../services/message/iMessageService';
+import {
+  recoverableErrors,
+  recoverableFieldErrors,
+  recoverableFromErrors
+} from '../error/errorModel';
 
 export default class App extends LightningElement {
   @track
@@ -32,11 +38,12 @@ export default class App extends LightningElement {
   }
 
   get blockQueryBuilder() {
-    return this.hasUnknownError || this.hasUnsupported;
+    return this.hasUnrecoverableError || this.hasUnsupported;
   }
-  hasFieldsError = false;
-  hasFromError = false;
-  hasUnknownError = true;
+  hasRecoverableFieldsError = false;
+  hasRecoverableFromError = false;
+  hasRecoverableError = true;
+  hasUnrecoverableError = true;
   isFromLoading = false;
   isFieldsLoading = false;
 
@@ -55,7 +62,7 @@ export default class App extends LightningElement {
     this.modelService.query.subscribe((newQuery: ToolingModelJson) => {
       console.log('incoming query change: ', JSON.stringify(newQuery));
       this.inspectErrors(newQuery.errors);
-      if (this.hasUnknownError === false) {
+      if (this.hasUnrecoverableError === false) {
         this.loadSObjectMetadata(newQuery);
       }
       this.query = newQuery;
@@ -117,22 +124,27 @@ export default class App extends LightningElement {
   }
 
   inspectErrors(errors) {
-    this.hasFieldsError = false;
-    this.hasFromError = false;
-    this.hasUnknownError = false;
+    this.hasRecoverableFieldsError = false;
+    this.hasRecoverableFromError = false;
+    this.hasUnrecoverableError = false;
     console.log('inspecting errors: ', JSON.stringify(errors));
     errors.forEach((error) => {
       console.log('     errors: ', error.type);
       // replace with imported types after fernando's work
-      if (error.type === 'NOSELECTIONS') {
-        console.log('    hasFieldsError');
-        this.hasFieldsError = true;
-      } else if (error.type === 'INCOMPLETEFROM') {
-        console.log('    hasFromError');
-        this.hasFromError = true;
+      if (recoverableErrors[error.type]) {
+        console.log('    hasRecoverableError');
+        this.hasRecoverableError = true;
+        if (recoverableFieldErrors[error.type]) {
+          console.log('    hasFieldsError');
+          this.hasRecoverableFieldsError = true;
+        }
+        if (recoverableFromErrors[error.type]) {
+          console.log('    hasFromError');
+          this.hasRecoverableFromError = true;
+        }
       } else {
         console.log('    hasUnknownError');
-        this.hasUnknownError = true;
+        this.hasUnrecoverableError = true;
       }
     });
   }

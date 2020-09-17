@@ -28,9 +28,6 @@
           <option key={field} value={field}>{field}</option>
         </template>
       </select>
-      <template if:true={isLoading}
-        ><div class="text-color-required">...loading...</div></template
-      >
       <div class="selected-fields-container">
         <template for:each={selectedFields} for:item="field">
           <div class="selected-field" key={field}>

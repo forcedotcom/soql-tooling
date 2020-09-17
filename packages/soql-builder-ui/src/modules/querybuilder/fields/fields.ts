@@ -14,6 +14,7 @@ export default class Fields extends LightningElement {
   @api isLoading = false;
 
   get defaultOptionText() {
+    // TODO: i18n
     return this.isLoading ? '...loading...' : '--- Select Fields ---';
   }
 
