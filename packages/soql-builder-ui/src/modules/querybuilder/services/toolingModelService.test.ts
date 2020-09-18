@@ -9,6 +9,8 @@
 import { ToolingModelService, ToolingModelJson } from './toolingModelService';
 import { VscodeMessageService } from './message/vscodeMessageService';
 import { IMessageService } from './message/iMessageService';
+import { getWindow, getVscode } from './globals';
+import { MessageType } from './message/soqlEditorEvent';
 
 describe('Tooling Model Service', () => {
   let modelService: ToolingModelService;
@@ -17,6 +19,8 @@ describe('Tooling Model Service', () => {
   let mockField2 = 'field2';
   let mockSobject = 'sObject1';
   let query: ToolingModelJson;
+  let window = getWindow();
+  let vscode;
 
   function checkForEmptyModel() {
     let toolingModel = modelService.getModel().toJS();
@@ -24,10 +28,15 @@ describe('Tooling Model Service', () => {
     expect(toolingModel.fields.length).toBe(0);
   }
 
+  function postMessageFromVSCode(message) {
+    const messageEvent = new MessageEvent('message', { data: message });
+    window.dispatchEvent(messageEvent);
+  }
   beforeEach(() => {
     messageService = new VscodeMessageService();
     messageService.setState = jest.fn();
     modelService = new ToolingModelService(messageService);
+    vscode = getVscode();
 
     checkForEmptyModel();
     query = undefined;
@@ -60,5 +69,16 @@ describe('Tooling Model Service', () => {
     expect(query!.fields).toContain(mockField2);
     // verify saves
     expect(messageService.setState).toHaveBeenCalledTimes(4);
+  });
+
+  it('Receive SOQL Text from editor', () => {
+    expect(query).toEqual({ sObject: '', fields: [] });
+
+    const soqlText = 'Select Name1, Id1 from Account1';
+    postMessageFromVSCode({
+      type: MessageType.TEXT_SOQL_CHANGED,
+      payload: soqlText
+    });
+    expect(query).toEqual({ sObject: 'Account1', fields: ['Name1', 'Id1'] });
   });
 });

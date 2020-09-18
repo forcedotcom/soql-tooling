@@ -67,21 +67,6 @@ describe('VscodeMessageService', () => {
     );
   });
 
-  xit('filters out messages for a while after sendMessage to prevent immediate callbacks', () => {
-    jest.useFakeTimers();
-    // this will trigger events to be rejected for some amount of time.
-    vscodeMessageService.sendMessage(postMessagePayload);
-    const messageEvent = new MessageEvent(messageType, postMessagePayload());
-    window.dispatchEvent(messageEvent);
-    expect(listener).toHaveBeenCalledTimes(0);
-    jest.runAllTimers();
-
-    // after time expires, this event will get accepted
-    window.dispatchEvent(messageEvent);
-    expect(listener).toHaveBeenCalledTimes(1);
-    jest.useRealTimers();
-  });
-
   it('filters out malformed SOQL event messages', () => {
     const messageEvent = new MessageEvent(messageType, {
       data: {
@@ -90,26 +75,5 @@ describe('VscodeMessageService', () => {
     });
     window.dispatchEvent(messageEvent);
     expect(listener).toHaveBeenCalledTimes(0);
-  });
-
-  xit('filters out incomplete queries', () => {
-    const incompleteQuery = { ...accountQuery };
-    incompleteQuery.sObject = 'Acco';
-    const messageEvent = new MessageEvent(
-      messageType,
-      postMessagePayload(JSON.stringify(incompleteQuery))
-    );
-    window.dispatchEvent(messageEvent);
-    expect(listener).toHaveBeenCalledTimes(0);
-  });
-
-  xit('filters out repeated queries', () => {
-    let messageEvent = new MessageEvent(messageType, postMessagePayload());
-    expect(listener).toHaveBeenCalledTimes(0);
-    window.dispatchEvent(messageEvent);
-    expect(listener).toHaveBeenCalledTimes(1);
-    messageEvent = new MessageEvent(messageType, postMessagePayload());
-    window.dispatchEvent(messageEvent);
-    expect(listener).toHaveBeenCalledTimes(1); // not incremented
   });
 });
