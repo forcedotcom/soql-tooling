@@ -89,13 +89,17 @@ export default class App extends LightningElement {
   loadSObjectMetadata(newQuery) {
     const previousSObject = this.query ? this.query.sObject : '';
     const newSObject = newQuery.sObject;
+    // if empty sobject, clear fields
     if (!newSObject.length) {
       this.fields = [];
       return;
     }
+    // if empty previous sobject or else new sobject does not match previous
     if (previousSObject.length === 0 || previousSObject !== newSObject) {
       this.onSObjectChanged(newSObject);
-    } else if (
+    }
+    // if no fields have been downloaded yet
+    else if (
       previousSObject === newSObject &&
       this.fields.length === 0 &&
       this.isFieldsLoading === false

@@ -8,11 +8,8 @@
  */
 
 import { api, createElement } from 'lwc';
-import { fromJS, List, Map } from 'immutable';
 import App from 'querybuilder/app';
-// import { MessageServiceFactory } from '../services/message/messageServiceFactory';
 import {
-  ToolingModel,
   ToolingModelJson,
   ToolingModelService
 } from '../services/toolingModelService';
@@ -21,14 +18,11 @@ import {
   MessageType,
   SoqlEditorEvent
 } from '../services/message/soqlEditorEvent';
-// import { IMessageService } from '../services/message/iMessageService';
 import { BehaviorSubject, Observable } from 'rxjs';
 import { ErrorType } from '../error/errorModel';
 import { MessageServiceFactory } from '../services/message/messageServiceFactory';
 import { IMessageService } from '../services/message/iMessageService';
-// import { JsonMap } from '@salesforce/ts-types';
 import { StandaloneMessageService } from '../services/message/standaloneMessageService';
-import { Tooling } from 'jsforce';
 
 class TestMessageService implements IMessageService {
   messagesToUI: Observable<SoqlEditorEvent> = new BehaviorSubject(

@@ -79,11 +79,9 @@ describe('Tooling Model Service', () => {
   });
 
   it('should handle error turning immutable model into js', () => {
-    // notbing
     checkForEmptyModel();
     const soqlEvent = { ...soqlEditorEvent };
     (soqlEvent.payload as ToolingModelJson).fields = ['Hey', 'Joe'];
-    // soqlEvent.payload = (new Error('boom') as unknown) as string;
     (messageService.messagesToUI as BehaviorSubject<SoqlEditorEvent>).next(
       soqlEvent
     );
@@ -91,7 +89,6 @@ describe('Tooling Model Service', () => {
   });
 
   it('should handle SOQL_TEXT_CHANGED event but not others', () => {
-    // notbing
     checkForEmptyModel();
     const soqlEvent = { ...soqlEditorEvent };
     (soqlEvent.payload as ToolingModelJson).fields = ['Hey', 'Joe'];
