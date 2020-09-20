@@ -14,9 +14,11 @@
     <div class="row">
       <section class="column query-builder">
         <template if:true={hasUnsupported}>
+          <!-- TODO: i18n -->
           <div class="text-color-required">Unsupported Syntax</div>
         </template>
         <template if:true={hasUnknownError}>
+          <!-- TODO: i18n -->
           <div class="text-color-required">Syntax Error</div>
         </template>
         <template if:true={blockQueryBuilder}>

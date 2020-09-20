@@ -113,7 +113,7 @@ export default class App extends LightningElement {
     this.hasRecoverableFromError = false;
     this.hasUnrecoverableError = false;
     errors.forEach((error) => {
-      // replace with imported types after fernando's work
+      // TODO: replace with imported types after fernando's work
       if (recoverableErrors[error.type]) {
         this.hasRecoverableError = true;
         if (recoverableFieldErrors[error.type]) {
