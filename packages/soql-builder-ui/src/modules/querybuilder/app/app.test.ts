@@ -63,6 +63,7 @@ describe('App should', () => {
     type: MessageType.TEXT_SOQL_CHANGED,
     payload: accountQuery
   };
+  let originalCreateFn;
   function createSoqlEditorEvent(queryOverride?, eventOverride?) {
     const query = { ...accountQuery, ...queryOverride };
     const event = { ...soqlEditorEvent, ...eventOverride };
@@ -71,6 +72,7 @@ describe('App should', () => {
   }
   beforeEach(() => {
     messageService = (new TestMessageService() as unknown) as StandaloneMessageService;
+    originalCreateFn = MessageServiceFactory.create;
     MessageServiceFactory.create = () => {
       return messageService;
     };
@@ -89,6 +91,7 @@ describe('App should', () => {
   });
 
   afterEach(() => {
+    MessageServiceFactory.create = originalCreateFn;
     jest.clearAllMocks();
     while (document.body.firstChild) {
       document.body.removeChild(document.body.firstChild);

@@ -12,7 +12,9 @@
       <label
         >Fields
         <template if:true={hasError}
-          ><span class="text-color-required">*</span></template
+          ><span class="text-color-required" data-el-has-error
+            >*</span
+          ></template
         ></label
       >
     </div>
@@ -23,7 +25,7 @@
         onclick={handleFieldSelection}
         multiple
       >
-        <option disabled>{defaultOptionText}</option>
+        <option disabled data-el-default-option>{defaultOptionText}</option>
         <template for:each={fields} for:item="field">
           <option key={field} value={field}>{field}</option>
         </template>

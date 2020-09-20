@@ -11,7 +11,9 @@
     <div class="section_label-container">
       <label
         >From<template if:true={hasError}
-          ><span class="text-color-required">*</span></template
+          ><span class="text-color-required" data-el-has-error
+            >*</span
+          ></template
         ></label
       >
     </div>
@@ -26,7 +28,7 @@
           <option key={selected} value={selected}>{selected}</option>
         </template>
         <template if:false={hasSelected}>
-          <option value="">{defaultOptionText}</option>
+          <option value="" data-el-default-option>{defaultOptionText}</option>
         </template>
         <template for:each={filteredSObjects} for:item="sObject">
           <option key={sObject} value={sObject}>{sObject}</option>

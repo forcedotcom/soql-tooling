@@ -59,7 +59,7 @@ export default class App extends LightningElement {
 
   connectedCallback() {
     this.modelService.query.subscribe((newQuery: ToolingModelJson) => {
-      qthis.inspectErrors(newQuery.errors);
+      this.inspectErrors(newQuery.errors);
       if (this.hasUnrecoverableError === false) {
         this.loadSObjectMetadata(newQuery);
       }
@@ -109,7 +109,6 @@ export default class App extends LightningElement {
     this.hasRecoverableFromError = false;
     this.hasUnrecoverableError = false;
     errors.forEach((error) => {
-      console.log('     errors: ', error.type);
       // replace with imported types after fernando's work
       if (recoverableErrors[error.type]) {
         this.hasRecoverableError = true;
