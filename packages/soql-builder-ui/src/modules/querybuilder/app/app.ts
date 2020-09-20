@@ -48,20 +48,18 @@ export default class App extends LightningElement {
   isFieldsLoading = false;
 
   @track
-  query: ToolingModelJson;
+  query: ToolingModelJson = ToolingModelService.toolingModelTemplate;
 
   constructor() {
     super();
     const messageService: IMessageService = MessageServiceFactory.create();
     this.toolingSDK = new ToolingSDK(messageService);
     this.modelService = new ToolingModelService(messageService);
-    this.query = this.modelService.toolingModelTemplate;
   }
 
   connectedCallback() {
     this.modelService.query.subscribe((newQuery: ToolingModelJson) => {
-      console.log('incoming query change: ', JSON.stringify(newQuery));
-      this.inspectErrors(newQuery.errors);
+      qthis.inspectErrors(newQuery.errors);
       if (this.hasUnrecoverableError === false) {
         this.loadSObjectMetadata(newQuery);
       }
@@ -83,43 +81,26 @@ export default class App extends LightningElement {
     this.modelService.restoreViewState();
   }
 
-  renderedCallback() {
-    //  this.synchronizeWithSobject();
-  }
-
   loadSObjectDefinitions() {
     this.isFromLoading = true;
     this.toolingSDK.loadSObjectDefinitions();
   }
 
   loadSObjectMetadata(newQuery) {
-    console.log('loadSObjectMetadata: ');
-    // need to handle a new sobject or a change in sobject;
     const previousSObject = this.query ? this.query.sObject : '';
     const newSObject = newQuery.sObject;
     if (!newSObject.length) {
-      console.log('loadSObjectMetadata: ', 'newSObject is empty');
       this.fields = [];
       return;
     }
     if (previousSObject.length === 0 || previousSObject !== newSObject) {
-      console.log(
-        'loadSObjectMetadata: ',
-        previousSObject.length,
-        previousSObject !== newSObject,
-        previousSObject,
-        newSObject
-      );
       this.onSObjectChanged(newSObject);
     } else if (
       previousSObject === newSObject &&
       this.fields.length === 0 &&
       this.isFieldsLoading === false
     ) {
-      console.log('loading sobject metadata because fields are empty');
       this.onSObjectChanged(newSObject);
-    } else {
-      console.log('loadSObjectMetadata: did not pass tests');
     }
   }
 
@@ -127,23 +108,18 @@ export default class App extends LightningElement {
     this.hasRecoverableFieldsError = false;
     this.hasRecoverableFromError = false;
     this.hasUnrecoverableError = false;
-    console.log('inspecting errors: ', JSON.stringify(errors));
     errors.forEach((error) => {
       console.log('     errors: ', error.type);
       // replace with imported types after fernando's work
       if (recoverableErrors[error.type]) {
-        console.log('    hasRecoverableError');
         this.hasRecoverableError = true;
         if (recoverableFieldErrors[error.type]) {
-          console.log('    hasFieldsError');
           this.hasRecoverableFieldsError = true;
         }
         if (recoverableFromErrors[error.type]) {
-          console.log('    hasFromError');
           this.hasRecoverableFromError = true;
         }
       } else {
-        console.log('    hasUnknownError');
         this.hasUnrecoverableError = true;
       }
     });

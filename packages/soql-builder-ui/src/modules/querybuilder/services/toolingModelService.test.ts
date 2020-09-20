@@ -6,9 +6,12 @@
  *
  */
 
+import { fromJS } from 'immutable';
 import { ToolingModelService, ToolingModelJson } from './toolingModelService';
 import { VscodeMessageService } from './message/vscodeMessageService';
 import { IMessageService } from './message/iMessageService';
+import { BehaviorSubject } from 'rxjs';
+import { MessageType, SoqlEditorEvent } from './message/soqlEditorEvent';
 
 describe('Tooling Model Service', () => {
   let modelService: ToolingModelService;
@@ -17,6 +20,15 @@ describe('Tooling Model Service', () => {
   let mockField2 = 'field2';
   let mockSobject = 'sObject1';
   let query: ToolingModelJson;
+  let accountQuery = {
+    sObject: 'Account',
+    fields: [],
+    errors: []
+  };
+  const soqlEditorEvent = {
+    type: MessageType.TEXT_SOQL_CHANGED,
+    payload: accountQuery
+  } as SoqlEditorEvent;
 
   function checkForEmptyModel() {
     let toolingModel = modelService.getModel().toJS();
@@ -27,6 +39,10 @@ describe('Tooling Model Service', () => {
   beforeEach(() => {
     messageService = new VscodeMessageService();
     messageService.setState = jest.fn();
+    messageService.sendMessage = jest.fn();
+    messageService.messagesToUI = new BehaviorSubject(
+      fromJS(ToolingModelService.toolingModelTemplate)
+    );
     modelService = new ToolingModelService(messageService);
 
     checkForEmptyModel();
@@ -60,5 +76,49 @@ describe('Tooling Model Service', () => {
     expect(query!.fields).toContain(mockField2);
     // verify saves
     expect(messageService.setState).toHaveBeenCalledTimes(4);
+  });
+
+  it('should handle error turning immutable model into js', () => {
+    // notbing
+    checkForEmptyModel();
+    const soqlEvent = { ...soqlEditorEvent };
+    (soqlEvent.payload as ToolingModelJson).fields = ['Hey', 'Joe'];
+    // soqlEvent.payload = (new Error('boom') as unknown) as string;
+    (messageService.messagesToUI as BehaviorSubject<SoqlEditorEvent>).next(
+      soqlEvent
+    );
+    expect(query!.fields.length).toBe(2);
+  });
+
+  it('should handle SOQL_TEXT_CHANGED event but not others', () => {
+    // notbing
+    checkForEmptyModel();
+    const soqlEvent = { ...soqlEditorEvent };
+    (soqlEvent.payload as ToolingModelJson).fields = ['Hey', 'Joe'];
+    (messageService.messagesToUI as BehaviorSubject<SoqlEditorEvent>).next(
+      soqlEvent
+    );
+    expect(query!.fields.length).toBe(2);
+    soqlEvent.type = MessageType.SOBJECTS_RESPONSE;
+    (soqlEvent.payload as ToolingModelJson).fields = ['What'];
+    (messageService.messagesToUI as BehaviorSubject<SoqlEditorEvent>).next(
+      soqlEvent
+    );
+    // Fields should not change
+    expect(query!.fields.length).toBe(2);
+  });
+
+  it('should send message when ui changes the query', () => {
+    expect(messageService.sendMessage).not.toHaveBeenCalled();
+    // Add
+    modelService.addField(mockField1);
+    expect(messageService.sendMessage).toHaveBeenCalled();
+  });
+
+  it('should restore state', () => {
+    expect(query!.sObject).toEqual('');
+    jest.spyOn(messageService, 'getState').mockReturnValue(accountQuery);
+    modelService.restoreViewState();
+    expect(query!.sObject).toEqual(accountQuery.sObject);
   });
 });

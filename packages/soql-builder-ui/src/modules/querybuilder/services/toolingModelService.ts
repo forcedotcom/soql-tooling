@@ -16,7 +16,7 @@ import { SoqlEditorEvent, MessageType } from './message/soqlEditorEvent';
 // This is to satisfy TS and stay dry
 type IMap = Map<string, string | List<string>>;
 // Private immutable interface
-interface ToolingModel extends IMap {
+export interface ToolingModel extends IMap {
   sObject: string;
   fields: List<string>;
 }
@@ -31,20 +31,20 @@ export interface ToolingModelJson extends JsonMap {
 export class ToolingModelService {
   private model: BehaviorSubject<ToolingModel>;
   public query: Observable<ToolingModelJson>;
-  public toolingModelTemplate: ToolingModelJson;
+  public static toolingModelTemplate: ToolingModelJson = {
+    sObject: '',
+    fields: [],
+    errors: [],
+    unsupported: []
+  } as ToolingModelJson;
   private messageService: IMessageService;
   private latest: ToolingModelJson;
 
   constructor(messageService: IMessageService) {
     this.messageService = messageService;
-    this.toolingModelTemplate = {
-      sObject: '',
-      fields: [],
-      errors: [],
-      unsupported: []
-    } as ToolingModelJson;
-
-    this.model = new BehaviorSubject(fromJS(this.toolingModelTemplate));
+    this.model = new BehaviorSubject(
+      fromJS(ToolingModelService.toolingModelTemplate)
+    );
     this.model.subscribe(this.saveViewState.bind(this));
     this.query = this.model.pipe(
       map((soqlQueryModel) => {
@@ -52,7 +52,7 @@ export class ToolingModelService {
           return (soqlQueryModel as IMap).toJS();
         } catch (e) {
           console.error('Unexpected Error in SOQL model: ' + e);
-          return this.toolingModelTemplate;
+          return ToolingModelService.toolingModelTemplate;
         }
       })
     );
@@ -72,12 +72,11 @@ export class ToolingModelService {
   }
   // This method is destructive, will clear any selections except sObject.
   public setSObject(sObject: string) {
-    const emptyModel = fromJS(this.toolingModelTemplate);
+    const emptyModel = fromJS(ToolingModelService.toolingModelTemplate);
     const newModelWithSelection = emptyModel.set('sObject', sObject);
 
     this.model.next(newModelWithSelection);
-    console.log('pending query change from setSObject');
-    this.generateQuery();
+    this.sendMessageToBackend();
   }
 
   public addField(field: string) {
@@ -88,8 +87,7 @@ export class ToolingModelService {
     ) as ToolingModel;
 
     this.model.next(newModelWithAddedField);
-    console.log('pending query change from addField');
-    this.generateQuery();
+    this.sendMessageToBackend();
   }
 
   public removeField(field: string) {
@@ -102,8 +100,7 @@ export class ToolingModelService {
     ) as ToolingModel;
 
     this.model.next(newModelWithFieldRemoved);
-    console.log('pending query change from removeField');
-    this.generateQuery();
+    this.sendMessageToBackend();
   }
 
   private onMessage(event: SoqlEditorEvent) {
@@ -131,8 +128,7 @@ export class ToolingModelService {
     }
   }
 
-  public generateQuery() {
-    console.log('outgoing query change: ', JSON.stringify(this.latest));
+  public sendMessageToBackend() {
     try {
       this.messageService.sendMessage({
         type: MessageType.UI_SOQL_CHANGED,
@@ -148,6 +144,6 @@ export class ToolingModelService {
   }
   private getSavedState() {
     const savedState = this.messageService.getState();
-    return fromJS(savedState || this.toolingModelTemplate);
+    return fromJS(savedState || ToolingModelService.toolingModelTemplate);
   }
 }
