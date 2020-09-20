@@ -6,6 +6,7 @@
  */
 
 import { ModelDeserializer } from './deserializer';
+import { ErrorType } from '../model/model';
 
 const testQueryModel = {
   select: {
@@ -109,7 +110,7 @@ describe('ModelDeserializer should', () => {
     const expected = testQueryModel;
     const actual = new ModelDeserializer(
       'SELECT field1, field2, field3 alias3, (SELECT fieldA FROM objectA), TYPEOF obj WHEN typeX THEN fieldX ELSE fieldY END FROM object1 ' +
-        'WHERE field1 = 5 WITH DATA CATEGORY cat__c AT val__c GROUP BY field1 ORDER BY field2 DESC NULLS LAST LIMIT 20 OFFSET 2 BIND field1 = 5 FOR VIEW UPDATE TRACKING'
+      'WHERE field1 = 5 WITH DATA CATEGORY cat__c AT val__c GROUP BY field1 ORDER BY field2 DESC NULLS LAST LIMIT 20 OFFSET 2 BIND field1 = 5 FOR VIEW UPDATE TRACKING'
     ).deserialize();
     expect(actual).toEqual(expected);
   });
@@ -121,7 +122,53 @@ describe('ModelDeserializer should', () => {
     expect(model.errors?.length).toEqual(expectedErrors);
   });
 
-  it('model parse errors with no parse results as thrown error', () => {
-    expect(() => new ModelDeserializer('').deserialize()).toThrow();
+  it('identify no selections error', () => {
+    const expectedType = ErrorType.NOSELECTIONS;
+    const model = new ModelDeserializer('SELECT FROM object1').deserialize();
+    if (model.errors && model.errors.length === 1) {
+      expect(model.errors[0].type).toEqual(expectedType);
+    } else {
+      fail();
+    }
+  });
+
+  it('identify no SELECT clause error', () => {
+    const expectedType = ErrorType.NOSELECT;
+    const model = new ModelDeserializer('FROM object1').deserialize();
+    if (model.errors && model.errors.length === 1) {
+      expect(model.errors[0].type).toEqual(expectedType);
+    } else {
+      fail();
+    }
+  });
+
+  it('identify incomplete FROM clause error', () => {
+    const expectedType = ErrorType.INCOMPLETEFROM;
+    const model = new ModelDeserializer('SELECT A FROM ').deserialize();
+    if (model.errors && model.errors.length === 1) {
+      expect(model.errors[0].type).toEqual(expectedType);
+    } else {
+      fail();
+    }
+  });
+
+  it('identify no FROM clause error', () => {
+    const expectedType = ErrorType.NOFROM;
+    const model = new ModelDeserializer('SELECT A').deserialize();
+    if (model.errors && model.errors.length === 1) {
+      expect(model.errors[0].type).toEqual(expectedType);
+    } else {
+      fail();
+    }
+  });
+
+  it('identify empty statement error', () => {
+    const expectedType = ErrorType.EMPTY;
+    const model = new ModelDeserializer('').deserialize();
+    if (model.errors && model.errors.length === 1) {
+      expect(model.errors[0].type).toEqual(expectedType);
+    } else {
+      fail();
+    }
   });
 });
