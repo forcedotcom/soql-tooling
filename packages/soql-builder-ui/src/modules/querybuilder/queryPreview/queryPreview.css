@@ -7,11 +7,22 @@
  */
 
 .query-preview-container {
-    display: inline-block;
-    width: 500px;
-    border: 1px solid grey;
+  display: inline-block;
+  width: 400px;
+  border: 1px solid grey;
+  border-radius: 4px;
 }
+.query-preview-container .header {
+  padding: 5px;
+  font-size: 90%;
+  border-bottom: 1px solid grey;
+}
+.query-preview-container .query {
+  color: #a7b3f0;
+  white-space: pre-wrap;
+}
+
 pre {
-    padding: 10px;
-    white-space: pre-wrap;
+  margin: 1em;
+  white-space: pre-wrap;
 }
