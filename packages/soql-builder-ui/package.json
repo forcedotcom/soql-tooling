@@ -9,7 +9,8 @@
   },
   "dependencies": {
     "immutable": "3.8.2",
-    "rxjs": "^6.6.2"
+    "rxjs": "^6.6.2",
+    "@salesforce/soql-model": "0.1.0"
   },
   "devDependencies": {
     "@lwc/jest-preset": "^7.0.0",
@@ -31,7 +32,7 @@
   "license": "MIT",
   "main": "dist/",
   "scripts": {
-    "build": "lwc-services build -m production",
+    "build": "lwc-services build -w webpack.config.js -m production",
     "publish:lwc": "npm publish .",
     "lint": "eslint ./src/**/*.ts",
     "prettier": "prettier --write \"**/*.{css,html,js,json,md,ts,yaml,yml}\"",
