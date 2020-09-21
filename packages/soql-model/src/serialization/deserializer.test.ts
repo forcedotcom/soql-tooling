@@ -11,9 +11,9 @@ import { ErrorType } from '../model/model';
 const testQueryModel = {
   select: {
     selectExpressions: [
-      { fieldName: 'field1' },
-      { fieldName: 'field2' },
-      { fieldName: 'field3', alias: { unmodeledSyntax: 'alias3' } },
+      { field: { fieldName: 'field1' } },
+      { field: { fieldName: 'field2' } },
+      { field: { fieldName: 'field3' }, alias: { unmodeledSyntax: 'alias3' } },
       { unmodeledSyntax: '(SELECT fieldA FROM objectA)' },
       { unmodeledSyntax: 'TYPEOF obj WHEN typeX THEN fieldX ELSE fieldY END' },
     ],
@@ -22,7 +22,9 @@ const testQueryModel = {
   where: { unmodeledSyntax: 'WHERE field1 = 5' },
   with: { unmodeledSyntax: 'WITH DATA CATEGORY cat__c AT val__c' },
   groupBy: { unmodeledSyntax: 'GROUP BY field1' },
-  orderBy: { unmodeledSyntax: 'ORDER BY field2 DESC NULLS LAST' },
+  orderBy: {
+    orderByExpressions: [{ field: { fieldName: 'field2' }, order: 'DESC', nullsOrder: 'NULLS LAST' }]
+  },
   limit: { unmodeledSyntax: 'LIMIT 20' },
   offset: { unmodeledSyntax: 'OFFSET 2' },
   bind: { unmodeledSyntax: 'BIND field1 = 5' },
@@ -106,7 +108,7 @@ describe('ModelDeserializer should', () => {
     expect(actual).toEqual(expected);
   });
 
-  it('model all non-SELECT and non-FROM clauses as unmodeled syntax', () => {
+  it('model all unmodeled clauses as unmodeled syntax', () => {
     const expected = testQueryModel;
     const actual = new ModelDeserializer(
       'SELECT field1, field2, field3 alias3, (SELECT fieldA FROM objectA), TYPEOF obj WHEN typeX THEN fieldX ELSE fieldY END FROM object1 ' +

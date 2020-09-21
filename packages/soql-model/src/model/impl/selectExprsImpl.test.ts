@@ -10,15 +10,15 @@ import * as Impl from '.';
 describe('SelectExprsImpl should', () => {
   it('store select expressions', () => {
     const expected = {
-      selectExpressions: [{ fieldName: 'sticky' }, { fieldName: 'fingers' }],
+      selectExpressions: [{ field: { fieldName: 'sticky' } }, { field: { fieldName: 'fingers' } }]
     };
     const actual = new Impl.SelectExprsImpl([
-      new Impl.FieldRefImpl(expected.selectExpressions[0].fieldName),
-      new Impl.FieldRefImpl(expected.selectExpressions[1].fieldName),
+      new Impl.FieldSelectionImpl(new Impl.FieldRefImpl(expected.selectExpressions[0].field.fieldName)),
+      new Impl.FieldSelectionImpl(new Impl.FieldRefImpl(expected.selectExpressions[1].field.fieldName))
     ]);
     expect(actual).toEqual(expected);
   });
-  it('return SELECT * when there are no select expressions for toSoqlSyntax()', () => {
+  it('return SELECT when there are no select expressions for toSoqlSyntax()', () => {
     const expected = 'SELECT ';
     const actual = new Impl.SelectExprsImpl([]).toSoqlSyntax();
     expect(actual).toEqual(expected);
@@ -26,9 +26,9 @@ describe('SelectExprsImpl should', () => {
   it('return comma separated list of fields for toSoqlSyntax()', () => {
     const expected = 'SELECT let, it, bleed';
     const actual = new Impl.SelectExprsImpl([
-      new Impl.FieldRefImpl('let'),
-      new Impl.FieldRefImpl('it'),
-      new Impl.FieldRefImpl('bleed'),
+      new Impl.FieldSelectionImpl(new Impl.FieldRefImpl('let')),
+      new Impl.FieldSelectionImpl(new Impl.FieldRefImpl('it')),
+      new Impl.FieldSelectionImpl(new Impl.FieldRefImpl('bleed'))
     ]).toSoqlSyntax();
     expect(actual).toEqual(expected);
   });
