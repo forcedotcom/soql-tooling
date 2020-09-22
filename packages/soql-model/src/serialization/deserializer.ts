@@ -5,12 +5,16 @@
  * For full license text, see LICENSE.txt file in the repo root or https://opensource.org/licenses/BSD-3-Clause
  */
 
-import { SOQLParser } from '@salesforce/soql-parser';
+import { SOQLParser, ParserError } from '@salesforce/soql-parser';
 import { SoqlParserListener } from '@salesforce/soql-parser/lib/SoqlParserListener';
 import * as Parser from '@salesforce/soql-parser/lib/SoqlParser';
+import { Messages } from '../messages/messages';
 import * as Soql from '../model/model';
 import * as Impl from '../model/impl';
 import { ParserRuleContext, Token } from 'antlr4';
+import { ErrorNodeImpl } from 'antlr4/tree/Tree';
+import { NoViableAltException, InputMismatchException } from 'antlr4/error/Errors';
+
 
 export class ModelDeserializer {
   protected soqlSyntax: string;
@@ -34,13 +38,8 @@ export class ModelDeserializer {
       query = queryListener.getQuery();
     }
 
-    const modelErrors: Soql.ModelError[] = errors.map((error) => {
-      return {
-        message: error.getMessage(),
-        lineNumber: error.getLineNumber(),
-        charInLine: error.getCharacterPositionInLine(),
-      };
-    });
+    const errorIdentifer = new ErrorIdentifier(parseTree);
+    const modelErrors = errors.map(error => errorIdentifer.identifyError(error));
     if (query) {
       query.errors = modelErrors;
     } else {
@@ -49,6 +48,134 @@ export class ModelDeserializer {
     return query;
   }
 }
+
+class ErrorIdentifier {
+  protected parseTree: ParserRuleContext;
+  protected nodesWithExceptions: ParserRuleContext[];
+  constructor(parseTree: ParserRuleContext) {
+    this.parseTree = parseTree;
+    this.nodesWithExceptions = [];
+    this.findExceptions(parseTree);
+  }
+
+  public identifyError(error: ParserError): Soql.ModelError {
+    if (this.isEmptyError(error)) {
+      return {
+        type: Soql.ErrorType.EMPTY,
+        message: Messages.error_empty,
+        lineNumber: error.getLineNumber(),
+        charInLine: error.getCharacterPositionInLine()
+      };
+    }
+    if (this.isNoSelectClauseError(error)) {
+      return {
+        type: Soql.ErrorType.NOSELECT,
+        message: Messages.error_noSelections,
+        lineNumber: error.getLineNumber(),
+        charInLine: error.getCharacterPositionInLine()
+      };
+    }
+    if (this.isNoSelectionsError(error)) {
+      return {
+        type: Soql.ErrorType.NOSELECTIONS,
+        message: Messages.error_noSelections,
+        lineNumber: error.getLineNumber(),
+        charInLine: error.getCharacterPositionInLine()
+      };
+    }
+    if (this.isNoFromClauseError(error)) {
+      return {
+        type: Soql.ErrorType.NOFROM,
+        message: Messages.error_noFrom,
+        lineNumber: error.getLineNumber(),
+        charInLine: error.getCharacterPositionInLine()
+      };
+    }
+    if (this.isIncompleteFromError(error)) {
+      return {
+        type: Soql.ErrorType.INCOMPLETEFROM,
+        message: Messages.error_incompleteFrom,
+        lineNumber: error.getLineNumber(),
+        charInLine: error.getCharacterPositionInLine()
+      };
+    }
+    return {
+      type: Soql.ErrorType.UNKNOWN,
+      message: error.getMessage(),
+      lineNumber: error.getLineNumber(),
+      charInLine: error.getCharacterPositionInLine()
+    }
+  }
+
+  protected isEmptyError(error: ParserError): boolean {
+    return this.parseTree.start.type === Token.EOF;
+  }
+
+  protected isNoSelectClauseError(error: ParserError): boolean {
+    const context = this.matchErrorToContext(error);
+    return context instanceof Parser.SoqlSelectClauseContext
+      && context.exception instanceof InputMismatchException
+      && !this.hasNonErrorChildren(context);
+  }
+
+  protected isNoSelectionsError(error: ParserError): boolean {
+    const context = this.matchErrorToContext(error);
+    return context instanceof Parser.SoqlSelectClauseContext
+      && context.exception instanceof NoViableAltException
+      && !this.hasNonErrorChildren(context);
+  }
+
+  protected isNoFromClauseError(error: ParserError): boolean {
+    const context = this.matchErrorToContext(error);
+    return context instanceof Parser.SoqlFromClauseContext
+      && context.exception instanceof InputMismatchException
+      && !this.hasNonErrorChildren(context);
+  }
+
+  protected isIncompleteFromError(error: ParserError): boolean {
+    const context = this.matchErrorToContext(error);
+    return context instanceof Parser.SoqlIdentifierContext
+      && context.parentCtx instanceof Parser.SoqlFromExprContext
+      && context.exception instanceof InputMismatchException;
+  }
+
+  protected findExceptions(context: ParserRuleContext): void {
+    if (context.exception) {
+      this.nodesWithExceptions.push(context);
+    }
+    if (context.getChildCount() > 0) {
+      for (let i = 0; i < context.getChildCount(); i++) {
+        const child = context.getChild(i);
+        if (child instanceof ParserRuleContext) {
+          this.findExceptions(child as ParserRuleContext);
+        }
+      }
+    }
+  }
+
+  protected matchErrorToContext(error: ParserError): ParserRuleContext | undefined {
+    for (let i = 0; i < this.nodesWithExceptions.length; i++) {
+      const node = this.nodesWithExceptions[i];
+      if (node.exception.offendingToken === error.getToken()) {
+        return node;
+      }
+    }
+    return undefined;
+  }
+
+  protected hasNonErrorChildren(context: ParserRuleContext): boolean {
+    if (context.getChildCount() > 0) {
+      for (let i = 0; i < context.getChildCount(); i++) {
+        const child = context.getChild(i);
+        if (!(child instanceof ErrorNodeImpl)) {
+          return true;
+        }
+      }
+    }
+    return false
+  }
+}
+
 class QueryListener extends SoqlParserListener {
   public query?: Soql.Query;
   public select?: Soql.Select;
@@ -76,9 +203,9 @@ class QueryListener extends SoqlParserListener {
     }
     const using = ctx.soqlUsingClause()
       ? this.toUnmodeledSyntax(
-          ctx.soqlUsingClause().start,
-          ctx.soqlUsingClause().stop
-        )
+        ctx.soqlUsingClause().start,
+        ctx.soqlUsingClause().stop
+      )
       : undefined;
     this.from = new Impl.FromImpl(sobjectName, as, using);
   }
@@ -87,11 +214,10 @@ class QueryListener extends SoqlParserListener {
     const fromExprContexts = ctx.getTypedRuleContexts(
       Parser.SoqlFromExprContext
     );
-    if (!fromExprContexts || fromExprContexts.length !== 1) {
-      throw Error('FROM clause is incorrectly specified');
+    if (fromExprContexts && fromExprContexts.length === 1) {
+      const fromCtx = fromExprContexts[0];
+      fromCtx.enterRule(this);
     }
-    const fromCtx = fromExprContexts[0];
-    fromCtx.enterRule(this);
   }
 
   public enterSoqlFromClause(ctx: Parser.SoqlFromClauseContext): void {
@@ -134,26 +260,27 @@ class QueryListener extends SoqlParserListener {
 
   public enterSoqlInnerQuery(ctx: Parser.SoqlInnerQueryContext): void {
     const selectCtx = ctx.soqlSelectClause();
-    if (!selectCtx) {
-      throw Error('No select clause');
-    }
-    // normally we would want to selectCtx.enterRule(this) and delegate to
-    // other functions but the antr4-tool's typescript definitions are not
-    // perfect for listeners; workaround by type-checking
-    if (selectCtx instanceof Parser.SoqlSelectExprsClauseContext) {
-      (selectCtx as Parser.SoqlSelectExprsClauseContext)
-        .soqlSelectExprs()
-        .enterRule(this);
-      this.select = new Impl.SelectExprsImpl(this.selectExpressions);
-    } else {
-      // not a modeled case
-      this.select = this.toUnmodeledSyntax(selectCtx.start, selectCtx.stop);
+    if (selectCtx) {
+      // normally we would want to selectCtx.enterRule(this) and delegate to
+      // other functions but the antr4-tool's typescript definitions are not
+      // perfect for listeners; workaround by type-checking
+      if (selectCtx instanceof Parser.SoqlSelectExprsClauseContext) {
+        (selectCtx as Parser.SoqlSelectExprsClauseContext)
+          .soqlSelectExprs()
+          .enterRule(this);
+        this.select = new Impl.SelectExprsImpl(this.selectExpressions);
+      } else if (selectCtx instanceof Parser.SoqlSelectCountClauseContext) {
+        // not a modeled case
+        this.select = this.toUnmodeledSyntax(selectCtx.start, selectCtx.stop);
+      } else {
+        // no selections
+        this.select = new Impl.SelectExprsImpl([]);
+      }
     }
     const fromCtx = ctx.soqlFromClause();
-    if (!fromCtx) {
-      throw Error('No from clause');
+    if (fromCtx) {
+      fromCtx.enterRule(this);
     }
-    fromCtx.enterRule(this);
 
     const whereCtx = ctx.soqlWhereClause();
     if (whereCtx) {
@@ -199,21 +326,19 @@ class QueryListener extends SoqlParserListener {
   public enterSoqlQuery(ctx: Parser.SoqlQueryContext): void {
     const innerCtx = ctx.soqlInnerQuery();
     innerCtx.enterRule(this);
-    if (this.select && this.from) {
-      this.query = new Impl.QueryImpl(
-        this.select,
-        this.from,
-        this.where,
-        this.with,
-        this.groupBy,
-        this.orderBy,
-        this.limit,
-        this.offset,
-        this.bind,
-        this.recordTrackingType,
-        this.update
-      );
-    }
+    this.query = new Impl.QueryImpl(
+      this.select,
+      this.from,
+      this.where,
+      this.with,
+      this.groupBy,
+      this.orderBy,
+      this.limit,
+      this.offset,
+      this.bind,
+      this.recordTrackingType,
+      this.update
+    );
   }
 
   public getQuery(): Soql.Query | undefined {

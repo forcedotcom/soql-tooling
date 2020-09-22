@@ -6,10 +6,21 @@
  */
 import * as Parser from '@salesforce/soql-parser';
 
+
 export interface ModelError {
+  type: ErrorType;
   message: string;
   lineNumber: number;
   charInLine: number;
+}
+
+export enum ErrorType {
+  UNKNOWN = 'UNKNOWN',
+  EMPTY = 'EMPTY',
+  NOSELECT = 'NOSELECT',
+  NOSELECTIONS = 'NOSELECTIONS',
+  NOFROM = 'NOFROM',
+  INCOMPLETEFROM = 'INCOMPLETEFROM'
 }
 
 export interface SoqlModelObject {
@@ -23,8 +34,8 @@ export class SyntaxOptions {
 }
 
 export interface Query extends SoqlModelObject {
-  select: Select;
-  from: From;
+  select?: Select;
+  from?: From;
   where?: Where;
   with?: With;
   groupBy?: GroupBy;
@@ -68,28 +79,28 @@ export interface FieldRef extends Field {
   fieldName: string;
 }
 
-export interface Where extends SoqlModelObject {}
-export interface With extends SoqlModelObject {}
-export interface GroupBy extends SoqlModelObject {}
-export interface OrderBy extends SoqlModelObject {}
-export interface Limit extends SoqlModelObject {}
-export interface Offset extends SoqlModelObject {}
-export interface Bind extends SoqlModelObject {}
-export interface RecordTrackingType extends SoqlModelObject {}
-export interface Update extends SoqlModelObject {}
+export interface Where extends SoqlModelObject { }
+export interface With extends SoqlModelObject { }
+export interface GroupBy extends SoqlModelObject { }
+export interface OrderBy extends SoqlModelObject { }
+export interface Limit extends SoqlModelObject { }
+export interface Offset extends SoqlModelObject { }
+export interface Bind extends SoqlModelObject { }
+export interface RecordTrackingType extends SoqlModelObject { }
+export interface Update extends SoqlModelObject { }
 
 export interface UnmodeledSyntax
   extends Select,
-    SelectExpression,
-    Field,
-    Where,
-    With,
-    GroupBy,
-    OrderBy,
-    Limit,
-    Offset,
-    Bind,
-    RecordTrackingType,
-    Update {
+  SelectExpression,
+  Field,
+  Where,
+  With,
+  GroupBy,
+  OrderBy,
+  Limit,
+  Offset,
+  Bind,
+  RecordTrackingType,
+  Update {
   unmodeledSyntax: string;
 }

@@ -7,15 +7,12 @@
  -->
 
 <template
-    ><div class="query-preview-container">
-        <div>
-            <pre style="border: 1px dashed red; margin: 1rem;">Query Model: {queryPreview}</pre>
-            <pre style="color: grey;">
-                SELECT Name, AccountNumber, Type, NumberOfEmployees, BillingCity,
-                BillingCountry, BillingStreet, Website, Merchant_Type_c FROM Account
-                WHERE (NumberOfEmployees >= 50 AND Type != ‘Prospect’) OR
-                Merchant_Type_c = ‘Wholesale’ ORDER BY AccountNumber ASC
-            </pre>
-        </div>
+  ><div class="query-preview-container">
+    <div class="header">SOQL Query</div>
+    <div class="query">
+      <pre>
+          {queryPreview}
+      </pre>
     </div>
+  </div>
 </template>

@@ -12,6 +12,7 @@ import { map } from 'rxjs/operators';
 import { JsonMap } from '@salesforce/ts-types';
 import { IMessageService } from './message/iMessageService';
 import { SoqlEditorEvent, MessageType } from './message/soqlEditorEvent';
+import { convertUiModelToSoql, convertSoqlToUiModel } from '../services/soqlUtils';
 
 // This is to satisfy TS and stay dry
 type IMap = Map<string, string | List<string>>;
@@ -97,13 +98,17 @@ export class ToolingModelService {
     if (event && event.type) {
       switch (event.type) {
         case MessageType.TEXT_SOQL_CHANGED: {
-          const soqlJSModel = event.payload;
+          const soqlJSModel = convertSoqlToUiModel(event.payload as string);
           const updatedModel = fromJS(soqlJSModel);
           if (!updatedModel.equals(this.model.getValue())) {
             this.model.next(updatedModel);
           }
           break;
         }
+
+        default:
+          break;
+
       }
     }
   }
@@ -120,7 +125,7 @@ export class ToolingModelService {
     try {
       this.messageService.sendMessage({
         type: MessageType.UI_SOQL_CHANGED,
-        payload: jsModel
+        payload: convertUiModelToSoql(jsModel)
       });
     } catch (e) {
       console.error(e);
