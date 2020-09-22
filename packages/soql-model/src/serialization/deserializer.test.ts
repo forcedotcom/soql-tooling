@@ -23,7 +23,10 @@ const testQueryModel = {
   with: { unmodeledSyntax: 'WITH DATA CATEGORY cat__c AT val__c' },
   groupBy: { unmodeledSyntax: 'GROUP BY field1' },
   orderBy: {
-    orderByExpressions: [{ field: { fieldName: 'field2' }, order: 'DESC', nullsOrder: 'NULLS LAST' }]
+    orderByExpressions: [
+      { field: { fieldName: 'field2' }, order: 'DESC', nullsOrder: 'NULLS LAST' },
+      { field: { fieldName: 'field1' } }
+    ]
   },
   limit: { unmodeledSyntax: 'LIMIT 20' },
   offset: { unmodeledSyntax: 'OFFSET 2' },
@@ -112,7 +115,7 @@ describe('ModelDeserializer should', () => {
     const expected = testQueryModel;
     const actual = new ModelDeserializer(
       'SELECT field1, field2, field3 alias3, (SELECT fieldA FROM objectA), TYPEOF obj WHEN typeX THEN fieldX ELSE fieldY END FROM object1 ' +
-      'WHERE field1 = 5 WITH DATA CATEGORY cat__c AT val__c GROUP BY field1 ORDER BY field2 DESC NULLS LAST LIMIT 20 OFFSET 2 BIND field1 = 5 FOR VIEW UPDATE TRACKING'
+      'WHERE field1 = 5 WITH DATA CATEGORY cat__c AT val__c GROUP BY field1 ORDER BY field2 DESC NULLS LAST, field1 LIMIT 20 OFFSET 2 BIND field1 = 5 FOR VIEW UPDATE TRACKING'
     ).deserialize();
     expect(actual).toEqual(expected);
   });

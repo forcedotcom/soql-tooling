@@ -21,6 +21,11 @@ describe('OrderByImpl should', () => {
     ]);
     expect(actual).toEqual(expected);
   });
+  it('return "ORDER BY " for empty list of expressions for toSoqlSyntax()', () => {
+    const expected = 'ORDER BY ';
+    const actual = new Impl.OrderByImpl([]).toSoqlSyntax();
+    expect(actual).toEqual(expected);
+  });
   it('return comma separated list of fields for toSoqlSyntax()', () => {
     const expected = 'ORDER BY some, girls';
     const actual = new Impl.OrderByImpl([
