@@ -40,6 +40,8 @@ class TestApp extends App {
   isFromLoading = false;
   @api
   isFieldsLoading = false;
+  @api
+  hasUnrecoverableError = false;
 }
 
 describe('App should', () => {
@@ -47,18 +49,14 @@ describe('App should', () => {
   let messageService;
   let loadSObjectDefinitionsSpy;
   let loadSObjectMetadataSpy;
-  let accountQuery = {
-    sObject: 'Account',
-    fields: [],
-    errors: []
-  };
+  let accountQuery = 'SELECT Id FROM Account';
   let soqlEditorEvent = {
     type: MessageType.TEXT_SOQL_CHANGED,
     payload: accountQuery
   };
   let originalCreateFn;
-  function createSoqlEditorEvent(queryOverride?, eventOverride?) {
-    const query = { ...accountQuery, ...queryOverride };
+  function createSoqlEditorEvent(queryOverride = accountQuery, eventOverride?) {
+    const query = queryOverride;
     const event = { ...soqlEditorEvent, ...eventOverride };
     event.payload = query;
     return event;
@@ -109,9 +107,7 @@ describe('App should', () => {
       '.block-query-builder'
     );
     expect(blockingElement.length).toBeFalsy();
-    messageService.messagesToUI.next(
-      createSoqlEditorEvent({ errors: [{ type: ErrorType.UNKNOWN }] })
-    );
+    app.hasUnrecoverableError = true;
     return Promise.resolve().then(() => {
       blockingElement = app.shadowRoot.querySelectorAll('.block-query-builder');
       expect(blockingElement.length).toBeTruthy();
@@ -119,12 +115,13 @@ describe('App should', () => {
   });
 
   it('not block the query builder ui on recoverable error', async () => {
+    document.body.appendChild(app);
     let blockingElement = app.shadowRoot.querySelectorAll(
       '.block-query-builder'
     );
     expect(blockingElement.length).toBeFalsy();
     messageService.messagesToUI.next(
-      createSoqlEditorEvent({ errors: [{ type: ErrorType.EMPTY }] })
+      createSoqlEditorEvent('SELECT FROM Account')
     );
     return Promise.resolve().then(() => {
       blockingElement = app.shadowRoot.querySelectorAll('.block-query-builder');
@@ -143,7 +140,7 @@ describe('App should', () => {
     );
     expect(blockingElement.length).toBeFalsy();
     messageService.messagesToUI.next(
-      createSoqlEditorEvent({ unsupported: [{}] })
+      createSoqlEditorEvent('SELECT Id FROM Account WHERE')
     );
     return Promise.resolve().then(() => {
       blockingElement = app.shadowRoot.querySelectorAll('.block-query-builder');
@@ -173,7 +170,7 @@ describe('App should', () => {
     messageService.messagesToUI.next(createSoqlEditorEvent());
     expect(loadSObjectMetadataSpy.mock.calls.length).toEqual(1);
     messageService.messagesToUI.next(
-      createSoqlEditorEvent({ sObject: 'Contact' })
+      createSoqlEditorEvent('SELECT Id FROM Contact')
     );
     expect(loadSObjectMetadataSpy.mock.calls.length).toEqual(2);
     expect(loadSObjectMetadataSpy.mock.calls[1][0]).toEqual('Contact');
@@ -183,7 +180,7 @@ describe('App should', () => {
     expect(loadSObjectMetadataSpy).not.toHaveBeenCalled();
     app.fields = [];
     messageService.messagesToUI.next(
-      createSoqlEditorEvent({ sObject: 'Account' })
+      createSoqlEditorEvent('SELECT Id FROM Account')
     );
     expect(loadSObjectMetadataSpy.mock.calls.length).toEqual(1);
     expect(app.fields.length).toEqual(0);

@@ -12,6 +12,7 @@ import { VscodeMessageService } from './message/vscodeMessageService';
 import { IMessageService } from './message/iMessageService';
 import { BehaviorSubject } from 'rxjs';
 import { MessageType, SoqlEditorEvent } from './message/soqlEditorEvent';
+import { getVscode, getWindow } from './globals';
 
 describe('Tooling Model Service', () => {
   let modelService: ToolingModelService;
@@ -20,17 +21,14 @@ describe('Tooling Model Service', () => {
   let mockField2 = 'field2';
   let mockSobject = 'sObject1';
   let query: ToolingModelJson;
-  let accountQuery = {
-    sObject: 'Account',
-    fields: [],
-    errors: []
-  };
+  let jimmyQuery = 'SELECT Hey, Joe from JimmyHendrixCatalog';
+  let accountQuery = 'SELECT Id from Account';
   const soqlEditorEvent = {
     type: MessageType.TEXT_SOQL_CHANGED,
     payload: accountQuery
   } as SoqlEditorEvent;
 
-  function checkForEmptyModel() {
+  function checkForDefaultQuery() {
     let toolingModel = modelService.getModel().toJS();
     expect(toolingModel.sObject).toEqual('');
     expect(toolingModel.fields.length).toBe(0);
@@ -40,17 +38,22 @@ describe('Tooling Model Service', () => {
     messageService = new VscodeMessageService();
     messageService.setState = jest.fn();
     messageService.sendMessage = jest.fn();
-    messageService.messagesToUI = new BehaviorSubject(
-      fromJS(ToolingModelService.toolingModelTemplate)
-    );
+    messageService.messagesToUI = new BehaviorSubject({
+      type: MessageType.TEXT_SOQL_CHANGED,
+      payload: ''
+    });
     modelService = new ToolingModelService(messageService);
 
-    checkForEmptyModel();
+    checkForDefaultQuery();
     query = undefined;
 
     modelService.query.subscribe((val) => {
       query = val;
     });
+  });
+
+  afterEach(() => {
+    jest.resetAllMocks();
   });
 
   it('can set an SObject selection', () => {
@@ -60,7 +63,9 @@ describe('Tooling Model Service', () => {
   });
 
   it('can Add, Delete Fields and saves changes', () => {
-    expect(messageService.setState).toHaveBeenCalledTimes(1);
+    (messageService.setState as jest.Mock).mockClear();
+    expect(messageService.setState).toHaveBeenCalledTimes(0);
+    query = ToolingModelService.toolingModelTemplate;
 
     expect(query!.fields.length).toEqual(0);
 
@@ -75,13 +80,13 @@ describe('Tooling Model Service', () => {
     expect(query!.fields.length).toBe(1);
     expect(query!.fields).toContain(mockField2);
     // verify saves
-    expect(messageService.setState).toHaveBeenCalledTimes(4);
+    expect(messageService.setState).toHaveBeenCalledTimes(3);
   });
 
   it('should handle error turning immutable model into js', () => {
-    checkForEmptyModel();
+    checkForDefaultQuery();
     const soqlEvent = { ...soqlEditorEvent };
-    (soqlEvent.payload as ToolingModelJson).fields = ['Hey', 'Joe'];
+    soqlEvent.payload = jimmyQuery;
     (messageService.messagesToUI as BehaviorSubject<SoqlEditorEvent>).next(
       soqlEvent
     );
@@ -89,15 +94,15 @@ describe('Tooling Model Service', () => {
   });
 
   it('should handle SOQL_TEXT_CHANGED event but not others', () => {
-    checkForEmptyModel();
+    checkForDefaultQuery();
     const soqlEvent = { ...soqlEditorEvent };
-    (soqlEvent.payload as ToolingModelJson).fields = ['Hey', 'Joe'];
+    soqlEvent.payload = jimmyQuery;
     (messageService.messagesToUI as BehaviorSubject<SoqlEditorEvent>).next(
       soqlEvent
     );
     expect(query!.fields.length).toBe(2);
     soqlEvent.type = MessageType.SOBJECTS_RESPONSE;
-    (soqlEvent.payload as ToolingModelJson).fields = ['What'];
+    soqlEvent.payload = jimmyQuery.replace('Hey, Joe', 'What');
     (messageService.messagesToUI as BehaviorSubject<SoqlEditorEvent>).next(
       soqlEvent
     );
@@ -114,8 +119,30 @@ describe('Tooling Model Service', () => {
 
   it('should restore state', () => {
     expect(query!.sObject).toEqual('');
-    jest.spyOn(messageService, 'getState').mockReturnValue(accountQuery);
+    const accountJson = {
+      ...ToolingModelService.toolingModelTemplate
+    };
+    accountJson.sObject = 'Account';
+    jest.spyOn(messageService, 'getState').mockReturnValue(accountJson);
     modelService.restoreViewState();
-    expect(query!.sObject).toEqual(accountQuery.sObject);
+    expect(query!.sObject).toEqual(accountJson.sObject);
+  });
+  it('Receive SOQL Text from editor', () => {
+    const soqlText = 'Select Name1, Id1 from Account1';
+    const soqlEvent = { ...soqlEditorEvent };
+    soqlEvent.payload = soqlText;
+    (messageService.messagesToUI as BehaviorSubject<SoqlEditorEvent>).next(
+      soqlEvent
+    );
+    expect(query.sObject).toEqual('Account1');
+    expect(query.fields[0]).toEqual('Name1');
+    expect(query.fields[1]).toEqual('Id1');
+    expect(query.errors.length).toEqual(0);
+    expect(query.unsupported.length).toEqual(0);
+    //   sObject: 'Account1',
+    //   fields: ['Name1', 'Id1'],
+    //   errors: [],
+    //   unsupported: []
+    // });
   });
 });

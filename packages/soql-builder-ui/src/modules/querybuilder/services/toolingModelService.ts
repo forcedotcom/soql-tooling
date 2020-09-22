@@ -12,6 +12,10 @@ import { map, filter } from 'rxjs/operators';
 import { JsonMap } from '@salesforce/ts-types';
 import { IMessageService } from './message/iMessageService';
 import { SoqlEditorEvent, MessageType } from './message/soqlEditorEvent';
+import {
+  convertUiModelToSoql,
+  convertSoqlToUiModel
+} from '../services/soqlUtils';
 
 // This is to satisfy TS and stay dry
 type IMap = Map<string, string | List<string>>;
@@ -19,12 +23,14 @@ type IMap = Map<string, string | List<string>>;
 export interface ToolingModel extends IMap {
   sObject: string;
   fields: List<string>;
+  errors: JsonMap[]; // actually need to update this to immutable
+  unsupported: string[];
 }
 // Public inteface for accessing modelService.query
 export interface ToolingModelJson extends JsonMap {
   sObject: string;
   fields: string[];
-  errors: string[];
+  errors: JsonMap[];
   unsupported: string[];
 }
 
@@ -107,7 +113,8 @@ export class ToolingModelService {
     if (event && event.type) {
       switch (event.type) {
         case MessageType.TEXT_SOQL_CHANGED: {
-          const soqlJSModel = event.payload;
+          console.log('payload is: ', typeof event.payload);
+          const soqlJSModel = convertSoqlToUiModel(event.payload as string);
           const updatedModel = fromJS(soqlJSModel);
           if (!updatedModel.equals(this.model.getValue())) {
             this.model.next(updatedModel);
@@ -132,7 +139,7 @@ export class ToolingModelService {
     try {
       this.messageService.sendMessage({
         type: MessageType.UI_SOQL_CHANGED,
-        payload: this.latest
+        payload: convertUiModelToSoql(this.latest)
       });
     } catch (e) {
       console.error(e);
