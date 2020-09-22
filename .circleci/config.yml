@@ -132,6 +132,7 @@ workflows:
       - soql-builder-ui
       - language-server
       - soql-model
+      - soql-tmlanguage
       - notify_slack:
           requires:
             - soql-builder-ui
