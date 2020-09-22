@@ -1,0 +1,29 @@
+{
+  "name": "@salesforce/soql-tmlanguage",
+  "version": "0.1.0",
+  "description": "SOQL TextMate Language grammar",
+  "scripts": {
+    "grammar": "js-yaml grammars/soql.tmLanguage.yaml > grammars/soql.tmLanguage.json",
+    "build": "npm run grammar",
+    "test:source": "vscode-tmgrammar-test -s source.soql -g ./grammars/soql.tmLanguage.json -t './test/*.soql'",
+    "test:snapshots": "vscode-tmgrammar-snap -s source.soql -g ./grammars/soql.tmLanguage.json -t './test/snapshots/*.soql'",
+    "test": "npm run test:source; npm run test:snapshots"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/forcedotcom/soql-tooling.git"
+  },
+  "keywords": [
+    "soql"
+  ],
+  "author": "Salesforce",
+  "publishConfig": {
+    "access": "public",
+    "registry": "http://registry.npmjs.org/"
+  },
+  "license": "BSD-3-Clause",
+  "devDependencies": {
+    "js-yaml": "^3.14.0",
+    "vscode-tmgrammar-test": "^0.0.10"
+  }
+}
