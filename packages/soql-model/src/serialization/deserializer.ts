@@ -235,14 +235,12 @@ class QueryListener extends SoqlParserListener {
       // perfect for listeners; workaround by type-checking
       if (exprContext instanceof Parser.SoqlSelectColumnExprContext) {
         const fieldCtx = (exprContext as Parser.SoqlSelectColumnExprContext).soqlField();
-        // determine wherther field is a function reference based on presence of parentheses
-        const isFunctionRef = fieldCtx.getText().includes('(');
-        if (isFunctionRef) {
+        const field = this.toField(fieldCtx);
+        if (field instanceof Impl.UnmodeledSyntaxImpl) {
           this.selectExpressions.push(
-            this.toUnmodeledSyntax(exprContext.stop, exprContext.stop)
+            this.toUnmodeledSyntax(exprContext.start, exprContext.stop)
           );
         } else {
-          const field = this.toField(fieldCtx);
           let alias: Soql.UnmodeledSyntax | undefined;
           const aliasCtx = (exprContext as Parser.SoqlSelectColumnExprContext).soqlAlias();
           if (aliasCtx) {
@@ -392,7 +390,7 @@ class QueryListener extends SoqlParserListener {
       const fieldCtx = (ctx as Parser.SoqlOrderByColumnExprContext).soqlField();
       result = this.toField(fieldCtx);
     } else {
-      result = this.toUnmodeledSyntax(ctx.stop, ctx.stop);
+      result = this.toUnmodeledSyntax(ctx.start, ctx.stop);
     }
 
     return result;
