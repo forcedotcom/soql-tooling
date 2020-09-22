@@ -81,8 +81,7 @@ export class ToolingModelService {
     const emptyModel = fromJS(ToolingModelService.toolingModelTemplate);
     const newModelWithSelection = emptyModel.set('sObject', sObject);
 
-    this.model.next(newModelWithSelection);
-    this.sendMessageToBackend();
+    this.changeModel(newModelWithSelection);
   }
 
   public addField(field: string) {
@@ -92,8 +91,7 @@ export class ToolingModelService {
       this.getFields().toSet().add(field).toList()
     ) as ToolingModel;
 
-    this.model.next(newModelWithAddedField);
-    this.sendMessageToBackend();
+    this.changeModel(newModelWithAddedField);
   }
 
   public removeField(field: string) {
@@ -105,8 +103,7 @@ export class ToolingModelService {
       }) as List<string>
     ) as ToolingModel;
 
-    this.model.next(newModelWithFieldRemoved);
-    this.sendMessageToBackend();
+    this.changeModel(newModelWithFieldRemoved);
   }
 
   private onMessage(event: SoqlEditorEvent) {
@@ -133,6 +130,11 @@ export class ToolingModelService {
     } catch (e) {
       console.error(e);
     }
+  }
+
+  private changeModel(newModel) {
+    this.model.next(newModel);
+    this.sendMessageToBackend();
   }
 
   public sendMessageToBackend() {
