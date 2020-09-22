@@ -107,7 +107,9 @@ jobs:
             - ./node_modules
       - run:
           name: 'Build'
-          command: 'yarn build'
+          command: |
+            cd $PACKAGE_PATH
+            yarn build'
       - run:
           name: 'Run SOQL TextMate language grammar Unit Tests'
           command: |
