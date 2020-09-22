@@ -110,7 +110,6 @@ export class ToolingModelService {
     if (event && event.type) {
       switch (event.type) {
         case MessageType.TEXT_SOQL_CHANGED: {
-          console.log('payload is: ', typeof event.payload);
           const soqlJSModel = convertSoqlToUiModel(event.payload as string);
           const updatedModel = fromJS(soqlJSModel);
           if (!updatedModel.equals(this.model.getValue())) {
