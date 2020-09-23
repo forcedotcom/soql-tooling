@@ -22,3 +22,7 @@
 .select-long {
   min-width: 400px;
 }
+
+.text-color-required {
+  color: red;
+}

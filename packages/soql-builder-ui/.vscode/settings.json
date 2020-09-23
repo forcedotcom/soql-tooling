@@ -1,6 +1,11 @@
 {
-    "prettier.packageManager": "yarn",
-    "prettier.singleQuote": true,
-    "editor.formatOnSave": true,
-    "files.autoSave": "afterDelay"
+  "prettier.packageManager": "yarn",
+  "prettier.singleQuote": true,
+  "editor.formatOnSave": true,
+  "files.autoSave": "afterDelay",
+  "workbench.colorCustomizations": {
+    "activityBar.background": "#5B1204",
+    "titleBar.activeBackground": "#830683",
+    "titleBar.activeForeground": "#FFFBFB"
+  }
 }

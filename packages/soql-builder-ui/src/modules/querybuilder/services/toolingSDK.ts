@@ -32,6 +32,8 @@ export class ToolingSDK {
           this.sobjectMetadata.next(event.payload);
           break;
         }
+        default:
+          break;
       }
     }
   }

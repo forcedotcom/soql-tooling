@@ -1,6 +1,7 @@
 node_modules/
 lib/
 coverage/
-
+Dependencies/package
+yarn.lock
 yarn-error.log
 .DS_Store

@@ -10,12 +10,18 @@ import { LightningElement, track } from 'lwc';
 import { ToolingSDK } from '../services/toolingSDK';
 import { MessageServiceFactory } from '../services/message/messageServiceFactory';
 
-// eslint-disable-next-line no-unused-vars
 import {
   ToolingModelService,
+  // eslint-disable-next-line no-unused-vars
   ToolingModelJson
 } from '../services/toolingModelService';
+// eslint-disable-next-line no-unused-vars
 import { IMessageService } from '../services/message/iMessageService';
+import {
+  recoverableErrors,
+  recoverableFieldErrors,
+  recoverableFromErrors
+} from '../error/errorModel';
 
 export default class App extends LightningElement {
   @track
@@ -25,8 +31,24 @@ export default class App extends LightningElement {
   toolingSDK: ToolingSDK;
   modelService: ToolingModelService;
 
+  get hasUnsupported() {
+    return this.query && this.query.unsupported
+      ? this.query.unsupported.length
+      : 0;
+  }
+
+  get blockQueryBuilder() {
+    return this.hasUnrecoverableError || this.hasUnsupported;
+  }
+  hasRecoverableFieldsError = false;
+  hasRecoverableFromError = false;
+  hasRecoverableError = true;
+  hasUnrecoverableError = true;
+  isFromLoading = false;
+  isFieldsLoading = false;
+
   @track
-  query: ToolingModelJson;
+  query: ToolingModelJson = ToolingModelService.toolingModelTemplate;
 
   constructor() {
     super();
@@ -37,42 +59,88 @@ export default class App extends LightningElement {
 
   connectedCallback() {
     this.modelService.query.subscribe((newQuery: ToolingModelJson) => {
-      const previousSObject = this.query ? this.query.sObject : undefined;
-      this.query = newQuery;
-      if (previousSObject !== this.query.sObject) {
-        this.onSObjectChanged(this.query.sObject);
+      this.inspectErrors(newQuery.errors);
+      if (this.hasUnrecoverableError === false) {
+        this.loadSObjectMetadata(newQuery);
       }
+      this.query = newQuery;
     });
 
     this.toolingSDK.sobjects.subscribe((objs: string[]) => {
+      this.isFromLoading = false;
       this.sObjects = objs;
     });
     this.toolingSDK.sobjectMetadata.subscribe((sobjectMetadata: any) => {
+      this.isFieldsLoading = false;
       this.fields =
         sobjectMetadata && sobjectMetadata.fields
           ? sobjectMetadata.fields.map((f) => f.name)
           : [];
     });
-
-    this.toolingSDK.loadSObjectDefinitions();
+    this.loadSObjectDefinitions();
     this.modelService.restoreViewState();
   }
 
-  renderedCallback() {
-    //  this.synchronizeWithSobject();
+  loadSObjectDefinitions() {
+    this.isFromLoading = true;
+    this.toolingSDK.loadSObjectDefinitions();
+  }
+
+  loadSObjectMetadata(newQuery) {
+    const previousSObject = this.query ? this.query.sObject : '';
+    const newSObject = newQuery.sObject;
+    // if empty sobject, clear fields
+    if (!newSObject.length) {
+      this.fields = [];
+      return;
+    }
+    // if empty previous sobject or else new sobject does not match previous
+    if (previousSObject.length === 0 || previousSObject !== newSObject) {
+      this.onSObjectChanged(newSObject);
+    }
+    // if no fields have been downloaded yet
+    else if (
+      previousSObject === newSObject &&
+      this.fields.length === 0 &&
+      this.isFieldsLoading === false
+    ) {
+      this.onSObjectChanged(newSObject);
+    }
+  }
+
+  inspectErrors(errors) {
+    this.hasRecoverableFieldsError = false;
+    this.hasRecoverableFromError = false;
+    this.hasUnrecoverableError = false;
+    errors.forEach((error) => {
+      // TODO: replace with imported types after fernando's work
+      if (recoverableErrors[error.type]) {
+        this.hasRecoverableError = true;
+        if (recoverableFieldErrors[error.type]) {
+          this.hasRecoverableFieldsError = true;
+        }
+        if (recoverableFromErrors[error.type]) {
+          this.hasRecoverableFromError = true;
+        }
+      } else {
+        this.hasUnrecoverableError = true;
+      }
+    });
   }
 
   handleObjectChange(e) {
     const selectedSObjectName = e.detail.selectedSobject;
     this.onSObjectChanged(selectedSObjectName);
+    // when triggered by the ui, send message
+    this.modelService.setSObject(selectedSObjectName);
   }
 
   onSObjectChanged(sobjectName: string) {
-    this.fields = [];
     if (sobjectName) {
+      this.fields = [];
+      this.isFieldsLoading = true;
       this.toolingSDK.loadSObjectMetatada(sobjectName);
     }
-    this.modelService.setSObject(sobjectName);
   }
 
   handleFieldSelected(e) {
