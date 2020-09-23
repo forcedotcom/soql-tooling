@@ -55,5 +55,10 @@
       "color": "white",
       "backgroundColor": "green"
     }
-  ]
+  ],
+  "workbench.colorCustomizations": {
+    "activityBar.background": "#5a0808",
+    "titleBar.activeBackground": "#750c0c",
+    "titleBar.activeForeground": "#dfc8c8"
+  }
 }

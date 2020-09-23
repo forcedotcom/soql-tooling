@@ -12,6 +12,7 @@ logs
 
 # Tooling files
 node_modules
+package-lock.json
 
 # Temp directory
 /tmp

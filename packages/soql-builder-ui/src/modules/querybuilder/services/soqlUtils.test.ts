@@ -10,7 +10,9 @@ import { ToolingModelJson } from './toolingModelService';
 describe('SoqlUtils', () => {
   const uiModelOne: ToolingModelJson = {
     sObject: 'Account',
-    fields: ['Name', 'Id']
+    fields: ['Name', 'Id'],
+    errors: [],
+    unsupported: []
   };
   const soqlOne = 'Select Name, Id from Account';
   it('transform UI Model to Soql', () => {

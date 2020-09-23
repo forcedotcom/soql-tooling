@@ -32,8 +32,8 @@ export class VscodeMessageService implements IMessageService {
   }
 
   private onlyIfValidEditorEvent() {
-    return filter((event: object) => {
-      return event['type'] !== undefined;
+    return filter((event: SoqlEditorEvent) => {
+      return event.type !== undefined;
     });
   }
 

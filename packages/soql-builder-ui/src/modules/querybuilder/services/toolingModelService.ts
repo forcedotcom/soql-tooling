@@ -12,35 +12,45 @@ import { map } from 'rxjs/operators';
 import { JsonMap } from '@salesforce/ts-types';
 import { IMessageService } from './message/iMessageService';
 import { SoqlEditorEvent, MessageType } from './message/soqlEditorEvent';
-import { convertUiModelToSoql, convertSoqlToUiModel } from '../services/soqlUtils';
+import {
+  convertUiModelToSoql,
+  convertSoqlToUiModel
+} from '../services/soqlUtils';
 
 // This is to satisfy TS and stay dry
 type IMap = Map<string, string | List<string>>;
 // Private immutable interface
-interface ToolingModel extends IMap {
+export interface ToolingModel extends IMap {
   sObject: string;
   fields: List<string>;
+  errors: JsonMap[]; // actually need to update this to immutable
+  unsupported: string[];
 }
 // Public inteface for accessing modelService.query
 export interface ToolingModelJson extends JsonMap {
   sObject: string;
   fields: string[];
+  errors: JsonMap[];
+  unsupported: string[];
 }
 
 export class ToolingModelService {
   private model: BehaviorSubject<ToolingModel>;
   public query: Observable<ToolingModelJson>;
-  private toolingModelTemplate: ToolingModelJson;
+  public static toolingModelTemplate: ToolingModelJson = {
+    sObject: '',
+    fields: [],
+    errors: [],
+    unsupported: []
+  } as ToolingModelJson;
   private messageService: IMessageService;
+  private latest: ToolingModelJson;
 
   constructor(messageService: IMessageService) {
     this.messageService = messageService;
-    this.toolingModelTemplate = {
-      sObject: '',
-      fields: []
-    } as ToolingModelJson;
-
-    this.model = new BehaviorSubject(fromJS(this.toolingModelTemplate));
+    this.model = new BehaviorSubject(
+      fromJS(ToolingModelService.toolingModelTemplate)
+    );
     this.model.subscribe(this.saveViewState.bind(this));
     this.query = this.model.pipe(
       map((soqlQueryModel) => {
@@ -48,11 +58,13 @@ export class ToolingModelService {
           return (soqlQueryModel as IMap).toJS();
         } catch (e) {
           console.error('Unexpected Error in SOQL model: ' + e);
-          return this.toolingModelTemplate;
+          return ToolingModelService.toolingModelTemplate;
         }
       })
     );
-    this.query.subscribe(this.generateQuery.bind(this));
+    this.query.subscribe((query) => {
+      this.latest = query;
+    });
 
     this.messageService.messagesToUI.subscribe(this.onMessage.bind(this));
   }
@@ -66,10 +78,10 @@ export class ToolingModelService {
   }
   // This method is destructive, will clear any selections except sObject.
   public setSObject(sObject: string) {
-    const emptyModel = fromJS(this.toolingModelTemplate);
+    const emptyModel = fromJS(ToolingModelService.toolingModelTemplate);
     const newModelWithSelection = emptyModel.set('sObject', sObject);
 
-    this.model.next(newModelWithSelection);
+    this.changeModel(newModelWithSelection);
   }
 
   public addField(field: string) {
@@ -79,7 +91,7 @@ export class ToolingModelService {
       this.getFields().toSet().add(field).toList()
     ) as ToolingModel;
 
-    this.model.next(newModelWithAddedField);
+    this.changeModel(newModelWithAddedField);
   }
 
   public removeField(field: string) {
@@ -91,7 +103,7 @@ export class ToolingModelService {
       }) as List<string>
     ) as ToolingModel;
 
-    this.model.next(newModelWithFieldRemoved);
+    this.changeModel(newModelWithFieldRemoved);
   }
 
   private onMessage(event: SoqlEditorEvent) {
@@ -105,10 +117,8 @@ export class ToolingModelService {
           }
           break;
         }
-
         default:
           break;
-
       }
     }
   }
@@ -121,11 +131,16 @@ export class ToolingModelService {
     }
   }
 
-  public generateQuery(jsModel: ToolingModelJson) {
+  private changeModel(newModel) {
+    this.model.next(newModel);
+    this.sendMessageToBackend();
+  }
+
+  public sendMessageToBackend() {
     try {
       this.messageService.sendMessage({
         type: MessageType.UI_SOQL_CHANGED,
-        payload: convertUiModelToSoql(jsModel)
+        payload: convertUiModelToSoql(this.latest)
       });
     } catch (e) {
       console.error(e);
@@ -138,6 +153,6 @@ export class ToolingModelService {
 
   private getSavedState() {
     const savedState = this.messageService.getState();
-    return fromJS(savedState || this.toolingModelTemplate);
+    return fromJS(savedState || ToolingModelService.toolingModelTemplate);
   }
 }
