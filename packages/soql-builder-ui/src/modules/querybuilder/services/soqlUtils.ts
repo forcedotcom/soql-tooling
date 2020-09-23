@@ -32,12 +32,28 @@ export function convertSoqlModelToUiModel(
           .map((expr) => ((expr as unknown) as Soql.FieldRef).fieldName)
       : undefined;
 
-  // eslint-disable-next-line prettier/prettier
   const sObject = queryModel.from && queryModel.from.sobjectName;
+
+  const errors = (queryModel.errors as unknown) as JsonMap[];
+  const unsupported = [];
+  for (const key in queryModel) {
+    // eslint-disable-next-line no-prototype-builtins
+    if (queryModel.hasOwnProperty(key)) {
+      // @ts-ignore
+      const prop = queryModel[key];
+      if (typeof prop === 'object') {
+        if (SoqlModelUtils.containsUnmodeledSyntax(prop)) {
+          unsupported.push(prop.unmodeledSyntax);
+        }
+      }
+    }
+  }
 
   const toolingModelTemplate: ToolingModelJson = {
     sObject: sObject || '',
-    fields: fields || []
+    fields: fields || [],
+    errors: errors || [],
+    unsupported: unsupported || []
   };
 
   return toolingModelTemplate;

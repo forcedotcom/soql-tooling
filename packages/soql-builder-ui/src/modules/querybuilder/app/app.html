@@ -13,16 +13,31 @@
     </header>
     <div class="row">
       <section class="column query-builder">
+        <template if:true={hasUnsupported}>
+          <!-- TODO: i18n -->
+          <div class="text-color-required">Unsupported Syntax</div>
+        </template>
+        <template if:true={hasUnknownError}>
+          <!-- TODO: i18n -->
+          <div class="text-color-required">Syntax Error</div>
+        </template>
+        <template if:true={blockQueryBuilder}>
+          <div class="block-query-builder"></div>
+        </template>
         <querybuilder-from
           onobjectselected={handleObjectChange}
           sobjects={sObjects}
           selected={query.sObject}
+          has-error={hasRecoverableFromError}
+          is-loading={isFromLoading}
         ></querybuilder-from>
         <querybuilder-fields
           selected-fields={query.fields}
           fields={fields}
           onfieldselected={handleFieldSelected}
           onfieldremoved={handleFieldRemoved}
+          has-error={hasRecoverableFieldsError}
+          is-loading={isFieldsLoading}
         ></querybuilder-fields>
       </section>
       <section class="column query-preview">
