@@ -1,6 +1,6 @@
 {
   "name": "@salesforce/soql-tmlanguage",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "SOQL TextMate Language grammar",
   "scripts": {
     "grammar": "js-yaml grammars/soql.tmLanguage.yaml > grammars/soql.tmLanguage.json",
