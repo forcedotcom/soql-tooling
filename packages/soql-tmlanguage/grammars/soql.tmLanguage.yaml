@@ -1,4 +1,5 @@
-# This grammar is a modified copy of apex.tmLanguage.yml,
+# This grammar is a modified copy of:
+# https://github.com/forcedotcom/apex-tmLanguage/blob/a6f42529e2e522a6e0f1499e352e004126304194/src/apex.tmLanguage.yml
 # using only SOQL query expression at the top-level pattern
 ---
 name: SOQL
