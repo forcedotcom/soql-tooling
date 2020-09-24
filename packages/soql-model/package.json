@@ -1,6 +1,6 @@
 {
   "name": "@salesforce/soql-model",
-  "version": "0.1.0",
+  "version": "0.1.5",
   "description": "SOQL Model",
   "engines": {
     "node": "*"
@@ -12,7 +12,7 @@
     "test:unit:coverage": "jest --runInBand --coverage"
   },
   "dependencies": {
-    "@salesforce/soql-parser": "file:../../Dependencies/soql-parser-0.16.0.tgz",
+    "@salesforce/soql-parser": "0.16.0",
     "antlr4": "4.8.0"
   },
   "bundledDependencies": [
