@@ -1,6 +1,6 @@
 {
   "name": "@salesforce/soql-language-server",
-  "version": "0.2.4",
+  "version": "0.2.5",
   "description": "SOQL Language Server",
   "engines": {
     "node": "*"
@@ -11,14 +11,11 @@
     "test:unit:coverage": "jest --runInBand --coverage"
   },
   "dependencies": {
-    "@salesforce/soql-parser": "0.16.0",
+    "@salesforce/soql-parser": "file:./dependencies/soql-parser-0.16.0.tgz",
     "antlr4": "4.8.0",
     "vscode-languageserver": "6.1.1",
     "vscode-languageserver-textdocument": "1.0.1"
   },
-  "bundledDependencies": [
-    "@salesforce/soql-parser"
-  ],
   "devDependencies": {
     "@types/antlr4": "4.7.2",
     "@types/jest": "22.2.3",
