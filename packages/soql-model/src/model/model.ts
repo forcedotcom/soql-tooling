@@ -79,11 +79,14 @@ export interface FieldRef extends Field {
   fieldName: string;
 }
 
+export interface Limit extends SoqlModelObject {
+  limit: number;
+}
+
 export interface Where extends SoqlModelObject { }
 export interface With extends SoqlModelObject { }
 export interface GroupBy extends SoqlModelObject { }
 export interface OrderBy extends SoqlModelObject { }
-export interface Limit extends SoqlModelObject { }
 export interface Offset extends SoqlModelObject { }
 export interface Bind extends SoqlModelObject { }
 export interface RecordTrackingType extends SoqlModelObject { }
@@ -97,7 +100,6 @@ export interface UnmodeledSyntax
   With,
   GroupBy,
   OrderBy,
-  Limit,
   Offset,
   Bind,
   RecordTrackingType,

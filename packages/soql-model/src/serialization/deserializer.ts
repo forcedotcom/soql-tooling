@@ -258,6 +258,17 @@ class QueryListener extends SoqlParserListener {
     });
   }
 
+  public enterSoqlLimitClause(ctx: Parser.SoqlLimitClauseContext): void {
+    let value = NaN;
+    if (ctx.soqlIntegerValue()) {
+      const valueString = ctx.soqlIntegerValue().getText();
+      value = parseInt(valueString);
+    }
+    if (value !== NaN) {
+      this.limit = new Impl.LimitImpl(value);
+    }
+  }
+
   public enterSoqlInnerQuery(ctx: Parser.SoqlInnerQueryContext): void {
     const selectCtx = ctx.soqlSelectClause();
     if (selectCtx) {
@@ -300,7 +311,7 @@ class QueryListener extends SoqlParserListener {
     }
     const limitCtx = ctx.soqlLimitClause();
     if (limitCtx) {
-      this.limit = this.toUnmodeledSyntax(limitCtx.start, limitCtx.stop);
+      limitCtx.enterRule(this);
     }
     const offsetCtx = ctx.soqlOffsetClause();
     if (offsetCtx) {

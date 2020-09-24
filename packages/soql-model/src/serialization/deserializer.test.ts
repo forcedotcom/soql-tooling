@@ -23,7 +23,7 @@ const testQueryModel = {
   with: { unmodeledSyntax: 'WITH DATA CATEGORY cat__c AT val__c' },
   groupBy: { unmodeledSyntax: 'GROUP BY field1' },
   orderBy: { unmodeledSyntax: 'ORDER BY field2 DESC NULLS LAST' },
-  limit: { unmodeledSyntax: 'LIMIT 20' },
+  limit: { limit: 20 },
   offset: { unmodeledSyntax: 'OFFSET 2' },
   bind: { unmodeledSyntax: 'BIND field1 = 5' },
   recordTrackingType: { unmodeledSyntax: 'FOR VIEW' },
@@ -106,7 +106,7 @@ describe('ModelDeserializer should', () => {
     expect(actual).toEqual(expected);
   });
 
-  it('model all non-SELECT and non-FROM clauses as unmodeled syntax', () => {
+  it('model all upsupported clauses as unmodeled syntax', () => {
     const expected = testQueryModel;
     const actual = new ModelDeserializer(
       'SELECT field1, field2, field3 alias3, (SELECT fieldA FROM objectA), TYPEOF obj WHEN typeX THEN fieldX ELSE fieldY END FROM object1 ' +
