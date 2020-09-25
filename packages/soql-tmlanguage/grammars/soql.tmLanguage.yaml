@@ -304,9 +304,6 @@ repository:
     match: \b(ORDER BY)\b\s*
     captures:
       '1': { name: keyword.operator.query.orderby.apex }
-    patterns:
-      - include: '#ordering-direction'
-      - include: '#ordering-nulls'
 
   ordering-direction:
     match: \b(?:(ASC)|(DESC))\b
