@@ -66,23 +66,46 @@ export interface SelectExpression extends SoqlModelObject {
   // field => Field
   // subquery => UnmodeledSyntax
   // typeof => UnmodeledSyntax
-  // distance => UnmodeledSyntax
   alias?: UnmodeledSyntax;
 }
 
-export interface Field extends SelectExpression {
+export interface FieldSelection extends SelectExpression {
+  field: Field;
+}
+
+export interface Field extends SoqlModelObject {
   // field name => FieldRef
   // function reference => UnmodeledSyntax
+  // distance => UnmodeledSyntax
 }
 
 export interface FieldRef extends Field {
   fieldName: string;
 }
 
+export interface OrderBy extends SoqlModelObject {
+  orderByExpressions: OrderByExpression[];
+}
+
+export interface OrderByExpression extends SoqlModelObject {
+  field: Field;
+  order?: Order;
+  nullsOrder?: NullsOrder;
+}
+
+export enum Order {
+  Ascending = 'ASC',
+  Descending = 'DESC'
+}
+
+export enum NullsOrder {
+  First = 'NULLS FIRST',
+  Last = 'NULLS LAST'
+}
+
 export interface Where extends SoqlModelObject { }
 export interface With extends SoqlModelObject { }
 export interface GroupBy extends SoqlModelObject { }
-export interface OrderBy extends SoqlModelObject { }
 export interface Limit extends SoqlModelObject { }
 export interface Offset extends SoqlModelObject { }
 export interface Bind extends SoqlModelObject { }
@@ -96,7 +119,6 @@ export interface UnmodeledSyntax
   Where,
   With,
   GroupBy,
-  OrderBy,
   Limit,
   Offset,
   Bind,

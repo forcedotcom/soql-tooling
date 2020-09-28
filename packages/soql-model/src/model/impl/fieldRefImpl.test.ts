@@ -13,19 +13,10 @@ describe('FieldRefImpl should', () => {
     const actual = new Impl.FieldRefImpl(expected.fieldName);
     expect(actual).toEqual(expected);
   });
-  it('store an unmodeled syntax object as the alias', () => {
-    const expected = { fieldName: 'brian', alias: { unmodeledSyntax: 'bill' } };
-    const actual = new Impl.FieldRefImpl(
-      expected.fieldName,
-      new Impl.UnmodeledSyntaxImpl(expected.alias.unmodeledSyntax)
-    );
-    expect(actual).toEqual(expected);
-  });
-  it('return field name followed by alias for toSoqlSyntax()', () => {
-    const expected = 'rolling stones';
+  it('return field name for toSoqlSyntax()', () => {
+    const expected = 'rolling';
     const actual = new Impl.FieldRefImpl(
       'rolling',
-      new Impl.UnmodeledSyntaxImpl('stones')
     ).toSoqlSyntax();
     expect(actual).toEqual(expected);
   });

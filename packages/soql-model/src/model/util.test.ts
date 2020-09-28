@@ -14,10 +14,12 @@ describe('SoqlModelUtils should', () => {
     const actual = SoqlModelUtils.containsUnmodeledSyntax(
       new Impl.QueryImpl(
         new Impl.SelectExprsImpl([
-          new Impl.FieldRefImpl(
-            'field1',
+          new Impl.FieldSelectionImpl(
+            new Impl.FieldRefImpl(
+              'field1',
+            ),
             new Impl.UnmodeledSyntaxImpl('alias1')
-          ),
+          )
         ]),
         new Impl.FromImpl('object1')
       )
@@ -45,7 +47,7 @@ describe('SoqlModelUtils should', () => {
   });
   it('return false if SOQL query model does not contain error', () => {
     const model: Query = new Impl.QueryImpl(
-      new Impl.SelectExprsImpl([new Impl.FieldRefImpl('field1')]),
+      new Impl.SelectExprsImpl([new Impl.FieldSelectionImpl(new Impl.FieldRefImpl('field1'))]),
       new Impl.FromImpl('object1')
     );
 
