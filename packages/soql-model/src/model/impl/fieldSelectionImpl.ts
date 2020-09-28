@@ -8,13 +8,18 @@
 import * as Soql from '../model';
 import { SoqlModelObjectImpl } from './soqlModelObjectImpl';
 
-export class FieldRefImpl extends SoqlModelObjectImpl implements Soql.FieldRef {
-  public fieldName: string;
-  public constructor(fieldName: string) {
+export class FieldSelectionImpl extends SoqlModelObjectImpl implements Soql.FieldSelection {
+  public field: Soql.Field;
+  public alias?: Soql.UnmodeledSyntax;
+  public constructor(field: Soql.Field, alias?: Soql.UnmodeledSyntax) {
     super();
-    this.fieldName = fieldName;
+    this.field = field;
+    this.alias = alias;
   }
+
   public toSoqlSyntax(options?: Soql.SyntaxOptions): string {
-    return this.fieldName;
+    return this.alias
+      ? `${this.field.toSoqlSyntax()} ${this.alias.toSoqlSyntax(options)}`
+      : this.field.toSoqlSyntax();
   }
 }

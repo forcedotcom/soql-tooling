@@ -13,7 +13,6 @@ import {
   ModelDeserializer
 } from '@salesforce/soql-model';
 import { ToolingModelJson } from './toolingModelService';
-import { JsonMap } from '@salesforce/ts-types';
 
 export function convertSoqlToUiModel(soql: string): ToolingModelJson {
   const queryModel = new ModelDeserializer(soql).deserialize();
@@ -26,10 +25,15 @@ export function convertSoqlModelToUiModel(
 ): ToolingModelJson {
   const fields =
     queryModel.select &&
-    (queryModel.select as Soql.SelectExprs).selectExpressions
+      (queryModel.select as Soql.SelectExprs).selectExpressions
       ? (queryModel.select as Soql.SelectExprs).selectExpressions
-          .filter((expr) => !SoqlModelUtils.containsUnmodeledSyntax(expr))
-          .map((expr) => ((expr as unknown) as Soql.FieldRef).fieldName)
+        .filter((expr) => !SoqlModelUtils.containsUnmodeledSyntax(expr))
+        .map((expr) => {
+          if (expr.field.fieldName) {
+            return expr.field.fieldName;
+          }
+          return undefined;
+        })
       : undefined;
 
   const sObject = queryModel.from && queryModel.from.sobjectName;
@@ -67,7 +71,7 @@ export function convertUiModelToSoql(uiModel: ToolingModelJson): string {
 
 function convertUiModelToSoqlModel(uiModel: ToolingModelJson): Soql.Query {
   const selectExprs = uiModel.fields.map(
-    (field) => new Impl.FieldRefImpl(field)
+    (field) => new Impl.FieldSelectionImpl(new Impl.FieldRefImpl(field))
   );
   const queryModel = new Impl.QueryImpl(
     new Impl.SelectExprsImpl(selectExprs),
