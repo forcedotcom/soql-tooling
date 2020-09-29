@@ -14,13 +14,13 @@ jobs:
       PACKAGE_PATH: 'packages/soql-builder-ui'
     steps:
       - checkout
-      - restore_cache:
-          key: dependency-cache-{{ checksum "yarn.lock" }}
+  #    - restore_cache:
+  #        key: dependency-cache-{{ checksum "yarn.lock" }}
       - run: yarn
-      - save_cache:
-          key: dependency-cache-{{ checksum "yarn.lock" }}
-          paths:
-            - ./node_modules
+  #    - save_cache:
+  #        key: dependency-cache-{{ checksum "yarn.lock" }}
+  #        paths:
+  #          - ./node_modules
       - run:
           name: Run SOQL builder UI Unit Tests
           command: |
