@@ -266,6 +266,7 @@ class QueryListener extends SoqlParserListener {
     if (value !== NaN) {
       this.limit = new Impl.LimitImpl(value);
     }
+  }
 
   public enterSoqlOrderByClause(ctx: Parser.SoqlOrderByClauseContext): void {
     ctx.soqlOrderByClauseExprs().enterRule(this);
