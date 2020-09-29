@@ -1,7 +1,7 @@
 {
   "name": "@salesforce/soql-builder-ui",
   "description": "SOQL Builder UI with LWC",
-  "version": "0.0.2",
+  "version": "0.0.10",
   "author": "Salesforce",
   "publishConfig": {
     "access": "public",

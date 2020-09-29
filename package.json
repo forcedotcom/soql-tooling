@@ -9,12 +9,8 @@
   "workspaces": [
     "packages/*"
   ],
-  "dependencies": {
-    "jsforce": "^1.9.1"
-  },
+  "dependencies": {},
   "devDependencies": {
-    "jsforce": "1.9.3",
-    "@types/jsforce": "1.9.2",
     "@salesforce/dev-config": "1.4.1",
     "lerna": "^3.19.0",
     "tslint": "^5.8.0",

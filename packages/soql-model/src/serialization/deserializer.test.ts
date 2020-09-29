@@ -11,9 +11,10 @@ import { ErrorType } from '../model/model';
 const testQueryModel = {
   select: {
     selectExpressions: [
-      { fieldName: 'field1' },
-      { fieldName: 'field2' },
-      { fieldName: 'field3', alias: { unmodeledSyntax: 'alias3' } },
+      { field: { fieldName: 'field1' } },
+      { field: { fieldName: 'field2' } },
+      { field: { fieldName: 'field3' }, alias: { unmodeledSyntax: 'alias3' } },
+      { unmodeledSyntax: 'COUNT(fieldZ)' },
       { unmodeledSyntax: '(SELECT fieldA FROM objectA)' },
       { unmodeledSyntax: 'TYPEOF obj WHEN typeX THEN fieldX ELSE fieldY END' },
     ],
@@ -22,7 +23,12 @@ const testQueryModel = {
   where: { unmodeledSyntax: 'WHERE field1 = 5' },
   with: { unmodeledSyntax: 'WITH DATA CATEGORY cat__c AT val__c' },
   groupBy: { unmodeledSyntax: 'GROUP BY field1' },
-  orderBy: { unmodeledSyntax: 'ORDER BY field2 DESC NULLS LAST' },
+  orderBy: {
+    orderByExpressions: [
+      { field: { fieldName: 'field2' }, order: 'DESC', nullsOrder: 'NULLS LAST' },
+      { field: { fieldName: 'field1' } }
+    ]
+  },
   limit: { limit: 20 },
   offset: { unmodeledSyntax: 'OFFSET 2' },
   bind: { unmodeledSyntax: 'BIND field1 = 5' },
@@ -74,7 +80,7 @@ describe('ModelDeserializer should', () => {
     expect(actual).toEqual(expected);
   });
 
-  it('model inner queries, TYPEOF, and aliases in SELECT clause as unmodeled syntax', () => {
+  it('model functions, inner queries, TYPEOF, and aliases in SELECT clause as unmodeled syntax', () => {
     const expected = {
       select: {
         selectExpressions: [
@@ -83,13 +89,14 @@ describe('ModelDeserializer should', () => {
           testQueryModel.select.selectExpressions[2],
           testQueryModel.select.selectExpressions[3],
           testQueryModel.select.selectExpressions[4],
+          testQueryModel.select.selectExpressions[5],
         ],
       },
       from: testQueryModel.from,
       errors: testQueryModel.errors,
     };
     const actual = new ModelDeserializer(
-      'SELECT field1, field2, field3 alias3, (SELECT fieldA FROM objectA), TYPEOF obj WHEN typeX THEN fieldX ELSE fieldY END FROM object1'
+      'SELECT field1, field2, field3 alias3, COUNT(fieldZ), (SELECT fieldA FROM objectA), TYPEOF obj WHEN typeX THEN fieldX ELSE fieldY END FROM object1'
     ).deserialize();
     expect(actual).toEqual(expected);
   });
@@ -106,11 +113,11 @@ describe('ModelDeserializer should', () => {
     expect(actual).toEqual(expected);
   });
 
-  it('model all upsupported clauses as unmodeled syntax', () => {
+  it('model all unmodeled clauses as unmodeled syntax', () => {
     const expected = testQueryModel;
     const actual = new ModelDeserializer(
-      'SELECT field1, field2, field3 alias3, (SELECT fieldA FROM objectA), TYPEOF obj WHEN typeX THEN fieldX ELSE fieldY END FROM object1 ' +
-      'WHERE field1 = 5 WITH DATA CATEGORY cat__c AT val__c GROUP BY field1 ORDER BY field2 DESC NULLS LAST LIMIT 20 OFFSET 2 BIND field1 = 5 FOR VIEW UPDATE TRACKING'
+      'SELECT field1, field2, field3 alias3, COUNT(fieldZ), (SELECT fieldA FROM objectA), TYPEOF obj WHEN typeX THEN fieldX ELSE fieldY END FROM object1 ' +
+      'WHERE field1 = 5 WITH DATA CATEGORY cat__c AT val__c GROUP BY field1 ORDER BY field2 DESC NULLS LAST, field1 LIMIT 20 OFFSET 2 BIND field1 = 5 FOR VIEW UPDATE TRACKING'
     ).deserialize();
     expect(actual).toEqual(expected);
   });

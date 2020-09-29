@@ -185,6 +185,7 @@ class QueryListener extends SoqlParserListener {
   public with?: Soql.With;
   public groupBy?: Soql.GroupBy;
   public orderBy?: Soql.OrderBy;
+  public orderByExpressions: Soql.OrderByExpression[] = [];
   public limit?: Soql.Limit;
   public offset?: Soql.Offset;
   public bind?: Soql.Bind;
@@ -234,20 +235,18 @@ class QueryListener extends SoqlParserListener {
       // perfect for listeners; workaround by type-checking
       if (exprContext instanceof Parser.SoqlSelectColumnExprContext) {
         const fieldCtx = (exprContext as Parser.SoqlSelectColumnExprContext).soqlField();
-        // determine wherther field is a function reference based on presence of parentheses
-        const isFunctionRef = fieldCtx.getText().includes('(');
-        if (isFunctionRef) {
+        const field = this.toField(fieldCtx);
+        if (field instanceof Impl.UnmodeledSyntaxImpl) {
           this.selectExpressions.push(
-            this.toUnmodeledSyntax(exprContext.stop, exprContext.stop)
+            this.toUnmodeledSyntax(exprContext.start, exprContext.stop)
           );
         } else {
-          const fieldName = fieldCtx.getText();
           let alias: Soql.UnmodeledSyntax | undefined;
           const aliasCtx = (exprContext as Parser.SoqlSelectColumnExprContext).soqlAlias();
           if (aliasCtx) {
             alias = this.toUnmodeledSyntax(aliasCtx.start, aliasCtx.stop);
           }
-          this.selectExpressions.push(new Impl.FieldRefImpl(fieldName, alias));
+          this.selectExpressions.push(new Impl.FieldSelectionImpl(field, alias));
         }
       } else {
         // not a modeled case
@@ -267,6 +266,32 @@ class QueryListener extends SoqlParserListener {
     if (value !== NaN) {
       this.limit = new Impl.LimitImpl(value);
     }
+
+  public enterSoqlOrderByClause(ctx: Parser.SoqlOrderByClauseContext): void {
+    ctx.soqlOrderByClauseExprs().enterRule(this);
+    this.orderBy = new Impl.OrderByImpl(this.orderByExpressions);
+  }
+
+  public enterSoqlOrderByClauseExprs(ctx: Parser.SoqlOrderByClauseExprsContext): void {
+    const exprContexts = ctx.getTypedRuleContexts(Parser.SoqlOrderByClauseExprContext);
+    exprContexts.forEach(exprContext => {
+      if (exprContext instanceof Parser.SoqlOrderByClauseExprContext) {
+        const obCtx = (exprContext as Parser.SoqlOrderByClauseExprContext);
+        const fieldCtx = obCtx.soqlOrderByClauseField();
+        const field = this.toOrderByField(fieldCtx);
+        const order = obCtx.ASC()
+          ? Soql.Order.Ascending
+          : (obCtx.DESC()
+            ? Soql.Order.Descending
+            : undefined);
+        const nullsOrder = obCtx.FIRST()
+          ? Soql.NullsOrder.First
+          : (obCtx.LAST()
+            ? Soql.NullsOrder.Last
+            : undefined);
+        this.orderByExpressions.push(new Impl.OrderByExpressionImpl(field, order, nullsOrder));
+      }
+    });
   }
 
   public enterSoqlInnerQuery(ctx: Parser.SoqlInnerQueryContext): void {
@@ -307,7 +332,7 @@ class QueryListener extends SoqlParserListener {
     }
     const orderByCtx = ctx.soqlOrderByClause();
     if (orderByCtx) {
-      this.orderBy = this.toUnmodeledSyntax(orderByCtx.start, orderByCtx.stop);
+      orderByCtx.enterRule(this);
     }
     const limitCtx = ctx.soqlLimitClause();
     if (limitCtx) {
@@ -367,5 +392,28 @@ class QueryListener extends SoqlParserListener {
     }
     const text = start.getInputStream().getText(start.start, stop.stop);
     return new Impl.UnmodeledSyntaxImpl(text);
+  }
+
+  protected toOrderByField(ctx: Parser.SoqlOrderByClauseFieldContext): Soql.Field {
+    let result: Soql.Field;
+    if (ctx instanceof Parser.SoqlOrderByColumnExprContext) {
+      const fieldCtx = (ctx as Parser.SoqlOrderByColumnExprContext).soqlField();
+      result = this.toField(fieldCtx);
+    } else {
+      result = this.toUnmodeledSyntax(ctx.start, ctx.stop);
+    }
+
+    return result;
+  }
+
+  protected toField(ctx: Parser.SoqlFieldContext): Soql.Field {
+    let result: Soql.Field;
+    const isFunctionRef = ctx.getText().includes('(');
+    if (isFunctionRef) {
+      result = this.toUnmodeledSyntax(ctx.start, ctx.stop);
+    } else {
+      result = new Impl.FieldRefImpl(ctx.getText());
+    }
+    return result;
   }
 }

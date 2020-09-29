@@ -18,6 +18,10 @@ import {
 // eslint-disable-next-line no-unused-vars
 import { IMessageService } from '../services/message/iMessageService';
 import {
+  MessageType,
+  SoqlEditorEvent
+} from '../services/message/soqlEditorEvent';
+import {
   recoverableErrors,
   recoverableFieldErrors,
   recoverableFromErrors
@@ -30,6 +34,7 @@ export default class App extends LightningElement {
   fields: string[] = [];
   toolingSDK: ToolingSDK;
   modelService: ToolingModelService;
+  messageService: IMessageService;
 
   get hasUnsupported() {
     return this.query && this.query.unsupported
@@ -52,9 +57,9 @@ export default class App extends LightningElement {
 
   constructor() {
     super();
-    const messageService: IMessageService = MessageServiceFactory.create();
-    this.toolingSDK = new ToolingSDK(messageService);
-    this.modelService = new ToolingModelService(messageService);
+    this.messageService = MessageServiceFactory.create();
+    this.toolingSDK = new ToolingSDK(this.messageService);
+    this.modelService = new ToolingModelService(this.messageService);
   }
 
   connectedCallback() {
@@ -70,6 +75,7 @@ export default class App extends LightningElement {
       this.isFromLoading = false;
       this.sObjects = objs;
     });
+
     this.toolingSDK.sobjectMetadata.subscribe((sobjectMetadata: any) => {
       this.isFieldsLoading = false;
       this.fields =
@@ -152,10 +158,7 @@ export default class App extends LightningElement {
   }
 
   handleRunQuery() {
-    // TODO: Hook up run query with the connection object W-7989627
-    /*
-     leaving this for standalone app development
-     saves to local storage
-     */
+    const runQueryEvent: SoqlEditorEvent = { type: MessageType.RUN_SOQL_QUERY };
+    this.messageService.sendMessage(runQueryEvent);
   }
 }
