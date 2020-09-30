@@ -25,8 +25,8 @@ jobs:
           name: Run SOQL builder UI Unit Tests
           command: |
             echo 'Run SOQL builder UI Unit Tests'
-            cd $PACKAGE_PATH
             yarn run build
+            cd $PACKAGE_PATH
             yarn run test:unit:coverage
       - run:
           name: Upload coverage report to Codecov
