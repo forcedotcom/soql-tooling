@@ -50,6 +50,11 @@ jobs:
           paths:
             - ./node_modules
       - run:
+          name: Build Packages
+          command: |
+            echo 'Build all packages for linked dependencies'
+            yarn run build
+      - run:
           name: 'Language Server: Run LWC Unit Tests'
           command: |
             echo 'Language Server: Run LWC Unit Tests'
@@ -72,6 +77,11 @@ jobs:
           key: dependency-cache-{{ checksum "yarn.lock" }}
           paths:
             - ./node_modules
+      - run:
+          name: Build Packages
+          command: |
+            echo 'Build all packages for linked dependencies'
+            yarn run build
       - run:
           name: 'Run SOQL Model Server Unit Tests'
           command: |
