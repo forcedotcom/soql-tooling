@@ -22,10 +22,14 @@ jobs:
           paths:
             - ./node_modules
       - run:
+          name: Build Packages
+          command: |
+            echo 'Build all packages for linked dependencies'
+            yarn run build
+      - run:
           name: Run SOQL builder UI Unit Tests
           command: |
             echo 'Run SOQL builder UI Unit Tests'
-            yarn run build
             cd $PACKAGE_PATH
             yarn run test:unit:coverage
       - run:
