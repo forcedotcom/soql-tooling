@@ -46,7 +46,6 @@ class TestApp extends App {
 
 describe('App should', () => {
   let app;
-  let vsCodeApi;
   let messageService;
   let loadSObjectDefinitionsSpy;
   let loadSObjectMetadataSpy;
@@ -63,9 +62,6 @@ describe('App should', () => {
     return event;
   }
   beforeEach(() => {
-    // @ts-ignore
-    // eslint-disable-next-line no-undef
-    vsCodeApi = acquireVsCodeApi();
     messageService = (new TestMessageService() as unknown) as StandaloneMessageService;
     originalCreateFn = MessageServiceFactory.create;
     MessageServiceFactory.create = () => {
@@ -199,8 +195,7 @@ describe('App should', () => {
     expect(app.isFromLoading).toEqual(false);
   });
 
-  // eslint-disable-next-line jest/no-disabled-tests
-  it.skip('should send a runquery message when the user click Run Query button', () => {
+  it('should send a runquery message when the user click Run Query button', () => {
     const header = app.shadowRoot.querySelector('querybuilder-header');
     const runBtn = header.shadowRoot.querySelector('button');
     const postMessageSpy = jest.spyOn(messageService, 'sendMessage');
