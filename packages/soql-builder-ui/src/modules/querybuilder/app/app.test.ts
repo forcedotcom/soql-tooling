@@ -195,12 +195,10 @@ describe('App should', () => {
     expect(app.isFromLoading).toEqual(false);
   });
 
-  it('should send a runquery message when the user click Run Query button', async () => {
+  it('should send a runquery message to vs code with runquery event', async () => {
     const header = app.shadowRoot.querySelector('querybuilder-header');
-    const runBtn = header.shadowRoot.querySelector('button');
     const postMessageSpy = jest.spyOn(messageService, 'sendMessage');
-
-    runBtn.click();
+    header.dispatchEvent(new Event('runquery'));
 
     return Promise.resolve().then(() => {
       expect(postMessageSpy).toHaveBeenCalled();
