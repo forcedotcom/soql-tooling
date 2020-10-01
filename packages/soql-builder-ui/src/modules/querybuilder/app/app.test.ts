@@ -195,8 +195,7 @@ describe('App should', () => {
     expect(app.isFromLoading).toEqual(false);
   });
 
-  // eslint-disable-next-line jest/no-disabled-tests
-  it.skip('should send a runquery message when the user click Run Query button', async () => {
+  it('should send a runquery message when the user click Run Query button', async () => {
     const header = app.shadowRoot.querySelector('querybuilder-header');
     const runBtn = header.shadowRoot.querySelector('button');
     const postMessageSpy = jest.spyOn(messageService, 'sendMessage');
