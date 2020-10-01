@@ -39,7 +39,7 @@
     "prettier:verify": "prettier --list-different \"**/*.{css,html,js,json,md,ts,yaml,yml}\"",
     "test": "jest --runInBand",
     "test:unit": "lwc-services test:unit",
-    "test:unit:coverage": "lwc-services test:unit --coverage",
+    "test:unit:coverage": "jest --runInBand --coverage",
     "test:unit:debug": "lwc-services test:unit --debug",
     "test:unit:watch": "lwc-services test:unit --watch",
     "watch": "lwc-services watch",
