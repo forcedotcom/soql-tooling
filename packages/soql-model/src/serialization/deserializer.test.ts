@@ -178,4 +178,24 @@ describe('ModelDeserializer should', () => {
       fail();
     }
   });
+
+  it('identify incomplete LIMIT clause error when number missing', () => {
+    const expectedType = ErrorType.INCOMPLETELIMIT;
+    const model = new ModelDeserializer('SELECT A FROM B LIMIT').deserialize();
+    if (model.errors && model.errors.length === 1) {
+      expect(model.errors[0].type).toEqual(expectedType);
+    } else {
+      fail();
+    }
+  });
+
+  it('identify incomplete LIMIT clause error when value is not a number', () => {
+    const expectedType = ErrorType.INCOMPLETELIMIT;
+    const model = new ModelDeserializer('SELECT A FROM B LIMIT X').deserialize();
+    if (model.errors && model.errors.length === 1) {
+      expect(model.errors[0].type).toEqual(expectedType);
+    } else {
+      fail();
+    }
+  });
 });

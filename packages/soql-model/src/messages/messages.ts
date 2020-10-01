@@ -11,4 +11,5 @@ export namespace Messages {
   export const error_noSelections = 'Incomplete SELECT clause. The SELECT clause must contain at least one SELECT expression.';
   export const error_noFrom = 'A FROM clause is required.';
   export const error_incompleteFrom = 'Incomplete FROM clause. The FROM clause requires an object.';
+  export const error_incompleteLimit = 'Incomplete LIMIT clause. The LIMIT keyword must be followed by a number.';
 }

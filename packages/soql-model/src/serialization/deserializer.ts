@@ -99,6 +99,14 @@ class ErrorIdentifier {
         charInLine: error.getCharacterPositionInLine()
       };
     }
+    if (this.isIncompleteLimitError(error)) {
+      return {
+        type: Soql.ErrorType.INCOMPLETELIMIT,
+        message: Messages.error_incompleteLimit,
+        lineNumber: error.getLineNumber(),
+        charInLine: error.getCharacterPositionInLine()
+      };
+    }
     return {
       type: Soql.ErrorType.UNKNOWN,
       message: error.getMessage(),
@@ -139,6 +147,12 @@ class ErrorIdentifier {
       && context.exception instanceof InputMismatchException;
   }
 
+  protected isIncompleteLimitError(error: ParserError): boolean {
+    const context = this.matchErrorToContext(error);
+    return context instanceof Parser.SoqlIntegerContext
+      && this.hasAncestorOfType(context, Parser.SoqlLimitClauseContext);
+  }
+
   protected findExceptions(context: ParserRuleContext): void {
     if (context.exception) {
       this.nodesWithExceptions.push(context);
@@ -173,6 +187,16 @@ class ErrorIdentifier {
       }
     }
     return false
+  }
+
+  protected hasAncestorOfType(context: ParserRuleContext, type: any): boolean {
+    if (context instanceof type) {
+      return true;
+    }
+    if (context.parentCtx) {
+      return this.hasAncestorOfType(context.parentCtx, type);
+    }
+    return false;
   }
 }
 
@@ -258,12 +282,12 @@ class QueryListener extends SoqlParserListener {
   }
 
   public enterSoqlLimitClause(ctx: Parser.SoqlLimitClauseContext): void {
-    let value = NaN;
+    let value = undefined;
     if (ctx.soqlIntegerValue()) {
       const valueString = ctx.soqlIntegerValue().getText();
       value = parseInt(valueString);
     }
-    if (value !== NaN) {
+    if (value && value !== NaN) {
       this.limit = new Impl.LimitImpl(value);
     }
   }
