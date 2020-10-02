@@ -39,6 +39,14 @@
           has-error={hasRecoverableFieldsError}
           is-loading={isFieldsLoading}
         ></querybuilder-fields>
+        <querybuilder-order-by
+          selected-order-by-fields={query.fields}
+          order-by-fields={fields}
+          onorderbyfieldselected={handleFieldSelected}
+          onorderbyfieldremoved={handleFieldRemoved}
+          has-error={hasRecoverableOrderByError}
+          is-loading={isOrderByLoading}
+        ></querybuilder-order-by>
       </section>
       <section class="column query-preview">
         <querybuilder-query-preview query={query}></querybuilder-query-preview>
