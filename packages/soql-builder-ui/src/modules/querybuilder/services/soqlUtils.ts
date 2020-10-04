@@ -37,7 +37,6 @@ export function convertSoqlModelToUiModel(
       : undefined;
 
   const sObject = queryModel.from && queryModel.from.sobjectName;
-
   const orderBy = queryModel.orderBy
     ? queryModel.orderBy.orderByExpressions
         // TODO: Deal with empty OrderBy.  returns unmodelled syntax.

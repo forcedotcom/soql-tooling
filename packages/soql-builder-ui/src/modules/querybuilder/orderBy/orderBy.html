@@ -30,6 +30,7 @@
         <span class="group-orderby-order">
           <label for="orderby-order">Order: </label>
           <select id="orderby-order" name="orderby-order" data-el-orderby-order>
+            <option value="" default>--</option>
             <option value="ASC">ASC</option>
             <option value="DESC">DESC</option>
           </select></span
@@ -37,6 +38,7 @@
         <span class="group-orderby-nulls">
           <label for="orderby-nulls">Nulls: </label>
           <select id="orderby-nulls" name="orderby-nulls" data-el-orderby-nulls>
+            <option value="" default>--</option>
             <option value="NULLS FIRST">FIRST</option>
             <option value="NULLS LAST">LAST</option>
           </select>
@@ -46,9 +48,13 @@
 
       <div class="selected-orderby-container">
         <template for:each={selectedOrderByFields} for:item="field">
-          <div class="selected-field" key={field.field}>
+          <div class="selected-orderby" key={field.field}>
             {field.field} {field.order} {field.nulls}
-            <span onclick={handleOrderByRemoved} data-field={field.field}>
+            <span
+              class="pointer delete-trigger"
+              onclick={handleOrderByRemoved}
+              data-field={field.field}
+            >
               x
             </span>
           </div>
