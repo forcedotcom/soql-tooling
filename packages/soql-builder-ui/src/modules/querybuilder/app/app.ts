@@ -32,6 +32,7 @@ export default class App extends LightningElement {
   sObjects: string[] = [];
   @track
   fields: string[] = [];
+  @track
   toolingSDK: ToolingSDK;
   modelService: ToolingModelService;
   messageService: IMessageService;
@@ -64,6 +65,7 @@ export default class App extends LightningElement {
 
   connectedCallback() {
     this.modelService.query.subscribe((newQuery: ToolingModelJson) => {
+      console.log('app.query.orderBy is: ', JSON.stringify(newQuery.orderBy));
       this.inspectErrors(newQuery.errors);
       if (this.hasUnrecoverableError === false) {
         this.loadSObjectMetadata(newQuery);
@@ -155,6 +157,14 @@ export default class App extends LightningElement {
 
   handleFieldRemoved(e) {
     this.modelService.removeField(e.detail.field);
+  }
+
+  handleOrderBySelected(e) {
+    this.modelService.addOrderByField(e.detail);
+  }
+
+  handleOrderByRemoved(e) {
+    this.modelService.removeOrderByField(e.detail.field);
   }
 
   handleRunQuery() {

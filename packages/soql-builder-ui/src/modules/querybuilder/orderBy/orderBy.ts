@@ -18,20 +18,26 @@ export default class OrderBy extends LightningElement {
     return this.isLoading ? '...loading...' : '--- Select Fields ---';
   }
 
-  handleFieldSelection(e) {
+  handleOrderBySelected(e) {
     e.preventDefault();
-    const value = e.target.value;
-    if (value && value.length) {
-      const orderBySelectedEvent = new CustomEvent('orderbyfieldselected', {
-        detail: { field: e.target.value }
+    const orderbyEl = this.template.querySelector('[data-el-orderby-field]');
+    const orderEl = this.template.querySelector('[data-el-orderby-order]');
+    const nullsEl = this.template.querySelector('[data-el-orderby-nulls]');
+    if (orderbyEl && orderbyEl.value && orderbyEl.value.length) {
+      const orderBySelectedEvent = new CustomEvent('orderbyselected', {
+        detail: {
+          field: orderbyEl.value,
+          order: orderEl.value,
+          nulls: nullsEl.value
+        }
       });
       this.dispatchEvent(orderBySelectedEvent);
     }
   }
 
-  handleFieldRemoved(e) {
+  handleOrderByRemoved(e) {
     e.preventDefault();
-    const orderByRemovedEvent = new CustomEvent('orderbyfieldremoved', {
+    const orderByRemovedEvent = new CustomEvent('orderbyremoved', {
       detail: { field: e.target.dataset.field }
     });
     this.dispatchEvent(orderByRemovedEvent);

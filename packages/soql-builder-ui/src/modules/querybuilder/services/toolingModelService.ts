@@ -30,6 +30,7 @@ export interface ToolingModel extends IMap {
 export interface ToolingModelJson extends JsonMap {
   sObject: string;
   fields: string[];
+  orderBy: JsonMap[];
   errors: JsonMap[];
   unsupported: string[];
 }
@@ -40,6 +41,7 @@ export class ToolingModelService {
   public static toolingModelTemplate: ToolingModelJson = {
     sObject: '',
     fields: [],
+    orderBy: [],
     errors: [],
     unsupported: []
   } as ToolingModelJson;
@@ -76,6 +78,11 @@ export class ToolingModelService {
   private getFields() {
     return this.getModel().get('fields') as List<string>;
   }
+
+  private getOrderBy() {
+    console.log('this.getorderBy', this.getModel().get('orderBy'));
+    return this.getModel().get('orderBy') as List<JsonMap>;
+  }
   // This method is destructive, will clear any selections except sObject.
   public setSObject(sObject: string) {
     const emptyModel = fromJS(ToolingModelService.toolingModelTemplate);
@@ -101,6 +108,46 @@ export class ToolingModelService {
       this.getFields().filter((item) => {
         return item !== field;
       }) as List<string>
+    ) as ToolingModel;
+
+    this.changeModel(newModelWithFieldRemoved);
+  }
+
+  public hasOrderByField(field: string) {
+    console.log(
+      'getOrderBy',
+      this.getOrderBy(),
+      JSON.stringify(this.getOrderBy())
+    );
+    return this.getOrderBy().some((item) => {
+      console.log('hasOrderByField: ', item.field, item.get);
+      return item.get('field') === field;
+    }) as List<string>;
+  }
+
+  public addOrderByField(orderByObj: JsonMap) {
+    if (this.hasOrderByField(orderByObj.field) === false) {
+      const currentModel = this.getModel();
+      const newModelWithAddedField = currentModel.set(
+        'orderBy',
+        this.getOrderBy().push(fromJS(orderByObj))
+      ) as ToolingModel;
+
+      this.changeModel(newModelWithAddedField);
+    }
+  }
+
+  public removeOrderByField(field: string) {
+    const currentModel = this.getModel();
+    const orderBy = this.getOrderBy();
+    console.log('removeOrderByField:', JSON.stringify(orderBy));
+    const filteredOrderBy = orderBy.filter((item) => {
+      console.log('removeOrderByField: ', item.field, item.get);
+      return item.get('field') !== field;
+    }) as List<JsonMap>;
+    const newModelWithFieldRemoved = currentModel.set(
+      'orderBy',
+      filteredOrderBy
     ) as ToolingModel;
 
     this.changeModel(newModelWithFieldRemoved);
@@ -132,6 +179,7 @@ export class ToolingModelService {
   }
 
   private changeModel(newModel) {
+    console.log('changing model to: ', newModel);
     this.model.next(newModel);
     this.sendMessageToBackend();
   }

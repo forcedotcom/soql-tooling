@@ -12,6 +12,11 @@ label {
   padding-right: 10px;
 }
 
-select {
+.select-long {
   width: 400px;
+}
+
+button,
+.group-orderby-nulls {
+  margin-left: 1rem;
 }

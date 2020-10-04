@@ -25,20 +25,33 @@ export function convertSoqlModelToUiModel(
 ): ToolingModelJson {
   const fields =
     queryModel.select &&
-      (queryModel.select as Soql.SelectExprs).selectExpressions
+    (queryModel.select as Soql.SelectExprs).selectExpressions
       ? (queryModel.select as Soql.SelectExprs).selectExpressions
-        .filter((expr) => !SoqlModelUtils.containsUnmodeledSyntax(expr))
-        .map((expr) => {
-          if (expr.field.fieldName) {
-            return expr.field.fieldName;
-          }
-          return undefined;
-        })
+          .filter((expr) => !SoqlModelUtils.containsUnmodeledSyntax(expr))
+          .map((expr) => {
+            if (expr.field.fieldName) {
+              return expr.field.fieldName;
+            }
+            return undefined;
+          })
       : undefined;
 
   const sObject = queryModel.from && queryModel.from.sobjectName;
 
-  const errors = (queryModel.errors as unknown) as JsonMap[];
+  const orderBy = queryModel.orderBy
+    ? queryModel.orderBy.orderByExpressions
+        // TODO: Deal with empty OrderBy.  returns unmodelled syntax.
+        .filter((expr) => !SoqlModelUtils.containsUnmodeledSyntax(expr))
+        .map((expression) => {
+          return {
+            field: expression.field.fieldName,
+            order: expression.order,
+            nulls: expression.nullsOrder
+          };
+        })
+    : [];
+
+  const errors = queryModel.errors;
   const unsupported = [];
   for (const key in queryModel) {
     // eslint-disable-next-line no-prototype-builtins
@@ -56,9 +69,12 @@ export function convertSoqlModelToUiModel(
   const toolingModelTemplate: ToolingModelJson = {
     sObject: sObject || '',
     fields: fields || [],
+    orderBy: orderBy || [],
     errors: errors || [],
     unsupported: unsupported || []
   };
+
+  console.log('Soql -> Ui ', JSON.stringify(toolingModelTemplate.orderBy));
 
   return toolingModelTemplate;
 }
@@ -73,9 +89,21 @@ function convertUiModelToSoqlModel(uiModel: ToolingModelJson): Soql.Query {
   const selectExprs = uiModel.fields.map(
     (field) => new Impl.FieldSelectionImpl(new Impl.FieldRefImpl(field))
   );
+  const orderByExprs = uiModel.orderBy.map(
+    (orderBy) =>
+      new Impl.OrderByExpressionImpl(
+        new Impl.FieldRefImpl(orderBy.field),
+        orderBy.order,
+        orderBy.nulls
+      )
+  );
   const queryModel = new Impl.QueryImpl(
     new Impl.SelectExprsImpl(selectExprs),
-    new Impl.FromImpl(uiModel.sObject)
+    new Impl.FromImpl(uiModel.sObject),
+    undefined,
+    undefined,
+    undefined,
+    new Impl.OrderByImpl(orderByExprs)
   );
   return queryModel;
 }
