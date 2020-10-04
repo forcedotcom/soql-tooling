@@ -7,10 +7,11 @@
  */
 
 import { LightningElement, api } from 'lwc';
+import { JsonMap } from '@salesforce/ts-types';
 export default class OrderBy extends LightningElement {
   @api orderByFields: string[];
-  @api selectedOrderByFields: string[] = [];
-  @api hasError = false;
+  @api selectedOrderByFields: JsonMap[] = [];
+  @api hasError = false; // currently not used, no specific order by errors
   @api isLoading = false;
 
   get defaultOptionText() {

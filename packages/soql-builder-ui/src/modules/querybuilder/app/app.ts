@@ -65,7 +65,6 @@ export default class App extends LightningElement {
 
   connectedCallback() {
     this.modelService.query.subscribe((newQuery: ToolingModelJson) => {
-      console.log('app.query.orderBy is: ', JSON.stringify(newQuery.orderBy));
       this.inspectErrors(newQuery.errors);
       if (this.hasUnrecoverableError === false) {
         this.loadSObjectMetadata(newQuery);

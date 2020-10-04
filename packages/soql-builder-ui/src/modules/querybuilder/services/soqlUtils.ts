@@ -73,7 +73,7 @@ export function convertSoqlModelToUiModel(
     unsupported: unsupported || []
   };
 
-  console.log('Soql -> Ui ', JSON.stringify(toolingModelTemplate.orderBy));
+  // USEFUL console.log('Soql -> Ui ', JSON.stringify(toolingModelTemplate.orderBy));
 
   return toolingModelTemplate;
 }

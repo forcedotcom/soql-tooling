@@ -80,7 +80,6 @@ export class ToolingModelService {
   }
 
   private getOrderBy() {
-    console.log('this.getorderBy', this.getModel().get('orderBy'));
     return this.getModel().get('orderBy') as List<JsonMap>;
   }
   // This method is destructive, will clear any selections except sObject.
@@ -113,16 +112,8 @@ export class ToolingModelService {
     this.changeModel(newModelWithFieldRemoved);
   }
 
-  public hasOrderByField(field: string) {
-    console.log(
-      'getOrderBy',
-      this.getOrderBy(),
-      JSON.stringify(this.getOrderBy())
-    );
-    return this.getOrderBy().some((item) => {
-      console.log('hasOrderByField: ', item.field, item.get);
-      return item.get('field') === field;
-    }) as List<string>;
+  private hasOrderByField(field: string) {
+    return this.getOrderBy().some((item) => item.get('field') === field);
   }
 
   public addOrderByField(orderByObj: JsonMap) {
@@ -140,9 +131,7 @@ export class ToolingModelService {
   public removeOrderByField(field: string) {
     const currentModel = this.getModel();
     const orderBy = this.getOrderBy();
-    console.log('removeOrderByField:', JSON.stringify(orderBy));
     const filteredOrderBy = orderBy.filter((item) => {
-      console.log('removeOrderByField: ', item.field, item.get);
       return item.get('field') !== field;
     }) as List<JsonMap>;
     const newModelWithFieldRemoved = currentModel.set(
@@ -179,7 +168,6 @@ export class ToolingModelService {
   }
 
   private changeModel(newModel) {
-    console.log('changing model to: ', newModel);
     this.model.next(newModel);
     this.sendMessageToBackend();
   }
