@@ -9,7 +9,7 @@
 import { createElement } from 'lwc';
 import OrderBy from 'querybuilder/orderBy';
 
-describe('OrderBy', () => {
+describe('OrderBy should', () => {
   const orderBy = createElement('querybuilder-order-by', {
     is: OrderBy
   });
@@ -26,7 +26,7 @@ describe('OrderBy', () => {
     }
   });
 
-  it('emits event when orderby field is selected', () => {
+  it('emit event when orderby field is selected', () => {
     document.body.appendChild(orderBy);
 
     const handler = jest.fn();
@@ -36,6 +36,8 @@ describe('OrderBy', () => {
     );
     selectField.value = 'foo';
     const button = orderBy.shadowRoot.querySelector('button');
+
+    // make the magic happen
     button.click();
 
     expect(handler).toHaveBeenCalled();
@@ -44,7 +46,7 @@ describe('OrderBy', () => {
     expect(handler.mock.calls[0][0].detail.nulls).toEqual('');
   });
 
-  it('emits event when orderby field is selected, adds order and nulls', () => {
+  it('emit event when orderby field is selected, adds order and nulls', () => {
     document.body.appendChild(orderBy);
 
     const handler = jest.fn();
@@ -62,6 +64,8 @@ describe('OrderBy', () => {
     );
     selectNulls.value = 'NULLS LAST';
     const button = orderBy.shadowRoot.querySelector('button');
+
+    // lebowski reference
     button.click();
 
     expect(handler).toHaveBeenCalled();
@@ -70,7 +74,7 @@ describe('OrderBy', () => {
     expect(handler.mock.calls[0][0].detail.nulls).toEqual(selectNulls.value);
   });
 
-  it('does not emit event when orderby field is empty', () => {
+  it('not emit event when orderby field is empty', () => {
     document.body.appendChild(orderBy);
 
     const handler = jest.fn();
@@ -80,12 +84,14 @@ describe('OrderBy', () => {
     );
     selectField.value = '';
     const button = orderBy.shadowRoot.querySelector('button');
+
+    // make the magic happen
     button.click();
 
     expect(handler).not.toHaveBeenCalled();
   });
 
-  it('emits event when a orderby field is removed', () => {
+  it('emit event when a orderby field is removed', () => {
     orderBy.selectedOrderByFields = [{ field: 'foo' }];
     document.body.appendChild(orderBy);
 
@@ -100,7 +106,7 @@ describe('OrderBy', () => {
     expect(handler).toHaveBeenCalled();
   });
 
-  it('renders the selected orderby fields in the component', () => {
+  it('render the selected orderby fields in the component', () => {
     document.body.appendChild(orderBy);
 
     let selectedFieldEl = orderBy.shadowRoot.querySelectorAll(
@@ -118,7 +124,7 @@ describe('OrderBy', () => {
     });
   });
 
-  it('should alert user when loading', async () => {
+  it('alert user when loading', async () => {
     orderBy.selectedFields = [];
     orderBy.fields = [];
     document.body.appendChild(orderBy);
@@ -136,7 +142,7 @@ describe('OrderBy', () => {
     });
   });
 
-  it('should alert user when error', async () => {
+  it('alert user when error', async () => {
     document.body.appendChild(orderBy);
     expect(orderBy.hasError).toEqual(false);
     let hasError = orderBy.shadowRoot.querySelectorAll('[data-el-has-error]');

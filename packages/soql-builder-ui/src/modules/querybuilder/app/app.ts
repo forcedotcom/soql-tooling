@@ -32,7 +32,6 @@ export default class App extends LightningElement {
   sObjects: string[] = [];
   @track
   fields: string[] = [];
-  @track
   toolingSDK: ToolingSDK;
   modelService: ToolingModelService;
   messageService: IMessageService;
