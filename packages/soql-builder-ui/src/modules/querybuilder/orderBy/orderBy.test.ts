@@ -35,7 +35,7 @@ describe('OrderBy should', () => {
       '[data-el-orderby-field]'
     );
     selectField.value = 'foo';
-    const button = orderBy.shadowRoot.querySelector('button');
+    const button = orderBy.shadowRoot.querySelector('[data-el-add-button]');
 
     // make the magic happen
     button.click();
@@ -63,7 +63,7 @@ describe('OrderBy should', () => {
       '[data-el-orderby-nulls]'
     );
     selectNulls.value = 'NULLS LAST';
-    const button = orderBy.shadowRoot.querySelector('button');
+    const button = orderBy.shadowRoot.querySelector('[data-el-add-button]');
 
     // lebowski reference
     button.click();
@@ -83,7 +83,7 @@ describe('OrderBy should', () => {
       '[data-el-orderby-field]'
     );
     selectField.value = '';
-    const button = orderBy.shadowRoot.querySelector('button');
+    const button = orderBy.shadowRoot.querySelector('[data-el-add-button]');
 
     // make the magic happen
     button.click();
