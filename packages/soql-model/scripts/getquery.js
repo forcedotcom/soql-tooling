@@ -22,7 +22,8 @@ var queryModel = new model.Impl.QueryImpl(
       model.Soql.Order.Ascending,
       model.Soql.NullsOrder.First
     ),
-  ])
+  ]),
+  new model.Impl.LimitImpl(5)
 );
 var serializer = new model.ModelSerializer(queryModel);
 var query = serializer.serialize();

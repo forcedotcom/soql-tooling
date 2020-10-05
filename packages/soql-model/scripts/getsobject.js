@@ -24,8 +24,10 @@ var errors = queryModel.errors;
 var orderBy = queryModel.orderBy.orderByExpressions.map(
   (expr) => `${expr.field.fieldName} ${expr.order} ${expr.nullsOrder}`
 );
-console.log(`Query:   ${query}`);
-console.log(`SObject: ${sObject}`);
-console.log(`Fields:  ${fields}`);
+var limit = queryModel.limit ? queryModel.limit.limit : 'undefined';
+console.log(`Query:    ${query}`);
+console.log(`SObject:  ${sObject}`);
+console.log(`Fields:   ${fields}`);
 console.log(`Order By: ${orderBy}`);
-console.log(`Errors:  ${JSON.stringify(errors)}`);
+console.log(`Limit:    ${limit}`);
+console.log(`Errors:   ${JSON.stringify(errors)}`);

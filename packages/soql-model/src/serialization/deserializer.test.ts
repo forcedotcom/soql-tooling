@@ -29,7 +29,7 @@ const testQueryModel = {
       { field: { fieldName: 'field1' } }
     ]
   },
-  limit: { unmodeledSyntax: 'LIMIT 20' },
+  limit: { limit: 20 },
   offset: { unmodeledSyntax: 'OFFSET 2' },
   bind: { unmodeledSyntax: 'BIND field1 = 5' },
   recordTrackingType: { unmodeledSyntax: 'FOR VIEW' },
@@ -172,6 +172,26 @@ describe('ModelDeserializer should', () => {
   it('identify empty statement error', () => {
     const expectedType = ErrorType.EMPTY;
     const model = new ModelDeserializer('').deserialize();
+    if (model.errors && model.errors.length === 1) {
+      expect(model.errors[0].type).toEqual(expectedType);
+    } else {
+      fail();
+    }
+  });
+
+  it('identify incomplete LIMIT clause error when number missing', () => {
+    const expectedType = ErrorType.INCOMPLETELIMIT;
+    const model = new ModelDeserializer('SELECT A FROM B LIMIT').deserialize();
+    if (model.errors && model.errors.length === 1) {
+      expect(model.errors[0].type).toEqual(expectedType);
+    } else {
+      fail();
+    }
+  });
+
+  it('identify incomplete LIMIT clause error when value is not a number', () => {
+    const expectedType = ErrorType.INCOMPLETELIMIT;
+    const model = new ModelDeserializer('SELECT A FROM B LIMIT X').deserialize();
     if (model.errors && model.errors.length === 1) {
       expect(model.errors[0].type).toEqual(expectedType);
     } else {
