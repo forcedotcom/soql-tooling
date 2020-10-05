@@ -20,7 +20,8 @@ export enum ErrorType {
   NOSELECT = 'NOSELECT',
   NOSELECTIONS = 'NOSELECTIONS',
   NOFROM = 'NOFROM',
-  INCOMPLETEFROM = 'INCOMPLETEFROM'
+  INCOMPLETEFROM = 'INCOMPLETEFROM',
+  INCOMPLETELIMIT = 'INCOMPLETELIMIT'
 }
 
 export interface SoqlModelObject {
@@ -83,6 +84,10 @@ export interface FieldRef extends Field {
   fieldName: string;
 }
 
+export interface Limit extends SoqlModelObject {
+  limit: number;
+}
+
 export interface OrderBy extends SoqlModelObject {
   orderByExpressions: OrderByExpression[];
 }
@@ -106,7 +111,6 @@ export enum NullsOrder {
 export interface Where extends SoqlModelObject { }
 export interface With extends SoqlModelObject { }
 export interface GroupBy extends SoqlModelObject { }
-export interface Limit extends SoqlModelObject { }
 export interface Offset extends SoqlModelObject { }
 export interface Bind extends SoqlModelObject { }
 export interface RecordTrackingType extends SoqlModelObject { }
@@ -119,7 +123,6 @@ export interface UnmodeledSyntax
   Where,
   With,
   GroupBy,
-  Limit,
   Offset,
   Bind,
   RecordTrackingType,
