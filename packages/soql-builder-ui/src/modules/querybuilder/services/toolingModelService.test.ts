@@ -168,6 +168,25 @@ describe('Tooling Model Service', () => {
     expect(messageService.setState).toHaveBeenCalledTimes(2);
   });
 
+  it('should update limit in model', () => {
+    (messageService.setState as jest.Mock).mockClear();
+    expect(messageService.setState).toHaveBeenCalledTimes(0);
+    query = ToolingModelService.toolingModelTemplate;
+
+    expect(query!.limit).toEqual(undefined);
+
+    // Add
+    modelService.changeLimit(11);
+    expect(query!.limit).toBe(11);
+
+    // Remove Limit
+    modelService.changeLimit(undefined);
+    expect(query!.limit).toBe(undefined);
+
+    // verify saves
+    expect(messageService.setState).toHaveBeenCalledTimes(2);
+  });
+
   it('should add orderby as immutablejs', () => {
     modelService.addOrderByField(mockOrderBy);
     const orderBy = modelService.getModel().get('orderBy');
