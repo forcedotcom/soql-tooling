@@ -43,7 +43,7 @@ export class ToolingModelService {
     sObject: '',
     fields: [],
     orderBy: [],
-    limit: undefined,
+    limit: '',
     errors: [],
     unsupported: []
   } as ToolingModelJson;
@@ -145,7 +145,7 @@ export class ToolingModelService {
   }
 
   public changeLimit(limit: number) {
-    const newLimitModel = this.getModel().set('limit', limit);
+    const newLimitModel = this.getModel().set('limit', limit || '');
     this.changeModel(newLimitModel);
   }
 

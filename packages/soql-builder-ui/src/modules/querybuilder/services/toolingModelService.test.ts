@@ -173,7 +173,7 @@ describe('Tooling Model Service', () => {
     expect(messageService.setState).toHaveBeenCalledTimes(0);
     query = ToolingModelService.toolingModelTemplate;
 
-    expect(query!.limit).toEqual(undefined);
+    expect(query!.limit).toEqual('');
 
     // Add
     modelService.changeLimit(11);
@@ -181,7 +181,7 @@ describe('Tooling Model Service', () => {
 
     // Remove Limit
     modelService.changeLimit(undefined);
-    expect(query!.limit).toBe(undefined);
+    expect(query!.limit).toBe('');
 
     // verify saves
     expect(messageService.setState).toHaveBeenCalledTimes(2);
