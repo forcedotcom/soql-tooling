@@ -70,7 +70,7 @@ export function convertSoqlModelToUiModel(
     sObject: sObject || '',
     fields: fields || [],
     orderBy: orderBy || [],
-    limit: limit || undefined,
+    limit: limit || '',
     errors: errors || [],
     unsupported: unsupported || []
   };

@@ -12,6 +12,7 @@ describe('SoqlUtils', () => {
     sObject: 'Account',
     fields: ['Name', 'Id'],
     orderBy: [{ field: 'Name', order: 'ASC', nulls: 'NULLS FIRST' }],
+    limit: '',
     errors: [],
     unsupported: []
   };

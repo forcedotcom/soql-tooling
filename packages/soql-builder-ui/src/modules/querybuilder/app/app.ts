@@ -68,7 +68,6 @@ export default class App extends LightningElement {
       if (this.hasUnrecoverableError === false) {
         this.loadSObjectMetadata(newQuery);
       }
-      console.log('query: ', newQuery, newQuery.limit);
       this.query = newQuery;
     });
 

@@ -31,7 +31,7 @@ export interface ToolingModelJson extends JsonMap {
   sObject: string;
   fields: string[];
   orderBy: JsonMap[];
-  limit: number;
+  limit: string;
   errors: JsonMap[];
   unsupported: string[];
 }

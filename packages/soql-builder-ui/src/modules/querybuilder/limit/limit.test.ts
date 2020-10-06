@@ -56,7 +56,14 @@ describe('Limit', () => {
     });
   });
 
-  // behavior of onchange doesn't trigger until focus is elsewhere if field is manually changed
+  /**
+   * behavior of onchange in input[type=number] doesn't trigger until focus is elsewhere
+   * so as a user, if i manually change the field by typing into it,
+   * the query doesn't change until i click out / focus elsewhere.
+   *
+   * by adding a keyup handler, the field reacts immediately to both manual typing and
+   * manipulating the input field with the up and down arrows
+   */
   it('emits an event when keyup is detected', () => {
     document.body.appendChild(limitCmp);
 
