@@ -13,7 +13,7 @@ describe('Limit', () => {
   let limitCmp;
 
   beforeEach(() => {
-    limitCmp = createElement('querybuilder-order-by', {
+    limitCmp = createElement('querybuilder-limit', {
       is: Limit
     });
   });
