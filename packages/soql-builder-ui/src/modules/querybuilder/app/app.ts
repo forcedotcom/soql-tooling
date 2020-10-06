@@ -68,6 +68,7 @@ export default class App extends LightningElement {
       if (this.hasUnrecoverableError === false) {
         this.loadSObjectMetadata(newQuery);
       }
+      console.log('query: ', newQuery, newQuery.limit);
       this.query = newQuery;
     });
 
@@ -163,6 +164,10 @@ export default class App extends LightningElement {
 
   handleOrderByRemoved(e) {
     this.modelService.removeOrderByField(e.detail.field);
+  }
+
+  handleLimitChanged(e) {
+    this.modelService.changeLimit(e.detail.limit);
   }
 
   handleRunQuery() {

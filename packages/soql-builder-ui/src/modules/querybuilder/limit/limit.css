@@ -8,15 +8,6 @@
 
 @import 'querybuilder/cssCommon';
 
-button,
-.group-orderby-nulls {
-  margin-left: 1rem;
-}
-
-.selected-orderby {
-  margin: 2px 10px 2px 0px;
-  display: inline-block;
-  height: 25px;
-  border: 1px dotted black;
-  padding: 0 4px;
+input[name='limit'] {
+  width: 4rem;
 }

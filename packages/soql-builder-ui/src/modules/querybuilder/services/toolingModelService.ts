@@ -31,6 +31,7 @@ export interface ToolingModelJson extends JsonMap {
   sObject: string;
   fields: string[];
   orderBy: JsonMap[];
+  limit: number;
   errors: JsonMap[];
   unsupported: string[];
 }
@@ -42,6 +43,7 @@ export class ToolingModelService {
     sObject: '',
     fields: [],
     orderBy: [],
+    limit: undefined,
     errors: [],
     unsupported: []
   } as ToolingModelJson;
@@ -140,6 +142,11 @@ export class ToolingModelService {
     ) as ToolingModel;
 
     this.changeModel(newModelWithFieldRemoved);
+  }
+
+  public changeLimit(limit: number) {
+    const newLimitModel = this.getModel().set('limit', limit);
+    this.changeModel(newLimitModel);
   }
 
   private onMessage(event: SoqlEditorEvent) {
