@@ -25,29 +25,29 @@ export function convertSoqlModelToUiModel(
 ): ToolingModelJson {
   const fields =
     queryModel.select &&
-    (queryModel.select as Soql.SelectExprs).selectExpressions
+      (queryModel.select as Soql.SelectExprs).selectExpressions
       ? (queryModel.select as Soql.SelectExprs).selectExpressions
-          .filter((expr) => !SoqlModelUtils.containsUnmodeledSyntax(expr))
-          .map((expr) => {
-            if (expr.field.fieldName) {
-              return expr.field.fieldName;
-            }
-            return undefined;
-          })
+        .filter((expr) => !SoqlModelUtils.containsUnmodeledSyntax(expr))
+        .map((expr) => {
+          if (expr.field.fieldName) {
+            return expr.field.fieldName;
+          }
+          return undefined;
+        })
       : undefined;
 
   const sObject = queryModel.from && queryModel.from.sobjectName;
   const orderBy = queryModel.orderBy
     ? queryModel.orderBy.orderByExpressions
-        // TODO: Deal with empty OrderBy.  returns unmodelled syntax.
-        .filter((expr) => !SoqlModelUtils.containsUnmodeledSyntax(expr))
-        .map((expression) => {
-          return {
-            field: expression.field.fieldName,
-            order: expression.order,
-            nulls: expression.nullsOrder
-          };
-        })
+      // TODO: Deal with empty OrderBy.  returns unmodelled syntax.
+      .filter((expr) => !SoqlModelUtils.containsUnmodeledSyntax(expr))
+      .map((expression) => {
+        return {
+          field: expression.field.fieldName,
+          order: expression.order,
+          nulls: expression.nullsOrder
+        };
+      })
     : [];
   const limit = queryModel.limit ? queryModel.limit.limit : undefined;
 
@@ -98,14 +98,20 @@ function convertUiModelToSoqlModel(uiModel: ToolingModelJson): Soql.Query {
         orderBy.nulls
       )
   );
+  const orderBy = orderByExprs.length > 0
+    ? new Impl.OrderByImpl(orderByExprs)
+    : undefined;
+  const limit = uiModel.limit.length > 0
+    ? new Impl.LimitImpl(uiModel.limit)
+    : undefined;
   const queryModel = new Impl.QueryImpl(
     new Impl.SelectExprsImpl(selectExprs),
     new Impl.FromImpl(uiModel.sObject),
     undefined,
     undefined,
     undefined,
-    new Impl.OrderByImpl(orderByExprs),
-    new Impl.LimitImpl(uiModel.limit)
+    orderBy,
+    limit
   );
   return queryModel;
 }
