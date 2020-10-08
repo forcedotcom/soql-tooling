@@ -18,7 +18,7 @@
   };
   const vscode = acquireVsCodeApi();
 
-  // load previous state is webview was moved from background.
+  // load previous state if webview was moved from background.
   function loadState() {
     const state = vscode.getState();
     if (state) {
