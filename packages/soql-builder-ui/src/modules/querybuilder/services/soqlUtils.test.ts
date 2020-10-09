@@ -12,11 +12,12 @@ describe('SoqlUtils', () => {
     sObject: 'Account',
     fields: ['Name', 'Id'],
     orderBy: [{ field: 'Name', order: 'ASC', nulls: 'NULLS FIRST' }],
-    limit: '',
+    limit: '11',
     errors: [],
     unsupported: []
   };
-  const soqlOne = 'Select Name, Id from Account ORDER BY Name ASC NULLS FIRST';
+  const soqlOne =
+    'Select Name, Id from Account ORDER BY Name ASC NULLS FIRST LIMIT 11';
   it('transform UI Model to Soql', () => {
     const transformedSoql = convertUiModelToSoql(uiModelOne);
     expect(transformedSoql).toContain(uiModelOne.fields[0]);
@@ -25,6 +26,7 @@ describe('SoqlUtils', () => {
     expect(transformedSoql).toContain(uiModelOne.orderBy[0].field);
     expect(transformedSoql).toContain(uiModelOne.orderBy[0].order);
     expect(transformedSoql).toContain(uiModelOne.orderBy[0].nulls);
+    expect(transformedSoql).toContain('11');
   });
   it('transforms Soql to UI Model', () => {
     const transformedUiModel = convertSoqlToUiModel(soqlOne);

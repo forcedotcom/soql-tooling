@@ -6,13 +6,11 @@
  *
  */
 
-import { fromJS } from 'immutable';
 import { ToolingModelService, ToolingModelJson } from './toolingModelService';
 import { VscodeMessageService } from './message/vscodeMessageService';
 import { IMessageService } from './message/iMessageService';
 import { BehaviorSubject } from 'rxjs';
 import { MessageType, SoqlEditorEvent } from './message/soqlEditorEvent';
-import { getVscode, getWindow } from './globals';
 
 describe('Tooling Model Service', () => {
   let modelService: ToolingModelService;
@@ -176,8 +174,8 @@ describe('Tooling Model Service', () => {
     expect(query!.limit).toEqual('');
 
     // Add
-    modelService.changeLimit(11);
-    expect(query!.limit).toBe(11);
+    modelService.changeLimit('11');
+    expect(query!.limit).toBe('11');
 
     // Remove Limit
     modelService.changeLimit(undefined);

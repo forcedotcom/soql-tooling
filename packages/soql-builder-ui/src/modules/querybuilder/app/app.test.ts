@@ -243,7 +243,7 @@ describe('App should', () => {
     ).not.toContain(eventPayload.detail.field);
   });
 
-  it('send limit in message to vs code when orderby added', () => {
+  it('send limit in message to vs code when limit changed', () => {
     const limit = app.shadowRoot.querySelector('querybuilder-limit');
     const postMessageSpy = jest.spyOn(messageService, 'sendMessage');
     const eventPayload = {

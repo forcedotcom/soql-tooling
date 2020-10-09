@@ -14,7 +14,9 @@ export enum ErrorType {
   // eslint-disable-next-line no-unused-vars
   NOFROM = 'NOFROM',
   // eslint-disable-next-line no-unused-vars
-  INCOMPLETEFROM = 'INCOMPLETEFROM'
+  INCOMPLETEFROM = 'INCOMPLETEFROM',
+  // eslint-disable-next-line no-unused-vars
+  INCOMPLETELIMIT = 'INCOMPLETELIMIT'
 }
 
 // recoverable field errors
@@ -29,10 +31,15 @@ recoverableFromErrors[ErrorType.INCOMPLETEFROM] = true;
 recoverableFromErrors[ErrorType.NOFROM] = true;
 recoverableFromErrors[ErrorType.EMPTY] = true;
 
+// recoverable limit errors
+export const recoverableLimitErrors = {};
+recoverableLimitErrors[ErrorType.INCOMPLETELIMIT] = true;
+
 // general recoverable errors
 export const recoverableErrors = {
   ...recoverableFieldErrors,
-  ...recoverableFromErrors
+  ...recoverableFromErrors,
+  ...recoverableLimitErrors
 };
 recoverableErrors[ErrorType.EMPTY] = true;
 
