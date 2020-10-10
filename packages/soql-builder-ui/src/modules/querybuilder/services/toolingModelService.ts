@@ -25,7 +25,7 @@ export interface ToolingModel extends IMap {
   fields: List<string>;
   orderBy: List<Map>;
   limit: string;
-  errors: List<Map>; // actually need to update this to immutable
+  errors: List<Map>;
   unsupported: string[];
 }
 // Public inteface for accessing modelService.query

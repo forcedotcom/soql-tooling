@@ -15,8 +15,6 @@ export default class Limit extends LightningElement {
   handleLimitChange(e) {
     e.preventDefault();
     const limit = e.target.value;
-    // eslint-disable-next-line no-debugger
-    debugger;
     const sObjectSelected = new CustomEvent('limitchanged', {
       detail: { limit }
     });
