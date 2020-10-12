@@ -14,7 +14,7 @@ import { getWindow, getVscode } from '../globals';
 import { SoqlEditorEvent, MessageType } from './soqlEditorEvent';
 
 export class VscodeMessageService implements IMessageService {
-  private vscode;
+  protected vscode;
   public messagesToUI: Observable<SoqlEditorEvent>;
 
   constructor() {

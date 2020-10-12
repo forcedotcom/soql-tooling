@@ -23,13 +23,17 @@ type IMap = Map<string, string | List<string>>;
 export interface ToolingModel extends IMap {
   sObject: string;
   fields: List<string>;
-  errors: JsonMap[]; // actually need to update this to immutable
+  orderBy: List<Map>;
+  limit: string;
+  errors: List<Map>;
   unsupported: string[];
 }
 // Public inteface for accessing modelService.query
 export interface ToolingModelJson extends JsonMap {
   sObject: string;
   fields: string[];
+  orderBy: JsonMap[];
+  limit: string;
   errors: JsonMap[];
   unsupported: string[];
 }
@@ -40,11 +44,12 @@ export class ToolingModelService {
   public static toolingModelTemplate: ToolingModelJson = {
     sObject: '',
     fields: [],
+    orderBy: [],
+    limit: '',
     errors: [],
     unsupported: []
   } as ToolingModelJson;
   private messageService: IMessageService;
-  private latest: ToolingModelJson;
 
   constructor(messageService: IMessageService) {
     this.messageService = messageService;
@@ -62,9 +67,6 @@ export class ToolingModelService {
         }
       })
     );
-    this.query.subscribe((query) => {
-      this.latest = query;
-    });
 
     this.messageService.messagesToUI.subscribe(this.onMessage.bind(this));
   }
@@ -75,6 +77,10 @@ export class ToolingModelService {
 
   private getFields() {
     return this.getModel().get('fields') as List<string>;
+  }
+
+  private getOrderBy() {
+    return this.getModel().get('orderBy') as List<JsonMap>;
   }
   // This method is destructive, will clear any selections except sObject.
   public setSObject(sObject: string) {
@@ -106,6 +112,41 @@ export class ToolingModelService {
     this.changeModel(newModelWithFieldRemoved);
   }
 
+  private hasOrderByField(field: string) {
+    return this.getOrderBy().some((item) => item.get('field') === field);
+  }
+
+  public addOrderByField(orderByObj: JsonMap) {
+    if (this.hasOrderByField(orderByObj.field) === false) {
+      const currentModel = this.getModel();
+      const newModelWithAddedField = currentModel.set(
+        'orderBy',
+        this.getOrderBy().push(fromJS(orderByObj))
+      ) as ToolingModel;
+
+      this.changeModel(newModelWithAddedField);
+    }
+  }
+
+  public removeOrderByField(field: string) {
+    const currentModel = this.getModel();
+    const orderBy = this.getOrderBy();
+    const filteredOrderBy = orderBy.filter((item) => {
+      return item.get('field') !== field;
+    }) as List<JsonMap>;
+    const newModelWithFieldRemoved = currentModel.set(
+      'orderBy',
+      filteredOrderBy
+    ) as ToolingModel;
+
+    this.changeModel(newModelWithFieldRemoved);
+  }
+
+  public changeLimit(limit: string) {
+    const newLimitModel = this.getModel().set('limit', limit || '');
+    this.changeModel(newLimitModel);
+  }
+
   private onMessage(event: SoqlEditorEvent) {
     if (event && event.type) {
       switch (event.type) {
@@ -133,14 +174,15 @@ export class ToolingModelService {
 
   private changeModel(newModel) {
     this.model.next(newModel);
-    this.sendMessageToBackend();
+    this.sendMessageToBackend(newModel);
   }
 
-  public sendMessageToBackend() {
+  public sendMessageToBackend(newModel: ToolingModel) {
     try {
+      const payload = convertUiModelToSoql((newModel as IMap).toJS());
       this.messageService.sendMessage({
         type: MessageType.UI_SOQL_CHANGED,
-        payload: convertUiModelToSoql(this.latest)
+        payload
       });
     } catch (e) {
       console.error(e);

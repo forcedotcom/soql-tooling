@@ -6,13 +6,11 @@
  *
  */
 
-import { fromJS } from 'immutable';
 import { ToolingModelService, ToolingModelJson } from './toolingModelService';
 import { VscodeMessageService } from './message/vscodeMessageService';
 import { IMessageService } from './message/iMessageService';
 import { BehaviorSubject } from 'rxjs';
 import { MessageType, SoqlEditorEvent } from './message/soqlEditorEvent';
-import { getVscode, getWindow } from './globals';
 
 describe('Tooling Model Service', () => {
   let modelService: ToolingModelService;
@@ -20,6 +18,7 @@ describe('Tooling Model Service', () => {
   let mockField1 = 'field1';
   let mockField2 = 'field2';
   let mockSobject = 'sObject1';
+  let mockOrderBy = { field: 'orderBy1', order: 'ASC', nulls: 'NULLS LAST' };
   let query: ToolingModelJson;
   let jimmyQuery = 'SELECT Hey, Joe from JimmyHendrixCatalog';
   let accountQuery = 'SELECT Id from Account';
@@ -127,6 +126,7 @@ describe('Tooling Model Service', () => {
     modelService.restoreViewState();
     expect(query!.sObject).toEqual(accountJson.sObject);
   });
+
   it('Receive SOQL Text from editor', () => {
     const soqlText = 'Select Name1, Id1 from Account1';
     const soqlEvent = { ...soqlEditorEvent };
@@ -139,10 +139,55 @@ describe('Tooling Model Service', () => {
     expect(query.fields[1]).toEqual('Id1');
     expect(query.errors.length).toEqual(0);
     expect(query.unsupported.length).toEqual(0);
-    //   sObject: 'Account1',
-    //   fields: ['Name1', 'Id1'],
-    //   errors: [],
-    //   unsupported: []
-    // });
+  });
+
+  it('should add, remove order by fields in model', () => {
+    (messageService.setState as jest.Mock).mockClear();
+    expect(messageService.setState).toHaveBeenCalledTimes(0);
+    query = ToolingModelService.toolingModelTemplate;
+
+    expect(query!.orderBy.length).toEqual(0);
+
+    // Add
+    modelService.addOrderByField(mockOrderBy);
+    expect(query!.orderBy.length).toBe(1);
+    expect(query!.orderBy[0].field).toContain(mockOrderBy.field);
+    expect(query!.orderBy[0].order).toContain(mockOrderBy.order);
+    expect(query!.orderBy[0].nulls).toContain(mockOrderBy.nulls);
+
+    // But Not Duplicate
+    modelService.addOrderByField(mockOrderBy);
+    expect(query!.orderBy.length).toBe(1);
+
+    // Delete
+    modelService.removeOrderByField(mockOrderBy.field);
+    expect(query!.orderBy.length).toBe(0);
+    // verify saves
+    expect(messageService.setState).toHaveBeenCalledTimes(2);
+  });
+
+  it('should update limit in model', () => {
+    (messageService.setState as jest.Mock).mockClear();
+    expect(messageService.setState).toHaveBeenCalledTimes(0);
+    query = ToolingModelService.toolingModelTemplate;
+
+    expect(query!.limit).toEqual('');
+
+    // Add
+    modelService.changeLimit('11');
+    expect(query!.limit).toBe('11');
+
+    // Remove Limit
+    modelService.changeLimit(undefined);
+    expect(query!.limit).toBe('');
+
+    // verify saves
+    expect(messageService.setState).toHaveBeenCalledTimes(2);
+  });
+
+  it('should add orderby as immutablejs', () => {
+    modelService.addOrderByField(mockOrderBy);
+    const orderBy = modelService.getModel().get('orderBy');
+    expect(typeof orderBy.toJS).toEqual('function');
   });
 });

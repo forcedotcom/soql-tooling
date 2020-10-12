@@ -35,7 +35,13 @@
         <template for:each={selectedFields} for:item="field">
           <div class="selected-field" key={field}>
             {field}
-            <span onclick={handleFieldRemoved} data-field={field}> x </span>
+            <span
+              class="pointer delete-trigger"
+              onclick={handleFieldRemoved}
+              data-field={field}
+            >
+              x
+            </span>
           </div>
         </template>
       </div>

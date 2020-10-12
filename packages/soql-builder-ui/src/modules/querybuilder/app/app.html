@@ -39,6 +39,19 @@
           has-error={hasRecoverableFieldsError}
           is-loading={isFieldsLoading}
         ></querybuilder-fields>
+        <querybuilder-order-by
+          selected-order-by-fields={query.orderBy}
+          order-by-fields={fields}
+          onorderbyselected={handleOrderBySelected}
+          onorderbyremoved={handleOrderByRemoved}
+          has-error={hasRecoverableOrderByError}
+          is-loading={isFieldsLoading}
+        ></querybuilder-order-by>
+        <querybuilder-limit
+          limit={query.limit}
+          has-error={hasRecoverableLimitError}
+          onlimitchanged={handleLimitChanged}
+        ></querybuilder-limit>
       </section>
       <section class="column query-preview">
         <querybuilder-query-preview query={query}></querybuilder-query-preview>
