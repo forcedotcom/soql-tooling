@@ -1,0 +1,23 @@
+{
+  "name": "@salesforce/soql-data-view",
+  "version": "0.0.5",
+  "description": "This is the web assests for viewing SOQL Results",
+  "main": "web/",
+  "publishConfig": {
+    "access": "public",
+    "registry": "http://registry.npmjs.org/"
+  },
+  "scripts": {
+    "test": "test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/forcedotcom/soql-tooling.git"
+  },
+  "author": "Salesforce",
+  "license": "BSD-3-Clause",
+  "bugs": {
+    "url": "https://github.com/forcedotcom/soql-tooling/issues"
+  },
+  "homepage": "https://github.com/forcedotcom/soql-tooling#readme"
+}

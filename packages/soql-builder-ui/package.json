@@ -29,7 +29,7 @@
   "keywords": [
     "lwc"
   ],
-  "license": "MIT",
+  "license": "BSD-3-Clause",
   "main": "dist/",
   "scripts": {
     "build": "lwc-services build -w webpack.config.js -m production",
