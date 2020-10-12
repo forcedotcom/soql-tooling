@@ -6,13 +6,11 @@
  *
  */
 
-import { fromJS } from 'immutable';
 import { ToolingModelService, ToolingModelJson } from './toolingModelService';
 import { VscodeMessageService } from './message/vscodeMessageService';
 import { IMessageService } from './message/iMessageService';
 import { BehaviorSubject } from 'rxjs';
 import { MessageType, SoqlEditorEvent } from './message/soqlEditorEvent';
-import { getVscode, getWindow } from './globals';
 
 describe('Tooling Model Service', () => {
   let modelService: ToolingModelService;
@@ -164,6 +162,25 @@ describe('Tooling Model Service', () => {
     // Delete
     modelService.removeOrderByField(mockOrderBy.field);
     expect(query!.orderBy.length).toBe(0);
+    // verify saves
+    expect(messageService.setState).toHaveBeenCalledTimes(2);
+  });
+
+  it('should update limit in model', () => {
+    (messageService.setState as jest.Mock).mockClear();
+    expect(messageService.setState).toHaveBeenCalledTimes(0);
+    query = ToolingModelService.toolingModelTemplate;
+
+    expect(query!.limit).toEqual('');
+
+    // Add
+    modelService.changeLimit('11');
+    expect(query!.limit).toBe('11');
+
+    // Remove Limit
+    modelService.changeLimit(undefined);
+    expect(query!.limit).toBe('');
+
     // verify saves
     expect(messageService.setState).toHaveBeenCalledTimes(2);
   });

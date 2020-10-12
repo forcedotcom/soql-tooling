@@ -18,7 +18,6 @@ import {
   SoqlEditorEvent
 } from '../services/message/soqlEditorEvent';
 import { BehaviorSubject, Observable } from 'rxjs';
-import { ErrorType } from '../error/errorModel';
 import { MessageServiceFactory } from '../services/message/messageServiceFactory';
 import { IMessageService } from '../services/message/iMessageService';
 import { StandaloneMessageService } from '../services/message/standaloneMessageService';
@@ -242,5 +241,23 @@ describe('App should', () => {
     expect(
       (postMessageSpy.mock.calls[0][0] as SoqlEditorEvent).payload
     ).not.toContain(eventPayload.detail.field);
+  });
+
+  it('send limit in message to vs code when limit changed', () => {
+    const limit = app.shadowRoot.querySelector('querybuilder-limit');
+    const postMessageSpy = jest.spyOn(messageService, 'sendMessage');
+    const eventPayload = {
+      detail: {
+        limit: '11'
+      }
+    };
+    limit.dispatchEvent(new CustomEvent('limitchanged', eventPayload));
+    expect(postMessageSpy).toHaveBeenCalled();
+    expect((postMessageSpy.mock.calls[0][0] as SoqlEditorEvent).type).toEqual(
+      MessageType.UI_SOQL_CHANGED
+    );
+    expect(
+      (postMessageSpy.mock.calls[0][0] as SoqlEditorEvent).payload
+    ).toContain(eventPayload.detail.limit);
   });
 });

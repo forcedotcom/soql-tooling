@@ -25,7 +25,7 @@ class MockVscode {
       return JSON.parse(state);
     } catch (e) {
       this.localStorage.clear();
-      console.log('state can not be parsed');
+      console.warn('state can not be parsed');
     }
     return state;
   }

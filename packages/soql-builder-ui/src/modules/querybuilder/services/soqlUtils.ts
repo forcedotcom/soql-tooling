@@ -49,6 +49,9 @@ export function convertSoqlModelToUiModel(
           };
         })
     : [];
+  const limit = queryModel.limit
+    ? queryModel.limit.limit.toString()
+    : undefined;
 
   const errors = queryModel.errors;
   const unsupported = [];
@@ -69,6 +72,7 @@ export function convertSoqlModelToUiModel(
     sObject: sObject || '',
     fields: fields || [],
     orderBy: orderBy || [],
+    limit: limit || '',
     errors: errors || [],
     unsupported: unsupported || []
   };
@@ -96,13 +100,18 @@ function convertUiModelToSoqlModel(uiModel: ToolingModelJson): Soql.Query {
         orderBy.nulls
       )
   );
+  const orderBy =
+    orderByExprs.length > 0 ? new Impl.OrderByImpl(orderByExprs) : undefined;
+  const limit =
+    uiModel.limit.length > 0 ? new Impl.LimitImpl(uiModel.limit) : undefined;
   const queryModel = new Impl.QueryImpl(
     new Impl.SelectExprsImpl(selectExprs),
     new Impl.FromImpl(uiModel.sObject),
     undefined,
     undefined,
     undefined,
-    new Impl.OrderByImpl(orderByExprs)
+    orderBy,
+    limit
   );
   return queryModel;
 }

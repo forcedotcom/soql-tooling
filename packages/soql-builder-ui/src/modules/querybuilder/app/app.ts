@@ -24,7 +24,8 @@ import {
 import {
   recoverableErrors,
   recoverableFieldErrors,
-  recoverableFromErrors
+  recoverableFromErrors,
+  recoverableLimitErrors
 } from '../error/errorModel';
 
 export default class App extends LightningElement {
@@ -47,6 +48,7 @@ export default class App extends LightningElement {
   }
   hasRecoverableFieldsError = false;
   hasRecoverableFromError = false;
+  hasRecoverableLimitError = false;
   hasRecoverableError = true;
   hasUnrecoverableError = true;
   isFromLoading = false;
@@ -117,6 +119,7 @@ export default class App extends LightningElement {
   inspectErrors(errors) {
     this.hasRecoverableFieldsError = false;
     this.hasRecoverableFromError = false;
+    this.hasRecoverableLimitError = false;
     this.hasUnrecoverableError = false;
     errors.forEach((error) => {
       // TODO: replace with imported types after fernando's work
@@ -124,6 +127,9 @@ export default class App extends LightningElement {
         this.hasRecoverableError = true;
         if (recoverableFieldErrors[error.type]) {
           this.hasRecoverableFieldsError = true;
+        }
+        if (recoverableLimitErrors[error.type]) {
+          this.hasRecoverableLimitError = true;
         }
         if (recoverableFromErrors[error.type]) {
           this.hasRecoverableFromError = true;
@@ -163,6 +169,10 @@ export default class App extends LightningElement {
 
   handleOrderByRemoved(e) {
     this.modelService.removeOrderByField(e.detail.field);
+  }
+
+  handleLimitChanged(e) {
+    this.modelService.changeLimit(e.detail.limit);
   }
 
   handleRunQuery() {

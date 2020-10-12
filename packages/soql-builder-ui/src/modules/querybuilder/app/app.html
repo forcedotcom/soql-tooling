@@ -47,6 +47,11 @@
           has-error={hasRecoverableOrderByError}
           is-loading={isFieldsLoading}
         ></querybuilder-order-by>
+        <querybuilder-limit
+          limit={query.limit}
+          has-error={hasRecoverableLimitError}
+          onlimitchanged={handleLimitChanged}
+        ></querybuilder-limit>
       </section>
       <section class="column query-preview">
         <querybuilder-query-preview query={query}></querybuilder-query-preview>
