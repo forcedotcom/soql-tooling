@@ -1,30 +1,31 @@
 {
   "name": "@salesforce/soql-language-server",
-  "version": "0.2.1",
+  "version": "0.2.4",
   "description": "SOQL Language Server",
   "engines": {
     "node": "*"
   },
   "scripts": {
     "build": "tsc --project .",
+    "clean": "rimraf lib && rimraf node_modules",
     "test": "jest --runInBand",
-    "test:unit:coverage": "jest --runInBand --coverage"
+    "test:unit:coverage": "jest --runInBand --coverage",
+    "prepack": "./scripts/bundle-parser.js",
+    "postpack": "./scripts/unbundle-parser.js"
   },
   "dependencies": {
-    "@salesforce/soql-parser": "file:../../Dependencies/soql-parser-0.16.0.tgz",
     "antlr4": "4.8.0",
     "vscode-languageserver": "6.1.1",
-    "vscode-languageserver-textdocument": "1.0.1"
+    "vscode-languageserver-textdocument": "1.0.1",
+    "@salesforce/soql-parser": "file:../../Dependencies/soql-parser-0.16.0.tgz"
   },
-  "bundledDependencies": [
-    "@salesforce/soql-parser"
-  ],
   "devDependencies": {
+    "@babel/core": "^7.12.3",
+    "@babel/template": "^7.10.4",
     "@types/antlr4": "4.7.2",
     "@types/jest": "22.2.3",
     "jest": "26.1.0",
-    "ts-jest": "26.1.3",
-    "typescript": "3.9.7"
+    "ts-jest": "26.1.3"
   },
   "repository": {
     "type": "git",

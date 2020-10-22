@@ -15,23 +15,23 @@ jobs:
     steps:
       - checkout
       - restore_cache:
-          key: dependency-cache-{{ checksum "yarn.lock" }}
-      - run: yarn
+          key: dependency-cache-{{ checksum "package-lock.json" }}
+      - run: npm install
       - save_cache:
-          key: dependency-cache-{{ checksum "yarn.lock" }}
+          key: dependency-cache-{{ checksum "package-lock.json" }}
           paths:
             - ./node_modules
       - run:
           name: Build Packages
           command: |
             echo 'Build all packages for linked dependencies'
-            yarn run build
+            npm run build
       - run:
           name: Run SOQL builder UI Unit Tests
           command: |
             echo 'Run SOQL builder UI Unit Tests'
             cd $PACKAGE_PATH
-            yarn run test:unit:coverage
+            npm run test:unit:coverage
       - run:
           name: Upload coverage report to Codecov
           command: bash <(curl -s https://codecov.io/bash) -F soql-builder-ui -t ${CODECOV_TOKEN}
@@ -43,23 +43,23 @@ jobs:
     steps:
       - checkout
       - restore_cache:
-          key: dependency-cache-{{ checksum "yarn.lock" }}
-      - run: yarn
+          key: dependency-cache-{{ checksum "package-lock.json" }}
+      - run: npm install
       - save_cache:
-          key: dependency-cache-{{ checksum "yarn.lock" }}
+          key: dependency-cache-{{ checksum "package-lock.json" }}
           paths:
             - ./node_modules
       - run:
           name: Build Packages
           command: |
             echo 'Build all packages for linked dependencies'
-            yarn run build
+            npm run build
       - run:
           name: 'Language Server: Run LWC Unit Tests'
           command: |
             echo 'Language Server: Run LWC Unit Tests'
             cd $PACKAGE_PATH
-            yarn run test:unit:coverage
+            npm run test:unit:coverage
       - run:
           name: Upload coverage report to Codecov
           command: bash <(curl -s https://codecov.io/bash) -F language-server -t ${CODECOV_TOKEN}
@@ -71,23 +71,23 @@ jobs:
     steps:
       - checkout
       - restore_cache:
-          key: dependency-cache-{{ checksum "yarn.lock" }}
-      - run: yarn
+          key: dependency-cache-{{ checksum "package-lock.json" }}
+      - run: npm install
       - save_cache:
-          key: dependency-cache-{{ checksum "yarn.lock" }}
+          key: dependency-cache-{{ checksum "package-lock.json" }}
           paths:
             - ./node_modules
       - run:
           name: Build Packages
           command: |
             echo 'Build all packages for linked dependencies'
-            yarn run build
+            npm run build
       - run:
           name: 'Run SOQL Model Server Unit Tests'
           command: |
             echo 'Run SOQL Model Server Unit Tests'
             cd $PACKAGE_PATH
-            yarn run test:unit:coverage
+            npm run test:unit:coverage
       - run:
           name: Upload coverage report to Codecov
           command: bash <(curl -s https://codecov.io/bash) -F soql-model -t ${CODECOV_TOKEN}
@@ -99,23 +99,23 @@ jobs:
     steps:
       - checkout
       - restore_cache:
-          key: dependency-cache-{{ checksum "yarn.lock" }}
-      - run: yarn
+          key: dependency-cache-{{ checksum "package-lock.json" }}
+      - run: npm install
       - save_cache:
-          key: dependency-cache-{{ checksum "yarn.lock" }}
+          key: dependency-cache-{{ checksum "package-lock.json" }}
           paths:
             - ./node_modules
       - run:
           name: 'Build'
           command: |
             cd $PACKAGE_PATH
-            yarn build
+            npm run build
       - run:
           name: 'Run SOQL TextMate language grammar Unit Tests'
           command: |
             echo 'Run SOQL TextMate language grammar Unit Tests'
             cd $PACKAGE_PATH
-            yarn run test
+            npm run test
 
   notify_slack:
     docker: *node-build-image

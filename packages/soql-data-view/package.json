@@ -7,9 +7,7 @@
     "access": "public",
     "registry": "http://registry.npmjs.org/"
   },
-  "scripts": {
-    "test": "test"
-  },
+  "scripts": {},
   "repository": {
     "type": "git",
     "url": "git+https://github.com/forcedotcom/soql-tooling.git"

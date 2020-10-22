@@ -5,9 +5,10 @@
   "scripts": {
     "grammar": "js-yaml grammars/soql.tmLanguage.yaml > grammars/soql.tmLanguage.json",
     "build": "npm run grammar",
+    "clean": "rimraf node_modules",
     "test:source": "vscode-tmgrammar-test -s source.soql -g ./grammars/soql.tmLanguage.json -t './test/*.soql'",
     "test:snapshots": "vscode-tmgrammar-snap -s source.soql -g ./grammars/soql.tmLanguage.json -t './test/snapshots/*.soql'",
-    "test": "yarn test:source; yarn test:snapshots"
+    "test": "npm run test:source; npm run test:snapshots"
   },
   "repository": {
     "type": "git",
