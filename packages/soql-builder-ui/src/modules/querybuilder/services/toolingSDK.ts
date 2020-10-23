@@ -9,12 +9,14 @@
 import { IMessageService } from './message/iMessageService';
 import { MessageType, SoqlEditorEvent } from './message/soqlEditorEvent';
 import { BehaviorSubject, Observable } from 'rxjs';
+import { JsonMap } from '@salesforce/ts-types';
 
 export class ToolingSDK {
   private messageService: IMessageService;
 
   public sobjects: Observable = new BehaviorSubject<string[]>([]);
   public sobjectMetadata: Observable = new BehaviorSubject<any>({ fields: [] });
+  public documentInfo: Observable = new BehaviorSubject<JsonMap>({});
 
   constructor(messageService: IMessageService) {
     this.messageService = messageService;
@@ -30,6 +32,10 @@ export class ToolingSDK {
         }
         case MessageType.SOBJECT_METADATA_RESPONSE: {
           this.sobjectMetadata.next(event.payload);
+          break;
+        }
+        case MessageType.DOCUMENT_INFO: {
+          this.documentInfo.next(event.payload);
           break;
         }
         default:

@@ -1,4 +1,5 @@
 import { ToolingModelJson } from '../toolingModelService';
+import { JsonMap } from '@salesforce/ts-types';
 
 export enum MessageType {
   UI_ACTIVATED = 'ui_activated',
@@ -8,10 +9,11 @@ export enum MessageType {
   SOBJECTS_REQUEST = 'sobjects_request',
   SOBJECTS_RESPONSE = 'sobjects_response',
   TEXT_SOQL_CHANGED = 'text_soql_changed',
-  RUN_SOQL_QUERY = 'run_query'
+  RUN_SOQL_QUERY = 'run_query',
+  DOCUMENT_INFO = 'document_info'
 }
 
 export interface SoqlEditorEvent {
   type: MessageType;
-  payload?: string | string[] | ToolingModelJson;
+  payload?: string | string[] | ToolingModelJson | JsonMap;
 }
