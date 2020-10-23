@@ -9,7 +9,10 @@
 <template>
   <main>
     <header>
-      <querybuilder-header onrunquery={handleRunQuery}></querybuilder-header>
+      <querybuilder-header
+        document-name={documentName}
+        onrunquery={handleRunQuery}
+      ></querybuilder-header>
     </header>
     <div class="row">
       <section class="column query-builder">

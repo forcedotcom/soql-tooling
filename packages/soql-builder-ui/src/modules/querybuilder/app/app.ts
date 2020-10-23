@@ -9,6 +9,7 @@
 import { LightningElement, track } from 'lwc';
 import { ToolingSDK } from '../services/toolingSDK';
 import { MessageServiceFactory } from '../services/message/messageServiceFactory';
+import { JsonMap } from '@salesforce/ts-types';
 
 import {
   ToolingModelService,
@@ -36,6 +37,7 @@ export default class App extends LightningElement {
   toolingSDK: ToolingSDK;
   modelService: ToolingModelService;
   messageService: IMessageService;
+  documentName: string;
 
   get hasUnsupported() {
     return this.query && this.query.unsupported
@@ -85,6 +87,10 @@ export default class App extends LightningElement {
           ? sobjectMetadata.fields.map((f) => f.name)
           : [];
     });
+    this.toolingSDK.documentInfo.subscribe((documentInfo: JsonMap) => {
+      this.documentName = documentInfo.name || '';
+    });
+
     this.loadSObjectDefinitions();
     this.modelService.restoreViewState();
   }

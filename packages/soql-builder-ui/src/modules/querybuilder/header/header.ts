@@ -6,8 +6,10 @@
  *
  */
 
-import { LightningElement } from 'lwc';
+import { api, LightningElement } from 'lwc';
 export default class Header extends LightningElement {
+  @api documentName: string;
+
   handleRunQuery(e: Event) {
     e.preventDefault();
     const runEvent = new CustomEvent('runquery');
