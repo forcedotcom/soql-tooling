@@ -19,6 +19,6 @@ button {
 
 @media screen and (max-width: 750px) {
   header {
-    max-width: var(---soql-media-max-width);
+    max-width: var(--soql-media-max-width);
   }
 }

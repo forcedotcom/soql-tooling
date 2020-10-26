@@ -7,7 +7,7 @@
  */
 
 /* NOTE ABOUT THEMING
-  * :host(.dark) ONLY triggers inside vscode themes,
+  * :host(.dark) :host(.contrast) ONLY triggers inside vscode themes,
   *  so variables are available in that context
   * in order to support standalone and contexts outside of vscode
   * variables are not used in default styles
@@ -43,25 +43,25 @@
   display: inline-block;
   height: 1.25rem;
   font-size: smaller;
-  background-color: #c7d1e2;
-  color: #0b629f;
+  background-color: var(--soql-color-light-grey);
+  color: var(--soql-color-medium-blue);
   padding: 6px 4px 0 12px;
   border-radius: 3px;
 }
 
 :host(.dark) .selected-field {
-  background-color: #3e4e6c;
+  background-color: var(--soql-color-dark-grey);
   color: var(--vscode-forground);
 }
 
 :host(.contrast) .selected-field {
-  background-color: #0b629f;
+  background-color: var(--soql-color-medium-blue);
   color: var(--vscode-forground);
 }
 
 .delete-trigger {
   margin: 0 0.25rem 0 0.5rem;
-  color: #f5f5f5;
+  color: var(--soql-white);
   font-weight: lighter;
   font-size: smaller;
 }
@@ -71,12 +71,12 @@ button,
 input,
 select {
   height: 1.5rem;
-  border: 1px solid #3e4e6c;
+  border: 1px solid var(--soql-color-dark-grey);
   border-radius: 3px;
 }
 input,
 select {
-  background-color: #f5f5f5;
+  background-color: var(--soql-white);
 }
 input[type='number'] {
   padding-left: 0.25rem;
@@ -92,18 +92,18 @@ input::placeholder {
 }
 :host(.light) input,
 :host(.light) select {
-  border: 1px solid #3e4e6c;
+  border: 1px solid var(--soql-color-dark-grey);
 }
 
 button {
-  color: #f5f5f5;
-  background-color: #0b629f;
+  color: var(--soql-white);
+  background-color: var(--soql-color-medium-blue);
   border: 0;
   border-radius: 3px;
   padding: 0 15px 0 15px;
 }
 :host(.dark) button {
-  background-color: #0b629f;
+  background-color: var(--soql-color-medium-blue);
   color: var(--vscode-forground);
 }
 .select-long {
@@ -112,7 +112,7 @@ button {
 
 /* ERROR / DISABLED ------------ */
 .text-color-required {
-  color: red;
+  color: var(--soql-red);
   opacity: 1;
 }
 
