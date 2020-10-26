@@ -1,28 +1,43 @@
-/* 
+/*
  *  Copyright (c) 2020, salesforce.com, inc.
  *  All rights reserved.
  *  Licensed under the BSD 3-Clause license.
  *  For full license text, see LICENSE.txt file in the repo root or https://opensource.org/licenses/BSD-3-Clause
- *   
+ *
  */
 
 .query-preview-container {
-  display: inline-block;
-  width: 400px;
-  border: 1px solid grey;
-  border-radius: 4px;
+  border: 1px solid #3e4e6c;
+  border-radius: 3px;
 }
 .query-preview-container .header {
   padding: 5px;
   font-size: 90%;
-  border-bottom: 1px solid grey;
+  border-bottom: 1px solid#3e4e6c;
 }
 .query-preview-container .query {
-  color: #a7b3f0;
+  color: #0b629f;
   white-space: pre-wrap;
 }
 
 pre {
   margin: 1em;
   white-space: pre-wrap;
+}
+
+:host(.dark) .query-preview-container {
+  border-color: var(--vscode-input-background);
+}
+:host(.dark) .query-preview-container .header {
+  border-color: var(--vscode-input-background);
+}
+
+:host(.contrast) .query-preview-container {
+  border-color: var(--vscode-foreground);
+}
+:host(.contrast) .query-preview-container .header {
+  border-color: var(--vscode-foreground);
+}
+:host(.contrast) .query-preview-container .query {
+  color: var(--vscode-forground);
 }

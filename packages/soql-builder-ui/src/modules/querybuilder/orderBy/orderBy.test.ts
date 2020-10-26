@@ -110,7 +110,7 @@ describe('OrderBy should', () => {
     document.body.appendChild(orderBy);
 
     let selectedFieldEl = orderBy.shadowRoot.querySelectorAll(
-      '.selected-orderby'
+      '.selected-field'
     );
     expect(selectedFieldEl.length).toBe(0);
 
@@ -118,7 +118,7 @@ describe('OrderBy should', () => {
 
     return Promise.resolve().then(() => {
       selectedFieldEl = orderBy.shadowRoot.querySelectorAll(
-        '.selected-orderby'
+        '.selected-field'
       );
       expect(selectedFieldEl.length).toBe(1);
     });
@@ -138,7 +138,7 @@ describe('OrderBy should', () => {
       defaultOption = orderBy.shadowRoot.querySelector(
         '[data-el-default-option]'
       );
-      expect(defaultOption.innerHTML).toContain('loading');
+      expect(defaultOption.innerHTML.toLowerCase()).toContain('loading');
     });
   });
 

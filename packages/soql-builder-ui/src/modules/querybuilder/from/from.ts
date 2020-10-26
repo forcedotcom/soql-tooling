@@ -25,7 +25,7 @@ export default class From extends LightningElement {
 
   get defaultOptionText() {
     // TODO: i18n
-    return this.isLoading ? '...loading...' : '--- Select an Object ---';
+    return this.isLoading ? 'Loading...' : 'Select object...';
   }
 
   handleSobjectSelection(e) {

@@ -21,6 +21,7 @@ import { BehaviorSubject, Observable } from 'rxjs';
 import { MessageServiceFactory } from '../services/message/messageServiceFactory';
 import { IMessageService } from '../services/message/iMessageService';
 import { StandaloneMessageService } from '../services/message/standaloneMessageService';
+import * as globals from '../services/globals';
 
 class TestMessageService implements IMessageService {
   messagesToUI: Observable<SoqlEditorEvent> = new BehaviorSubject(
@@ -74,6 +75,7 @@ describe('App should', () => {
       ToolingSDK.prototype,
       'loadSObjectMetatada'
     );
+    spyOn(globals, 'getBodyClass').and.returnValue('vscode-dark');
     app = createElement('querybuilder-app', {
       is: TestApp
     });
@@ -101,14 +103,14 @@ describe('App should', () => {
     expect(preview.length).toEqual(1);
   });
 
-  it('block the query builder ui on unknown error', async () => {
+  it('block the query builder ui on unrecoverable error', async () => {
     let blockingElement = app.shadowRoot.querySelectorAll(
-      '.block-query-builder'
+      '.unsupported-syntax'
     );
     expect(blockingElement.length).toBeFalsy();
     app.hasUnrecoverableError = true;
     return Promise.resolve().then(() => {
-      blockingElement = app.shadowRoot.querySelectorAll('.block-query-builder');
+      blockingElement = app.shadowRoot.querySelectorAll('.unsupported-syntax');
       expect(blockingElement.length).toBeTruthy();
     });
   });
@@ -116,14 +118,14 @@ describe('App should', () => {
   it('not block the query builder ui on recoverable error', async () => {
     document.body.appendChild(app);
     let blockingElement = app.shadowRoot.querySelectorAll(
-      '.block-query-builder'
+      '.unsupported-syntax'
     );
     expect(blockingElement.length).toBeFalsy();
     messageService.messagesToUI.next(
       createSoqlEditorEvent('SELECT FROM Account')
     );
     return Promise.resolve().then(() => {
-      blockingElement = app.shadowRoot.querySelectorAll('.block-query-builder');
+      blockingElement = app.shadowRoot.querySelectorAll('.unsupported-syntax');
       expect(blockingElement.length).toBeFalsy();
     });
   });
@@ -135,14 +137,14 @@ describe('App should', () => {
 
   it('block the query builder on unsupported syntax', async () => {
     let blockingElement = app.shadowRoot.querySelectorAll(
-      '.block-query-builder'
+      '.unsupported-syntax'
     );
     expect(blockingElement.length).toBeFalsy();
     messageService.messagesToUI.next(
       createSoqlEditorEvent('SELECT Id FROM Account WHERE')
     );
     return Promise.resolve().then(() => {
-      blockingElement = app.shadowRoot.querySelectorAll('.block-query-builder');
+      blockingElement = app.shadowRoot.querySelectorAll('.unsupported-syntax');
       expect(blockingElement.length).toBeTruthy();
     });
   });
@@ -259,5 +261,9 @@ describe('App should', () => {
     expect(
       (postMessageSpy.mock.calls[0][0] as SoqlEditorEvent).payload
     ).toContain(eventPayload.detail.limit);
+  });
+
+  it('set the body class on the sub components', () => {
+
   });
 });

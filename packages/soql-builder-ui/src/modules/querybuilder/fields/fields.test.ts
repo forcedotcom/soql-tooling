@@ -82,7 +82,7 @@ describe('Fields', () => {
       defaultOption = fields.shadowRoot.querySelector(
         '[data-el-default-option]'
       );
-      expect(defaultOption.innerHTML).toContain('loading');
+      expect(defaultOption.innerHTML.toLowerCase()).toContain('loading');
     });
   });
 

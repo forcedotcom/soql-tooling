@@ -16,7 +16,7 @@ export default class OrderBy extends LightningElement {
 
   get defaultOptionText() {
     // TODO: i18n
-    return this.isLoading ? '...loading...' : '--- Select Fields ---';
+    return this.isLoading ? 'Loading...' : 'Select fields...';
   }
 
   handleOrderBySelected(e) {

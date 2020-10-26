@@ -6,33 +6,116 @@
  *
  */
 
+/* NOTE ABOUT THEMING
+  * :host(.dark) ONLY triggers inside vscode themes,
+  *  so variables are available in that context
+  * in order to support standalone and contexts outside of vscode
+  * variables are not used in default styles
+  */
+
+/* STANDARD COMPONENT LAYOUT ---------- */
 .section-container {
   display: flex;
   min-width: 100%;
-  margin-bottom: 10px;
+  margin-bottom: 1rem;
 }
 
 .section_label-container {
-  width: 60px;
+  width: 80px;
 }
 
-.section_selection-container {
+.section_label-container label {
+  display: inline-block;
+  padding-top: 4px;
+  font-size: smaller;
+  font-weight: bold;
 }
 
-.select-long {
-  min-width: 400px;
+.selected-fields-container {
+  display: flex;
+  flex-wrap: wrap;
+  max-width: 400px;
 }
 
-.text-color-required {
-  color: red;
+.selected-field {
+  margin: 0.5rem 0.5rem 0 0;
+  display: inline-block;
+  height: 1.25rem;
+  font-size: smaller;
+  background-color: #c7d1e2;
+  color: #0b629f;
+  padding: 6px 4px 0 12px;
+  border-radius: 3px;
 }
 
-.pointer {
-  cursor: pointer;
+:host(.dark) .selected-field {
+  background-color: #3e4e6c;
+  color: var(--vscode-forground);
+}
+
+:host(.contrast) .selected-field {
+  background-color: #0b629f;
+  color: var(--vscode-forground);
 }
 
 .delete-trigger {
-  margin-left: 0.5rem;
-  font-size: x-small;
-  vertical-align: super;
+  margin: 0 0.25rem 0 0.5rem;
+  color: #f5f5f5;
+  font-weight: lighter;
+  font-size: smaller;
+}
+
+/* FORM STYLING ------------ */
+button,
+input,
+select {
+  height: 1.5rem;
+  border: 1px solid #3e4e6c;
+  border-radius: 3px;
+}
+input,
+select {
+  background-color: #f5f5f5;
+}
+input[type='number'] {
+  padding-left: 0.25rem;
+}
+input::placeholder {
+  color: inherit;
+}
+:host(.dark) input,
+:host(.dark) select {
+  background-color: var(--vscode-input-background);
+  color: var(--vscode-forground);
+  border-color: var(--vscode-input-background);
+}
+:host(.light) input,
+:host(.light) select {
+  border: 1px solid #3e4e6c;
+}
+
+button {
+  color: #f5f5f5;
+  background-color: #0b629f;
+  border: 0;
+  border-radius: 3px;
+  padding: 0 15px 0 15px;
+}
+:host(.dark) button {
+  background-color: #0b629f;
+  color: var(--vscode-forground);
+}
+.select-long {
+  width: 400px;
+}
+
+/* ERROR / DISABLED ------------ */
+.text-color-required {
+  color: red;
+  opacity: 1;
+}
+
+/* MISC ------------ */
+.pointer {
+  cursor: pointer;
 }

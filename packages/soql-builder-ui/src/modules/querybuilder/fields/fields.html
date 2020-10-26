@@ -26,7 +26,7 @@
         onclick={handleFieldSelection}
         multiple
       >
-        <option disabled data-el-default-option>{defaultOptionText}</option>
+        <option value="" class="placeholder" data-el-default-option>{defaultOptionText}</option>
         <template for:each={fields} for:item="field">
           <option key={field} value={field}>{field}</option>
         </template>
@@ -40,7 +40,7 @@
               onclick={handleFieldRemoved}
               data-field={field}
             >
-              x
+              X
             </span>
           </div>
         </template>

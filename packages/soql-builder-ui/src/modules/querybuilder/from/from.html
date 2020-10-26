@@ -29,7 +29,7 @@
           <option key={selected} value={selected}>{selected}</option>
         </template>
         <template if:false={hasSelected}>
-          <option value="" data-el-default-option>{defaultOptionText}</option>
+          <option value="" class="placeholder" data-el-default-option>{defaultOptionText}</option>
         </template>
         <template for:each={filteredSObjects} for:item="sObject">
           <option key={sObject} value={sObject}>{sObject}</option>
