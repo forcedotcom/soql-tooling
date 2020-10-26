@@ -87,6 +87,7 @@ export default class App extends LightningElement {
           ? sobjectMetadata.fields.map((f) => f.name)
           : [];
     });
+
     this.toolingSDK.documentInfo.subscribe((documentInfo: JsonMap) => {
       this.documentName = documentInfo.name || '';
     });

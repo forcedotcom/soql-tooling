@@ -86,4 +86,24 @@ describe('Tooling SDK Service', () => {
       fakeSObjectMetadata
     );
   });
+
+  it('Retrieve document info', () => {
+    const documentInfoObserver = jest.fn();
+    toolingSDK.documentInfo.subscribe(documentInfoObserver);
+
+    const fakeDocumentInfo = {
+      name: 'someMusicReference.soql'
+    };
+
+    postMessageFromVSCode({
+      type: MessageType.DOCUMENT_INFO,
+      payload: fakeDocumentInfo
+    });
+
+    expect(documentInfoObserver.mock.calls.length).toBe(2);
+    expect(documentInfoObserver.mock.calls[0][0]).toStrictEqual({});
+    expect(documentInfoObserver.mock.calls[1][0]).toStrictEqual(
+      fakeDocumentInfo
+    );
+  });
 });

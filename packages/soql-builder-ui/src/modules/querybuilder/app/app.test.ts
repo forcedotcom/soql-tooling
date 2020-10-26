@@ -41,6 +41,7 @@ class TestApp extends App {
   isFieldsLoading = false;
   @api
   hasUnrecoverableError = false;
+  @api documentName;
 }
 
 describe('App should', () => {
@@ -192,6 +193,18 @@ describe('App should', () => {
       payload: ['Hey', 'Joe']
     });
     expect(app.isFromLoading).toEqual(false);
+  });
+
+  it('should load document name from document info', async () => {
+    const payload = { name: 'example.soql' };
+    messageService.messagesToUI.next({
+      type: MessageType.DOCUMENT_INFO,
+      payload
+    });
+
+    return Promise.resolve().then(() => {
+      expect(app.documentName).toEqual(payload.name);
+    });
   });
 
   it('should send a runquery message to vs code with runquery event', async () => {
