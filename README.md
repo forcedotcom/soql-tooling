@@ -12,7 +12,7 @@ This repo contains the source for the SOQL Language Tooling features including:
 
 ### Development
 
-Run `npm install` from the top-level directory to pull all dependencies and auto-link local dependencies between packages (i.e: `soql-builder-ui` depends on `soql-model`).
+Run `yarn` from the top-level directory to pull all dependencies and auto-link local dependencies between packages (i.e: `soql-builder-ui` depends on `soql-model`).
 
 These packages are used from VS Code extension `salesforcedx-vscode-soql` which lives in repo [salesforcedx-vscode](https://github.com/forcedotcom/salesforcedx-vscode).
 
@@ -21,7 +21,7 @@ During development, you can work with a local copy of the `salesforcedx-vscode` 
 ```
 # Make global links available
 cd ~/repos/soql-tooling
-for P in packages/*; do cd $P; npm link; cd -; done
+for P in packages/*; do cd $P; yarn link; cd -; done
 
 # Link to them from the VS Code SOQL extension package
 cd ~/repos/salesforcedx-vscode/packages/salesforcedx-vscode-soql
