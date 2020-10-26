@@ -6,13 +6,12 @@
  *
  */
 @import 'querybuilder/cssCommon';
-
 main {
-  min-width: 700px;
+  min-width: var(--soql-main-min-width);
+  max-width: var(--soql-main-max-width);
 }
 
 .querybuilder-body {
-  flex: 1;
   display: flex;
   min-height: 100vh;
   flex-direction: row;
@@ -21,15 +20,27 @@ main {
 .querybuilder-form {
   flex: 1;
   position: relative;
+  min-width: var(--soql-main-min-width);
 }
 
 .query-preview {
-  display: flex;
-  flex-direction: column;
-  flex: 1;
   flex-grow: 1;
   padding-left: 1rem;
-  justify-content: flex-start;
+}
+
+@media screen and (max-width: 750px) {
+  .query-preview {
+    padding: 0 0 2rem 0;
+    max-width: var(--soql-media-max-width);
+    flex-grow: unset;
+    flex: unset;
+  }
+  .querybuilder-body {
+    flex-direction: column-reverse;
+  }
+  .querybuilder-form {
+    flex-grow: 1;
+  }
 }
 
 .unsupported-syntax {
@@ -39,7 +50,7 @@ main {
   top: 0;
   left: -0.5rem;
   opacity: 0.5;
-  background-color: grey;
+  background-color: #808080;
   border-radius: 3px;
 }
 
@@ -48,5 +59,5 @@ main {
   font-weight: bolder;
   font-size: larger;
   text-align: center;
-  text-shadow: 1px 1px black;
+  text-shadow: 1px 1px #000000;
 }

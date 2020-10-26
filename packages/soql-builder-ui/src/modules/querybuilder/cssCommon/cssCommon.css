@@ -21,7 +21,8 @@
 }
 
 .section_label-container {
-  width: 80px;
+  width: var(--soql-label-width);
+  min-width: var(--soql-label-width);
 }
 
 .section_label-container label {
@@ -34,7 +35,7 @@
 .selected-fields-container {
   display: flex;
   flex-wrap: wrap;
-  max-width: 400px;
+  max-width: var(--soql-input-width);
 }
 
 .selected-field {
@@ -106,7 +107,7 @@ button {
   color: var(--vscode-forground);
 }
 .select-long {
-  width: 400px;
+  min-width: var(--soql-input-width);
 }
 
 /* ERROR / DISABLED ------------ */

@@ -16,3 +16,9 @@ header {
 button {
   margin: auto 0 10px 0;
 }
+
+@media screen and (max-width: 750px) {
+  header {
+    max-width: var(---soql-media-max-width);
+  }
+}
