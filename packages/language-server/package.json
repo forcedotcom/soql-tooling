@@ -1,6 +1,6 @@
 {
   "name": "@salesforce/soql-language-server",
-  "version": "0.2.4",
+  "version": "0.2.5",
   "description": "SOQL Language Server",
   "engines": {
     "node": "*"
@@ -11,7 +11,9 @@
     "test": "jest --runInBand",
     "test:unit:coverage": "jest --runInBand --coverage",
     "prepack": "./scripts/bundle-parser.js",
-    "postpack": "./scripts/unbundle-parser.js"
+    "postpack": "./scripts/unbundle-parser.js",
+    "prepublish": "./scripts/bundle-parser.js",
+    "postpublish": "./scripts/unbundle-parser.js"
   },
   "dependencies": {
     "antlr4": "4.8.0",
