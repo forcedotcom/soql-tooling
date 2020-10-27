@@ -20,6 +20,6 @@ button,
 .selected-orderby-container {
   display: flex;
   flex-wrap: wrap;
-  max-width: 400px;
+  max-width: var(--soql-input-width);
   padding-top: 5px;
 }
