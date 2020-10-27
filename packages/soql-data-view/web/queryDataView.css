@@ -33,4 +33,6 @@ header {
 
 .icon__save {
   width: 1rem;
+  position: relative;
+  top: 2px;
 }
