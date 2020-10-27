@@ -12,11 +12,12 @@ for custom styling http://tabulator.info/docs/4.8/style
 header {
   display: flex;
   justify-content: space-between;
+  flex-wrap: wrap;
 }
 
 .button__save--group {
   align-self: flex-end;
-  margin-bottom: 1rem;
+  margin-bottom: 0.5rem;
 }
 
 .button__save {
