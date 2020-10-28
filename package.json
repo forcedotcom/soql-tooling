@@ -1,27 +1,32 @@
 {
-  "name": "soql-language-server",
   "private": true,
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/forcedotcom/soql-language-server.git"
+    "url": "git+https://github.com/forcedotcom/soql-tooling.git"
   },
   "license": "BSD-3-Clause",
-  "workspaces": [
-    "packages/*"
-  ],
+  "workspaces": {
+    "packages": [
+      "packages/*"
+    ],
+    "nohoist": [
+      "**/@salesforce/soql-parser",
+      "**/@salesforce/soql-parser/**"
+    ]
+  },
   "dependencies": {},
   "devDependencies": {
     "@salesforce/dev-config": "1.4.1",
     "lerna": "^3.19.0",
+    "rimraf": "^3.0.2",
     "tslint": "^5.8.0",
-    "typescript": "^3.7.2"
+    "typescript": "^4.0.3"
   },
   "scripts": {
     "build": "lerna run build",
-    "clean": "lerna run clean",
+    "clean": "lerna run clean && rimraf yarn.lock && rimraf node_modules",
     "lint": "lerna run lint",
     "test": "lerna exec -- yarn run test",
     "start": "lerna run start"
-  },
-  "version": "0.1.0"
+  }
 }

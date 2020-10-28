@@ -11,9 +11,10 @@ This repo contains the source for the SOQL Language Tooling features including:
     `-- soql-tmlanguage/        SOQL TextMate grammar (for syntax highlighting)
 
 ### Development
+
 Run `yarn` from the top-level directory to pull all dependencies and auto-link local dependencies between packages (i.e: `soql-builder-ui` depends on `soql-model`).
 
-These packages are used from VS Code extension `salesforcedx-utils-vscode` which lives in repo [salesforcedx-vscode](https://github.com/forcedotcom/salesforcedx-vscode).
+These packages are used from VS Code extension `salesforcedx-vscode-soql` which lives in repo [salesforcedx-vscode](https://github.com/forcedotcom/salesforcedx-vscode).
 
 During development, you can work with a local copy of the `salesforcedx-vscode` repo, and configure it to use your local packages in your `soql-tooling` repo. Example:
 
@@ -35,3 +36,7 @@ With that in place, you can make changes to your soql-tooling packages, compile 
 ### Debug Jest Test
 
 You can debug Jest test for an individual package by running the corresponding launch configuraiton in VS Codes _RUN_ panel.
+
+### Publishing
+
+Some packages depend on `@salesforce/soql-parser` which is included as a static dependency, since it is not yet published. Packages must be published with `@salesforce/soql-tooling` as a bundled dependency, since the static tarball is not available in the published packages. There are prepack and postpack scripts as well as prepublish and postpublish scripts to convert the static dependency to a bundled dependency and back again, so when these packages are published they correctly refer to the soql-tooling dependency as a bundled dependency, but can find the static dependency again at development install-time.

@@ -8,7 +8,7 @@
     "registry": "http://registry.npmjs.org/"
   },
   "scripts": {
-    "test": "test"
+    "test": "echo done"
   },
   "repository": {
     "type": "git",
