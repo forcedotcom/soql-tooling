@@ -14,15 +14,16 @@
     <article class="querybuilder-body">
       <section class="querybuilder-form">
           <template if:true={blockQueryBuilder}>
-            <div class="unsupported-syntax"></div>
-            <template if:true={hasUnsupported}>
-              <!-- TODO: i18n -->
-              <div class="text-color-required block-message">Unsupported Syntax</div>
-            </template>
-            <template if:true={hasUnrecoverable}>
-              <!-- TODO: i18n -->
-              <div class="text-color-required block-message">Syntax Error</div>
-            </template>
+            <div class="unsupported-syntax">
+              <template if:true={hasUnsupported}>
+                <!-- TODO: i18n -->
+                <div class="text-color-required block-message">Unsupported Syntax</div>
+              </template>
+              <template if:true={hasUnrecoverable}>
+                <!-- TODO: i18n -->
+                <div class="text-color-required block-message">Syntax Error</div>
+              </template>
+            </div>
         </template>
         <querybuilder-from
           onobjectselected={handleObjectChange}
