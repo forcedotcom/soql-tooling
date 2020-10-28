@@ -84,6 +84,7 @@ input[type='number'] {
 input::placeholder {
   color: inherit;
 }
+button:focus,
 input:focus,
 select:focus {
   outline: unset;
@@ -101,6 +102,7 @@ button {
   border: 0;
   border-radius: 3px;
   padding: 0 15px 0 15px;
+  cursor: pointer;
 }
 :host(.dark) button {
   background-color: var(--soql-color-medium-blue);
