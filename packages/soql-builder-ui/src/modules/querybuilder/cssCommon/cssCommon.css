@@ -51,7 +51,7 @@
 
 :host(.dark) .selected-field {
   background-color: var(--soql-color-dark-grey);
-  color: var(--vscode-forground);
+  color: var(--soql-color-blue-text);
 }
 
 :host(.contrast) .selected-field {
@@ -71,7 +71,7 @@ button,
 input,
 select {
   height: 1.5rem;
-  border: 1px solid var(--soql-color-dark-grey);
+  border: 1px solid var(--soql-color-light-grey);
   border-radius: 3px;
 }
 input,
@@ -93,10 +93,6 @@ select:focus {
   background-color: var(--vscode-input-background);
   color: var(--vscode-forground);
   border-color: var(--vscode-input-background);
-}
-:host(.light) input,
-:host(.light) select {
-  border: 1px solid var(--soql-color-dark-grey);
 }
 
 button {

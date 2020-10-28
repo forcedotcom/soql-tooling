@@ -7,16 +7,16 @@
  */
 
 .query-preview-container {
-  border: 1px solid var(--soql-color-dark-grey);
+  border: 1px solid var(--soql-color-light-grey);
   border-radius: 3px;
 }
 .query-preview-container .header {
   padding: 5px;
   font-size: 90%;
-  border-bottom: 1px solid var(--soql-color-dark-grey);
+  border-bottom: 1px solid var(--soql-color-light-grey);
 }
 .query-preview-container .query {
-  color: var(--soql-color-medium-blue);
+  color: var(--soql-color-blue-text);
   white-space: pre-wrap;
 }
 
