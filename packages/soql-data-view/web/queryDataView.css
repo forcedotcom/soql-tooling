@@ -5,20 +5,34 @@
  * For full license text, see LICENSE.txt file in the repo root or https://opensource.org/licenses/BSD-3-Clause
  */
 
-/* 
+/*
 This file can be used to override Tabulator CSS
 for custom styling http://tabulator.info/docs/4.8/style
 */
 header {
   display: flex;
   justify-content: space-between;
+  flex-wrap: wrap;
 }
 
 .button__save--group {
   align-self: flex-end;
-  margin-bottom: 1em;
+  margin-bottom: 0.5rem;
 }
 
 .button__save {
-  margin-left: 0.5em;
+  height: 1.5rem;
+  margin: 0.25rem 0 0 0.5rem;
+  font-size: 1rem;
+  background-color: #0070d2;
+  color: #ffffff;
+  border: 0;
+  border-radius: 3px;
+  padding: 0 15px 0 15px;
+}
+
+.icon__save {
+  width: 1rem;
+  position: relative;
+  top: 2px;
 }
