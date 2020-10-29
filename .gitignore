@@ -5,3 +5,4 @@ Dependencies/package
 yarn.lock
 yarn-error.log
 .DS_Store
+package-lock.json

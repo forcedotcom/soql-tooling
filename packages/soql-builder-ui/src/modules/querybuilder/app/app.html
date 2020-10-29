@@ -8,21 +8,22 @@
 
 <template>
   <main>
-    <header>
-      <querybuilder-header onrunquery={handleRunQuery}></querybuilder-header>
+    <header class="querybuilder-header">
+      <querybuilder-header class={theme} onrunquery={handleRunQuery}></querybuilder-header>
     </header>
-    <div class="row">
-      <section class="column query-builder">
-        <template if:true={hasUnsupported}>
-          <!-- TODO: i18n -->
-          <div class="text-color-required">Unsupported Syntax</div>
-        </template>
-        <template if:true={hasUnknownError}>
-          <!-- TODO: i18n -->
-          <div class="text-color-required">Syntax Error</div>
-        </template>
-        <template if:true={blockQueryBuilder}>
-          <div class="block-query-builder"></div>
+    <article class="querybuilder-body">
+      <section class="querybuilder-form">
+          <template if:true={blockQueryBuilder}>
+            <div class="unsupported-syntax">
+              <template if:true={hasUnsupported}>
+                <!-- TODO: i18n -->
+                <div class="text-color-required block-message">Unsupported Syntax</div>
+              </template>
+              <template if:true={hasUnrecoverable}>
+                <!-- TODO: i18n -->
+                <div class="text-color-required block-message">Syntax Error</div>
+              </template>
+            </div>
         </template>
         <querybuilder-from
           onobjectselected={handleObjectChange}
@@ -30,6 +31,7 @@
           selected={query.sObject}
           has-error={hasRecoverableFromError}
           is-loading={isFromLoading}
+          class={theme}
         ></querybuilder-from>
         <querybuilder-fields
           selected-fields={query.fields}
@@ -38,6 +40,7 @@
           onfieldremoved={handleFieldRemoved}
           has-error={hasRecoverableFieldsError}
           is-loading={isFieldsLoading}
+          class={theme}
         ></querybuilder-fields>
         <querybuilder-order-by
           selected-order-by-fields={query.orderBy}
@@ -46,16 +49,18 @@
           onorderbyremoved={handleOrderByRemoved}
           has-error={hasRecoverableOrderByError}
           is-loading={isFieldsLoading}
+          class={theme}
         ></querybuilder-order-by>
         <querybuilder-limit
           limit={query.limit}
           has-error={hasRecoverableLimitError}
           onlimitchanged={handleLimitChanged}
+          class={theme}
         ></querybuilder-limit>
       </section>
-      <section class="column query-preview">
-        <querybuilder-query-preview query={query}></querybuilder-query-preview>
+      <section class="query-preview">
+        <querybuilder-query-preview class={theme} query={query}></querybuilder-query-preview>
       </section>
-    </div>
+    </article>
   </main>
 </template>

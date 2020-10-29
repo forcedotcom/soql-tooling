@@ -6,9 +6,19 @@
  *
  */
 
+@import 'querybuilder/cssCommon';
+
 header {
   display: flex;
   justify-content: flex-end;
-  height: 40px;
-  margin-bottom: 10px;
+}
+
+button {
+  margin: auto 0 10px 0;
+}
+
+@media screen and (max-width: 750px) {
+  header {
+    max-width: var(--soql-media-max-width);
+  }
 }

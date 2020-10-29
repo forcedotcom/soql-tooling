@@ -27,6 +27,7 @@ import {
   recoverableFromErrors,
   recoverableLimitErrors
 } from '../error/errorModel';
+import { getBodyClass } from '../services/globals';
 
 export default class App extends LightningElement {
   @track
@@ -36,11 +37,16 @@ export default class App extends LightningElement {
   toolingSDK: ToolingSDK;
   modelService: ToolingModelService;
   messageService: IMessageService;
+  theme = 'light';
 
   get hasUnsupported() {
     return this.query && this.query.unsupported
       ? this.query.unsupported.length
       : 0;
+  }
+
+  get hasUnrecoverable() {
+    return !this.hasUnsupported && this.hasUnrecoverableError
   }
 
   get blockQueryBuilder() {
@@ -87,6 +93,15 @@ export default class App extends LightningElement {
     });
     this.loadSObjectDefinitions();
     this.modelService.restoreViewState();
+  }
+
+  renderedCallback() {
+    const themeClass = getBodyClass();
+    if (themeClass.indexOf('vscode-dark') > -1) {
+      this.theme = 'dark';
+    } else if (themeClass.indexOf('vscode-high-contrast') > -1) {
+      this.theme = 'contrast';
+    }
   }
 
   loadSObjectDefinitions() {

@@ -10,6 +10,10 @@ export function getWindow() {
   return window;
 }
 
+export function getBodyClass() {
+  return window.document.body.getAttribute('class');
+}
+
 export function getLocalStorage() {
   return localStorage;
 }
@@ -24,9 +28,9 @@ let vsCode = undefined;
 
 export function getVscode() {
   if (hasVscode()) {
-    // @ts-ignore
-    // eslint-disable-next-line no-undef
     if (!vsCode) {
+      // @ts-ignore
+      // eslint-disable-next-line no-undef
       vsCode = acquireVsCodeApi();
     }
 

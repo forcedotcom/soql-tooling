@@ -6,11 +6,14 @@
  *
  */
 
-import { getWindow, hasVscode } from './globals';
+import { getBodyClass, getWindow, hasVscode } from './globals';
 import { getLocalStorage } from './globals';
 describe('Globals should', () => {
   it('expose window', () => {
     expect(getWindow()).toBeTruthy();
+  });
+  it('expose getBodyClass', () => {
+    expect(getBodyClass).toBeTruthy();
   });
   it('expose localstorage', () => {
     expect(getLocalStorage).toBeTruthy();

@@ -6,33 +6,121 @@
  *
  */
 
+/* NOTE ABOUT THEMING
+  * :host(.dark) :host(.contrast) ONLY triggers inside vscode themes,
+  *  so variables are available in that context
+  * in order to support standalone and contexts outside of vscode
+  * variables are not used in default styles
+  */
+
+/* STANDARD COMPONENT LAYOUT ---------- */
 .section-container {
   display: flex;
   min-width: 100%;
-  margin-bottom: 10px;
+  margin-bottom: 1rem;
 }
 
 .section_label-container {
-  width: 60px;
+  width: var(--soql-label-width);
+  min-width: var(--soql-label-width);
 }
 
-.section_selection-container {
+.section_label-container label {
+  display: inline-block;
+  padding-top: 4px;
+  font-size: smaller;
+  font-weight: bold;
 }
 
-.select-long {
-  min-width: 400px;
+.selected-fields-container {
+  display: flex;
+  flex-wrap: wrap;
+  max-width: var(--soql-input-width);
 }
 
-.text-color-required {
-  color: red;
+.selected-field {
+  margin: 0.5rem 0.5rem 0 0;
+  display: inline-block;
+  height: 1.25rem;
+  font-size: smaller;
+  background-color: var(
+    --vscode-list-inactiveSelectionBackground,
+    var(--soql-color-medium-grey)
+  );
+  color: var(--vscode-foreground, var(--soql-white));
+  padding: 6px 4px 0 12px;
+  border-radius: 3px;
+}
+:host(.contrast) .selected-field {
+  background-color: var(--soql-color-medium-blue);
+  color: var(--vscode-foreground);
+}
+.delete-trigger {
+  margin: 0 0.25rem 0 0.5rem;
+  color: var(--vscode-button-foreground, var(--soql-white));
+  font-weight: lighter;
+  font-size: smaller;
 }
 
-.pointer {
+/* FORM STYLING ------------ */
+button,
+input,
+select {
+  height: 1.5rem;
+  border: 1px solid
+    var(--vscode-list-inactiveSelectionBackground, var(--soql-color-light-grey));
+  border-radius: 3px;
+}
+input,
+select {
+  background-color: var(--vscode-sideBar-background, var(--soql-background));
+  color: var(--vscode-foreground, var(--soql-foreground));
+  border-color: var(
+    --vscode-list-inactiveSelectionBackground,
+    var(--soql-color-light-grey)
+  );
+}
+input[type='number'] {
+  padding-left: 0.25rem;
+}
+input::placeholder {
+  color: inherit;
+}
+button:focus,
+input:focus,
+select:focus {
+  outline: unset;
+}
+
+button {
+  color: var(--vscode-button-foreground, var(--soql-white));
+  background-color: var(
+    --vscode-button-background,
+    var(--soql-color-medium-blue)
+  );
+  border: 0;
+  border-radius: 3px;
+  padding: 0 15px 0 15px;
   cursor: pointer;
 }
+button:hover {
+  background-color: var(
+    --vscode-button-hoverBackground,
+    var(--soql-color-blue-text)
+  );
+}
+.select-long {
+  min-width: var(--soql-input-width);
+  max-width: var(--soql-input-width);
+}
 
-.delete-trigger {
-  margin-left: 0.5rem;
-  font-size: x-small;
-  vertical-align: super;
+/* ERROR / DISABLED ------------ */
+.text-color-required {
+  color: var(--soql-red);
+  opacity: 1;
+}
+
+/* MISC ------------ */
+.pointer {
+  cursor: pointer;
 }

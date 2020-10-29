@@ -78,7 +78,7 @@ describe('From', () => {
     from.isLoading = true;
     return Promise.resolve().then(() => {
       defaultOption = from.shadowRoot.querySelector('[data-el-default-option]');
-      expect(defaultOption.innerHTML).toContain('loading');
+      expect(defaultOption.innerHTML.toLowerCase()).toContain('loading');
     });
   });
 

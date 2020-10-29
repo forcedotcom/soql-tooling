@@ -1,44 +1,64 @@
-/* 
+/*
  *  Copyright (c) 2020, salesforce.com, inc.
  *  All rights reserved.
  *  Licensed under the BSD 3-Clause license.
  *  For full license text, see LICENSE.txt file in the repo root or https://opensource.org/licenses/BSD-3-Clause
- *   
+ *
  */
 @import 'querybuilder/cssCommon';
-
 main {
-  display: block;
-  max-width: 70rem;
-  margin: 2rem 2rem;
+  min-width: var(--soql-main-min-width);
+  max-width: var(--soql-main-max-width);
 }
 
-.row {
+.querybuilder-body {
   display: flex;
   min-height: 100vh;
+  flex-direction: row;
 }
 
-.column {
-  display: flex;
-  flex: 50%;
-}
-
-.column.query-builder {
-  flex-direction: column;
+.querybuilder-form {
+  flex: 1;
   position: relative;
+  min-width: var(--soql-main-min-width);
 }
 
-.column.query-preview {
-  display: flex;
-  justify-content: flex-end;
+.query-preview {
+  flex-grow: 1;
+  padding-left: 1rem;
 }
 
-.block-query-builder {
+@media screen and (max-width: 750px) {
+  .query-preview {
+    padding: 0 0 2rem 0;
+    max-width: var(--soql-media-max-width);
+    flex-grow: unset;
+    flex: unset;
+  }
+  .querybuilder-body {
+    flex-direction: column-reverse;
+  }
+  .querybuilder-form {
+    flex-grow: 1;
+  }
+}
+
+.unsupported-syntax {
   position: absolute;
-  width: 100%;
+  width: calc(var(--soql-media-max-width) + 1rem);
   height: 100%;
-  top: 0;
-  left: 0;
+  top: -0.5rem;
+  left: -0.5rem;
   opacity: 0.5;
-  background-color: grey;
+  background-color: #808080;
+  border-radius: 3px;
+}
+
+.block-message {
+  width: calc(var(--soql-media-max-width) + 1rem);
+  margin: 5rem auto;
+  font-weight: bolder;
+  font-size: larger;
+  text-align: center;
+  text-shadow: 1px 1px 2px #cccccc;
 }
