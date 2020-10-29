@@ -8,7 +8,8 @@ export enum MessageType {
   SOBJECTS_REQUEST = 'sobjects_request',
   SOBJECTS_RESPONSE = 'sobjects_response',
   TEXT_SOQL_CHANGED = 'text_soql_changed',
-  RUN_SOQL_QUERY = 'run_query'
+  RUN_SOQL_QUERY = 'run_query',
+  CONNECTION_CHANGED = 'connection_changed'
 }
 
 export interface SoqlEditorEvent {

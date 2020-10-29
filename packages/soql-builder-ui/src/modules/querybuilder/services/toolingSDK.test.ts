@@ -29,6 +29,20 @@ describe('Tooling SDK Service', () => {
     vscode = getVscode();
   });
 
+  it('Load SObject metadata on CONNECTION_CHANGED message', () => {
+    // establish loaded SObject
+    toolingSDK.loadSObjectMetatada('Help!');
+
+    const loadDefsSpy = jest.spyOn(toolingSDK, 'loadSObjectDefinitions');
+    const loadObjSpy = jest.spyOn(toolingSDK, 'loadSObjectMetatada');
+
+    postMessageFromVSCode({ type: MessageType.CONNECTION_CHANGED });
+
+    expect(loadDefsSpy.mock.calls.length).toBe(1);
+    expect(loadObjSpy.mock.calls.length).toBe(1);
+    expect(loadObjSpy.mock.calls[0][0]).toBe('Help!');
+  });
+
   it('Retrieve SObjects', () => {
     jest.spyOn(vscode, 'postMessage');
     const sObjectsObserver = jest.fn();
