@@ -111,6 +111,7 @@ button:hover {
 }
 .select-long {
   min-width: var(--soql-input-width);
+  max-width: var(--soql-input-width);
 }
 
 /* ERROR / DISABLED ------------ */

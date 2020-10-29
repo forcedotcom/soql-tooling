@@ -53,6 +53,7 @@ header {
   border: 0;
   border-radius: 3px;
   padding: 0 15px 0 15px;
+  cursor: pointer;
 }
 
 .icon__save {
