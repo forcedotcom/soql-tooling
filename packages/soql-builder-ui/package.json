@@ -1,7 +1,7 @@
 {
   "name": "@salesforce/soql-builder-ui",
   "description": "SOQL Builder UI with LWC",
-  "version": "0.0.20",
+  "version": "0.0.21",
   "author": "Salesforce",
   "publishConfig": {
     "access": "public",
@@ -44,6 +44,6 @@
     "test:unit:debug": "lwc-services test:unit --debug",
     "test:unit:watch": "lwc-services test:unit --watch",
     "watch": "lwc-services watch -w webpack.config.js",
-    "start": "npm run watch"
+    "start": "yarn watch"
   }
 }

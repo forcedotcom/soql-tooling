@@ -21,7 +21,7 @@ During development, you can work with a local copy of the `salesforcedx-vscode` 
 ```
 # Make global links available
 cd ~/repos/soql-tooling
-for P in packages/*; do cd $P; npm link; cd -; done
+for P in packages/*; do cd $P; yarn link; cd -; done
 
 # Link to them from the VS Code SOQL extension package
 cd ~/repos/salesforcedx-vscode/packages/salesforcedx-vscode-soql

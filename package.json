@@ -23,12 +23,10 @@
     "typescript": "^4.0.3"
   },
   "scripts": {
-    "postinstall": "lerna bootstrap --no-ci -- --no-package-lock",
-    "bootstrap": "lerna bootstrap --no-ci -- --no-package-lock",
     "build": "lerna run build",
     "clean": "lerna run clean && rimraf yarn.lock && rimraf node_modules",
     "lint": "lerna run lint",
-    "test": "lerna exec -- npm run test",
+    "test": "lerna exec -- yarn run test",
     "start": "lerna run start"
   }
 }

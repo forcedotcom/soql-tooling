@@ -1,5 +1,5 @@
 {
-  "prettier.packageManager": "npm",
+  "prettier.packageManager": "yarn",
   "prettier.singleQuote": true,
   "editor.formatOnSave": true,
   "files.autoSave": "afterDelay",

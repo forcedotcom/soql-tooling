@@ -75,7 +75,7 @@ describe('App should', () => {
       ToolingSDK.prototype,
       'loadSObjectMetatada'
     );
-    spyOn(globals, 'getBodyClass').and.returnValue('vscode-dark');
+    jest.spyOn(globals, 'getBodyClass').mockReturnValue('vscode-dark');
     app = createElement('querybuilder-app', {
       is: TestApp
     });
@@ -264,6 +264,7 @@ describe('App should', () => {
   });
 
   it('set the body class on the sub components', () => {
-
+    const darkElements = app.shadowRoot.querySelectorAll('.dark');
+    expect(darkElements.length).toBeGreaterThan(1);
   });
 });

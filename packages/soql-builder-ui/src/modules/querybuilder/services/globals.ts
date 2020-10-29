@@ -28,9 +28,9 @@ let vsCode = undefined;
 
 export function getVscode() {
   if (hasVscode()) {
-    // @ts-ignore
-    // eslint-disable-next-line no-undef
     if (!vsCode) {
+      // @ts-ignore
+      // eslint-disable-next-line no-undef
       vsCode = acquireVsCodeApi();
     }
 

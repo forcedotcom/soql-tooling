@@ -45,9 +45,9 @@ main {
 
 .unsupported-syntax {
   position: absolute;
-  width: calc(100% + 1rem);
+  width: calc(var(--soql-media-max-width) + 1rem);
   height: 100%;
-  top: 0;
+  top: -0.5rem;
   left: -0.5rem;
   opacity: 0.5;
   background-color: #808080;
@@ -55,9 +55,10 @@ main {
 }
 
 .block-message {
-  margin: 1.5rem auto;
+  width: calc(var(--soql-media-max-width) + 1rem);
+  margin: 5rem auto;
   font-weight: bolder;
   font-size: larger;
   text-align: center;
-  text-shadow: 1px 1px #000000;
+  text-shadow: 1px 1px 2px #cccccc;
 }
