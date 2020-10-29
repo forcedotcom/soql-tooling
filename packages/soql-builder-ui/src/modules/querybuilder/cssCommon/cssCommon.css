@@ -51,6 +51,10 @@
   padding: 6px 4px 0 12px;
   border-radius: 3px;
 }
+:host(.contrast) .selected-field {
+  background-color: var(--soql-color-medium-blue);
+  color: var(--vscode-foreground);
+}
 .delete-trigger {
   margin: 0 0.25rem 0 0.5rem;
   color: var(--vscode-button-foreground, var(--soql-white));
