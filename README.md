@@ -12,7 +12,7 @@ This repo contains the source for the SOQL Language Tooling features including:
 
 ### Development
 
-Run `npm install` from the top-level directory to pull all dependencies and auto-link local dependencies between packages (i.e: `soql-builder-ui` depends on `soql-model`).
+Run `yarn` from the top-level directory to pull all dependencies and auto-link local dependencies between packages (i.e: `soql-builder-ui` depends on `soql-model`).
 
 These packages are used from VS Code extension `salesforcedx-vscode-soql` which lives in repo [salesforcedx-vscode](https://github.com/forcedotcom/salesforcedx-vscode).
 
@@ -39,4 +39,4 @@ You can debug Jest test for an individual package by running the corresponding l
 
 ### Publishing
 
-Some packages depend on `@salesforce/soql-parser` which is included as a static dependency, since it is not yet published. Packages must be published with `@salesforce/soql-tooling` as a bundled dependency, since the static tarball is not available in the published packages. There are prepack and postpack scripts to convert the static dependency to a bundled dependency and back again, so when these packages are published it is important to pack the package as a tarball (`npm pack`) and publish the tarball (`npm publish [package-tarball].tgz`) rather than publishing the package directory.
+Some packages depend on `@salesforce/soql-parser` which is included as a static dependency, since it is not yet published. Packages must be published with `@salesforce/soql-tooling` as a bundled dependency, since the static tarball is not available in the published packages. There are prepack and postpack scripts as well as prepublish and postpublish scripts to convert the static dependency to a bundled dependency and back again, so when these packages are published they correctly refer to the soql-tooling dependency as a bundled dependency, but can find the static dependency again at development install-time.

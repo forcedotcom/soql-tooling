@@ -1,6 +1,6 @@
 {
   "name": "@salesforce/soql-model",
-  "version": "0.1.12",
+  "version": "0.1.13",
   "description": "SOQL Model",
   "engines": {
     "node": "*"
@@ -12,7 +12,9 @@
     "test": "jest --runInBand",
     "test:unit:coverage": "jest --runInBand --coverage",
     "prepack": "./scripts/bundle-parser.js",
-    "postpack": "./scripts/unbundle-parser.js"
+    "postpack": "./scripts/unbundle-parser.js",
+    "prepublish": "./scripts/bundle-parser.js",
+    "postpublish": "./scripts/unbundle-parser.js"
   },
   "dependencies": {
     "antlr4": "4.8.0",

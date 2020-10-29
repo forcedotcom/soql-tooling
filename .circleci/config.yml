@@ -109,7 +109,7 @@ jobs:
           name: 'Build'
           command: |
             cd $PACKAGE_PATH
-            npm run build
+            yarn run build
       - run:
           name: 'Run SOQL TextMate language grammar Unit Tests'
           command: |
