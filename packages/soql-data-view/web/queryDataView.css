@@ -9,6 +9,27 @@
 This file can be used to override Tabulator CSS
 for custom styling http://tabulator.info/docs/4.8/style
 */
+body {
+  font-family: var(--vscode-font-family, Arial, Helvetica, sans-serif);
+}
+
+:root {
+  --soql-main-min-width: 480px;
+  --soql-main-max-width: 960px;
+  --soql-media-max-width: 480px;
+  --soql-label-width: 80px;
+  --soql-input-width: 400px;
+  /* colors */
+  --soql-color-light-grey: #ecebea;
+  --soql-color-medium-grey: #b0adab;
+  --soql-color-dark-grey: #3e4e6c;
+  --soql-color-medium-blue: #0070d2;
+  --soql-color-blue-text: #1589ee;
+  --soql-background: #f3f2f2;
+  --soql-foreground: #080707;
+  --soql-white: #ffffff;
+  --soql-red: #c23934;
+}
 header {
   display: flex;
   justify-content: space-between;
@@ -24,8 +45,11 @@ header {
   height: 1.5rem;
   margin: 0.25rem 0 0 0.5rem;
   font-size: 1rem;
-  background-color: #0070d2;
-  color: #ffffff;
+  background-color: var(
+    --vscode-button-background,
+    var(--soql-color-medium-blue)
+  );
+  color: var(--vscode-button-foreground, var(--soql-white));
   border: 0;
   border-radius: 3px;
   padding: 0 15px 0 15px;
