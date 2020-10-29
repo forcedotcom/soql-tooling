@@ -1,1 +1,0 @@
-SELECT Name FROM Account WHERE Industry = 'media' LIMIT 125

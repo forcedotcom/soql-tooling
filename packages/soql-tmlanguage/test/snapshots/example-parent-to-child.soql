@@ -1,3 +1,0 @@
-SELECT Name, (SELECT LastName FROM Contacts) FROM Account;
-
-SELECT Account.Name, (SELECT Contact.LastName FROM Account.Contacts) FROM Account
