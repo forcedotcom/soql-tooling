@@ -92,31 +92,6 @@ jobs:
           name: Upload coverage report to Codecov
           command: bash <(curl -s https://codecov.io/bash) -F soql-model -t ${CODECOV_TOKEN}
 
-  soql-tmlanguage:
-    docker: *node-build-image
-    environment:
-      PACKAGE_PATH: 'packages/soql-tmlanguage'
-    steps:
-      - checkout
-      - restore_cache:
-          key: dependency-cache-{{ checksum "yarn.lock" }}
-      - run: yarn
-      - save_cache:
-          key: dependency-cache-{{ checksum "yarn.lock" }}
-          paths:
-            - ./node_modules
-      - run:
-          name: 'Build'
-          command: |
-            cd $PACKAGE_PATH
-            yarn run build
-      - run:
-          name: 'Run SOQL TextMate language grammar Unit Tests'
-          command: |
-            echo 'Run SOQL TextMate language grammar Unit Tests'
-            cd $PACKAGE_PATH
-            yarn run test
-
   notify_slack:
     docker: *node-build-image
     steps:
@@ -137,7 +112,6 @@ workflows:
       - soql-builder-ui
       - language-server
       - soql-model
-      - soql-tmlanguage
       - notify_slack:
           requires:
             - soql-builder-ui
