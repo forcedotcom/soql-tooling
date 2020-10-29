@@ -43,25 +43,17 @@
   display: inline-block;
   height: 1.25rem;
   font-size: smaller;
-  background-color: var(--soql-color-light-grey);
-  color: var(--soql-color-medium-blue);
+  background-color: var(
+    --vscode-list-inactiveSelectionBackground,
+    var(--soql-color-medium-grey)
+  );
+  color: var(--vscode-foreground, var(--soql-white));
   padding: 6px 4px 0 12px;
   border-radius: 3px;
 }
-
-:host(.dark) .selected-field {
-  background-color: var(--soql-color-dark-grey);
-  color: var(--soql-color-blue-text);
-}
-
-:host(.contrast) .selected-field {
-  background-color: var(--soql-color-medium-blue);
-  color: var(--vscode-forground);
-}
-
 .delete-trigger {
   margin: 0 0.25rem 0 0.5rem;
-  color: var(--soql-white);
+  color: var(--vscode-button-foreground, var(--soql-white));
   font-weight: lighter;
   font-size: smaller;
 }
@@ -71,12 +63,18 @@ button,
 input,
 select {
   height: 1.5rem;
-  border: 1px solid var(--soql-color-light-grey);
+  border: 1px solid
+    var(--vscode-list-inactiveSelectionBackground, var(--soql-color-light-grey));
   border-radius: 3px;
 }
 input,
 select {
-  background-color: var(--soql-white);
+  background-color: var(--vscode-sideBar-background, var(--soql-background));
+  color: var(--vscode-foreground, var(--soql-foreground));
+  border-color: var(
+    --vscode-list-inactiveSelectionBackground,
+    var(--soql-color-light-grey)
+  );
 }
 input[type='number'] {
   padding-left: 0.25rem;
@@ -89,24 +87,23 @@ input:focus,
 select:focus {
   outline: unset;
 }
-:host(.dark) input,
-:host(.dark) select {
-  background-color: var(--vscode-input-background);
-  color: var(--vscode-forground);
-  border-color: var(--vscode-input-background);
-}
 
 button {
-  color: var(--soql-white);
-  background-color: var(--soql-color-medium-blue);
+  color: var(--vscode-button-foreground, var(--soql-white));
+  background-color: var(
+    --vscode-button-background,
+    var(--soql-color-medium-blue)
+  );
   border: 0;
   border-radius: 3px;
   padding: 0 15px 0 15px;
   cursor: pointer;
 }
-:host(.dark) button {
-  background-color: var(--soql-color-medium-blue);
-  color: var(--vscode-forground);
+button:hover {
+  background-color: var(
+    --vscode-button-hoverBackground,
+    var(--soql-color-blue-text)
+  );
 }
 .select-long {
   min-width: var(--soql-input-width);
