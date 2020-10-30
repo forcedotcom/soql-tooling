@@ -7,8 +7,7 @@ This repo contains the source for the SOQL Language Tooling features including:
     packages
     |-- language-server/        SOQL language server
     |-- soql-builder-ui/        SOQL Query Builder UI with [LWC](https://lwc.dev/)
-    |-- soql-model/             SOQL internal model
-    `-- soql-tmlanguage/        SOQL TextMate grammar (for syntax highlighting)
+    `-- soql-model/             SOQL internal model
 
 ### Development
 
@@ -27,7 +26,6 @@ for P in packages/*; do cd $P; yarn link; cd -; done
 cd ~/repos/salesforcedx-vscode/packages/salesforcedx-vscode-soql
 npm install
 npm link @salesforce/soql-builder-ui
-npm link @salesforce/soql-tmlanguage
 npm link @salesforce/soql-language-server
 ```
 
