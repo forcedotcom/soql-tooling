@@ -7,12 +7,8 @@
  */
 
 import { api, LightningElement } from 'lwc';
-import { convertUiModelToSoql } from '../services/soqlUtils';
 
 export default class QueryPreview extends LightningElement {
   @api
-  query;
-  get queryPreview() {
-    return convertUiModelToSoql(this.query);
-  }
+  soqlStatement;
 }

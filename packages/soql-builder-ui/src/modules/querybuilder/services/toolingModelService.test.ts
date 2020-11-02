@@ -31,6 +31,7 @@ describe('Tooling Model Service', () => {
     let toolingModel = modelService.getModel().toJS();
     expect(toolingModel.sObject).toEqual('');
     expect(toolingModel.fields.length).toBe(0);
+    expect(toolingModel.originalSoqlStatement).toEqual('');
   }
 
   beforeEach(() => {
@@ -100,13 +101,15 @@ describe('Tooling Model Service', () => {
       soqlEvent
     );
     expect(query!.fields.length).toBe(2);
+    expect(query!.originalSoqlStatement).toEqual(jimmyQuery);
     soqlEvent.type = MessageType.SOBJECTS_RESPONSE;
     soqlEvent.payload = jimmyQuery.replace('Hey, Joe', 'What');
     (messageService.messagesToUI as BehaviorSubject<SoqlEditorEvent>).next(
       soqlEvent
     );
-    // Fields should not change
+    // query should not have changed
     expect(query!.fields.length).toBe(2);
+    expect(query!.originalSoqlStatement).toEqual(jimmyQuery);
   });
 
   it('should send message when ui changes the query', () => {
