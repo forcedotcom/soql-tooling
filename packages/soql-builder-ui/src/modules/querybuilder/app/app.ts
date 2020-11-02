@@ -179,7 +179,7 @@ export default class App extends LightningElement {
   }
 
   handleOrderBySelected(e) {
-    this.modelService.addOrderByField(e.detail);
+    this.modelService.addUpdateOrderByField(e.detail);
   }
 
   handleOrderByRemoved(e) {
