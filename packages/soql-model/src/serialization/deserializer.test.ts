@@ -45,6 +45,8 @@ const fromWithUnmodeledSyntax = {
 
 const selectCountUnmdeledSyntax = { unmodeledSyntax: 'SELECT COUNT()' };
 
+const limitZero = { limit: 0 };
+
 describe('ModelDeserializer should', () => {
   it('model supported syntax as query objects', () => {
     const expected = {
@@ -197,5 +199,20 @@ describe('ModelDeserializer should', () => {
     } else {
       fail();
     }
+  });
+
+  it('identify LIMIT 0 as valid limit clause', () => {
+    const expected = {
+      select: {
+        selectExpressions: [
+          testQueryModel.select.selectExpressions[0]
+        ],
+      },
+      from: testQueryModel.from,
+      limit: limitZero,
+      errors: [],
+    };
+    const actual = new ModelDeserializer('SELECT field1 FROM object1 LIMIT 0').deserialize();
+    expect(actual).toEqual(expected);
   });
 });

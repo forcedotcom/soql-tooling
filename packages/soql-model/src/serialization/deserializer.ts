@@ -287,7 +287,7 @@ class QueryListener extends SoqlParserListener {
       const valueString = ctx.soqlIntegerValue().getText();
       value = parseInt(valueString);
     }
-    if (value && value !== NaN) {
+    if (typeof value === 'number' && value !== NaN) {
       this.limit = new Impl.LimitImpl(value);
     }
   }
