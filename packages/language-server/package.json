@@ -5,6 +5,7 @@
   "engines": {
     "node": "*"
   },
+  "main": "lib/index.js",
   "scripts": {
     "build": "tsc --project .",
     "clean": "rimraf lib && rimraf node_modules",
