@@ -9,9 +9,11 @@
 import { IMessageService } from './message/iMessageService';
 import { MessageType, SoqlEditorEvent } from './message/soqlEditorEvent';
 import { BehaviorSubject, Observable } from 'rxjs';
+import { throwStatement } from '../../../../../../../../Library/Caches/typescript/4.0/node_modules/@babel/types/lib/index';
 
 export class ToolingSDK {
   private messageService: IMessageService;
+  private latestSObjectName?: string;
 
   public sobjects: Observable = new BehaviorSubject<string[]>([]);
   public sobjectMetadata: Observable = new BehaviorSubject<any>({ fields: [] });
@@ -32,6 +34,13 @@ export class ToolingSDK {
           this.sobjectMetadata.next(event.payload);
           break;
         }
+        case MessageType.CONNECTION_CHANGED: {
+          this.loadSObjectDefinitions();
+          if (this.latestSObjectName) {
+            this.loadSObjectMetatada(this.latestSObjectName);
+          }
+
+        }
         default:
           break;
       }
@@ -43,6 +52,7 @@ export class ToolingSDK {
   }
 
   loadSObjectMetatada(sobjectName: string) {
+    this.latestSObjectName = sobjectName;
     this.messageService.sendMessage({
       type: MessageType.SOBJECT_METADATA_REQUEST,
       payload: sobjectName
