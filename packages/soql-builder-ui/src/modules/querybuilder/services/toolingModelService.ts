@@ -115,19 +115,24 @@ export class ToolingModelService {
   }
 
   private hasOrderByField(field: string) {
-    return this.getOrderBy().some((item) => item.get('field') === field);
+    return this.getOrderBy().findIndex( (item) => item.get('field') === field );
   }
 
-  public addOrderByField(orderByObj: JsonMap) {
-    if (this.hasOrderByField(orderByObj.field) === false) {
-      const currentModel = this.getModel();
-      const newModelWithAddedField = currentModel.set(
-        'orderBy',
-        this.getOrderBy().push(fromJS(orderByObj))
-      ) as ToolingModel;
-
-      this.changeModel(newModelWithAddedField);
+  public addUpdateOrderByField(orderByObj: JsonMap) {
+    const currentModel = this.getModel();
+    let updatedOrderBy;
+    const existingIndex = this.hasOrderByField(orderByObj.field);
+    if (existingIndex > -1) {
+      updatedOrderBy = this.getOrderBy().update(existingIndex, () => { return fromJS(orderByObj)});
     }
+    else {
+      updatedOrderBy = this.getOrderBy().push(fromJS(orderByObj))
+    }
+    const newModel = currentModel.set(
+      'orderBy',
+      updatedOrderBy
+    ) as ToolingModel;
+    this.changeModel(newModel);
   }
 
   public removeOrderByField(field: string) {

@@ -144,7 +144,7 @@ describe('Tooling Model Service', () => {
     expect(query.unsupported.length).toEqual(0);
   });
 
-  it('should add, remove order by fields in model', () => {
+  it('should add, update, remove order by fields in model', () => {
     (messageService.setState as jest.Mock).mockClear();
     expect(messageService.setState).toHaveBeenCalledTimes(0);
     query = ToolingModelService.toolingModelTemplate;
@@ -152,21 +152,27 @@ describe('Tooling Model Service', () => {
     expect(query!.orderBy.length).toEqual(0);
 
     // Add
-    modelService.addOrderByField(mockOrderBy);
+    modelService.addUpdateOrderByField(mockOrderBy);
     expect(query!.orderBy.length).toBe(1);
     expect(query!.orderBy[0].field).toContain(mockOrderBy.field);
     expect(query!.orderBy[0].order).toContain(mockOrderBy.order);
     expect(query!.orderBy[0].nulls).toContain(mockOrderBy.nulls);
 
     // But Not Duplicate
-    modelService.addOrderByField(mockOrderBy);
+    modelService.addUpdateOrderByField(mockOrderBy);
     expect(query!.orderBy.length).toBe(1);
+
+    // Yet Update Field IF Direction and/or Nulls Change
+    expect(query!.orderBy[0].order).toBeDefined();
+    const updatedOrderBy = { field: 'orderBy1', order: undefined, nulls: 'NULLS LAST' };
+    modelService.addUpdateOrderByField(updatedOrderBy);
+    expect(query!.orderBy[0].order).not.toBeDefined();
 
     // Delete
     modelService.removeOrderByField(mockOrderBy.field);
     expect(query!.orderBy.length).toBe(0);
     // verify saves
-    expect(messageService.setState).toHaveBeenCalledTimes(2);
+    expect(messageService.setState).toHaveBeenCalledTimes(4);
   });
 
   it('should update limit in model', () => {
@@ -189,7 +195,7 @@ describe('Tooling Model Service', () => {
   });
 
   it('should add orderby as immutablejs', () => {
-    modelService.addOrderByField(mockOrderBy);
+    modelService.addUpdateOrderByField(mockOrderBy);
     const orderBy = modelService.getModel().get('orderBy');
     expect(typeof orderBy.toJS).toEqual('function');
   });
