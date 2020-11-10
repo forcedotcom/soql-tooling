@@ -132,7 +132,6 @@ export default class App extends LightningElement {
   }
 
   inspectErrors(errors) {
-    console.log('errors: ', errors);
     this.hasRecoverableFieldsError = false;
     this.hasRecoverableFromError = false;
     this.hasRecoverableLimitError = false;
