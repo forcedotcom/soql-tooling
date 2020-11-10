@@ -19,13 +19,16 @@
             <template if:true={hasUnsupported}>
               <!-- TODO: i18n -->
               <div class="block-message">
-                <h3>Unsupported Syntax</h3>
+                <h3>Syntax Too Complex</h3>
                 <p>Currently, you can't edit a query of this complexity in SOQL Builder. You can still run the query but must use a text editor to change it. </p>
               </div>
             </template>
             <template if:true={hasUnrecoverable}>
               <!-- TODO: i18n -->
-              <div class="block-message"><h3>Syntax Error</h3></div>
+              <div class="block-message">
+                <h3>Syntax Error</h3>
+                <p>Your SOQL statement contains syntax errors. Use a text editor to edit the query, and try again.</p>
+              </div>
             </template>
 
         </template>
