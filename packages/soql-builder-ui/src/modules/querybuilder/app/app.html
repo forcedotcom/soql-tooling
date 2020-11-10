@@ -15,15 +15,22 @@
       <section class="querybuilder-form">
           <template if:true={blockQueryBuilder}>
             <div class="unsupported-syntax">
-              <template if:true={hasUnsupported}>
-                <!-- TODO: i18n -->
-                <div class="text-color-required block-message">Unsupported Syntax</div>
-              </template>
-              <template if:true={hasUnrecoverable}>
-                <!-- TODO: i18n -->
-                <div class="text-color-required block-message">Syntax Error</div>
-              </template>
             </div>
+            <template if:true={hasUnsupported}>
+              <!-- TODO: i18n -->
+              <div class="block-message">
+                <h3>Syntax Not Yet Supported</h3>
+                <p>Your query contains statements that SOQL Builder doesn't currently support.  You can still run the query but must use a text editor to change it.</p>
+              </div>
+            </template>
+            <template if:true={hasUnrecoverable}>
+              <!-- TODO: i18n -->
+              <div class="block-message">
+                <h3>Syntax Error</h3>
+                <p>Your SOQL statement contains syntax errors. Use a text editor to edit the query, and try again.</p>
+              </div>
+            </template>
+
         </template>
         <querybuilder-from
           onobjectselected={handleObjectChange}
