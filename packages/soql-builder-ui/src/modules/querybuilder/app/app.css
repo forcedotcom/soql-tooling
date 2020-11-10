@@ -58,7 +58,10 @@ main {
   position: absolute;
   top: 0;
   left: 0;
-  background-color: #faffbd;
+  background-color: var(
+    --vscode-inputValidation-errorBackground,
+    var(--soql-error-background)
+  );
   width: calc(var(--soql-media-max-width));
   margin: 0 auto;
   text-align: center;
@@ -69,7 +72,7 @@ main {
 .block-message h3 {
   font-weight: bolder;
   font-size: large;
-  color: var(--soql-red);
+  color: var(--vscode-editorError-foreground, var(--soql-red));
   text-shadow: 0 2px 3px rgba(0, 0, 0, 0.16);
 }
 
@@ -77,5 +80,5 @@ main {
   text-align: left;
   padding: 0 1rem 1rem 1rem;
   font-size: small;
-  color: var(--soql-foreground);
+  color: var(--vscode-foreground, var(--soql-forground));
 }
