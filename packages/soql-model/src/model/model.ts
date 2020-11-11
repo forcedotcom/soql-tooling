@@ -191,12 +191,14 @@ export interface LikeCondition extends Condition {
   compareValue: CompareValue;
 }
 
+// Not in use yet
 export interface IncludesCondition extends Condition {
   field: Field;
   operator: IncludesOperator;
   values: CompareValue[];
 }
 
+// Not in use yet
 export interface InListCondition extends Condition {
   field: Field;
   operator: InOperator;
