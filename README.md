@@ -7,6 +7,7 @@ This repo contains the source for the SOQL Language Tooling features including:
     packages
     |-- language-server/        SOQL language server
     |-- soql-builder-ui/        SOQL Query Builder UI with [LWC](https://lwc.dev/)
+    |-- soql-data-view/         View SOQL query results
     `-- soql-model/             SOQL internal model
 
 ### Development
@@ -38,3 +39,20 @@ You can debug Jest test for an individual package by running the corresponding l
 ### Publishing
 
 Some packages depend on `@salesforce/soql-parser` which is included as a static dependency, since it is not yet published. Packages must be published with `@salesforce/soql-tooling` as a bundled dependency, since the static tarball is not available in the published packages. There are prepack and postpack scripts as well as prepublish and postpublish scripts to convert the static dependency to a bundled dependency and back again, so when these packages are published they correctly refer to the soql-tooling dependency as a bundled dependency, but can find the static dependency again at development install-time.
+
+#### CI Support for Publishing
+
+To publish each of the modules, push a specially named tag that will trigger the correct workflow on CI.
+
+Steps:
+
+1. Update the version number in the appropriate package.json to the next version you want to publish.
+2. Push the commit to CI and verify the build.
+3. Push a tag for the version you will publish.
+   a. Tag should be formatted as the package name with -vX.X.X following semver
+   b. examples:
+   i. language-server-v1.2.3,
+   i. soql-model-v4.5.6
+   i. see config.yml for more information
+
+_Gotcha's - because soql-builder-ui depends on soql model, and it is referenced as a dependency, soql-model should be published before soul-builder-ui._
