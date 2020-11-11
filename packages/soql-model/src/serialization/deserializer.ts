@@ -149,7 +149,7 @@ class ErrorIdentifier {
 
   protected isIncompleteLimitError(error: ParserError): boolean {
     const context = this.matchErrorToContext(error);
-    return context instanceof Parser.SoqlIntegerContext
+    return context instanceof Parser.SoqlIntegerValueContext
       && this.hasAncestorOfType(context, Parser.SoqlLimitClauseContext);
   }
 
@@ -319,6 +319,10 @@ class QueryListener extends SoqlParserListener {
     });
   }
 
+  public enterSoqlWhereClauseMethod(ctx: Parser.SoqlWhereClauseMethodContext): void {
+    this.where = new Impl.WhereImpl(this.exprsToCondition(ctx.soqlWhereExprs()));
+  }
+
   public enterSoqlInnerQuery(ctx: Parser.SoqlInnerQueryContext): void {
     const selectCtx = ctx.soqlSelectClause();
     if (selectCtx) {
@@ -345,7 +349,7 @@ class QueryListener extends SoqlParserListener {
 
     const whereCtx = ctx.soqlWhereClause();
     if (whereCtx) {
-      this.where = this.toUnmodeledSyntax(whereCtx.start, whereCtx.stop);
+      whereCtx.enterRule(this);
     }
     const withCtx = ctx.soqlWithClause();
     if (withCtx) {
@@ -440,5 +444,154 @@ class QueryListener extends SoqlParserListener {
       result = new Impl.FieldRefImpl(ctx.getText());
     }
     return result;
+  }
+
+  protected toCompareOperator(ctx: Parser.SoqlComparisonOperatorContext): Soql.CompareOperator {
+    let operator = Soql.CompareOperator.EQ;
+    switch (ctx.getText()) {
+      case '=': { operator = Soql.CompareOperator.EQ; break; }
+      case '!=': { operator = Soql.CompareOperator.NOT_EQ; break; }
+      case '<>': { operator = Soql.CompareOperator.ALT_NOT_EQ; break; }
+      case '>': { operator = Soql.CompareOperator.GT; break; }
+      case '<': { operator = Soql.CompareOperator.LT; break; }
+      case '>=': { operator = Soql.CompareOperator.GT_EQ; break; }
+      case '<=': { operator = Soql.CompareOperator.LT_EQ; break; }
+    }
+    return operator;
+  }
+
+  protected toCompareValues(ctx: ParserRuleContext): Soql.CompareValue[] {
+    const literalCtxs = ctx.getTypedRuleContexts(Parser.SoqlLiteralValueContext);
+    return literalCtxs.map(literalCtx => this.toCompareValue(literalCtx));
+  }
+
+  protected toCompareValue(ctx: ParserRuleContext): Soql.CompareValue {
+    if (ctx instanceof Parser.SoqlColonExprLiteralValueContext) {
+      return this.toUnmodeledSyntax(ctx.start, ctx.stop);
+    } else if (ctx instanceof Parser.SoqlColonLikeValueContext) {
+      return this.toUnmodeledSyntax(ctx.start, ctx.stop);
+    }
+    return this.toLiteral(ctx);
+  }
+
+  protected toLiteral(ctx: ParserRuleContext): Soql.Literal {
+    if (ctx instanceof Parser.SoqlLiteralLiteralValueContext) {
+      ctx = ctx.soqlLiteral();
+    }
+    if (ctx instanceof Parser.SoqlLiteralCommonLiteralsContext) {
+      ctx = ctx.soqlCommonLiterals();
+    }
+    if (ctx instanceof Parser.SoqlDateLiteralContext) {
+      return new Impl.LiteralImpl(Soql.LiteralType.Date, ctx.getText());
+    } else if (ctx instanceof Parser.SoqlDateTimeLiteralContext) {
+      return new Impl.LiteralImpl(Soql.LiteralType.Date, ctx.getText());
+    } else if (ctx instanceof Parser.SoqlTimeLiteralContext) {
+      return new Impl.LiteralImpl(Soql.LiteralType.Date, ctx.getText());
+    } else if (ctx instanceof Parser.SoqlDateFormulaLiteralContext) {
+      return new Impl.LiteralImpl(Soql.LiteralType.Date, ctx.getText());
+    } else if (ctx instanceof Parser.SoqlNumberLiteralContext) {
+      return new Impl.LiteralImpl(Soql.LiteralType.Number, ctx.getText());
+    } else if (ctx instanceof Parser.SoqlNullLiteralContext) {
+      return new Impl.LiteralImpl(Soql.LiteralType.Null, ctx.getText());
+    } else if (ctx instanceof Parser.SoqlBooleanLiteralContext) {
+      return new Impl.LiteralImpl(Soql.LiteralType.Boolean, ctx.getText());
+    } else if (ctx instanceof Parser.SoqlMultiCurrencyContext) {
+      return new Impl.LiteralImpl(Soql.LiteralType.Currency, ctx.getText());
+    }
+    return new Impl.LiteralImpl(Soql.LiteralType.String, ctx.getText());
+  }
+
+  protected exprsToCondition(ctx: Parser.SoqlWhereExprsContext): Soql.Condition {
+    let condition: Soql.Condition;
+    if (ctx instanceof Parser.SoqlWhereAndOrExprContext) {
+      const andOrExprCtx = ctx as Parser.SoqlWhereAndOrExprContext;
+      const left = this.exprToCondition(andOrExprCtx.soqlWhereExpr());
+      let andOr: Soql.AndOr;
+      let right: Soql.Condition | undefined = undefined;
+      const andCtx = andOrExprCtx.soqlAndWhere();
+      const orCtx = andOrExprCtx.soqlOrWhere();
+      if (andCtx) {
+        andOr = Soql.AndOr.And;
+        const andExprs = andCtx.getTypedRuleContexts(Parser.SoqlWhereExprContext);
+        const conds = andExprs.map(expr => this.exprToCondition(expr));
+        while (conds.length > 0) {
+          const next = conds.pop();
+          if (next) {
+            if (right) {
+              right = new Impl.AndOrConditionImpl(next, andOr, right);
+            } else {
+              right = next;
+            }
+          }
+        }
+        if (right) {
+          condition = new Impl.AndOrConditionImpl(left, andOr, right);
+        } else {
+          condition = left;
+        }
+      } else if (orCtx) {
+        andOr = Soql.AndOr.Or;
+        const orExprs = orCtx.getTypedRuleContexts(Parser.SoqlWhereExprContext);
+        const conds = orExprs.map(expr => this.exprToCondition(expr));
+        while (conds.length > 0) {
+          const next = conds.pop();
+          if (next) {
+            if (right) {
+              right = new Impl.AndOrConditionImpl(next, andOr, right);
+            } else {
+              right = next;
+            }
+          }
+        }
+        if (right) {
+          condition = new Impl.AndOrConditionImpl(left, andOr, right);
+        } else {
+          condition = left;
+        }
+      } else {
+        condition = left;
+      }
+    } else if (ctx instanceof Parser.SoqlWhereNotExprContext) {
+      condition = new Impl.NotConditionImpl(
+        this.exprToCondition((ctx as Parser.SoqlWhereNotExprContext).soqlWhereExpr())
+      );
+    } else {
+      // empty clause
+      condition = new Impl.UnmodeledSyntaxImpl('');
+    }
+    return condition;
+  }
+
+  protected exprToCondition(ctx: Parser.SoqlWhereExprContext): Soql.Condition {
+    if (ctx instanceof Parser.NestedWhereExprContext) {
+      const nested = this.exprsToCondition(ctx.soqlWhereExprs());
+      return new Impl.NestedConditionImpl(nested);
+    } else if (ctx instanceof Parser.SimpleWhereExprContext) {
+      const field = this.toField(ctx.soqlField());
+      const operator = this.toCompareOperator(ctx.soqlComparisonOperator());
+      const value = this.toCompareValue(ctx.soqlLiteralValue());
+      return new Impl.FieldCompareConditionImpl(field, operator, value);
+    } else if (ctx instanceof Parser.LikeWhereExprContext) {
+      const field = this.toField(ctx.soqlField());
+      const value = this.toCompareValue(ctx.soqlLikeValue());
+      return new Impl.LikeConditionImpl(field, value);
+    } else if (ctx instanceof Parser.IncludesWhereExprContext) {
+      const field = this.toField(ctx.soqlField());
+      const opCtx = ctx.soqlIncludesOperator();
+      const operator = opCtx.EXCLUDES()
+        ? Soql.IncludesOperator.Excludes
+        : Soql.IncludesOperator.Includes;
+      const values = this.toCompareValues(ctx.soqlLiteralValues());
+      return new Impl.IncludesConditionImpl(field, operator, values);
+    } else if (ctx instanceof Parser.InWhereExprContext) {
+      const field = this.toField(ctx.soqlField());
+      const opCtx = ctx.soqlInOperator();
+      const operator = opCtx.NOT()
+        ? Soql.InOperator.NotIn
+        : Soql.InOperator.In;
+      const values = this.toCompareValues(ctx.soqlLiteralValues());
+      return new Impl.InListConditionImpl(field, operator, values);
+    }
+    return this.toUnmodeledSyntax(ctx.start, ctx.stop);
   }
 }

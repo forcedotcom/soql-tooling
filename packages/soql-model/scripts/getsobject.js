@@ -21,6 +21,7 @@ var fields =
     : undefined;
 var sObject = queryModel.from ? queryModel.from.sobjectName : undefined;
 var errors = queryModel.errors;
+var where = queryModel.where ? queryModel.where.toSoqlSyntax() : undefined;
 var orderBy = queryModel.orderBy.orderByExpressions.map(
   (expr) => `${expr.field.fieldName} ${expr.order} ${expr.nullsOrder}`
 );
@@ -28,6 +29,7 @@ var limit = queryModel.limit ? queryModel.limit.limit : 'undefined';
 console.log(`Query:    ${query}`);
 console.log(`SObject:  ${sObject}`);
 console.log(`Fields:   ${fields}`);
+console.log(`Where:    ${where}`);
 console.log(`Order By: ${orderBy}`);
 console.log(`Limit:    ${limit}`);
 console.log(`Errors:   ${JSON.stringify(errors)}`);
