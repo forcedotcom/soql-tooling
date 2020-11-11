@@ -1,6 +1,6 @@
 {
   "name": "@salesforce/soql-data-view",
-  "version": "0.0.5",
+  "version": "0.0.7",
   "description": "This is the web assests for viewing SOQL Results",
   "main": "web/",
   "publishConfig": {
