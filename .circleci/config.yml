@@ -47,7 +47,7 @@ commands:
             yarn run test:unit:coverage
       - run:
           name: Upload coverage report to Codecov
-          command: bash <(curl -s https://codecov.io/bash) -F << parameters.package-name >> -t ${CODECOV_TOKEN}
+          command: bash <(curl -s https://codecov.io/bash) -F << parameters.package-path >> -t ${CODECOV_TOKEN}
 
 jobs:
   soql-builder-ui:
