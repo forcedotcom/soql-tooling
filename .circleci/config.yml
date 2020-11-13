@@ -8,7 +8,6 @@ variables:
   - &node-build-image
     - image: circleci/node:12.16.1-stretch
 
-
 jobs:
   soql-builder-ui:
     docker: *node-build-image
