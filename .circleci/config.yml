@@ -139,7 +139,7 @@ jobs:
           package-path: << parameters.package >>
           publish-token-variable: NPM_TOKEN
           args:
-            --dry-run --access public
+            --access public
       - slack/notify:
           channel: web-tools-bot
           title: "Published: ${CIRCLE_USERNAME}'s published ${CIRCLE_TAG} to npm"
