@@ -16,19 +16,20 @@ variables:
   - &tag-language-server /^language-server-v(\d)+(\.(\d)+)+$/
   - &package-language-server 'packages/language-server'
 
-
-jobs:
-  soql-builder-ui:
-    docker: *node-build-image
-    environment:
-      PACKAGE_PATH: *package-soql-builder-ui
+commands:
+  checkout-install-build:
+    description: 'Runs the standard checkout, cache, install, and build commands'
+    parameters:
+      package-name:
+        type: string
+        default: ''
     steps:
       - checkout
       - restore_cache:
-          key: dependency-cache-{{ checksum "yarn.lock" }}
+          key: dependency-cache-{{ checksum "package.json" }}
       - run: yarn
       - save_cache:
-          key: dependency-cache-{{ checksum "yarn.lock" }}
+          key: dependency-cache-{{ checksum "package.json" }}
           paths:
             - ./node_modules
       - run:
@@ -36,6 +37,15 @@ jobs:
           command: |
             echo 'Build all packages for linked dependencies'
             yarn run build
+
+jobs:
+  soql-builder-ui:
+    docker: *node-build-image
+    environment:
+      PACKAGE_PATH: *package-soql-builder-ui
+    steps:
+      - checkout-install-build:
+          package-name: "Soql Builder UI"
       - run:
           name: Run SOQL builder UI Unit Tests
           command: |
@@ -58,10 +68,10 @@ jobs:
     steps:
       - checkout
       - restore_cache:
-          key: dependency-cache-{{ checksum "yarn.lock" }}
+          key: dependency-cache-{{ checksum "package.json" }}
       - run: yarn
       - save_cache:
-          key: dependency-cache-{{ checksum "yarn.lock" }}
+          key: dependency-cache-{{ checksum "package.json" }}
           paths:
             - ./node_modules
       - run:
@@ -91,10 +101,10 @@ jobs:
     steps:
       - checkout
       - restore_cache:
-          key: dependency-cache-{{ checksum "yarn.lock" }}
+          key: dependency-cache-{{ checksum "package.json" }}
       - run: yarn
       - save_cache:
-          key: dependency-cache-{{ checksum "yarn.lock" }}
+          key: dependency-cache-{{ checksum "package.json" }}
           paths:
             - ./node_modules
       - run:
@@ -124,10 +134,10 @@ jobs:
     steps:
       - checkout
       - restore_cache:
-          key: dependency-cache-{{ checksum "yarn.lock" }}
+          key: dependency-cache-{{ checksum "package.json" }}
       - run: yarn
       - save_cache:
-          key: dependency-cache-{{ checksum "yarn.lock" }}
+          key: dependency-cache-{{ checksum "package.json" }}
           paths:
             - ./node_modules
       - persist_to_workspace:
@@ -203,6 +213,10 @@ workflows:
             tags:
               only: *tag-soql-data-view
       - notify-slack-build:
+          # REMOVE BEFORE MERGE
+          filters:
+            branches:
+              ignore: /.*/
           requires:
             - soql-builder-ui
             - language-server
