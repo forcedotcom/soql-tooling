@@ -39,14 +39,10 @@ commands:
       package-path:
         type: string
         default: ""
-      package-name:
-        type: string
-        default: ""
     steps:
       - run:
-          name: Run << parameters.package-name >> Unit Tests
+          name: Run Unit Tests
           command: |
-            echo 'Run << parameters.package-name >> Unit Tests'
             cd <<parameters.package-path>>
             yarn run test:unit:coverage
       - run:
@@ -56,12 +52,10 @@ commands:
 jobs:
   soql-builder-ui:
     docker: *node-build-image
-    environment:
-      PACKAGE_PATH: *package-soql-builder-ui
     steps:
       - checkout-install-build
       - test-and-coverage:
-          package-name: 'soql-builder-ui'
+          name: Soql Builder UI
           package-path: *package-soql-builder-ui
       - persist_to_workspace:
           root: .
@@ -71,19 +65,11 @@ jobs:
 
   language-server:
     docker: *node-build-image
-    environment:
-      PACKAGE_PATH: *package-language-server
     steps:
       - checkout-install-build
-      - run:
-          name: 'Language Server: Run LWC Unit Tests'
-          command: |
-            echo 'Language Server: Run LWC Unit Tests'
-            cd $PACKAGE_PATH
-            yarn run test:unit:coverage
-      - run:
-          name: Upload coverage report to Codecov
-          command: bash <(curl -s https://codecov.io/bash) -F language-server -t ${CODECOV_TOKEN}
+      - test-and-coverage:
+          name: Language Server
+          package-path: *package-language-server
       - persist_to_workspace:
           root: .
           paths:
@@ -92,19 +78,11 @@ jobs:
 
   soql-model:
     docker: *node-build-image
-    environment:
-      PACKAGE_PATH: *package-soql-model
     steps:
       - checkout-install-build
-      - run:
-          name: 'Run SOQL Model Server Unit Tests'
-          command: |
-            echo 'Run SOQL Model Server Unit Tests'
-            cd $PACKAGE_PATH
-            yarn run test:unit:coverage
-      - run:
-          name: Upload coverage report to Codecov
-          command: bash <(curl -s https://codecov.io/bash) -F soql-model -t ${CODECOV_TOKEN}
+      - test-and-coverage:
+          name: Language Server
+          package-path: *package-soql-model
       - persist_to_workspace:
           root: .
           paths:
@@ -113,8 +91,6 @@ jobs:
 
   soql-data-view:
     docker: *node-build-image
-    environment:
-      PACKAGE_PATH: *package-soql-data-view
     steps:
       - checkout-install-build
       - persist_to_workspace:
@@ -147,7 +123,7 @@ jobs:
       - attach_workspace:
           at: .
       - run:
-          name: 'Publishing To Npm'
+          name: 'Publishing << parameters.package >> To Npm'
           command: |
             echo <<parameters.package>>
       - npm-publisher/publish-from-package-version:
