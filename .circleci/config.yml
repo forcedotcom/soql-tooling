@@ -55,7 +55,6 @@ jobs:
     steps:
       - checkout-install-build
       - test-and-coverage:
-          name: Soql Builder UI
           package-path: *package-soql-builder-ui
       - persist_to_workspace:
           root: .
@@ -68,7 +67,6 @@ jobs:
     steps:
       - checkout-install-build
       - test-and-coverage:
-          name: Language Server
           package-path: *package-language-server
       - persist_to_workspace:
           root: .
@@ -81,7 +79,6 @@ jobs:
     steps:
       - checkout-install-build
       - test-and-coverage:
-          name: Language Server
           package-path: *package-soql-model
       - persist_to_workspace:
           root: .
