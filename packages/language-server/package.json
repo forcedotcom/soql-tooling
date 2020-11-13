@@ -17,6 +17,7 @@
   },
   "dependencies": {
     "antlr4": "4.8.0",
+    "debounce": "^1.2.0",
     "vscode-languageserver": "6.1.1",
     "vscode-languageserver-textdocument": "1.0.1",
     "@salesforce/soql-parser": "file:../../Dependencies/soql-parser-0.16.0.tgz"
@@ -25,6 +26,7 @@
     "@babel/core": "^7.12.3",
     "@babel/template": "^7.10.4",
     "@types/antlr4": "4.7.2",
+    "@types/debounce": "^1.2.0",
     "@types/jest": "22.2.3",
     "jest": "26.1.0",
     "ts-jest": "26.1.3"
