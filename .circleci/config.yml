@@ -7,12 +7,21 @@ orbs:
 variables:
   - &node-build-image
     - image: circleci/node:12.16.1-stretch
+  - &tag-soql-model /^soql-model-v(\d)+(\.(\d)+)+$/
+  - &package-soql-model 'packages/soql-model'
+  - &tag-soql-builder-ui /^soql-builder-ui-v(\d)+(\.(\d)+)+$/
+  - &package-soql-builder-ui 'packages/soql-builder-ui'
+  - &tag-soql-data-view /^soql-data-view-v(\d)+(\.(\d)+)+$/
+  - &package-soql-data-view 'packages/soql-data-view'
+  - &tag-language-server /^language-server-v(\d)+(\.(\d)+)+$/
+  - &package-language-server 'packages/language-server'
+
 
 jobs:
   soql-builder-ui:
     docker: *node-build-image
     environment:
-      PACKAGE_PATH: 'packages/soql-builder-ui'
+      PACKAGE_PATH: *package-soql-builder-ui
     steps:
       - checkout
       - restore_cache:
@@ -39,13 +48,13 @@ jobs:
       - persist_to_workspace:
           root: .
           paths:
-            - packages/soql-builder-ui
+            - *package-soql-builder-ui
             - Dependencies
 
   language-server:
     docker: *node-build-image
     environment:
-      PACKAGE_PATH: 'packages/language-server'
+      PACKAGE_PATH: *package-language-server
     steps:
       - checkout
       - restore_cache:
@@ -72,13 +81,13 @@ jobs:
       - persist_to_workspace:
           root: .
           paths:
-            - packages/language-server
+            - *package-language-server
             - Dependencies
 
   soql-model:
     docker: *node-build-image
     environment:
-      PACKAGE_PATH: 'packages/soql-model'
+      PACKAGE_PATH: *package-soql-model
     steps:
       - checkout
       - restore_cache:
@@ -105,13 +114,13 @@ jobs:
       - persist_to_workspace:
           root: .
           paths:
-            - packages/soql-model
+            - *package-soql-model
             - Dependencies
 
   soql-data-view:
     docker: *node-build-image
     environment:
-      PACKAGE_PATH: 'packages/soql-data-view'
+      PACKAGE_PATH: *package-soql-data-view
     steps:
       - checkout
       - restore_cache:
@@ -124,7 +133,7 @@ jobs:
       - persist_to_workspace:
           root: .
           paths:
-            - packages/soql-data-view
+            - *package-soql-data-view
             - Dependencies
 
   notify-slack-build:
@@ -177,22 +186,22 @@ workflows:
       - soql-builder-ui:
           filters:
             tags:
-              only: /^soql-builder-ui-v(\d)+(\.(\d)+)+$/
+              only: *tag-soql-builder-ui
       # ---- runs on all branches and tag: language-server-vX.X.X ----
       - language-server:
           filters:
             tags:
-              only: /^language-server-v(\d)+(\.(\d)+)+$/
+              only: *tag-language-server
       # ---- runs on all branches and tag: soql-model-vX.X.X ----
       - soql-model:
           filters:
             tags:
-              only: /^soql-model-v(\d)+(\.(\d)+)+$/
+              only: *tag-soql-model
       # ---- runs on all branches and tag: soql-model-vX.X.X ----
       - soql-data-view:
           filters:
             tags:
-              only: /^soql-data-view-v(\d)+(\.(\d)+)+$/
+              only: *tag-soql-data-view
       - notify-slack-build:
           requires:
             - soql-builder-ui
@@ -202,47 +211,47 @@ workflows:
       - publish-to-npm:
           name: 'Publish Soql Model'
           package:
-            packages/soql-model
+            *package-soql-model
           filters:
             branches:
               ignore: /.*/
             tags:
-              only: /^soql-model-v(\d)+(\.(\d)+)+$/
+              only: *tag-soql-model
           requires:
             - soql-model
       # ---- Publish Soql Builder UI - runs on tag: soql-builder-ui-vX.X.X ----
       - publish-to-npm:
           name: 'Publish Soql Builder UI'
           package:
-            packages/soql-builder-ui
+            *package-soql-builder-ui
           filters:
             branches:
               ignore: /.*/
             tags:
-              only: /^soql-builder-ui-v(\d)+(\.(\d)+)+$/
+              only: *tag-soql-builder-ui
           requires:
             - soql-builder-ui
       # Publish Language Server - runs on tag: language-server-vX.X.X ----
       - publish-to-npm:
           name: 'Publish Language Server'
           package:
-            packages/language-server
+            *package-language-server
           filters:
             branches:
               ignore: /.*/
             tags:
-              only: /^language-server-v(\d)+(\.(\d)+)+$/
+              only: *tag-language-server
           requires:
             - language-server
       # Publish Soql Data Viewer - runs on tag: data-view-vX.X.X ----
       - publish-to-npm:
           name: 'Publish Soql Data Viewer'
           package:
-            packages/soql-data-view
+            *package-soql-data-view
           filters:
             branches:
               ignore: /.*/
             tags:
-              only: /^soql-data-view-v(\d)+(\.(\d)+)+$/
+              only: *tag-soql-data-view
           requires:
             - soql-data-view
