@@ -1,0 +1,40 @@
+<!--
+  Copyright (c) 2020, salesforce.com, inc.
+  All rights reserved.
+  Licensed under the BSD 3-Clause license.
+  For full license text, see LICENSE.txt file in the repo root or https://opensource.org/licenses/BSD-3-Clause
+
+ -->
+<template>
+  <div class="section-container">
+    <div class="section_label-container">
+      <!-- i18n -->
+      <label>Filter</label>
+    </div>
+    <div class="section_selection-container">
+      <div class="group__filter-header">
+        <p>Field</p>
+        <p>Operator</p>
+        <p>Criteria</p>
+        <div class="group__join">
+          <label><input type="radio" />AND</label>
+          <label><input type="radio" />OR</label>
+        </div>
+      </div>
+      <div class="group__filter-modifiers">
+        <select name="fields" id="filter-fields">
+          <option value="" class="placeholder" defualt>Select fields...</option>
+          <option value="Account">Account</option>
+        </select>
+        <select name="operator" id="filter-operator">
+          <option value="equal">=</option>
+          <option value="not_equal">!=</option>
+          <option value="greater">></option>
+        </select>
+        <input name="criteria" type="text" id="filter-criteria" />
+        <span class="pointer"> X </span>
+      </div>
+      <button>Add</button>
+    </div>
+  </div>
+</template>
