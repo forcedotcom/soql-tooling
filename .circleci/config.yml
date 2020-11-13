@@ -210,3 +210,13 @@ workflows:
               only: /^language-server-v(\d)+(\.(\d)+)+$/
           requires:
             - language-server
+      # Publish Soql Data Viewer - runs on tag: data-view-vX.X.X ----
+      - publish-to-npm:
+          name: 'Publish Soql Data Viewer'
+          package:
+            packages/soql-data-view
+          filters:
+            branches:
+              ignore: /.*/
+            tags:
+              only: /^soql-data-view-v(\d)+(\.(\d)+)+$/
