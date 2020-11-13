@@ -108,6 +108,25 @@ jobs:
             - packages/soql-model
             - Dependencies
 
+  soql-data-view:
+    docker: *node-build-image
+    environment:
+      PACKAGE_PATH: 'packages/soql-data-view'
+    steps:
+      - checkout
+      - restore_cache:
+          key: dependency-cache-{{ checksum "yarn.lock" }}
+      - run: yarn
+      - save_cache:
+          key: dependency-cache-{{ checksum "yarn.lock" }}
+          paths:
+            - ./node_modules
+      - persist_to_workspace:
+          root: .
+          paths:
+            - packages/soql-data-view
+            - Dependencies
+
   notify-slack-build:
     docker: *node-build-image
     steps:
@@ -169,6 +188,11 @@ workflows:
           filters:
             tags:
               only: /^soql-model-v(\d)+(\.(\d)+)+$/
+      # ---- runs on all branches and tag: soql-model-vX.X.X ----
+      - soql-data-view:
+          filters:
+            tags:
+              only: /^soql-data-view-v(\d)+(\.(\d)+)+$/
       - notify-slack-build:
           requires:
             - soql-builder-ui
@@ -220,3 +244,5 @@ workflows:
               ignore: /.*/
             tags:
               only: /^soql-data-view-v(\d)+(\.(\d)+)+$/
+          requires:
+            - soql-data-view
