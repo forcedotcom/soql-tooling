@@ -19,10 +19,6 @@ variables:
 commands:
   checkout-install-build:
     description: 'Runs the standard checkout, cache, install, and build commands'
-    parameters:
-      package-name:
-        type: string
-        default: ''
     steps:
       - checkout
       - restore_cache:
@@ -37,6 +33,25 @@ commands:
           command: |
             echo 'Build all packages for linked dependencies'
             yarn run build
+  test-and-coverage:
+    description: 'Runs the standard test script and code coverage upload'
+    parameters:
+      package-path:
+        type: string
+        default: ""
+      package-name:
+        type: string
+        default: ""
+    steps:
+      - run:
+          name: Run << parameters.package-name >> Unit Tests
+          command: |
+            echo 'Run << parameters.package-name >> Unit Tests'
+            cd <<parameters.package-path>>
+            yarn run test:unit:coverage
+      - run:
+          name: Upload coverage report to Codecov
+          command: bash <(curl -s https://codecov.io/bash) -F << parameters.package-name >> -t ${CODECOV_TOKEN}
 
 jobs:
   soql-builder-ui:
@@ -44,17 +59,10 @@ jobs:
     environment:
       PACKAGE_PATH: *package-soql-builder-ui
     steps:
-      - checkout-install-build:
-          package-name: "Soql Builder UI"
-      - run:
-          name: Run SOQL builder UI Unit Tests
-          command: |
-            echo 'Run SOQL builder UI Unit Tests'
-            cd $PACKAGE_PATH
-            yarn run test:unit:coverage
-      - run:
-          name: Upload coverage report to Codecov
-          command: bash <(curl -s https://codecov.io/bash) -F soql-builder-ui -t ${CODECOV_TOKEN}
+      - checkout-install-build
+      - test-and-coverage:
+          package-name: 'soql-builder-ui'
+          package-path: *package-soql-builder-ui
       - persist_to_workspace:
           root: .
           paths:
@@ -66,19 +74,7 @@ jobs:
     environment:
       PACKAGE_PATH: *package-language-server
     steps:
-      - checkout
-      - restore_cache:
-          key: dependency-cache-{{ checksum "package.json" }}
-      - run: yarn
-      - save_cache:
-          key: dependency-cache-{{ checksum "package.json" }}
-          paths:
-            - ./node_modules
-      - run:
-          name: Build Packages
-          command: |
-            echo 'Build all packages for linked dependencies'
-            yarn run build
+      - checkout-install-build
       - run:
           name: 'Language Server: Run LWC Unit Tests'
           command: |
@@ -99,19 +95,7 @@ jobs:
     environment:
       PACKAGE_PATH: *package-soql-model
     steps:
-      - checkout
-      - restore_cache:
-          key: dependency-cache-{{ checksum "package.json" }}
-      - run: yarn
-      - save_cache:
-          key: dependency-cache-{{ checksum "package.json" }}
-          paths:
-            - ./node_modules
-      - run:
-          name: Build Packages
-          command: |
-            echo 'Build all packages for linked dependencies'
-            yarn run build
+      - checkout-install-build
       - run:
           name: 'Run SOQL Model Server Unit Tests'
           command: |
@@ -132,14 +116,7 @@ jobs:
     environment:
       PACKAGE_PATH: *package-soql-data-view
     steps:
-      - checkout
-      - restore_cache:
-          key: dependency-cache-{{ checksum "package.json" }}
-      - run: yarn
-      - save_cache:
-          key: dependency-cache-{{ checksum "package.json" }}
-          paths:
-            - ./node_modules
+      - checkout-install-build
       - persist_to_workspace:
           root: .
           paths:
