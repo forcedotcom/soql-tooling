@@ -8,6 +8,35 @@
 
 @import 'querybuilder/cssCommon';
 
-.group__filter-header {
+.header {
   display: flex;
+  justify-content: space-between;
+  min-width: var(--soql-input-width);
+  max-width: var(--soql-input-width);
+}
+
+.header__labels {
+  display: flex;
+  justify-content: space-between;
+  flex-grow: 2;
+}
+
+.header__labels p {
+  margin: 0 0.5em 0 0;
+}
+
+.header__btn--group {
+  border: 1px solid
+    var(--vscode-button-background, var(--soql-color-medium-blue));
+  border-radius: 3px;
+}
+
+.header__btn {
+  border-radius: 0;
+  color: var(--vscode-button-foreground, var(--soql-white));
+  background-color: var(
+    --vscode-button-background,
+    var(--soql-color-medium-blue)
+  );
+  cursor: pointer;
 }
