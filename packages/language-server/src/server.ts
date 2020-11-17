@@ -24,10 +24,15 @@ import { Validator } from './validator';
 let connection = createConnection(ProposedFeatures.all);
 connection.sendNotification('soql/validate', 'createConnection');
 
+let runQueryValidation: boolean;
+
 // Create a simple text document manager.
 let documents: TextDocuments<TextDocument> = new TextDocuments(TextDocument);
 
 connection.onInitialize((params: InitializeParams) => {
+  runQueryValidation =
+    params.initializationOptions?.runQueryValidation || false;
+  connection.console.log(`runQueryValidation: ${runQueryValidation}`);
   const result: InitializeResult = {
     capabilities: {
       textDocumentSync: TextDocumentSyncKind.Full, // sync full document for now
@@ -41,8 +46,8 @@ documents.onDidChangeContent(async (change) => {
   // clear syntax errors immediatly (don't wait on http call)
   connection.sendDiagnostics({ uri: change.document.uri, diagnostics });
 
-  if (diagnostics.length === 0) {
-    debounceValidateLimit0Query(change);
+  if (diagnostics.length === 0 && runQueryValidation) {
+    await runValidateLimit0Query(change);
   }
 });
 
