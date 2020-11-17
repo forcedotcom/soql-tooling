@@ -12,7 +12,7 @@
       <label>Filter</label>
     </div>
     <div class="section_selection-container">
-      <div class="header">
+      <header class="header">
         <div class="header__labels">
           <!-- i18n -->
           <p>Field</p>
@@ -23,21 +23,36 @@
           <button class="header__btn">AND</button>
           <button class="header__btn">OR</button>
         </div>
-      </div>
-      <div class="group__filter-modifiers">
-        <select name="fields" id="filter-fields">
+      </header>
+      <section class="modifier__group">
+        <select
+          class="modifier__item modifier__fields"
+          name="fields"
+          id="filter-fields"
+        >
           <option value="" class="placeholder" defualt>Select fields...</option>
           <option value="Account">Account</option>
         </select>
-        <select name="operator" id="filter-operator">
+        <select
+          class="modifier__item modifier__operator"
+          name="operator"
+          id="filter-operator"
+        >
           <option value="equal">=</option>
           <option value="not_equal">!=</option>
           <option value="greater">></option>
         </select>
-        <input name="criteria" type="text" id="filter-criteria" />
-        <span class="pointer"> X </span>
-      </div>
-      <button>Add</button>
+        <input
+          class="modifier__item modifier__criteria"
+          name="criteria"
+          type="text"
+          id="filter-criteria"
+        />
+        <span class="modifier__item pointer"> x </span>
+      </section>
+      <footer>
+        <button>Add</button>
+      </footer>
     </div>
   </div>
 </template>
