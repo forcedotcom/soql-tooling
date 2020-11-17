@@ -19,6 +19,7 @@ import {
 import { debounce } from 'debounce';
 import { TextDocument } from 'vscode-languageserver-textdocument';
 import { Validator } from './validator';
+import QueryValidationFeature from './query-validation-feature';
 
 // Create a connection for the server, using Node's IPC as a transport.
 let connection = createConnection(ProposedFeatures.all);
@@ -30,8 +31,9 @@ let runQueryValidation: boolean;
 let documents: TextDocuments<TextDocument> = new TextDocuments(TextDocument);
 
 connection.onInitialize((params: InitializeParams) => {
-  runQueryValidation =
-    params.initializationOptions?.runQueryValidation || false;
+  runQueryValidation = QueryValidationFeature.hasRunQueryValidation(
+    params.capabilities
+  );
   connection.console.log(`runQueryValidation: ${runQueryValidation}`);
   const result: InitializeResult = {
     capabilities: {

@@ -1,3 +1,5 @@
+export { default as QueryValidationFeature } from './query-validation-feature';
+
 export const enum RequestTypes {
   RunQuery = 'runQuery',
 }
