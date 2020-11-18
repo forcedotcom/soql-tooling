@@ -31,7 +31,9 @@
           id="filter-fields"
         >
           <option value="" class="placeholder" defualt>Select fields...</option>
-          <option value="Account">Account</option>
+          <template for:each={whereFields} for:item="field">
+            <option value={field} key={feild}>{field}</option>
+          </template>
         </select>
         <select
           class="modifier__item modifier__operator"

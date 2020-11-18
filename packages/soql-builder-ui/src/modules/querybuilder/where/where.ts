@@ -6,6 +6,8 @@
  *
  */
 
-import { LightningElement } from 'lwc';
+import { api, LightningElement } from 'lwc';
 
-export default class Where extends LightningElement {}
+export default class Where extends LightningElement {
+  @api whereFields: string[];
+}
