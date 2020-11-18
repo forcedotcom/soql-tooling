@@ -6,7 +6,7 @@
  *
  */
 
-import { fromJS, List, Map } from 'immutable';
+import { fromJS, List } from 'immutable';
 import { BehaviorSubject, Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { JsonMap } from '@salesforce/ts-types';
@@ -16,29 +16,7 @@ import {
   convertUiModelToSoql,
   convertSoqlToUiModel
 } from '../services/soqlUtils';
-
-// This is to satisfy TS and stay dry
-type IMap = Map<string, string | List<string>>;
-// Private immutable interface
-export interface ToolingModel extends IMap {
-  sObject: string;
-  fields: List<string>;
-  orderBy: List<Map>;
-  limit: string;
-  errors: List<Map>;
-  unsupported: string[];
-}
-// Public inteface for accessing modelService.query
-export interface ToolingModelJson extends JsonMap {
-  sObject: string;
-  fields: string[];
-  orderBy: JsonMap[];
-  limit: string;
-  errors: JsonMap[];
-  unsupported: string[];
-  originalSoqlStatement: string;
-}
-
+import { IMap, ToolingModel, ToolingModelJson, ModelProps } from './model';
 export class ToolingModelService {
   private model: BehaviorSubject<ToolingModel>;
   public query: Observable<ToolingModelJson>;
@@ -47,6 +25,7 @@ export class ToolingModelService {
     fields: [],
     orderBy: [],
     limit: '',
+    where: [],
     errors: [],
     unsupported: [],
     originalSoqlStatement: ''
@@ -78,16 +57,17 @@ export class ToolingModelService {
   }
 
   private getFields() {
-    return this.getModel().get('fields') as List<string>;
+    return this.getModel().get(ModelProps.FIELDS) as List<string>;
   }
 
   private getOrderBy() {
-    return this.getModel().get('orderBy') as List<JsonMap>;
+    return this.getModel().get(ModelProps.ORDER_BY) as List<JsonMap>;
   }
+
   // This method is destructive, will clear any selections except sObject.
   public setSObject(sObject: string) {
     const emptyModel = fromJS(ToolingModelService.toolingModelTemplate);
-    const newModelWithSelection = emptyModel.set('sObject', sObject);
+    const newModelWithSelection = emptyModel.set(ModelProps.SOBJECT, sObject);
 
     this.changeModel(newModelWithSelection);
   }
@@ -95,7 +75,7 @@ export class ToolingModelService {
   public addField(field: string) {
     const currentModel = this.getModel();
     const newModelWithAddedField = currentModel.set(
-      'fields',
+      ModelProps.FIELDS,
       this.getFields().toSet().add(field).toList()
     ) as ToolingModel;
 
@@ -105,7 +85,7 @@ export class ToolingModelService {
   public removeField(field: string) {
     const currentModel = this.getModel();
     const newModelWithFieldRemoved = currentModel.set(
-      'fields',
+      ModelProps.FIELDS,
       this.getFields().filter((item) => {
         return item !== field;
       }) as List<string>
@@ -115,7 +95,7 @@ export class ToolingModelService {
   }
 
   private hasOrderByField(field: string) {
-    return this.getOrderBy().findIndex( (item) => item.get('field') === field );
+    return this.getOrderBy().findIndex((item) => item.get('field') === field);
   }
 
   public addUpdateOrderByField(orderByObj: JsonMap) {
@@ -123,13 +103,14 @@ export class ToolingModelService {
     let updatedOrderBy;
     const existingIndex = this.hasOrderByField(orderByObj.field);
     if (existingIndex > -1) {
-      updatedOrderBy = this.getOrderBy().update(existingIndex, () => { return fromJS(orderByObj)});
-    }
-    else {
-      updatedOrderBy = this.getOrderBy().push(fromJS(orderByObj))
+      updatedOrderBy = this.getOrderBy().update(existingIndex, () => {
+        return fromJS(orderByObj);
+      });
+    } else {
+      updatedOrderBy = this.getOrderBy().push(fromJS(orderByObj));
     }
     const newModel = currentModel.set(
-      'orderBy',
+      ModelProps.ORDER_BY,
       updatedOrderBy
     ) as ToolingModel;
     this.changeModel(newModel);
@@ -142,7 +123,7 @@ export class ToolingModelService {
       return item.get('field') !== field;
     }) as List<JsonMap>;
     const newModelWithFieldRemoved = currentModel.set(
-      'orderBy',
+      ModelProps.ORDER_BY,
       filteredOrderBy
     ) as ToolingModel;
 
@@ -150,7 +131,7 @@ export class ToolingModelService {
   }
 
   public changeLimit(limit: string) {
-    const newLimitModel = this.getModel().set('limit', limit || '');
+    const newLimitModel = this.getModel().set(ModelProps.LIMIT, limit || '');
     this.changeModel(newLimitModel);
   }
 
