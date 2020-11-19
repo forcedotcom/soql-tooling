@@ -71,7 +71,7 @@ export default class App extends LightningElement {
   }
 
   connectedCallback() {
-    this.modelService.query.subscribe((newQuery: ToolingModelJson) => {
+    this.modelService.UIModel.subscribe((newQuery: ToolingModelJson) => {
       this.inspectErrors(newQuery.errors);
       if (this.hasUnrecoverableError === false) {
         this.loadSObjectMetadata(newQuery);
@@ -191,7 +191,7 @@ export default class App extends LightningElement {
   }
   /* ---- WHERE HANDLERS ---- */
   handleWhereSelection(e) {
-    this.modelService.upsertWhereField(e.detail);
+    // this.modelService.upsertWhereField(e.detail);
   }
 
   handleRunQuery() {

@@ -10,8 +10,11 @@ import { api, LightningElement } from 'lwc';
 
 export default class Where extends LightningElement {
   @api whereFields: string[];
+  // _local_list of where claused to render
+  // API is different than whats rendered
+  // add a phantom where group to render, only until the criteria is filled out
 
-  // TODO: we may want to throttle this with RXJS
+  // TODO: we may want to debounce this with RXJS
   // send the event target info and throttle only on text input?
   handleSelectionEvent(e) {
     e.preventDefault();
@@ -30,6 +33,7 @@ export default class Where extends LightningElement {
           field: fieldEl.value,
           operator: OperatorEl.value,
           criteria: criteriaEl.value
+          //index: update or delete
         }
       });
       this.dispatchEvent(whereSelectionEvent);

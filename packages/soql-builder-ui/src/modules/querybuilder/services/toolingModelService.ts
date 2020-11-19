@@ -18,8 +18,8 @@ import {
 } from '../services/soqlUtils';
 import { IMap, ToolingModel, ToolingModelJson, ModelProps } from './model';
 export class ToolingModelService {
-  private model: BehaviorSubject<ToolingModel>;
-  public query: Observable<ToolingModelJson>;
+  private immutableModel: BehaviorSubject<ToolingModel>;
+  public UIModel: Observable<ToolingModelJson>;
   public static toolingModelTemplate: ToolingModelJson = {
     sObject: '',
     fields: [],
@@ -34,11 +34,11 @@ export class ToolingModelService {
 
   constructor(messageService: IMessageService) {
     this.messageService = messageService;
-    this.model = new BehaviorSubject(
+    this.immutableModel = new BehaviorSubject(
       fromJS(ToolingModelService.toolingModelTemplate)
     );
-    this.model.subscribe(this.saveViewState.bind(this));
-    this.query = this.model.pipe(
+    this.immutableModel.subscribe(this.saveViewState.bind(this));
+    this.UIModel = this.immutableModel.pipe(
       map((soqlQueryModel) => {
         try {
           return (soqlQueryModel as IMap).toJS();
@@ -49,11 +49,13 @@ export class ToolingModelService {
       })
     );
 
-    this.messageService.messagesToUI.subscribe(this.onMessage.bind(this));
+    this.messageService.messagesToUI.subscribe(
+      this.onIncommingMessage.bind(this)
+    );
   }
 
   public getModel(): IMap {
-    return this.model.getValue();
+    return this.immutableModel.getValue();
   }
 
   private getFields() {
@@ -101,7 +103,7 @@ export class ToolingModelService {
   private hasOrderByField(field: string) {
     return this.getOrderBy().findIndex((item) => item.get('field') === field);
   }
-
+  // this won't be needed with an index in whereFieldObj
   private hasWhereField(field: string) {
     return this.getWhere().findIndex((item) => item.get('field') === field);
   }
@@ -144,6 +146,7 @@ export class ToolingModelService {
     const existingIndex = this.hasWhereField(whereObj.field);
     if (existingIndex > -1) {
       updatedWhereField = this.getWhere().update(existingIndex, () => {
+        // pass in the index from whereObj
         return fromJS(whereObj);
       });
     } else {
@@ -162,7 +165,7 @@ export class ToolingModelService {
     this.changeModel(newLimitModel);
   }
 
-  private onMessage(event: SoqlEditorEvent) {
+  private onIncommingMessage(event: SoqlEditorEvent) {
     if (event && event.type) {
       switch (event.type) {
         case MessageType.TEXT_SOQL_CHANGED: {
@@ -171,8 +174,8 @@ export class ToolingModelService {
           soqlJSModel.originalSoqlStatement = originalSoqlStatement;
 
           const updatedModel = fromJS(soqlJSModel);
-          if (!updatedModel.equals(this.model.getValue())) {
-            this.model.next(updatedModel);
+          if (!updatedModel.equals(this.immutableModel.getValue())) {
+            this.immutableModel.next(updatedModel);
           }
           break;
         }
@@ -191,7 +194,7 @@ export class ToolingModelService {
   }
 
   private changeModel(newModel) {
-    this.model.next(newModel);
+    this.immutableModel.next(newModel);
     this.sendMessageToBackend(newModel);
   }
 
@@ -208,7 +211,7 @@ export class ToolingModelService {
   }
 
   public restoreViewState() {
-    this.model.next(this.getSavedState());
+    this.immutableModel.next(this.getSavedState());
   }
 
   private getSavedState() {
