@@ -46,7 +46,8 @@ To publish each of the modules, push a specially named tag that will trigger the
 
 Steps:
 
-1. Update the version number in the appropriate package.json to the next version you want to publish.
+1. use [npm version command](https://docs.npmjs.com/cli/v6/commands/npm-version).
+   a. each package has .npmrc with correct tag-version-prefix
 2. Push the commit to CI and verify the build.
 3. Push a tag for the version you will publish.
    a. Tag should be formatted as the package name with -vX.X.X following semver
