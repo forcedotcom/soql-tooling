@@ -72,7 +72,10 @@
           onlimitchanged={handleLimitChanged}
           class={theme}
         ></querybuilder-limit>
-        <querybuilder-where where-fields={fields}></querybuilder-where>
+        <querybuilder-where
+          where-fields={fields}
+          onwhereselection={handleWhereSelection}
+        ></querybuilder-where>
       </section>
       <section class="query-preview">
         <querybuilder-query-preview

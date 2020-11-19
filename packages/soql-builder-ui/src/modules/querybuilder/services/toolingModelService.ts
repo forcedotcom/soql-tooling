@@ -64,6 +64,10 @@ export class ToolingModelService {
     return this.getModel().get(ModelProps.ORDER_BY) as List<JsonMap>;
   }
 
+  private getWhere() {
+    return this.getModel().get(ModelProps.WHERE) as List<JsonMap>;
+  }
+
   // This method is destructive, will clear any selections except sObject.
   public setSObject(sObject: string) {
     const emptyModel = fromJS(ToolingModelService.toolingModelTemplate);
@@ -98,6 +102,10 @@ export class ToolingModelService {
     return this.getOrderBy().findIndex((item) => item.get('field') === field);
   }
 
+  private hasWhereField(field: string) {
+    return this.getWhere().findIndex((item) => item.get('field') === field);
+  }
+
   public addUpdateOrderByField(orderByObj: JsonMap) {
     const currentModel = this.getModel();
     let updatedOrderBy;
@@ -128,6 +136,25 @@ export class ToolingModelService {
     ) as ToolingModel;
 
     this.changeModel(newModelWithFieldRemoved);
+  }
+
+  public upsertWhereField(whereObj: JsonMap) {
+    const currentModel = this.getModel();
+    let updatedWhereField;
+    const existingIndex = this.hasWhereField(whereObj.field);
+    if (existingIndex > -1) {
+      updatedWhereField = this.getWhere().update(existingIndex, () => {
+        return fromJS(whereObj);
+      });
+    } else {
+      updatedWhereField = this.getWhere().push(fromJS(whereObj));
+    }
+    const newModel = currentModel.set(
+      ModelProps.WHERE,
+      updatedWhereField
+    ) as ToolingModel;
+
+    this.changeModel(newModel);
   }
 
   public changeLimit(limit: string) {

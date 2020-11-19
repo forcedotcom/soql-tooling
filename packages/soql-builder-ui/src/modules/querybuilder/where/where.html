@@ -28,17 +28,19 @@
         <select
           class="modifier__item modifier__fields"
           name="fields"
-          id="filter-fields"
+          onchange={handleSelectionEvent}
+          data-el-where-field
         >
           <option value="" class="placeholder" defualt>Select fields...</option>
           <template for:each={whereFields} for:item="field">
-            <option value={field} key={feild}>{field}</option>
+            <option key={field} value={field}>{field}</option>
           </template>
         </select>
         <select
           class="modifier__item modifier__operator"
           name="operator"
-          id="filter-operator"
+          onchange={handleSelectionEvent}
+          data-el-where-operator
         >
           <option value="=">=</option>
           <option value="!=">≠</option>
@@ -55,7 +57,8 @@
           class="modifier__item modifier__criteria"
           name="criteria"
           type="text"
-          id="filter-criteria"
+          data-el-where-criteria
+          onkeyup={handleSelectionEvent}
         />
         <span class="modifier__item pointer"> x </span>
       </section>
