@@ -47,7 +47,7 @@ describe('Tooling Model Service', () => {
     checkForDefaultQuery();
     query = undefined;
 
-    modelService.query.subscribe((val) => {
+    modelService.UIModel.subscribe((val) => {
       query = val;
     });
   });
@@ -164,7 +164,11 @@ describe('Tooling Model Service', () => {
 
     // Yet Update Field IF Direction and/or Nulls Change
     expect(query!.orderBy[0].order).toBeDefined();
-    const updatedOrderBy = { field: 'orderBy1', order: undefined, nulls: 'NULLS LAST' };
+    const updatedOrderBy = {
+      field: 'orderBy1',
+      order: undefined,
+      nulls: 'NULLS LAST'
+    };
     modelService.addUpdateOrderByField(updatedOrderBy);
     expect(query!.orderBy[0].order).not.toBeDefined();
 
