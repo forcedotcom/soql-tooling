@@ -191,6 +191,7 @@ export default class App extends LightningElement {
   }
   /* ---- WHERE HANDLERS ---- */
   handleWhereSelection(e) {
+    console.log('app.ts', e.detail);
     // this.modelService.upsertWhereField(e.detail);
   }
 

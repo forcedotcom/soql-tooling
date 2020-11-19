@@ -21,12 +21,7 @@ export default class WhereModifierGroup extends LightningElement {
     const criteriaEl = this.template.querySelector('[data-el-where-criteria]');
 
     if (fieldEl.value && OperatorEl.value) {
-      console.log('change event', {
-        field: fieldEl.value,
-        operator: OperatorEl.value,
-        criteria: criteriaEl.value
-      });
-      const whereSelectionEvent = new CustomEvent('whereselection', {
+      const modGroupSelectionEvent = new CustomEvent('modifiergroupselection', {
         detail: {
           field: fieldEl.value,
           operator: OperatorEl.value,
@@ -34,7 +29,7 @@ export default class WhereModifierGroup extends LightningElement {
           //index: for update or delete
         }
       });
-      this.dispatchEvent(whereSelectionEvent);
+      this.dispatchEvent(modGroupSelectionEvent);
     }
   }
 }
