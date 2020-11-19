@@ -10,13 +10,14 @@
 
 header.header {
   display: flex;
+  flex-direction: column;
   justify-content: space-between;
 }
 
 .header__labels {
   display: flex;
-  justify-content: space-between;
-  flex-grow: 2;
+  justify-content: space-around;
+  margin-top: 5px;
 }
 
 .header__labels p {
@@ -24,6 +25,7 @@ header.header {
 }
 
 .header__btn--group {
+  align-self: flex-start;
   border: 1px solid
     var(--vscode-button-background, var(--soql-color-medium-blue));
   border-radius: 3px;
@@ -37,34 +39,6 @@ header.header {
     var(--soql-color-medium-blue)
   );
   cursor: pointer;
-}
-
-/* TODO: use correct CSS Vars for el background, border and conainer background */
-section.modifier__group {
-  display: flex;
-  align-items: center;
-  margin-top: 5px;
-  border: 1px solid
-    var(--vscode-list-inactiveSelectionBackground, var(--soql-color-light-grey));
-  border-radius: 3px;
-  /* use vars */
-  background-color: rgba(0, 112, 210, 0.171);
-}
-
-.modifier__item {
-  margin: 2px;
-}
-
-.modifier__fields {
-  flex-grow: 2;
-}
-
-.modifier__operator {
-  flex-grow: 1;
-}
-
-.modifier__criteria {
-  flex-grow: 1;
 }
 
 footer {

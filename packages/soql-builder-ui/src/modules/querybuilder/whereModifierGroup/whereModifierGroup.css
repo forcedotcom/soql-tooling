@@ -1,0 +1,41 @@
+/*
+ *  Copyright (c) 2020, salesforce.com, inc.
+ *  All rights reserved.
+ *  Licensed under the BSD 3-Clause license.
+ *  For full license text, see LICENSE.txt file in the repo root or https://opensource.org/licenses/BSD-3-Clause
+ *
+ */
+
+@import 'querybuilder/cssCommon';
+/* TODO: may need to set a min width for the group to prevent resizing with fields */
+/* TODO: use correct CSS Vars for el background, border and conainer background */
+section.modifier__group {
+  display: flex;
+  align-items: center;
+  margin-top: 5px;
+  border: 1px solid
+    var(--vscode-list-inactiveSelectionBackground, var(--soql-color-light-grey));
+  border-radius: 3px;
+  /* use vars */
+  background-color: var(
+    --vscode-list-inactiveSelectionBackground,
+    var(--soql-color-medium-grey)
+  );
+  padding: 4px;
+}
+
+.modifier__item {
+  margin-right: 4px;
+}
+
+.modifier__fields {
+  flex-grow: 2;
+}
+
+.modifier__operator {
+  flex-grow: 1;
+}
+
+.modifier__criteria {
+  flex-grow: 1;
+}
