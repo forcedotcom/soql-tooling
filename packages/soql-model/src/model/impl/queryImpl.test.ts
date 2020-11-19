@@ -6,13 +6,14 @@
  */
 
 import * as Impl from '.';
+import { CompareOperator, LiteralType } from '../model';
 
 describe('QueryImpl should', () => {
   it('store query components as appropriate model objects', () => {
     const expected = {
       select: { selectExpressions: [] },
       from: { sobjectName: 'songs' },
-      where: { unmodeledSyntax: 'paint it back' },
+      where: { condition: { field: { fieldName: 'paint_it' }, operator: '=', compareValue: { type: 'STRING', value: "'black'" } } },
       with: { unmodeledSyntax: 'gimme shelter' },
       groupBy: { unmodeledSyntax: 'start me up' },
       orderBy: { orderByExpressions: [{ field: { fieldName: 'angie' } }] },
@@ -25,7 +26,11 @@ describe('QueryImpl should', () => {
     const actual = new Impl.QueryImpl(
       new Impl.SelectExprsImpl([]),
       new Impl.FromImpl(expected.from.sobjectName),
-      new Impl.UnmodeledSyntaxImpl(expected.where.unmodeledSyntax),
+      new Impl.WhereImpl(new Impl.FieldCompareConditionImpl(
+        new Impl.FieldRefImpl(expected.where.condition.field.fieldName),
+        CompareOperator.EQ,
+        new Impl.LiteralImpl(LiteralType.String, expected.where.condition.compareValue.value)
+      )),
       new Impl.UnmodeledSyntaxImpl(expected.with.unmodeledSyntax),
       new Impl.UnmodeledSyntaxImpl(expected.groupBy.unmodeledSyntax),
       new Impl.OrderByImpl([new Impl.OrderByExpressionImpl(new Impl.FieldRefImpl(expected.orderBy.orderByExpressions[0].field.fieldName))]),
@@ -38,11 +43,15 @@ describe('QueryImpl should', () => {
     expect(actual).toEqual(expected);
   });
   it('return query string, one line per clause with all but SELECT clause indented for toSoqlSyntax()', () => {
-    const expected = 'SELECT \n' + '  FROM songs\n' + '  paint it black\n';
+    const expected = 'SELECT \n' + '  FROM songs\n' + "  WHERE paint_it = 'black'\n";
     const actual = new Impl.QueryImpl(
       new Impl.SelectExprsImpl([]),
       new Impl.FromImpl('songs'),
-      new Impl.UnmodeledSyntaxImpl('paint it black')
+      new Impl.WhereImpl(new Impl.FieldCompareConditionImpl(
+        new Impl.FieldRefImpl('paint_it'),
+        CompareOperator.EQ,
+        new Impl.LiteralImpl(LiteralType.String, "'black'")
+      ))
     ).toSoqlSyntax();
     expect(actual).toEqual(expected);
   });

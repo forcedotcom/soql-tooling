@@ -5,6 +5,9 @@
  * For full license text, see LICENSE.txt file in the repo root or https://opensource.org/licenses/BSD-3-Clause
  */
 
+import * as Impl from './impl';
+import { AndOr, Condition } from './model';
+
 export namespace SoqlModelUtils {
   export function containsUnmodeledSyntax(model: object): boolean {
     if ('unmodeledSyntax' in model) {
@@ -40,5 +43,37 @@ export namespace SoqlModelUtils {
       }
     }
     return false;
+  }
+
+  export function isSimpleGroup(condition: Condition, andOr?: AndOr): boolean {
+    // a simple group is a condition that can be expressed as an ANY or ALL group of conditions
+    // ANY: simple conditions all joined by OR
+    // ALL: simple conditions all joined by AND
+    condition = stripNesting(condition);
+    if (condition instanceof Impl.AndOrConditionImpl) {
+      if (!andOr) {
+        andOr = condition.andOr;
+      }
+      return condition.andOr === andOr
+        && isSimpleGroup(condition.leftCondition, andOr)
+        && isSimpleGroup(condition.rightCondition, andOr);
+    }
+    return isSimpleCondition(condition);
+  }
+
+  export function isSimpleCondition(condition: Condition): boolean {
+    condition = stripNesting(condition);
+    return condition instanceof Impl.FieldCompareConditionImpl
+      || condition instanceof Impl.LikeConditionImpl
+      || condition instanceof Impl.IncludesConditionImpl
+      || condition instanceof Impl.InListConditionImpl
+      || condition instanceof Impl.UnmodeledSyntaxImpl;
+  }
+
+  function stripNesting(condition: Condition): Condition {
+    while (condition instanceof Impl.NestedConditionImpl) {
+      condition = (condition as Impl.NestedConditionImpl).condition;
+    }
+    return condition;
   }
 }
