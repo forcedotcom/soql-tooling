@@ -20,7 +20,6 @@ FOR BUGS RELATED TO THE SALESFORCE CLI, please use this repository: https://gith
 
 **SFDX CLI Version**:
 
-**Browser Version (if applicable)**:
 
 ### Summary
 
