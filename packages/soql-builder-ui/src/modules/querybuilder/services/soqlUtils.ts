@@ -37,6 +37,20 @@ export function convertSoqlModelToUiModel(
       : undefined;
 
   const sObject = queryModel.from && queryModel.from.sobjectName;
+
+  let where;
+  if (queryModel.where) {
+    const condition = queryModel.where.condition;
+    where = [
+      {
+        field: condition.field.fieldName,
+        operator: condition.operator,
+        criteria: condition.compareValue.value,
+        index: 0
+      }
+    ];
+  }
+
   const orderBy = queryModel.orderBy
     ? queryModel.orderBy.orderByExpressions
         // TODO: Deal with empty OrderBy.  returns unmodelled syntax.
@@ -49,6 +63,7 @@ export function convertSoqlModelToUiModel(
           };
         })
     : [];
+
   const limit = queryModel.limit
     ? queryModel.limit.limit.toString()
     : undefined;
@@ -71,6 +86,7 @@ export function convertSoqlModelToUiModel(
   const toolingModelTemplate: ToolingModelJson = {
     sObject: sObject || '',
     fields: fields || [],
+    where: where || [],
     orderBy: orderBy || [],
     limit: limit || '',
     errors: errors || [],
@@ -92,6 +108,24 @@ function convertUiModelToSoqlModel(uiModel: ToolingModelJson): Soql.Query {
   const selectExprs = uiModel.fields.map(
     (field) => new Impl.FieldSelectionImpl(new Impl.FieldRefImpl(field))
   );
+
+  // uiModel.where = [
+  //   {
+  //     field: 'Name',
+  //     operator: 'starts with', needs to have %
+  //     criteria: "'Ali G'"
+  //   }
+  // ];
+
+  const whereExprs = uiModel.where.map(
+    (where) =>
+      new Impl.FieldCompareConditionImpl(
+        new Impl.FieldRefImpl(where.field),
+        where.operator,
+        new Impl.LiteralImpl(Soql.LiteralType.String, `'${where.criteria}'`)
+      )
+  );
+
   const orderByExprs = uiModel.orderBy.map(
     (orderBy) =>
       new Impl.OrderByExpressionImpl(
@@ -100,6 +134,8 @@ function convertUiModelToSoqlModel(uiModel: ToolingModelJson): Soql.Query {
         orderBy.nulls
       )
   );
+  const where =
+    whereExprs.length > 0 ? new Impl.WhereImpl(whereExprs[0]) : undefined;
   const orderBy =
     orderByExprs.length > 0 ? new Impl.OrderByImpl(orderByExprs) : undefined;
   const limit =
@@ -107,12 +143,13 @@ function convertUiModelToSoqlModel(uiModel: ToolingModelJson): Soql.Query {
   const queryModel = new Impl.QueryImpl(
     new Impl.SelectExprsImpl(selectExprs),
     new Impl.FromImpl(uiModel.sObject),
-    undefined,
+    where,
     undefined,
     undefined,
     orderBy,
     limit
   );
+  console.log('Query Model', queryModel);
   return queryModel;
 }
 

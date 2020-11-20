@@ -103,9 +103,9 @@ export class ToolingModelService {
   private hasOrderByField(field: string) {
     return this.getOrderBy().findIndex((item) => item.get('field') === field);
   }
-  // this won't be needed with an index in whereFieldObj
-  private hasWhereField(field: string) {
-    return this.getWhere().findIndex((item) => item.get('field') === field);
+
+  private hasWhereField(index: string) {
+    return this.getWhere().find((item) => item.get('index') === index);
   }
 
   public addUpdateOrderByField(orderByObj: JsonMap) {
@@ -143,9 +143,9 @@ export class ToolingModelService {
   public upsertWhereField(whereObj: JsonMap) {
     const currentModel = this.getModel();
     let updatedWhereField;
-    const existingIndex = this.hasWhereField(whereObj.field);
-    if (existingIndex > -1) {
-      updatedWhereField = this.getWhere().update(existingIndex, () => {
+    const existingExpr = this.hasWhereField(whereObj.index);
+    if (existingExpr) {
+      updatedWhereField = this.getWhere().update(whereObj.index, () => {
         // pass in the index from whereObj
         return fromJS(whereObj);
       });

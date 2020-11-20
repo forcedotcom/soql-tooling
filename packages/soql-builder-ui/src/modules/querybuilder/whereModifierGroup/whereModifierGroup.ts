@@ -11,7 +11,7 @@ export default class WhereModifierGroup extends LightningElement {
   @api allFields;
   @api operator;
   @api criteria;
-  index;
+  index = 0;
 
   // TODO: we may want to debounce this with RXJS
   handleSelectionEvent(e) {
@@ -25,8 +25,8 @@ export default class WhereModifierGroup extends LightningElement {
         detail: {
           field: fieldEl.value,
           operator: OperatorEl.value,
-          criteria: criteriaEl.value
-          //index: for update or delete
+          criteria: criteriaEl.value,
+          index: this.index
         }
       });
       this.dispatchEvent(modGroupSelectionEvent);
