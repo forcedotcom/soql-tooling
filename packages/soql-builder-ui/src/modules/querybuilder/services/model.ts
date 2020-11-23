@@ -37,7 +37,7 @@ export interface ToolingModelJson extends JsonMap {
   fields: string[];
   orderBy: JsonMap[];
   limit: string;
-  where: JsonMap[];
+  where: { conditions: JsonMap; andOr: string };
   errors: JsonMap[];
   unsupported: string[];
   originalSoqlStatement: string;

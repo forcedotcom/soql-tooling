@@ -39,16 +39,19 @@ export function convertSoqlModelToUiModel(
   const sObject = queryModel.from && queryModel.from.sobjectName;
 
   let where;
-  if (queryModel.where) {
-    const condition = queryModel.where.condition;
-    where = [
-      {
-        field: condition.field.fieldName,
-        operator: condition.operator,
-        criteria: condition.compareValue.value,
-        index: 0
-      }
-    ];
+  if (queryModel.where && queryModel.where.condition) {
+    const conditionsObj = queryModel.where.condition;
+    where = SoqlModelUtils.simpleGroupToArray(conditionsObj);
+    where.conditions = where.conditions
+      .filter((condition) => !SoqlModelUtils.containsUnmodeledSyntax(condition))
+      .map((expression, index) => {
+        return {
+          field: expression.field.fieldName,
+          operator: expression.operator,
+          criteria: expression.compareValue,
+          index
+        };
+      });
   }
 
   const orderBy = queryModel.orderBy
@@ -86,7 +89,7 @@ export function convertSoqlModelToUiModel(
   const toolingModelTemplate: ToolingModelJson = {
     sObject: sObject || '',
     fields: fields || [],
-    where: where || [],
+    where: where || { conditions: [], andOr: undefined },
     orderBy: orderBy || [],
     limit: limit || '',
     errors: errors || [],
@@ -109,22 +112,54 @@ function convertUiModelToSoqlModel(uiModel: ToolingModelJson): Soql.Query {
     (field) => new Impl.FieldSelectionImpl(new Impl.FieldRefImpl(field))
   );
 
-  // uiModel.where = [
-  //   {
-  //     field: 'Name',
-  //     operator: 'starts with', needs to have %
-  //     criteria: "'Ali G'"
-  //   }
-  // ];
+  /*   uiModel.where = [
+    {
+      field: 'Name',
+      operator: '=',
+      criteria: 'Ali G'
+    },
+    {
+      field: 'Name',
+      operator: '=',
+      criteria: 'Ali G'
+    },
+    {
+      field: 'Name',
+      operator: '=',
+      criteria: 'Ali G'
+    }
+  ]; */
+  let whereExprsImpl;
+  if (uiModel.where.length) {
+    const whereExprsArray = uiModel.where.map((where) => {
+      return uiModel.where.length > 1
+        ? new Impl.AndOrConditionImpl(
+            new Impl.FieldCompareConditionImpl(
+              new Impl.FieldRefImpl(where.field),
+              where.operator, // need to be dynamic
+              new Impl.LiteralImpl(
+                Soql.LiteralType.String,
+                `'${where.criteria}'`
+              ) // needs to be dynamic
+            )
+          )
+        : new Impl.FieldCompareConditionImpl(
+            new Impl.FieldRefImpl(where.field),
+            where.operator, // need to be dynamic
+            new Impl.LiteralImpl(Soql.LiteralType.String, `'${where.criteria}'`) // needs to be dynamic
+          );
+    });
 
-  const whereExprs = uiModel.where.map(
-    (where) =>
-      new Impl.FieldCompareConditionImpl(
-        new Impl.FieldRefImpl(where.field),
-        where.operator,
-        new Impl.LiteralImpl(Soql.LiteralType.String, `'${where.criteria}'`)
-      )
-  );
+    whereExprsImpl = SoqlModelUtils.arrayToSimpleGroup(
+      whereExprsArray,
+      undefined
+    );
+  }
+
+  const where =
+    whereExprsImpl && Object.keys(whereExprsImpl).length
+      ? new Impl.WhereImpl(whereExprsImpl)
+      : undefined;
 
   const orderByExprs = uiModel.orderBy.map(
     (orderBy) =>
@@ -134,8 +169,6 @@ function convertUiModelToSoqlModel(uiModel: ToolingModelJson): Soql.Query {
         orderBy.nulls
       )
   );
-  const where =
-    whereExprs.length > 0 ? new Impl.WhereImpl(whereExprs[0]) : undefined;
   const orderBy =
     orderByExprs.length > 0 ? new Impl.OrderByImpl(orderByExprs) : undefined;
   const limit =
@@ -149,7 +182,6 @@ function convertUiModelToSoqlModel(uiModel: ToolingModelJson): Soql.Query {
     orderBy,
     limit
   );
-  console.log('Query Model', queryModel);
   return queryModel;
 }
 

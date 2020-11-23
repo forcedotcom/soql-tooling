@@ -25,7 +25,7 @@ export class ToolingModelService {
     fields: [],
     orderBy: [],
     limit: '',
-    where: [],
+    where: { conditions: [], andOr: undefined },
     errors: [],
     unsupported: [],
     originalSoqlStatement: ''
@@ -66,8 +66,10 @@ export class ToolingModelService {
     return this.getModel().get(ModelProps.ORDER_BY) as List<JsonMap>;
   }
 
-  private getWhere() {
-    return this.getModel().get(ModelProps.WHERE) as List<JsonMap>;
+  private getWhereConditions() {
+    return this.getModel()
+      .get(ModelProps.WHERE)
+      .get('conditions') as List<JsonMap>;
   }
 
   // This method is destructive, will clear any selections except sObject.
@@ -105,7 +107,12 @@ export class ToolingModelService {
   }
 
   private hasWhereField(index: string) {
-    return this.getWhere().find((item) => item.get('index') === index);
+    if (this.getWhereConditions().count() > 0) {
+      return this.getWhereConditions().find(
+        (item) => item.get('index') === index
+      );
+    }
+    return false;
   }
 
   public addUpdateOrderByField(orderByObj: JsonMap) {
@@ -145,12 +152,15 @@ export class ToolingModelService {
     let updatedWhereField;
     const existingExpr = this.hasWhereField(whereObj.index);
     if (existingExpr) {
-      updatedWhereField = this.getWhere().update(whereObj.index, () => {
-        // pass in the index from whereObj
-        return fromJS(whereObj);
-      });
+      updatedWhereField = this.getWhereConditions().update(
+        whereObj.index,
+        () => {
+          // pass in the index from whereObj
+          return fromJS(whereObj);
+        }
+      );
     } else {
-      updatedWhereField = this.getWhere().push(fromJS(whereObj));
+      updatedWhereField = this.getWhereConditions().push(fromJS(whereObj));
     }
     const newModel = currentModel.set(
       ModelProps.WHERE,
