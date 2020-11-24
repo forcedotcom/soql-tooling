@@ -18,7 +18,7 @@
   },
   "dependencies": {
     "antlr4ts": "^0.5.0-alpha.3",
-    "@salesforce/soql-parser": "file:../../Dependencies/salesforce-soql-parser-0.18.0.tgz"
+    "@salesforce/soql-parser": "file:../../Dependencies/salesforce-soql-parser-0.19.0.tgz"
   },
   "devDependencies": {
     "@types/jest": "22.2.3",

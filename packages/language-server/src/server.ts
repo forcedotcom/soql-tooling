@@ -15,11 +15,14 @@ import {
   TextDocumentChangeEvent,
   InitializeResult,
   Diagnostic,
+  TextDocumentPositionParams,
+  CompletionItem,
 } from 'vscode-languageserver';
 import { debounce } from 'debounce';
 import { TextDocument } from 'vscode-languageserver-textdocument';
 import { Validator } from './validator';
 import QueryValidationFeature from './query-validation-feature';
+import { completionsFor } from './completion';
 
 // Create a connection for the server, using Node's IPC as a transport.
 let connection = createConnection(ProposedFeatures.all);
@@ -38,6 +41,10 @@ connection.onInitialize((params: InitializeParams) => {
   const result: InitializeResult = {
     capabilities: {
       textDocumentSync: TextDocumentSyncKind.Full, // sync full document for now
+      completionProvider: {
+        // resolveProvider: true,
+        triggerCharacters: [' '],
+      },
     },
   };
   return result;
@@ -66,6 +73,19 @@ async function runValidateLimit0Query(
   );
   connection.sendDiagnostics({ uri: change.document.uri, diagnostics });
 }
+
+connection.onCompletion(
+  async (request: TextDocumentPositionParams): Promise<CompletionItem[]> => {
+    const doc = documents.get(request.textDocument.uri);
+    if (!doc) return [];
+
+    return completionsFor(
+      doc.getText(),
+      request.position.line + 1,
+      request.position.character + 1
+    );
+  }
+);
 
 documents.listen(connection);
 
