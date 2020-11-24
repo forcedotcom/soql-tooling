@@ -45,9 +45,14 @@ export function convertSoqlModelToUiModel(
     where.conditions = where.conditions
       .filter((condition) => !SoqlModelUtils.containsUnmodeledSyntax(condition))
       .map((expression, index) => {
+        const operator = SoqlModelUtils.getKeyByValue(
+          Soql.CompareOperator,
+          expression.operator
+        );
+
         return {
           field: expression.field.fieldName,
-          operator: expression.operator,
+          operator: operator,
           criteria: expression.compareValue,
           index
         };
@@ -136,24 +141,18 @@ function convertUiModelToSoqlModel(uiModel: ToolingModelJson): Soql.Query {
         ? new Impl.AndOrConditionImpl(
             new Impl.FieldCompareConditionImpl(
               new Impl.FieldRefImpl(where.field),
-              where.operator, // need to be dynamic
-              new Impl.LiteralImpl(
-                Soql.LiteralType.String,
-                `'${where.criteria}'`
-              ) // needs to be dynamic
+              Soql.CompareOperator[where.operator],
+              new Impl.LiteralImpl(Soql.LiteralType.String, `${where.criteria}`) // needs to be dynamic
             )
           )
         : new Impl.FieldCompareConditionImpl(
             new Impl.FieldRefImpl(where.field),
-            where.operator, // need to be dynamic
-            new Impl.LiteralImpl(Soql.LiteralType.String, `'${where.criteria}'`) // needs to be dynamic
+            Soql.CompareOperator[where.operator],
+            new Impl.LiteralImpl(Soql.LiteralType.String, `${where.criteria}`) // needs to be dynamic
           );
     });
 
-    whereExprsImpl = SoqlModelUtils.arrayToSimpleGroup(
-      whereExprsArray,
-      undefined
-    );
+    whereExprsImpl = SoqlModelUtils.arrayToSimpleGroup(whereExprsArray, 'AND');
   }
 
   const where =

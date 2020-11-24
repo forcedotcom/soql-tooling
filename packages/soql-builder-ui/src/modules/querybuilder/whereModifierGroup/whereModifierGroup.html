@@ -1,41 +1,52 @@
 <template>
   <!-- key is index in the where model -->
-  <section class="modifier__group">
+  <div class="modifier__group">
+    <!-- FIELDS -->
     <select
       class="modifier__item modifier__fields"
       name="fields"
       onchange={handleSelectionEvent}
       data-el-where-field
     >
-      <option value="" class="placeholder" defualt>Select fields...</option>
+      <template if:true={hasSelectedField}>
+        <option value={selectedField}>{selectedField}</option>
+      </template>
+      <template if:false={hasSelectedField}>
+        <option value="" class="placeholder" data-el-default-option>
+          {defaultFieldOptionText}
+        </option>
+      </template>
       <template for:each={allFields} for:item="field">
         <option key={field} value={field}>{field}</option>
       </template>
     </select>
+    <!-- OPERATORS -->
     <select
       class="modifier__item modifier__operator"
       name="operator"
       onchange={handleSelectionEvent}
       data-el-where-operator
     >
-      <option value="=">=</option>
-      <option value="!=">≠</option>
-      <option value="<">&lt;</option>
-      <option value="<=">≤</option>
-      <option value=">">&gt;</option>
-      <option value=">=">≥</option>
-      <!-- i18n -->
-      <option value="starts">starts with</option>
-      <option value="ends">ends with</option>
-      <option value="contains">contains</option>
+      <template if:true={hasSelectedOperator}>
+        <option value={_selectedOperator.value}>
+          {_selectedOperator.displayValue}
+        </option>
+      </template>
+      <template for:each={filteredOperators} for:item="operator">
+        <option key={operator.value} value={operator.value}>
+          {operator.displayValue}
+        </option>
+      </template>
     </select>
+    <!-- CRITERIA -->
     <input
       class="modifier__item modifier__criteria"
       name="criteria"
       type="text"
       data-el-where-criteria
       onkeyup={handleSelectionEvent}
+      value={criteria}
     />
     <span class="modifier__item pointer"> x </span>
-  </section>
+  </div>
 </template>

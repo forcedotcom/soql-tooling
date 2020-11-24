@@ -8,23 +8,92 @@
 import { api, LightningElement } from 'lwc';
 
 export default class WhereModifierGroup extends LightningElement {
-  @api allFields;
-  @api operator;
-  @api criteria;
-  index = 0;
+  @api allFields: string[];
+  @api selectedField: string = undefined;
+  @api selectedOperator: string;
+  @api criteria: number | string | null = null;
+  @api isLoading = false;
+  @api index;
+  operatorOptions = [
+    {
+      value: 'EQ',
+      displayValue: '='
+    },
+    {
+      value: 'NOT_EQ',
+      displayValue: '≠'
+    },
+    {
+      value: 'LT',
+      displayValue: '<'
+    },
+    {
+      value: 'LT_EQ',
+      displayValue: '≤'
+    },
+    {
+      value: 'GT',
+      displayValue: '>'
+    },
+    {
+      value: 'GT_EQ',
+      displayValue: '≥'
+    },
+    {
+      value: 'LIKE_START',
+      displayValue: 'starts with'
+    },
+    {
+      value: 'LIKE_END',
+      displayValue: 'ends with'
+    },
+    {
+      value: 'LIKE_CONTAINS',
+      displayValue: 'contains'
+    }
+  ];
+  renderedCallback() {
+    console.log(`Modifier group (index: ${this.index}) rerendered`);
+  }
+  /* --- FIELDS --- */
+  get hasSelectedField() {
+    return !!this.selectedField;
+  }
+
+  get defaultFieldOptionText() {
+    // TODO: i18n
+    return this.isLoading ? 'Loading...' : 'Select Field...';
+  }
+  /* --- OPERATORS --- */
+  get hasSelectedOperator() {
+    return !!this.selectedOperator;
+  }
+
+  get _selectedOperator() {
+    return this.operatorOptions.find(
+      (option) => option.value === this.selectedOperator
+    );
+  }
+
+  get filteredOperators() {
+    return this.operatorOptions.filter((option) => {
+      return option.value !== this.selectedOperator;
+    });
+  }
+  /* --- CRITERIA --- */
 
   // TODO: we may want to debounce this with RXJS
   handleSelectionEvent(e) {
     e.preventDefault();
     const fieldEl = this.template.querySelector('[data-el-where-field]');
-    const OperatorEl = this.template.querySelector('[data-el-where-operator]');
+    const operatorEl = this.template.querySelector('[data-el-where-operator]');
     const criteriaEl = this.template.querySelector('[data-el-where-criteria]');
 
-    if (fieldEl.value && OperatorEl.value) {
+    if (fieldEl.value && operatorEl.value && criteriaEl.value) {
       const modGroupSelectionEvent = new CustomEvent('modifiergroupselection', {
         detail: {
           field: fieldEl.value,
-          operator: OperatorEl.value,
+          operator: operatorEl.value,
           criteria: criteriaEl.value,
           index: this.index
         }
