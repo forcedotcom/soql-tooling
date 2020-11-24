@@ -6,6 +6,7 @@
  *
  */
 import { api, LightningElement } from 'lwc';
+import { debounce } from 'debounce';
 
 export default class WhereModifierGroup extends LightningElement {
   @api allFields: string[];
@@ -98,7 +99,7 @@ export default class WhereModifierGroup extends LightningElement {
           index: this.index
         }
       });
-      this.dispatchEvent(modGroupSelectionEvent);
+      debounce(this.dispatchEvent(modGroupSelectionEvent), 500);
     }
   }
 }
