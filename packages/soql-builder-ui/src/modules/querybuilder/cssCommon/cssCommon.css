@@ -13,6 +13,12 @@
   * variables are not used in default styles
   */
 
+*,
+*:before,
+*:after {
+  box-sizing: border-box;
+}
+
 /* STANDARD COMPONENT LAYOUT ---------- */
 .section-container {
   display: flex;
@@ -49,7 +55,9 @@ default to the width of the parent.
 
 .selected-field {
   margin: 0.5rem 0.5rem 0 0;
-  display: inline-block;
+  display: flex;
+  justify-content: center;
+  align-items: center;
   height: 1.25rem;
   font-size: smaller;
   background-color: var(
@@ -57,7 +65,7 @@ default to the width of the parent.
     var(--soql-color-medium-grey)
   );
   color: var(--vscode-foreground, var(--soql-white));
-  padding: 6px 4px 0 12px;
+  padding: 4px 4px;
   border-radius: 3px;
 }
 :host(.contrast) .selected-field {

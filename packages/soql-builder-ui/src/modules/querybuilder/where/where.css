@@ -8,6 +8,21 @@
 
 @import 'querybuilder/cssCommon';
 
+section.modifier__group-container {
+  /* display: flex;
+  align-items: center; */
+  margin-top: 5px;
+  border: 1px solid
+    var(--vscode-list-inactiveSelectionBackground, var(--soql-color-light-grey));
+  border-radius: 3px;
+  /* use vars */
+  background-color: var(
+    --vscode-list-inactiveSelectionBackground,
+    var(--soql-color-medium-grey)
+  );
+  padding: 4px 4px 2px 4px;
+}
+
 header.header {
   display: flex;
   flex-direction: column;
@@ -30,8 +45,9 @@ header.header {
     var(--vscode-button-background, var(--soql-color-medium-blue));
   border-radius: 3px;
 }
-
+/*  */
 .header__btn {
+  height: 1.5em;
   border-radius: 0;
   color: var(--vscode-button-foreground, var(--soql-white));
   background-color: var(

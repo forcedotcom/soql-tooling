@@ -9,19 +9,11 @@
 @import 'querybuilder/cssCommon';
 /* TODO: may need to set a min width for the group to prevent resizing with fields */
 /* TODO: use correct CSS Vars for el background, border and conainer background */
-section.modifier__group {
+
+.modifier__group {
   display: flex;
   align-items: center;
-  margin-top: 5px;
-  border: 1px solid
-    var(--vscode-list-inactiveSelectionBackground, var(--soql-color-light-grey));
-  border-radius: 3px;
-  /* use vars */
-  background-color: var(
-    --vscode-list-inactiveSelectionBackground,
-    var(--soql-color-medium-grey)
-  );
-  padding: 4px;
+  margin-bottom: 2px;
 }
 
 .modifier__item {
