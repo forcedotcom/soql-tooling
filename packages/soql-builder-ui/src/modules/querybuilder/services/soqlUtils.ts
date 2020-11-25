@@ -117,39 +117,31 @@ function convertUiModelToSoqlModel(uiModel: ToolingModelJson): Soql.Query {
     (field) => new Impl.FieldSelectionImpl(new Impl.FieldRefImpl(field))
   );
 
-  /*   uiModel.where = [
-    {
-      field: 'Name',
-      operator: '=',
-      criteria: 'Ali G'
-    },
-    {
-      field: 'Name',
-      operator: '=',
-      criteria: 'Ali G'
-    },
-    {
-      field: 'Name',
-      operator: '=',
-      criteria: 'Ali G'
-    }
-  ]; */
+  // uiModel.where = [
+  //   {
+  //     field: 'Name',
+  //     operator: 'EQ',
+  //     criteria: "'Ali G'"
+  //   },
+  //   {
+  //     field: 'Name',
+  //     operator: 'EQ',
+  //     criteria: "'Ali G'"
+  //   },
+  //   {
+  //     field: 'Name',
+  //     operator: 'EQ',
+  //     criteria: "'Ali G'"
+  //   }
+  // ];
   let whereExprsImpl;
   if (uiModel.where.length) {
     const whereExprsArray = uiModel.where.map((where) => {
-      return uiModel.where.length > 1
-        ? new Impl.AndOrConditionImpl(
-            new Impl.FieldCompareConditionImpl(
-              new Impl.FieldRefImpl(where.field),
-              Soql.CompareOperator[where.operator],
-              new Impl.LiteralImpl(Soql.LiteralType.String, `${where.criteria}`) // needs to be dynamic
-            )
-          )
-        : new Impl.FieldCompareConditionImpl(
-            new Impl.FieldRefImpl(where.field),
-            Soql.CompareOperator[where.operator],
-            new Impl.LiteralImpl(Soql.LiteralType.String, `${where.criteria}`) // needs to be dynamic
-          );
+      return new Impl.FieldCompareConditionImpl(
+        new Impl.FieldRefImpl(where.field),
+        Soql.CompareOperator[where.operator],
+        new Impl.LiteralImpl(Soql.LiteralType.String, `${where.criteria}`) // needs to be dynamic
+      );
     });
 
     whereExprsImpl = SoqlModelUtils.arrayToSimpleGroup(whereExprsArray, 'AND');
