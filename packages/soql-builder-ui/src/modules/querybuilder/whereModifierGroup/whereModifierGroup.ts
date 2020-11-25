@@ -54,7 +54,7 @@ export default class WhereModifierGroup extends LightningElement {
     }
   ];
   renderedCallback() {
-    console.log(`Modifier group (index: ${this.index}) rerendered`);
+    // console.log(`Modifier group (index: ${this.index}) rerendered`);
   }
   /* --- FIELDS --- */
   get hasSelectedField() {

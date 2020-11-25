@@ -6,7 +6,7 @@
  *
  */
 
-import { api, LightningElement } from 'lwc';
+import { api, LightningElement, track } from 'lwc';
 import { JsonMap } from '@salesforce/ts-types';
 
 interface ConditionTemplate {
@@ -18,27 +18,58 @@ interface ConditionTemplate {
 
 export default class Where extends LightningElement {
   @api whereFields: string[]; // all fields of an sObject
-  @api whereExpr: JsonMap; // this is the {} that represents SOQL Text
+  @api whereExpr: JsonMap; // this is the {conditions: [], andOR: 'AND'} that represents SOQL Text
   _andOr;
-  templateIndex: number;
+  //@track produces infinate loop
+  _renderedConditionsStore: JsonMap[] = [];
   conditionTemplate: ConditionTemplate = {
     field: undefined,
     operator: undefined,
     criteria: { value: null },
-    index: 0 // this needs to be based on this.whereExpr.conditons.length
+    index: this.templateIndex // this needs to be based on this.whereExpr.conditons.length
   };
 
-  get _conditionsRendered(): object[] {
-    if (this.whereExpr.conditions && this.whereExpr.conditions.length) {
-      console.log('from _renderedConditions--> whereExprs: ', this.whereExpr);
+  /* Can't push to this if getter */
+  get _conditionsRendered(): JsonMap[] {
+    console.log('get condis rendered called');
+    if (
+      this.whereExpr &&
+      this.whereExpr.conditions &&
+      this.whereExpr.conditions.length
+    ) {
+      console.log(
+        'from get _renderedConditions--> whereExprs: ',
+        this.whereExpr
+      );
       return this.whereExpr.conditions;
     }
     return [this.conditionTemplate];
   }
+  /* This is only called once, need to be re-evaluated each time */
+  get templateIndex(): number {
+    console.log('store = ', this._renderedConditionsStore);
+    if (this._renderedConditionsStore) {
+      const numberOfConditions = this._renderedConditionsStore.length;
+      return numberOfConditions <= 1 ? 0 : numberOfConditions;
+    }
+    return 0;
+  }
+
+  connectedCallback() {
+    this._renderedConditionsStore = [];
+  }
 
   renderedCallback() {
-    console.log('WHERE CMP rerendered with ', this._conditionsRendered);
-    // console.log('WEHRE CMP, where exprs: ', this.whereExpr);
+    console.log('=== CMP rerendered with ', this._conditionsRendered);
+    // if (this.whereExpr && this.whereExpr.conditions.length) {
+    //   console.log(
+    //     'from get _renderedConditions--> whereExprs: ',
+    //     this.whereExpr
+    //   );
+    //   return this.whereExpr.conditions;
+    // }
+    // return [this.conditionTemplate];
+    console.log('** UI Model to cmp: ', this.whereExpr);
   }
 
   handleModGroupSelection(e) {
@@ -50,5 +81,10 @@ export default class Where extends LightningElement {
 
   handleAddModGroup(e) {
     e.preventDefault();
+    this._renderedConditionsStore.push(this.conditionTemplate);
+    console.log(
+      'add modifier, _renderedConditionsStore => ',
+      this._renderedConditionsStore
+    );
   }
 }
