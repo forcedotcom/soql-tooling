@@ -99,7 +99,17 @@ describe('Code Completion on SELECT FROM (no columns on SELECT)', () => {
       expectedSimpleFieldCompletions
     );
   });
+
   validateCompletionsFor('SELECTHHH  FROMXXX |', []);
+
+  describe('Some keyword candidates', () => {
+    validateCompletionsFor(
+      'SELECT id FROM Account |',
+      expectKeywords(',', 'LIMIT', 'WHERE', 'ORDER BY', 'GROUP BY').concat(
+        expectedSObjectCompletions
+      )
+    );
+  });
 });
 
 function expectKeywords(...words: string[]): CompletionItem[] {

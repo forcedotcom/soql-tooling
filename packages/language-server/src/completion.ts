@@ -18,6 +18,8 @@ export function completionsFor(text: string, line: number, column: number) {
   core.preferredRules = new Set([
     SoqlParser.RULE_soqlFromExpr,
     SoqlParser.RULE_soqlField,
+    SoqlParser.RULE_soqlGroupByClause,
+    SoqlParser.RULE_soqlOrderByClause,
   ]);
   // core.showDebugOutput = true;
   const tokenIndex = findCursorTokenIndex(tokenStream, {
