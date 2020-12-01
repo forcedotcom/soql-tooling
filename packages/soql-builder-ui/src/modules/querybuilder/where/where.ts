@@ -36,7 +36,6 @@ export default class Where extends LightningElement {
   }
 
   set whereExpr(where: JsonMap) {
-    console.log('** UI Model to cmp: ', where);
     if (where.conditions && where.conditions.length) {
       this._conditionsStore = where.conditions;
     } else {
@@ -53,12 +52,6 @@ export default class Where extends LightningElement {
     return 0;
   }
 
-  renderedCallback() {
-    console.log('=== CMP rerendered with ', this._conditionsStore);
-
-    console.log('** UI Model to cmp: ', this.whereExpr.conditions);
-  }
-
   handleModGroupSelection(e) {
     const whereSelectionEvent = new CustomEvent('whereselection', {
       detail: e.detail
@@ -73,6 +66,5 @@ export default class Where extends LightningElement {
       index: this.templateIndex
     };
     this._conditionsStore = [...this._conditionsStore, newTemplate];
-    console.log('add modifier, _conditionsStore => ', this._conditionsStore);
   }
 }

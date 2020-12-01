@@ -45,7 +45,7 @@ header.header {
     var(--vscode-button-background, var(--soql-color-medium-blue));
   border-radius: 3px;
 }
-/*  */
+
 .header__btn {
   height: 1.5em;
   border-radius: 0;
@@ -55,6 +55,10 @@ header.header {
     var(--soql-color-medium-blue)
   );
   cursor: pointer;
+}
+
+.header__btn--selected {
+  background-color: var(--soql-color-dark-blue);
 }
 
 footer {

@@ -59,9 +59,7 @@ export default class WhereModifierGroup extends LightningElement {
     super();
     this.handleSelectionEvent = debounce(selectionEventHandler.bind(this), 500);
   }
-  renderedCallback() {
-    console.log(`Modifier group (index: ${this.index}) rerendered`);
-  }
+
   /* --- FIELDS --- */
   get hasSelectedField() {
     return !!this.selectedField;
@@ -98,7 +96,6 @@ function selectionEventHandler(e) {
   const criteriaEl = this.template.querySelector('[data-el-where-criteria]');
 
   if (fieldEl.value && operatorEl.value && criteriaEl.value) {
-    console.log('crit value', criteriaEl.value);
     const modGroupSelectionEvent = new CustomEvent('modifiergroupselection', {
       detail: {
         field: fieldEl.value,
