@@ -118,12 +118,20 @@ function convertUiModelToSoqlModel(uiModel: ToolingModelJson): Soql.Query {
   );
 
   let whereExprsImpl;
-  if (uiModel.where.length) {
-    const whereExprsArray = uiModel.where.map((where) => {
+  if (uiModel.where && uiModel.where.conditions.length) {
+    const whereExprsArray = uiModel.where.conditions.map((where) => {
+      const criteriaImpl =
+        where.criteria instanceof Impl.LiteralImpl
+          ? where.criteria
+          : new Impl.LiteralImpl(
+              where.criteria.type,
+              `${where.criteria.value}`
+            );
+
       return new Impl.FieldCompareConditionImpl(
         new Impl.FieldRefImpl(where.field),
         Soql.CompareOperator[where.operator],
-        new Impl.LiteralImpl(Soql.LiteralType.String, `${where.criteria}`) //TODO: needs to be dynamic
+        criteriaImpl
       );
     });
 
