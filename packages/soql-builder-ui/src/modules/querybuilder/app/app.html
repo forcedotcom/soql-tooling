@@ -57,6 +57,11 @@
           is-loading={isFieldsLoading}
           class={theme}
         ></querybuilder-fields>
+        <querybuilder-where
+          where-expr={query.where}
+          where-fields={fields}
+          onwhereselection={handleWhereSelection}
+        ></querybuilder-where>
         <querybuilder-order-by
           selected-order-by-fields={query.orderBy}
           order-by-fields={fields}
@@ -72,11 +77,6 @@
           onlimitchanged={handleLimitChanged}
           class={theme}
         ></querybuilder-limit>
-        <querybuilder-where
-          where-expr={query.where}
-          where-fields={fields}
-          onwhereselection={handleWhereSelection}
-        ></querybuilder-where>
       </section>
       <section class="query-preview">
         <querybuilder-query-preview
