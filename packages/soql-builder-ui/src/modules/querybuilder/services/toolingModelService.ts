@@ -155,17 +155,17 @@ export class ToolingModelService {
       updatedWhereField = this.getWhereConditions().update(
         whereObj.index,
         () => {
-          // pass in the index from whereObj
           return fromJS(whereObj);
         }
       );
     } else {
       updatedWhereField = this.getWhereConditions().push(fromJS(whereObj));
     }
-    const newModel = currentModel.set(
-      ModelProps.WHERE,
+
+    const newModel = currentModel.setIn(
+      [ModelProps.WHERE, 'conditions'],
       updatedWhereField
-    ) as ToolingModel;
+    );
 
     this.changeModel(newModel);
   }
