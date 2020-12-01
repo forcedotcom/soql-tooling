@@ -43,8 +43,10 @@ export class Validator {
         diagnostics.push({
           severity: DiagnosticSeverity.Error,
           range: {
-            start: textDocument.positionAt(error.getToken()?.start as number),
-            end: textDocument.positionAt(error.getToken()?.stop as number),
+            start: textDocument.positionAt(
+              error.getToken()?.startIndex as number
+            ),
+            end: textDocument.positionAt(error.getToken()?.stopIndex as number),
           },
           message: error.getMessage(),
           source: 'soql',
