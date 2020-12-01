@@ -33,6 +33,7 @@ header.header {
   display: flex;
   justify-content: space-around;
   margin-top: 5px;
+  padding-right: 2.5em;
 }
 
 .header__labels p {
@@ -58,7 +59,8 @@ header.header {
 }
 
 .header__btn--selected {
-  background-color: var(--soql-color-dark-blue);
+  background-color: var(--vscode-button-secondaryBackground),
+    var(--soql-color-dark-blue);
 }
 
 footer {

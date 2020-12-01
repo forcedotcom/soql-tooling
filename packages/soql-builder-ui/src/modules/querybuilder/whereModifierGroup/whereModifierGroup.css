@@ -19,8 +19,13 @@
 .modifier__item {
   margin-right: 4px;
 }
-
+/*
+setting a width will
+prvent select el from
+expanding to fit content
+ */
 .modifier__fields {
+  width: 100%;
   flex-grow: 2;
 }
 
@@ -29,5 +34,6 @@
 }
 
 .modifier__criteria {
+  padding-left: 4px;
   flex-grow: 1;
 }

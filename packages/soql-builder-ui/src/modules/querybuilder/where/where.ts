@@ -17,6 +17,7 @@ interface ConditionTemplate {
 }
 
 export default class Where extends LightningElement {
+  @api isLoading = false;
   @api
   whereFields: string[];
   _andOr;

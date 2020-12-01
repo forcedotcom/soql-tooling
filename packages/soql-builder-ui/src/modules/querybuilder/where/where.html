@@ -21,7 +21,7 @@
           <!-- i18n -->
           <p>Field</p>
           <p>Operator</p>
-          <p>Criteria</p>
+          <p>Value</p>
         </div>
       </header>
       <section class="modifier__group-container">
@@ -34,6 +34,7 @@
             selected-field={condition.field}
             selected-operator={condition.operator}
             criteria={condition.criteria.value}
+            is-loading={isLoading}
           ></querybuilder-where-modifier-group>
         </template>
       </section>
