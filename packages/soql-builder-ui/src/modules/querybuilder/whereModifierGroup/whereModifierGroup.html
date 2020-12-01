@@ -16,7 +16,7 @@
           {defaultFieldOptionText}
         </option>
       </template>
-      <template for:each={allFields} for:item="field">
+      <template for:each={filteredFields} for:item="field">
         <option key={field} value={field}>{field}</option>
       </template>
     </select>
@@ -45,7 +45,7 @@
       type="text"
       data-el-where-criteria
       onkeyup={handleSelectionEvent}
-      value={criteria}
+      value={criteria.value}
     />
     <span class="modifier__item pointer"> x </span>
   </div>

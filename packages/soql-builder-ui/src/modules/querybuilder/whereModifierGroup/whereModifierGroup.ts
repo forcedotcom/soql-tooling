@@ -7,12 +7,13 @@
  */
 import { api, LightningElement } from 'lwc';
 import { debounce } from 'debounce';
+import { JsonMap } from '@salesforce/types';
 
 export default class WhereModifierGroup extends LightningElement {
   @api allFields: string[];
   @api selectedField: string = undefined;
   @api selectedOperator: string;
-  @api criteria: number | string | null = null;
+  @api criteria: JsonMap = {};
   @api isLoading = false;
   @api index;
   operatorOptions = [
@@ -65,6 +66,11 @@ export default class WhereModifierGroup extends LightningElement {
     return !!this.selectedField;
   }
 
+  get filteredFields() {
+    return this.allFields.filter((field) => {
+      return field !== this.selectedField;
+    });
+  }
   get defaultFieldOptionText() {
     // TODO: i18n
     return this.isLoading ? 'Loading...' : 'Select Field...';
@@ -100,7 +106,7 @@ function selectionEventHandler(e) {
       detail: {
         field: fieldEl.value,
         operator: operatorEl.value,
-        criteria: criteriaEl.value,
+        criteria: { type: this.criteria.type, value: criteriaEl.value }, // type need to by dynamic
         index: this.index
       }
     });
