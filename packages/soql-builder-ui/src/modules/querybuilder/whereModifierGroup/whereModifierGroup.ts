@@ -53,8 +53,14 @@ export default class WhereModifierGroup extends LightningElement {
       displayValue: 'contains'
     }
   ];
+  handleSelectionEvent: () => void;
+
+  constructor() {
+    super();
+    this.handleSelectionEvent = debounce(selectionEventHandler.bind(this), 500);
+  }
   renderedCallback() {
-    // console.log(`Modifier group (index: ${this.index}) rerendered`);
+    console.log(`Modifier group (index: ${this.index}) rerendered`);
   }
   /* --- FIELDS --- */
   get hasSelectedField() {
@@ -81,25 +87,26 @@ export default class WhereModifierGroup extends LightningElement {
       return option.value !== this.selectedOperator;
     });
   }
-  /* --- CRITERIA --- */
+}
+/* --- CRITERIA --- */
+// only send an event if all fields have value
+// TODO: handle when critera is cleared, no value, but need to send event.
+function selectionEventHandler(e) {
+  e.preventDefault();
+  const fieldEl = this.template.querySelector('[data-el-where-field]');
+  const operatorEl = this.template.querySelector('[data-el-where-operator]');
+  const criteriaEl = this.template.querySelector('[data-el-where-criteria]');
 
-  // TODO: we may want to debounce this with RXJS
-  handleSelectionEvent(e) {
-    e.preventDefault();
-    const fieldEl = this.template.querySelector('[data-el-where-field]');
-    const operatorEl = this.template.querySelector('[data-el-where-operator]');
-    const criteriaEl = this.template.querySelector('[data-el-where-criteria]');
-
-    if (fieldEl.value && operatorEl.value && criteriaEl.value) {
-      const modGroupSelectionEvent = new CustomEvent('modifiergroupselection', {
-        detail: {
-          field: fieldEl.value,
-          operator: operatorEl.value,
-          criteria: criteriaEl.value,
-          index: this.index
-        }
-      });
-      debounce(this.dispatchEvent(modGroupSelectionEvent), 500);
-    }
+  if (fieldEl.value && operatorEl.value && criteriaEl.value) {
+    console.log('crit value', criteriaEl.value);
+    const modGroupSelectionEvent = new CustomEvent('modifiergroupselection', {
+      detail: {
+        field: fieldEl.value,
+        operator: operatorEl.value,
+        criteria: criteriaEl.value,
+        index: this.index
+      }
+    });
+    this.dispatchEvent(modGroupSelectionEvent);
   }
 }
