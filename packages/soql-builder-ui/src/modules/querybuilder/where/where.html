@@ -25,7 +25,7 @@
         </div>
       </header>
       <section class="modifier__group-container">
-        <template for:each={_conditionsRendered} for:item="condition">
+        <template for:each={_conditionsStore} for:item="condition">
           <querybuilder-where-modifier-group
             onmodifiergroupselection={handleModGroupSelection}
             all-fields={whereFields}
