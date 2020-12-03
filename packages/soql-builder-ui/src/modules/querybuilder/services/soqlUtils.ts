@@ -45,10 +45,13 @@ export function convertSoqlModelToUiModel(
     where.conditions = where.conditions
       .filter((condition) => !SoqlModelUtils.containsUnmodeledSyntax(condition))
       .map((expression, index) => {
-        const operator = SoqlModelUtils.getKeyByValue(
-          Soql.CompareOperator,
-          expression.operator
-        );
+        const operator =
+          expression instanceof Impl.LikeConditionImpl
+            ? 'LIKE'
+            : SoqlModelUtils.getKeyByValue(
+                Soql.CompareOperator,
+                expression.operator
+              );
 
         return {
           field: expression.field.fieldName,
@@ -130,6 +133,13 @@ function convertUiModelToSoqlModel(uiModel: ToolingModelJson): Soql.Query {
               where.criteria.type,
               `${where.criteria.value}`
             );
+      // this logic is temporary until we handle starts, ends with, contains
+      if (where.operator === 'LIKE') {
+        return new Impl.LikeConditionImpl(
+          new Impl.FieldRefImpl(where.field),
+          criteriaImpl
+        );
+      }
 
       return new Impl.FieldCompareConditionImpl(
         new Impl.FieldRefImpl(where.field),

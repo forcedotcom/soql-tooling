@@ -42,6 +42,15 @@ export default class WhereModifierGroup extends LightningElement {
       displayValue: '≥'
     },
     {
+      value: 'LIKE',
+      displayValue: 'like'
+    }
+    /*
+    use these operators once work to handle
+    incomming %, _, concat with plain user text
+    is implimented.
+    */
+    /* {
       value: 'LIKE_START',
       displayValue: 'starts with'
     },
@@ -52,7 +61,7 @@ export default class WhereModifierGroup extends LightningElement {
     {
       value: 'LIKE_CONTAINS',
       displayValue: 'contains'
-    }
+    } */
   ];
   handleSelectionEvent: () => void;
 
@@ -110,7 +119,7 @@ function selectionEventHandler(e) {
       detail: {
         field: fieldEl.value,
         operator: operatorEl.value,
-        criteria: { type: this.criteria.type, value: criteriaEl.value }, // type need to by dynamic
+        criteria: { type: this.criteria.type, value: criteriaEl.value }, // type needs to be dynamic
         index: this.index
       }
     });
