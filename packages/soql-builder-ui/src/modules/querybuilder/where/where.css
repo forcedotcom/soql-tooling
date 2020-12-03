@@ -52,7 +52,7 @@ header.header {
   border-radius: 0;
   color: var(--vscode-button-foreground, var(--soql-white));
   background-color: var(
-    --vscode-button-background,
+    --vscode-button-secondaryBackground,
     var(--soql-color-dark-blue)
   );
   cursor: pointer;
@@ -60,7 +60,7 @@ header.header {
 
 .header__btn--selected {
   background-color: var(
-    --vscode-button-secondaryBackground,
+    --vscode-button-background,
     var(--soql-color-medium-blue)
   );
 }
