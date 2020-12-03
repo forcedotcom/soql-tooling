@@ -53,14 +53,16 @@ header.header {
   color: var(--vscode-button-foreground, var(--soql-white));
   background-color: var(
     --vscode-button-background,
-    var(--soql-color-medium-blue)
+    var(--soql-color-dark-blue)
   );
   cursor: pointer;
 }
 
 .header__btn--selected {
-  background-color: var(--vscode-button-secondaryBackground),
-    var(--soql-color-dark-blue);
+  background-color: var(
+    --vscode-button-secondaryBackground,
+    var(--soql-color-medium-blue)
+  );
 }
 
 footer {
