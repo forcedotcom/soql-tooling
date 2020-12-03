@@ -1,3 +1,4 @@
+import { TelemetryModelJson } from '../telemetryUtils';
 import { ToolingModelJson } from '../toolingModelService';
 
 export enum MessageType {
@@ -15,5 +16,5 @@ export enum MessageType {
 
 export interface SoqlEditorEvent {
   type: MessageType;
-  payload?: string | string[] | ToolingModelJson;
+  payload?: string | string[] | ToolingModelJson | TelemetryModelJson;
 }

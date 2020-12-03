@@ -10,11 +10,10 @@ export interface TelemetryModelJson extends JsonMap {
 }
 
 export function createQueryTelemetry(query: ToolingModelJson) {
-
   const telemetry = { ...ToolingModelService.toolingModelTemplate } as JsonMap;
   telemetry.sObject = query.sObject.indexOf('__c') > -1 ? 'custom' : 'standard';
   telemetry.fields = query.fields.length.toString();
-telemetry.orderBy = query.orderBy.map((orderBy) => {
+  telemetry.orderBy = query.orderBy.map((orderBy) => {
   return {
     field: orderBy.field.indexOf('__c') > -1 ? 'custom' : 'standard',
     nulls: orderBy.nulls,

@@ -16,6 +16,7 @@ import {
   convertUiModelToSoql,
   convertSoqlToUiModel
 } from '../services/soqlUtils';
+import { createQueryTelemetry, TelemetryModelJson } from './telemetryUtils';
 
 // This is to satisfy TS and stay dry
 type IMap = Map<string, string | List<string>>;
@@ -164,6 +165,9 @@ export class ToolingModelService {
 
           const updatedModel = fromJS(soqlJSModel);
           if (!updatedModel.equals(this.model.getValue())) {
+            if (soqlJSModel.errors.length || soqlJSModel.unsupported.length) {
+              this.sendTelemetryToBackend(soqlJSModel);
+            }
             this.model.next(updatedModel);
           }
           break;
@@ -195,6 +199,18 @@ export class ToolingModelService {
         payload
       });
     } catch (e) {
+      console.error(e);
+    }
+  }
+
+  public sendTelemetryToBackend(query: ToolingModelJson) {
+    try {
+      const telemetryMetrics = createQueryTelemetry(query);
+      this.messageService.sendMessage({
+        type: MessageType.UI_TELEMETRY,
+        payload: telemetryMetrics
+      });
+    } catch(e) {
       console.error(e);
     }
   }
