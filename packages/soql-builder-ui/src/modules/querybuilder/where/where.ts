@@ -12,22 +12,22 @@ import { JsonMap } from '@salesforce/ts-types';
 interface ConditionTemplate {
   field: undefined;
   operator: undefined;
-  criteria: { value: null };
+  criteria: { type: null; value: null };
   index: number;
 }
 
 export default class Where extends LightningElement {
-  @api isLoading = false;
+  @api
+  isLoading = false;
   @api
   whereFields: string[];
   _andOr;
   conditionTemplate: ConditionTemplate = {
     field: undefined,
     operator: undefined,
-    criteria: { value: null },
+    criteria: { type: null, value: null },
     index: this.templateIndex
   };
-
   @track
   _conditionsStore: JsonMap[] = [];
 
@@ -53,6 +53,21 @@ export default class Where extends LightningElement {
     return 0;
   }
 
+  renderedCallback() {
+    const andButton = this.template.querySelector("[name='and']");
+    const orButton = this.template.querySelector("[name='or']");
+
+    if (this._andOr === 'AND') {
+      andButton.classList.add('header__btn--selected');
+      orButton.classList.remove('header__btn--selected');
+    }
+
+    if (this._andOr === 'OR') {
+      orButton.classList.add('header__btn--selected');
+      andButton.classList.remove('header__btn--selected');
+    }
+  }
+
   handleModGroupSelection(e) {
     const whereSelectionEvent = new CustomEvent('whereselection', {
       detail: e.detail
@@ -71,7 +86,6 @@ export default class Where extends LightningElement {
 
   handleSetAndOr(e) {
     e.preventDefault();
-    console.log('value from Model= ', this._andOr);
     const selectedValue = e.target.value;
     const isValidValue = selectedValue === 'AND' || selectedValue === 'OR';
 
@@ -80,7 +94,6 @@ export default class Where extends LightningElement {
         detail: selectedValue
       });
       this.dispatchEvent(andOrSelectionEvent);
-      console.log('andOr set to -->', e.target.value);
     }
   }
 }

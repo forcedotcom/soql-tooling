@@ -58,7 +58,10 @@ export default class WhereModifierGroup extends LightningElement {
 
   constructor() {
     super();
-    this.handleSelectionEvent = debounce(selectionEventHandler.bind(this), 500);
+    this.handleSelectionEvent = debounce(
+      selectionEventHandler.bind(this),
+      1000
+    );
   }
 
   /* --- FIELDS --- */
