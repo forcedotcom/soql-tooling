@@ -21,6 +21,11 @@ export enum ModelProps {
   ORIGINAL_SOQL_STATEMENT = 'originalSoqlStatement'
 }
 
+export enum AndOr {
+  AND = 'AND',
+  OR = 'OR'
+}
+
 // This is to satisfy TS and stay dry
 export type IMap = Map<string, string | List<string>>;
 // Private immutable interface

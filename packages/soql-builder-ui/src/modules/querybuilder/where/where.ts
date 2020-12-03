@@ -8,6 +8,7 @@
 
 import { api, LightningElement, track } from 'lwc';
 import { JsonMap } from '@salesforce/ts-types';
+import { AndOr } from '../services/model';
 
 interface ConditionTemplate {
   field: undefined;
@@ -57,12 +58,12 @@ export default class Where extends LightningElement {
     const andButton = this.template.querySelector("[name='and']");
     const orButton = this.template.querySelector("[name='or']");
 
-    if (this._andOr === 'AND') {
+    if (this._andOr === AndOr.AND) {
       andButton.classList.add('header__btn--selected');
       orButton.classList.remove('header__btn--selected');
     }
 
-    if (this._andOr === 'OR') {
+    if (this._andOr === AndOr.OR) {
       orButton.classList.add('header__btn--selected');
       andButton.classList.remove('header__btn--selected');
     }
@@ -87,7 +88,8 @@ export default class Where extends LightningElement {
   handleSetAndOr(e) {
     e.preventDefault();
     const selectedValue = e.target.value;
-    const isValidValue = selectedValue === 'AND' || selectedValue === 'OR';
+    const isValidValue =
+      selectedValue === AndOr.AND || selectedValue === AndOr.OR;
 
     if (isValidValue && selectedValue !== this._andOr) {
       const andOrSelectionEvent = new CustomEvent('andorselection', {
