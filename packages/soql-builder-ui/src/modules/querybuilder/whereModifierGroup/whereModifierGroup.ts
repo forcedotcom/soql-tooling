@@ -16,6 +16,7 @@ export default class WhereModifierGroup extends LightningElement {
   @api criteria: JsonMap = {};
   @api isLoading = false;
   @api index;
+  _allModifiersHaveValue: boolean = false;
   operatorOptions = [
     {
       value: 'EQ',
@@ -64,6 +65,10 @@ export default class WhereModifierGroup extends LightningElement {
     } */
   ];
   handleSelectionEvent: () => void;
+  // this need to be public so parent can read value
+  @api get allModifiersHaveValue() {
+    return this._allModifiersHaveValue;
+  }
 
   constructor() {
     super();
@@ -71,6 +76,22 @@ export default class WhereModifierGroup extends LightningElement {
       selectionEventHandler.bind(this),
       1000
     );
+  }
+
+  renderedCallback() {
+    this.checkAllModifiersHaveValues();
+  }
+
+  checkAllModifiersHaveValues(): Boolean {
+    const fieldEl = this.template.querySelector('[data-el-where-field]');
+    const operatorEl = this.template.querySelector('[data-el-where-operator]');
+    const criteriaEl = this.template.querySelector('[data-el-where-criteria]');
+    const allHaveValues = Boolean(
+      fieldEl.value && operatorEl.value && criteriaEl.value
+    );
+    this._allModifiersHaveValue = allHaveValues;
+
+    return allHaveValues;
   }
 
   /* --- FIELDS --- */
@@ -105,6 +126,7 @@ export default class WhereModifierGroup extends LightningElement {
     });
   }
 }
+
 /* --- CRITERIA --- */
 // only send an event if all fields have value
 // TODO: handle when critera is cleared, no value, but need to send event.
@@ -114,7 +136,7 @@ function selectionEventHandler(e) {
   const operatorEl = this.template.querySelector('[data-el-where-operator]');
   const criteriaEl = this.template.querySelector('[data-el-where-criteria]');
 
-  if (fieldEl.value && operatorEl.value && criteriaEl.value) {
+  if (this.checkAllModifiersHaveValues()) {
     const modGroupSelectionEvent = new CustomEvent('modifiergroupselection', {
       detail: {
         field: fieldEl.value,

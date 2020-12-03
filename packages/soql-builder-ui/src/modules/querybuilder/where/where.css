@@ -70,3 +70,12 @@ footer {
   justify-content: center;
   margin-top: 5px;
 }
+
+.btn--disabled {
+  background-color: var(
+    --vscode-list-inactiveSelectionBackground,
+    var(--soql-color-medium-grey)
+  );
+  cursor: not-allowed;
+  pointer-events: none;
+}

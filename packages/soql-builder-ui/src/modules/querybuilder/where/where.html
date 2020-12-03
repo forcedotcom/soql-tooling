@@ -55,7 +55,13 @@
         </template>
       </section>
       <footer>
-        <button onclick={handleAddModGroup}>Add</button>
+        <button
+          class="btn--disabled"
+          onclick={handleAddModGroup}
+          data-el-where-add-btn
+        >
+          Add
+        </button>
       </footer>
     </div>
   </div>

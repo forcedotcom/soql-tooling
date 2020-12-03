@@ -18,10 +18,8 @@ interface ConditionTemplate {
 }
 
 export default class Where extends LightningElement {
-  @api
-  isLoading = false;
-  @api
-  whereFields: string[];
+  @api isLoading = false;
+  @api whereFields: string[];
   _andOr;
   conditionTemplate: ConditionTemplate = {
     field: undefined,
@@ -29,11 +27,9 @@ export default class Where extends LightningElement {
     criteria: { type: null, value: null },
     index: this.templateIndex
   };
-  @track
-  _conditionsStore: JsonMap[] = [];
+  @track _conditionsStore: JsonMap[] = [];
 
-  @api
-  get whereExpr(): JsonMap {
+  @api get whereExpr(): JsonMap {
     return { conditions: this._conditionsStore, andOr: this._andOr };
   }
 
@@ -66,6 +62,27 @@ export default class Where extends LightningElement {
     if (this._andOr === AndOr.OR) {
       orButton.classList.add('header__btn--selected');
       andButton.classList.remove('header__btn--selected');
+    }
+
+    this.enableAddButton();
+  }
+
+  enableAddButton() {
+    const modfierGroupsRendered = this.template.querySelectorAll(
+      'querybuilder-where-modifier-group'
+    );
+    const addBtn = this.template.querySelector('[data-el-where-add-btn]');
+
+    if (modfierGroupsRendered.length) {
+      const lastGroupIndex = modfierGroupsRendered.length - 1;
+      const shouldEnableAddBtn =
+        modfierGroupsRendered[lastGroupIndex].allModifiersHaveValue;
+
+      if (shouldEnableAddBtn) {
+        addBtn.classList.remove('btn--disabled');
+      } else {
+        addBtn.classList.add('btn--disabled');
+      }
     }
   }
 
