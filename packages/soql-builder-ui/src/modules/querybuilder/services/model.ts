@@ -14,6 +14,8 @@ export enum ModelProps {
   ORDER_BY = 'orderBy',
   LIMIT = 'limit',
   WHERE = 'where',
+  WHERE_CONDITIONS = 'conditions',
+  WHERE_AND_OR = 'andOr',
   ERRORS = 'errors',
   UNSUPPORTED = 'unsupported',
   ORIGINAL_SOQL_STATEMENT = 'originalSoqlStatement'

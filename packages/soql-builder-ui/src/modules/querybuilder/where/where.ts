@@ -68,4 +68,19 @@ export default class Where extends LightningElement {
     };
     this._conditionsStore = [...this._conditionsStore, newTemplate];
   }
+
+  handleSetAndOr(e) {
+    e.preventDefault();
+    console.log('value from Model= ', this._andOr);
+    const selectedValue = e.target.value;
+    const isValidValue = selectedValue === 'AND' || selectedValue === 'OR';
+
+    if (isValidValue && selectedValue !== this._andOr) {
+      const andOrSelectionEvent = new CustomEvent('andorselection', {
+        detail: selectedValue
+      });
+      this.dispatchEvent(andOrSelectionEvent);
+      console.log('andOr set to -->', e.target.value);
+    }
+  }
 }

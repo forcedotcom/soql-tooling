@@ -69,7 +69,7 @@ export class ToolingModelService {
   private getWhereConditions() {
     return this.getModel()
       .get(ModelProps.WHERE)
-      .get('conditions') as List<JsonMap>;
+      .get(ModelProps.WHERE_CONDITIONS) as List<JsonMap>;
   }
 
   // This method is destructive, will clear any selections except sObject.
@@ -147,6 +147,16 @@ export class ToolingModelService {
     this.changeModel(newModelWithFieldRemoved);
   }
 
+  public setAndOr(andOr: string) {
+    const currentModel = this.getModel();
+    const newModel = currentModel.setIn(
+      [ModelProps.WHERE, ModelProps.WHERE_AND_OR],
+      andOr
+    );
+
+    this.changeModel(newModel);
+  }
+
   public upsertWhereField(whereObj: JsonMap) {
     const currentModel = this.getModel();
     let updatedWhereField;
@@ -163,7 +173,7 @@ export class ToolingModelService {
     }
 
     const newModel = currentModel.setIn(
-      [ModelProps.WHERE, 'conditions'],
+      [ModelProps.WHERE, ModelProps.WHERE_CONDITIONS],
       updatedWhereField
     );
 

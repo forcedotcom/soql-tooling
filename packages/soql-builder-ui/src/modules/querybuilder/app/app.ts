@@ -177,7 +177,6 @@ export default class App extends LightningElement {
   handleFieldRemoved(e) {
     this.modelService.removeField(e.detail.field);
   }
-
   /* ---- ORDER BY HANDLERS ---- */
   handleOrderBySelected(e) {
     this.modelService.addUpdateOrderByField(e.detail);
@@ -193,6 +192,9 @@ export default class App extends LightningElement {
   handleWhereSelection(e) {
     console.log('app.ts', e.detail);
     this.modelService.upsertWhereField(e.detail);
+  }
+  handleAndOrSelection(e) {
+    this.modelService.setAndOr(e.detail);
   }
 
   handleRunQuery() {

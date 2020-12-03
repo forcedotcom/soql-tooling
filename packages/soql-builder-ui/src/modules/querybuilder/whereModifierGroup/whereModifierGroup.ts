@@ -71,6 +71,7 @@ export default class WhereModifierGroup extends LightningElement {
       return field !== this.selectedField;
     });
   }
+
   get defaultFieldOptionText() {
     // TODO: i18n
     return this.isLoading ? 'Loading...' : 'Select Field...';

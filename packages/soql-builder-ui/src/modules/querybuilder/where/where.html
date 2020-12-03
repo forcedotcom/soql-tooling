@@ -14,8 +14,24 @@
     <div class="section_selection-container">
       <header class="header">
         <div class="header__btn--group">
-          <button class="header__btn header__btn--selected">AND</button>
-          <button class="header__btn">OR</button>
+          <button
+            type="button"
+            name="and"
+            value="AND"
+            class="header__btn header__btn--selected"
+            onclick={handleSetAndOr}
+          >
+            AND
+          </button>
+          <button
+            type="button"
+            name="or"
+            value="OR"
+            class="header__btn"
+            onclick={handleSetAndOr}
+          >
+            OR
+          </button>
         </div>
         <div class="header__labels">
           <!-- i18n -->

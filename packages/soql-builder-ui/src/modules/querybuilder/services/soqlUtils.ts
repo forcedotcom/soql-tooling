@@ -57,6 +57,9 @@ export function convertSoqlModelToUiModel(
           index
         };
       });
+
+    const andOrFromModel = queryModel.where.condition.andOr;
+    where.andOr = andOrFromModel ? andOrFromModel : Soql.AndOr.And;
   }
 
   const orderBy = queryModel.orderBy
@@ -135,7 +138,8 @@ function convertUiModelToSoqlModel(uiModel: ToolingModelJson): Soql.Query {
       );
     });
 
-    whereExprsImpl = SoqlModelUtils.arrayToSimpleGroup(whereExprsArray, 'AND'); //TODO: use uiModel.where for andOr
+    const andOr = uiModel.where.andOr;
+    whereExprsImpl = SoqlModelUtils.arrayToSimpleGroup(whereExprsArray, andOr);
   }
 
   const where =
