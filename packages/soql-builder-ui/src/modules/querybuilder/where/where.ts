@@ -102,6 +102,14 @@ export default class Where extends LightningElement {
     this._conditionsStore = [...this._conditionsStore, newTemplate];
   }
 
+  handleConditionRemoved(e) {
+    e.preventDefault();
+    const conditionRemovedEvent = new CustomEvent('conditionremoved', {
+      detail: e.detail
+    });
+    this.dispatchEvent(conditionRemovedEvent);
+  }
+
   handleSetAndOr(e) {
     e.preventDefault();
     const selectedValue = e.target.value;

@@ -125,6 +125,23 @@ export default class WhereModifierGroup extends LightningElement {
       return option.value !== this.selectedOperator;
     });
   }
+
+  /*TODO:
+  - refactor the names of the remove events so they are not redundant.
+  - try to get events to bubble up to the parent and remove pass through events.
+  */
+
+  handleConditionRemoved(e) {
+    e.preventDefault();
+    console.log('Remove condition', this.index);
+    const conditionRemovedEvent = new CustomEvent('conditionremoved', {
+      detail: {
+        index: this.index
+      }
+    });
+
+    this.dispatchEvent(conditionRemovedEvent);
+  }
 }
 
 /* --- CRITERIA --- */

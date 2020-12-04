@@ -47,6 +47,8 @@
       onkeyup={handleSelectionEvent}
       value={criteria.value}
     />
-    <span class="modifier__item pointer"> x </span>
+    <span class="modifier__item pointer" onclick={handleConditionRemoved}>
+      x
+    </span>
   </div>
 </template>

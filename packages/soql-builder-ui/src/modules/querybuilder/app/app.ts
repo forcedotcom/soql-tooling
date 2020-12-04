@@ -196,6 +196,9 @@ export default class App extends LightningElement {
   handleAndOrSelection(e) {
     this.modelService.setAndOr(e.detail);
   }
+  handleRemoveWhereCondition(e) {
+    this.modelService.removeWhereFieldCondition(e.detail);
+  }
 
   handleRunQuery() {
     const runQueryEvent: SoqlEditorEvent = { type: MessageType.RUN_SOQL_QUERY };

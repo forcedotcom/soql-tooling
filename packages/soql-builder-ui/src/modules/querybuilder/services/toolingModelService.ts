@@ -180,6 +180,21 @@ export class ToolingModelService {
     this.changeModel(newModel);
   }
 
+  public removeWhereFieldCondition(whereObj: JsonMap) {
+    const currentModel = this.getModel();
+    const whereConditions = this.getWhereConditions();
+    const filteredConditions = whereConditions.filter((item) => {
+      return item.get('index') !== whereObj.index;
+    });
+
+    const newModel = currentModel.setIn(
+      [ModelProps.WHERE, ModelProps.WHERE_CONDITIONS],
+      filteredConditions
+    );
+
+    this.changeModel(newModel);
+  }
+
   public changeLimit(limit: string) {
     const newLimitModel = this.getModel().set(ModelProps.LIMIT, limit || '');
     this.changeModel(newLimitModel);

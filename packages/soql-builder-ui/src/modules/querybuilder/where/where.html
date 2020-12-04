@@ -44,6 +44,7 @@
         <template for:each={_conditionsStore} for:item="condition">
           <querybuilder-where-modifier-group
             onmodifiergroupselection={handleModGroupSelection}
+            onconditionremoved={handleConditionRemoved}
             all-fields={whereFields}
             key={condition.index}
             index={condition.index}
