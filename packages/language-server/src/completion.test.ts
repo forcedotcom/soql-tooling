@@ -5,36 +5,33 @@ import {
   InsertTextFormat,
 } from 'vscode-languageserver';
 
+const SELECT_snippet = {
+  kind: CompletionItemKind.Snippet,
+  label: 'SELECT ... FROM ...',
+  insertText: 'SELECT $2 FROM $1',
+  insertTextFormat: InsertTextFormat.Snippet,
+};
+const INNER_SELECT_snippet = {
+  kind: CompletionItemKind.Snippet,
+  label: '(SELECT ... FROM ...)',
+  insertText: '(SELECT $2 FROM $1)',
+  insertTextFormat: InsertTextFormat.Snippet,
+};
+
 const expectedSimpleFieldCompletions: CompletionItem[] = [
   {
     kind: CompletionItemKind.Field,
     label: '__SOBJECT_FIELDS_PLACEHOLDER:Object',
   },
-];
+  INNER_SELECT_snippet,
+]; /*.concat(expectKeywords('COUNT')) */
+
 const expectedSObjectCompletions: CompletionItem[] = [
   {
     kind: CompletionItemKind.Class,
     label: '__SOBJECTS_PLACEHOLDER',
   },
 ];
-
-const SELECT_snippet = {
-        kind: CompletionItemKind.Snippet,
-        label: 'SELECT ... FROM ...',
-        insertText: 'SELECT $2 FROM $1',
-  insertTextFormat: InsertTextFormat.Snippet,
-};
-
-describe('Code Completion on empty file', () => {
-  validateCompletionsFor(
-    '|',
-    expectKeywords('SELECT').concat([SELECT_snippet])
-  );
-});
-
-describe.only('ONLY', () => {
-  validateCompletionsFor('SELECT id, | FROM Foo', [sobjectsFieldsFor('Foo')]);
-});
 
 describe('Code Completion on SELECT ...', () => {
   validateCompletionsFor('SELE|', expectKeywords('SELECT'));
@@ -49,41 +46,55 @@ describe('Code Completion on SELECT ...', () => {
 });
 
 describe('Code Completion on select fields: SELECT ... FROM XYZ', () => {
-  validateCompletionsFor('SELECT | FROM Object', [sobjectsFieldsFor('Object')]);
-  validateCompletionsFor('SELECT | FROM Foo', [sobjectsFieldsFor('Foo')]);
-  validateCompletionsFor('SELECT |FROM Object', [sobjectsFieldsFor('Object')]);
-  validateCompletionsFor('SELECT |FROM Foo', [sobjectsFieldsFor('Foo')]);
-  validateCompletionsFor('SELECT | FROM Foo, Bar', [sobjectsFieldsFor('Foo')]);
-
-  xdescribe('NOT WORKING YET!', () => {
-    validateCompletionsFor('SELECT id, | FROM Foo', [sobjectsFieldsFor('Foo')]);
-  });
+  validateCompletionsFor('SELECT | FROM Object', sobjectsFieldsFor('Object'));
+  validateCompletionsFor('SELECT | FROM Foo', sobjectsFieldsFor('Foo'));
+  validateCompletionsFor('SELECT |FROM Object', sobjectsFieldsFor('Object'));
+  validateCompletionsFor('SELECT |FROM Foo', sobjectsFieldsFor('Foo'));
+  validateCompletionsFor('SELECT | FROM Foo, Bar', sobjectsFieldsFor('Foo'));
+  validateCompletionsFor('SELECT id, | FROM Foo', sobjectsFieldsFor('Foo'));
+  validateCompletionsFor('SELECT id,| FROM Foo', sobjectsFieldsFor('Foo'));
 });
 
 describe('Code Completion on nested select fields: SELECT ... FROM XYZ', () => {
-  validateCompletionsFor('SELECT | (SELECT bar FROM Bar) FROM Foo', [
-    sobjectsFieldsFor('Foo'),
-  ]);
-  validateCompletionsFor('SELECT id, | (SELECT bar FROM Bar) FROM Foo', [
-    sobjectsFieldsFor('Foo'),
-  ]);
-  validateCompletionsFor('SELECT foo, (SELECT | FROM Bar) FROM Foo', [
-    sobjectsFieldsFor('Bar'),
-  ]);
-  validateCompletionsFor('SELECT foo, (SELECT |, bar FROM Bar) FROM Foo', [
-    sobjectsFieldsFor('Bar'),
-  ]);
+  validateCompletionsFor(
+    'SELECT | (SELECT bar FROM Bar) FROM Foo',
+    sobjectsFieldsFor('Foo')
+  );
+  validateCompletionsFor(
+    'SELECT (SELECT bar FROM Bar),| FROM Foo',
+    sobjectsFieldsFor('Foo')
+  );
+  validateCompletionsFor(
+    'SELECT (SELECT bar FROM Bar), | FROM Foo',
+    sobjectsFieldsFor('Foo')
+  );
+  validateCompletionsFor(
+    'SELECT id, | (SELECT bar FROM Bar) FROM Foo',
+    sobjectsFieldsFor('Foo')
+  );
+  validateCompletionsFor(
+    'SELECT foo, (SELECT | FROM Bar) FROM Foo',
+    sobjectsFieldsFor('Bar')
+  );
+  validateCompletionsFor(
+    'SELECT foo, (SELECT |, bar FROM Bar) FROM Foo',
+    sobjectsFieldsFor('Bar')
+  );
+  validateCompletionsFor(
+    'SELECT foo, (SELECT bar, | FROM Bar) FROM Foo',
+    sobjectsFieldsFor('Bar')
+  );
   validateCompletionsFor(
     'SELECT foo, (SELECT bar, (SELECT | FROM XYZ) FROM Bar) FROM Foo',
-    [sobjectsFieldsFor('XYZ')]
+    sobjectsFieldsFor('XYZ')
   );
   validateCompletionsFor(
     'SELECT foo, (SELECT |, (SELECT xyz FROM XYZ) FROM Bar) FROM Foo',
-    [sobjectsFieldsFor('Bar')]
+    sobjectsFieldsFor('Bar')
   );
   validateCompletionsFor(
     'SELECT | (SELECT bar, (SELECT xyz FROM XYZ) FROM Bar) FROM Foo',
-    [sobjectsFieldsFor('Foo')]
+    sobjectsFieldsFor('Foo')
   );
 
   validateCompletionsFor('SELECT foo, ( | FROM Foo', expectKeywords('SELECT'));
@@ -217,8 +228,11 @@ function getCursorPosition(text: string, cursorChar: string): [number, number] {
 }
 
 function sobjectsFieldsFor(sbojectName: string) {
-  return {
-    kind: CompletionItemKind.Field,
-    label: '__SOBJECT_FIELDS_PLACEHOLDER:' + sbojectName,
-  };
+  return [
+    {
+      kind: CompletionItemKind.Field,
+      label: '__SOBJECT_FIELDS_PLACEHOLDER:' + sbojectName,
+    },
+    INNER_SELECT_snippet,
+  ];
 }

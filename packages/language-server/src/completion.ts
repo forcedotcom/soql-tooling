@@ -1,7 +1,11 @@
 import {
+  SoqlFromClauseContext,
   SoqlFromExprsContext,
+  SoqlInnerQueryContext,
   SoqlParser,
   SoqlQueryContext,
+  SoqlSelectClauseContext,
+  SoqlSelectInnerQueryExprContext,
 } from '@salesforce/soql-parser/lib/generated/SoqlParser';
 import { SoqlLexer } from '@salesforce/soql-parser/lib/generated/SoqlLexer';
 import { SoqlParserListener } from '@salesforce/soql-parser/lib/generated/SoqlParserListener';
@@ -12,7 +16,12 @@ import {
   InsertTextFormat,
 } from 'vscode-languageserver';
 
-import { CommonTokenStream, ParserRuleContext, TokenStream } from 'antlr4ts';
+import {
+  CommonTokenStream,
+  ParserRuleContext,
+  Token,
+  TokenStream,
+} from 'antlr4ts';
 import { ParseTreeWalker, ParseTreeListener, ErrorNode } from 'antlr4ts/tree';
 
 import * as c3 from 'antlr4-c3';
@@ -123,6 +132,19 @@ export function completionsFor(
 
 const possibleIdentifierPrefix = /[\w]$/;
 export type CursorPosition = { line: number; column: number };
+/**
+  Return the token index for which we want to provide completion candidates,
+  which depends on the cursor possition.
+
+  Examples:
+
+  SELECT id| FROM x     : Cursor touching the previous identifier token:
+                          we want to continue completing that prior token position
+  SELECT id |FROM x     : Cursor NOT touching the previous identifier token:
+                          we want to complete what comes on this new position
+  SELECT id   |  FROM x : Cursor within whitespace block: we want to complete what
+                          comes after the whitespace (we must return a non-WS token index)
+*/
 export function findCursorTokenIndex(
   tokenStream: TokenStream,
   cursor: CursorPosition
@@ -132,16 +154,26 @@ export function findCursorTokenIndex(
   for (let i = 0; i < tokenStream.size; i++) {
     const t = tokenStream.get(i);
 
-    if (t.type === SoqlLexer.EOF || t.line > cursor.line) {
+    if (t.line > cursor.line) {
       return i;
     }
 
-    let tokenEndCol = t.charPositionInLine + (t.text as string).length;
+    let tokenStartCol = t.charPositionInLine;
+    let tokenEndCol = tokenStartCol + (t.text as string).length;
 
-    if (t.line == cursor.line && tokenEndCol >= cursorCol) {
-      return !possibleIdentifierPrefix.test(tokenStream.get(i).text as string)
-        ? i + 1
-        : i;
+    if (
+      t.line == cursor.line &&
+      (tokenEndCol > cursorCol || t.type === SoqlLexer.EOF)
+    ) {
+      if (
+        i > 0 &&
+        tokenStartCol === cursorCol &&
+        possibleIdentifierPrefix.test(tokenStream.get(i - 1).text as string)
+      ) {
+        return i - 1;
+      } else if (tokenStream.get(i).type === SoqlLexer.WS) {
+        return i + 1;
+      } else return i;
     }
   }
 }
@@ -176,9 +208,9 @@ function newSnippetItem(label: string, snippet: string): CompletionItem {
   };
 }
 const allowedTokens = [
+  SoqlLexer.COUNT,
   SoqlLexer.FROM,
   SoqlLexer.WHERE,
-  SoqlLexer.LIMIT,
   SoqlLexer.LIMIT,
 ];
 function generateCandidatesFromTokens(
@@ -193,8 +225,8 @@ function generateCandidatesFromTokens(
         ?.toUpperCase()
         .replace(/^'|'$/g, '') as string;
       items.push(newKeywordItem(candidate));
-      }
     }
+  }
   return items;
 }
 
@@ -234,9 +266,19 @@ function isCursorBefore(
   }
   return false;
 }
+
+interface SelectFromPair {
+  select: Token;
+  from: Token;
+  sobjectName: string;
+}
 class FromExpressionExtractor implements SoqlParserListener {
   sobjectName?: string;
   closestStartIndex = -1;
+
+  selectsStack: Token[] = [];
+
+  matchedSelectFroms: Array<SelectFromPair> = [];
 
   constructor(private cursorTokenIndex: number) {}
 
@@ -246,22 +288,56 @@ class FromExpressionExtractor implements SoqlParserListener {
   ): string | undefined {
     const listener = new FromExpressionExtractor(cursorTokenIndex);
     ParseTreeWalker.DEFAULT.walk<SoqlParserListener>(listener, parsedQueryTree);
-
-    return listener.sobjectName;
+    return listener.findSObjectName(cursorTokenIndex);
   }
 
-  public exitSoqlFromExprs(ctx: SoqlFromExprsContext) {
-    if (ctx.children && ctx.children.length > 0) {
-      const SELECTIndex = ctx.parent?.parent?.start.tokenIndex as number;
-      const FROMindex = ctx.start.tokenIndex;
+  private isInside(pair: SelectFromPair, index: number): boolean {
+    return pair.select.tokenIndex <= index && pair.from.tokenIndex >= index;
+  }
+  public findSObjectName(index: number): string | undefined {
+    let closest;
+
+    for (let pair of this.matchedSelectFroms) {
       if (
-        FROMindex > this.cursorTokenIndex &&
-        SELECTIndex < this.cursorTokenIndex &&
-        SELECTIndex > this.closestStartIndex
+        this.isInside(pair, index) &&
+        (!closest ||
+          index - pair.select.tokenIndex < index - closest.select.tokenIndex)
       ) {
-        this.closestStartIndex = SELECTIndex;
-        this.sobjectName = ctx.getChild(0).text;
+        closest = pair;
       }
+    }
+    return closest?.sobjectName;
+  }
+  private foundMatch(fromToken: Token, sobjectName: string) {
+    const selectToken = this.selectsStack.pop();
+    if (selectToken) {
+      this.matchedSelectFroms.push({
+        select: selectToken,
+        from: fromToken,
+        sobjectName: sobjectName,
+      });
+    }
+  }
+  visitErrorNode(node: ErrorNode) {
+    if (
+      node.symbol.type === SoqlLexer.FROM &&
+      node.parent &&
+      // node.parent.ruleIndex === SoqlParser.RULE_soqlSelectExpr &&
+      node.parent.childCount >= 2
+    ) {
+      const fromToken = node.symbol;
+      const sobjectName = node.parent.getChild(1).text;
+      this.foundMatch(fromToken, sobjectName);
+    }
+  }
+  enterSoqlInnerQuery(ctx: SoqlInnerQueryContext) {
+    this.selectsStack.push(ctx.start);
+  }
+  exitSoqlFromExprs(ctx: SoqlFromExprsContext) {
+    if (ctx.children && ctx.children.length > 0) {
+      const fromToken = ctx.parent?.start as Token;
+      const sobjectName = ctx.getChild(0).text;
+      this.foundMatch(fromToken, sobjectName);
     }
   }
 }
