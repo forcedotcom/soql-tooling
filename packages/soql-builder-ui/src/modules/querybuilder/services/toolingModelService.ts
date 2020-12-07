@@ -16,7 +16,7 @@ import {
   convertUiModelToSoql,
   convertSoqlToUiModel
 } from '../services/soqlUtils';
-import { createQueryTelemetry, TelemetryModelJson } from './telemetryUtils';
+import { createQueryTelemetry } from './telemetryUtils';
 
 // This is to satisfy TS and stay dry
 type IMap = Map<string, string | List<string>>;
@@ -116,7 +116,7 @@ export class ToolingModelService {
   }
 
   private hasOrderByField(field: string) {
-    return this.getOrderBy().findIndex( (item) => item.get('field') === field );
+    return this.getOrderBy().findIndex((item) => item.get('field') === field);
   }
 
   public addUpdateOrderByField(orderByObj: JsonMap) {
@@ -124,10 +124,11 @@ export class ToolingModelService {
     let updatedOrderBy;
     const existingIndex = this.hasOrderByField(orderByObj.field);
     if (existingIndex > -1) {
-      updatedOrderBy = this.getOrderBy().update(existingIndex, () => { return fromJS(orderByObj)});
-    }
-    else {
-      updatedOrderBy = this.getOrderBy().push(fromJS(orderByObj))
+      updatedOrderBy = this.getOrderBy().update(existingIndex, () => {
+        return fromJS(orderByObj);
+      });
+    } else {
+      updatedOrderBy = this.getOrderBy().push(fromJS(orderByObj));
     }
     const newModel = currentModel.set(
       'orderBy',
@@ -165,7 +166,10 @@ export class ToolingModelService {
 
           const updatedModel = fromJS(soqlJSModel);
           if (!updatedModel.equals(this.model.getValue())) {
-            if (soqlJSModel.errors.length || soqlJSModel.unsupported.length) {
+            if (
+              originalSoqlStatement.length > 0 &&
+              (soqlJSModel.errors.length || soqlJSModel.unsupported.length)
+            ) {
               this.sendTelemetryToBackend(soqlJSModel);
             }
             this.model.next(updatedModel);
@@ -210,7 +214,7 @@ export class ToolingModelService {
         type: MessageType.UI_TELEMETRY,
         payload: telemetryMetrics
       });
-    } catch(e) {
+    } catch (e) {
       console.error(e);
     }
   }
