@@ -86,13 +86,6 @@ export default class Where extends LightningElement {
     }
   }
 
-  handleModGroupSelection(e) {
-    const whereSelectionEvent = new CustomEvent('whereselection', {
-      detail: e.detail
-    });
-    this.dispatchEvent(whereSelectionEvent);
-  }
-
   handleAddModGroup(e) {
     e.preventDefault();
     const newTemplate = {
@@ -100,14 +93,6 @@ export default class Where extends LightningElement {
       index: this.templateIndex
     };
     this._conditionsStore = [...this._conditionsStore, newTemplate];
-  }
-
-  handleConditionRemoved(e) {
-    e.preventDefault();
-    const conditionRemovedEvent = new CustomEvent('conditionremoved', {
-      detail: e.detail
-    });
-    this.dispatchEvent(conditionRemovedEvent);
   }
 
   handleSetAndOr(e) {

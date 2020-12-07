@@ -126,18 +126,14 @@ export default class WhereModifierGroup extends LightningElement {
     });
   }
 
-  /*TODO:
-  - refactor the names of the remove events so they are not redundant.
-  - try to get events to bubble up to the parent and remove pass through events.
-  */
-
   handleConditionRemoved(e) {
     e.preventDefault();
-    console.log('Remove condition', this.index);
-    const conditionRemovedEvent = new CustomEvent('conditionremoved', {
+    const conditionRemovedEvent = new CustomEvent('where__conditionremoved', {
       detail: {
         index: this.index
-      }
+      },
+      bubbles: true,
+      composed: true
     });
 
     this.dispatchEvent(conditionRemovedEvent);
@@ -146,7 +142,6 @@ export default class WhereModifierGroup extends LightningElement {
 
 /* --- CRITERIA --- */
 // only send an event if all fields have value
-// TODO: handle when critera is cleared, no value, but need to send event.
 function selectionEventHandler(e) {
   e.preventDefault();
   const fieldEl = this.template.querySelector('[data-el-where-field]');
@@ -154,14 +149,19 @@ function selectionEventHandler(e) {
   const criteriaEl = this.template.querySelector('[data-el-where-criteria]');
 
   if (this.checkAllModifiersHaveValues()) {
-    const modGroupSelectionEvent = new CustomEvent('modifiergroupselection', {
-      detail: {
-        field: fieldEl.value,
-        operator: operatorEl.value,
-        criteria: { type: this.criteria.type, value: criteriaEl.value }, // type needs to be dynamic
-        index: this.index
+    const modGroupSelectionEvent = new CustomEvent(
+      'where__modifiergroupselection',
+      {
+        detail: {
+          field: fieldEl.value,
+          operator: operatorEl.value,
+          criteria: { type: this.criteria.type, value: criteriaEl.value }, // type needs to be dynamic
+          index: this.index
+        },
+        bubbles: true,
+        composed: true
       }
-    });
+    );
     this.dispatchEvent(modGroupSelectionEvent);
   }
 }

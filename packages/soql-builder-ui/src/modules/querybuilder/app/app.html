@@ -60,10 +60,11 @@
         <querybuilder-where
           where-expr={query.where}
           where-fields={fields}
-          onwhereselection={handleWhereSelection}
+          onwhere__modifiergroupselection={handleWhereSelection}
           onandorselection={handleAndOrSelection}
-          onconditionremoved={handleRemoveWhereCondition}
+          onwhere__conditionremoved={handleRemoveWhereCondition}
           is-loading={isFieldsLoading}
+          class={theme}
         ></querybuilder-where>
         <querybuilder-order-by
           selected-order-by-fields={query.orderBy}
