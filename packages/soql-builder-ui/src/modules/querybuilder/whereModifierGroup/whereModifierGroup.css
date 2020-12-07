@@ -21,7 +21,7 @@
 }
 /*
 setting a width will
-prvent select el from
+prevent select el from
 expanding to fit content
  */
 .modifier__fields {
@@ -36,4 +36,9 @@ expanding to fit content
 .modifier__criteria {
   padding-left: 4px;
   flex-grow: 1;
+}
+
+.button__close {
+  color: var(--vscode-button-foreground, var(--soql-white));
+  font-weight: bold;
 }
