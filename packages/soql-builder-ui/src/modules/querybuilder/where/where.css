@@ -39,6 +39,13 @@ header.header {
 .header__labels p {
   margin: 0 0.5em 0 0;
 }
+/* better align labels with correct elements below */
+.header__labels p.header__label__field {
+  margin-left: 45px;
+}
+.header__labels p.header__label__operator {
+  margin-left: 21px;
+}
 
 .header__btn--group {
   align-self: flex-start;
