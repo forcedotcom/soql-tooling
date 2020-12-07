@@ -39,7 +39,7 @@ export default class Where extends LightningElement {
     } else {
       this._conditionsStore = [this.conditionTemplate];
     }
-    this._andOr = where.andOr;
+    this._andOr = where.andOr || AndOr.AND;
   }
 
   get templateIndex(): number {
