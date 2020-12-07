@@ -336,7 +336,7 @@ class FromExpressionExtractor implements SoqlParserListener {
   exitSoqlFromExprs(ctx: SoqlFromExprsContext) {
     if (ctx.children && ctx.children.length > 0) {
       const fromToken = ctx.parent?.start as Token;
-      const sobjectName = ctx.getChild(0).text;
+      const sobjectName = ctx.getChild(0).getChild(0).text;
       this.foundMatch(fromToken, sobjectName);
     }
   }

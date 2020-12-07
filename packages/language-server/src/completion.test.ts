@@ -53,6 +53,13 @@ describe('Code Completion on select fields: SELECT ... FROM XYZ', () => {
   validateCompletionsFor('SELECT | FROM Foo, Bar', sobjectsFieldsFor('Foo'));
   validateCompletionsFor('SELECT id, | FROM Foo', sobjectsFieldsFor('Foo'));
   validateCompletionsFor('SELECT id,| FROM Foo', sobjectsFieldsFor('Foo'));
+  validateCompletionsFor('SELECT |, id FROM Foo', sobjectsFieldsFor('Foo'));
+  validateCompletionsFor('SELECT |, id, FROM Foo', sobjectsFieldsFor('Foo'));
+
+  // with alias
+  validateCompletionsFor('SELECT id,| FROM Foo F', sobjectsFieldsFor('Foo'));
+  validateCompletionsFor('SELECT |, id FROM Foo F', sobjectsFieldsFor('Foo'));
+  validateCompletionsFor('SELECT |, id, FROM Foo F', sobjectsFieldsFor('Foo'));
 });
 
 describe('Code Completion on nested select fields: SELECT ... FROM XYZ', () => {
