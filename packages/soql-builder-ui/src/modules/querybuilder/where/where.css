@@ -49,20 +49,33 @@ header.header {
 
 .header__btn--group {
   align-self: flex-start;
-  border: 1px solid
-    var(--vscode-button-background, var(--soql-color-medium-blue));
-  border-radius: 3px;
 }
 
 .header__btn {
   height: 1.5em;
-  border-radius: 0;
+  border: 2px solid;
+  border-color: var(--vscode-button-background, var(--soql-color-medium-blue));
   color: var(--vscode-button-foreground, var(--soql-white));
   background-color: var(
     --vscode-button-secondaryBackground,
     var(--soql-color-dark-blue)
   );
   cursor: pointer;
+}
+
+.header__btn--and {
+  border-right-width: 0px;
+  border-top-left-radius: 3px;
+  border-top-right-radius: 0;
+  border-bottom-left-radius: 3px;
+  border-bottom-right-radius: 0;
+}
+.header__btn--or {
+  border-left-width: 0px;
+  border-top-left-radius: 0;
+  border-top-right-radius: 3px;
+  border-bottom-left-radius: 0;
+  border-bottom-right-radius: 3px;
 }
 
 .header__btn--selected {
