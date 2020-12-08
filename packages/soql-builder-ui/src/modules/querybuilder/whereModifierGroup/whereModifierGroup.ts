@@ -74,7 +74,7 @@ export default class WhereModifierGroup extends LightningElement {
     super();
     this.handleSelectionEvent = debounce(
       selectionEventHandler.bind(this),
-      1000
+      2000
     );
   }
 
@@ -147,6 +147,8 @@ export default class WhereModifierGroup extends LightningElement {
   - a boolean value
   */
   normalizeInput(value: string): string {
+    // prevent values from being wrapped in quotes twice
+    value = value.replace(/['"]+/g, '');
     if (
       !isNaN(+value) ||
       value.toLocaleLowerCase() === 'true' ||
@@ -176,7 +178,7 @@ function selectionEventHandler(e) {
           criteria: {
             type: this.criteria.type,
             value: this.normalizeInput(criteriaEl.value)
-          }, // type needs to be dynamic
+          }, // type needs to be dynamic based on field selection
           index: this.index
         },
         bubbles: true,
