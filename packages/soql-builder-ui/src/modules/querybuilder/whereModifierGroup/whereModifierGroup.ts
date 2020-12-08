@@ -138,6 +138,24 @@ export default class WhereModifierGroup extends LightningElement {
 
     this.dispatchEvent(conditionRemovedEvent);
   }
+
+  /*
+  This should be temporary until we have more specific validation.
+  For now, this will wrap the user input in quotes unless
+  the value is:
+  - a number
+  - a boolean value
+  */
+  normalizeInput(value: string): string {
+    if (
+      !isNaN(+value) ||
+      value.toLocaleLowerCase() === 'true' ||
+      value.toLocaleLowerCase() === 'false'
+    ) {
+      return value;
+    }
+    return `'${value}'`;
+  }
 }
 
 /* --- CRITERIA --- */
@@ -155,7 +173,10 @@ function selectionEventHandler(e) {
         detail: {
           field: fieldEl.value,
           operator: operatorEl.value,
-          criteria: { type: this.criteria.type, value: criteriaEl.value }, // type needs to be dynamic
+          criteria: {
+            type: this.criteria.type,
+            value: this.normalizeInput(criteriaEl.value)
+          }, // type needs to be dynamic
           index: this.index
         },
         bubbles: true,
