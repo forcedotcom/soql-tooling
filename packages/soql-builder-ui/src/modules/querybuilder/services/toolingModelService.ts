@@ -167,7 +167,7 @@ export class ToolingModelService {
           const updatedModel = fromJS(soqlJSModel);
           if (!updatedModel.equals(this.model.getValue())) {
             if (
-              originalSoqlStatement.length > 0 &&
+              originalSoqlStatement.length &&
               (soqlJSModel.errors.length || soqlJSModel.unsupported.length)
             ) {
               this.sendTelemetryToBackend(soqlJSModel);
