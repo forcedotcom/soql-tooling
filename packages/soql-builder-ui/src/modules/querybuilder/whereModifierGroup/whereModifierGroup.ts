@@ -13,9 +13,9 @@ export default class WhereModifierGroup extends LightningElement {
   @api allFields: string[];
   @api selectedField: string = undefined;
   @api selectedOperator: string;
-  @api criteria: JsonMap = {};
   @api isLoading = false;
   @api index;
+  _criteria: JsonMap = {};
   _allModifiersHaveValue: boolean = false;
   operatorOptions = [
     {
@@ -125,6 +125,18 @@ export default class WhereModifierGroup extends LightningElement {
       return option.value !== this.selectedOperator;
     });
   }
+  /* --- CRITERIA --- */
+  @api get criteria() {
+    return this._criteria;
+  }
+  set criteria(criteria) {
+    if (criteria && criteria.value) {
+      const cleanedValue = criteria.value.replace(/['"]+/g, '');
+      this._criteria = { ...criteria, value: cleanedValue };
+    } else {
+      this._criteria = criteria;
+    }
+  }
 
   handleConditionRemoved(e) {
     e.preventDefault();
@@ -160,7 +172,6 @@ export default class WhereModifierGroup extends LightningElement {
   }
 }
 
-/* --- CRITERIA --- */
 // only send an event if all fields have value
 function selectionEventHandler(e) {
   e.preventDefault();
