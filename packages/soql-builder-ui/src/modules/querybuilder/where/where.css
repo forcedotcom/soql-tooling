@@ -52,7 +52,10 @@ header.header {
   height: 1.5em;
   border: 1px solid;
   border-color: var(--vscode-button-background, var(--soql-color-medium-blue));
-  color: var(--vscode-button-foreground, var(--soql-white));
+  color: var(
+    --vscode-list-inactiveSelectionBackground,
+    var(--soql-color-medium-grey)
+  );
   background-color: var(
     --vscode-button-secondaryBackground,
     var(--soql-color-dark-blue)
@@ -81,6 +84,7 @@ header.header {
     --vscode-button-background,
     var(--soql-color-medium-blue)
   );
+  color: var(--vscode-button-foreground, var(--soql-white));
   box-shadow: 0 0 0.5em 0em #454444;
 }
 
