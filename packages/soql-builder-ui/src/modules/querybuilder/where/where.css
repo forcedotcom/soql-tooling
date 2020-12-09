@@ -63,6 +63,9 @@ header.header {
   cursor: pointer;
   box-shadow: inset 0 0 1em 0em #454444;
 }
+.header__btn:hover {
+  color: var(--vscode-button-foreground, var(--soql-white));
+}
 /* Only curve the outside corners */
 .header__btn--and {
   border-right-width: 0px;
