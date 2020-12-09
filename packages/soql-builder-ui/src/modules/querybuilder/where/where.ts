@@ -130,4 +130,15 @@ export default class Where extends LightningElement {
       }
     }
   }
+
+  handleModifierGroupSelection(e) {
+    e.preventDefault();
+    const modifierSelectionWithAndOrEvent = new CustomEvent(
+      'modifierselectionwithandor',
+      {
+        detail: { fieldCompareExpr: e.detail, andOr: this._andOr }
+      }
+    );
+    this.dispatchEvent(modifierSelectionWithAndOrEvent);
+  }
 }

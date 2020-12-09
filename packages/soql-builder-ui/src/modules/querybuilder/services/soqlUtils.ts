@@ -61,8 +61,8 @@ export function convertSoqlModelToUiModel(
         };
       });
 
-    const andOrFromModel = queryModel.where.condition.andOr;
-    where.andOr = andOrFromModel ? andOrFromModel : Soql.AndOr.And;
+    const andOrFromSoqlModel = queryModel.where.condition.andOr;
+    where.andOr = andOrFromSoqlModel;
   }
 
   const orderBy = queryModel.orderBy

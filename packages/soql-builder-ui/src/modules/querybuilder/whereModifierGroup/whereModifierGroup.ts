@@ -72,10 +72,7 @@ export default class WhereModifierGroup extends LightningElement {
 
   constructor() {
     super();
-    this.handleSelectionEvent = debounce(
-      selectionEventHandler.bind(this),
-      2000
-    );
+    this.handleSelectionEvent = debounce(selectionEventHandler.bind(this), 500);
   }
 
   renderedCallback() {
@@ -172,7 +169,6 @@ export default class WhereModifierGroup extends LightningElement {
   }
 }
 
-// only send an event if all fields have value
 function selectionEventHandler(e) {
   e.preventDefault();
   const fieldEl = this.template.querySelector('[data-el-where-field]');
@@ -180,22 +176,17 @@ function selectionEventHandler(e) {
   const criteriaEl = this.template.querySelector('[data-el-where-criteria]');
 
   if (this.checkAllModifiersHaveValues()) {
-    const modGroupSelectionEvent = new CustomEvent(
-      'where__modifiergroupselection',
-      {
-        detail: {
-          field: fieldEl.value,
-          operator: operatorEl.value,
-          criteria: {
-            type: this.criteria.type,
-            value: this.normalizeInput(criteriaEl.value)
-          }, // type needs to be dynamic based on field selection
-          index: this.index
-        },
-        bubbles: true,
-        composed: true
+    const modGroupSelectionEvent = new CustomEvent('modifiergroupselection', {
+      detail: {
+        field: fieldEl.value,
+        operator: operatorEl.value,
+        criteria: {
+          type: this.criteria.type,
+          value: this.normalizeInput(criteriaEl.value)
+        }, // type needs to be dynamic based on field selection
+        index: this.index
       }
-    );
+    });
     this.dispatchEvent(modGroupSelectionEvent);
   }
 }

@@ -157,24 +157,35 @@ export class ToolingModelService {
     this.changeModel(newModel);
   }
 
-  public upsertWhereField(whereObj: JsonMap) {
+  public upsertWhereFieldExpr(whereObj: JsonMap) {
     const currentModel = this.getModel();
     let updatedWhereField;
-    const existingExpr = this.hasWhereField(whereObj.index);
+    const { fieldCompareExpr, andOr } = whereObj;
+    const existingExpr = this.hasWhereField(fieldCompareExpr.index);
     if (existingExpr) {
       updatedWhereField = this.getWhereConditions().update(
-        whereObj.index,
+        fieldCompareExpr.index,
         () => {
-          return fromJS(whereObj);
+          return fromJS(fieldCompareExpr);
         }
       );
     } else {
-      updatedWhereField = this.getWhereConditions().push(fromJS(whereObj));
+      updatedWhereField = this.getWhereConditions().push(
+        fromJS(fieldCompareExpr)
+      );
     }
 
-    const newModel = currentModel.setIn(
+    let newModel = currentModel.setIn(
       [ModelProps.WHERE, ModelProps.WHERE_CONDITIONS],
       updatedWhereField
+    );
+    /*
+    The UI model should always be aware
+    of andOr UI state when expr is updated.
+    */
+    newModel = newModel.setIn(
+      [ModelProps.WHERE, ModelProps.WHERE_AND_OR],
+      andOr
     );
 
     this.changeModel(newModel);
