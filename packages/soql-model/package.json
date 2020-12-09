@@ -17,11 +17,10 @@
     "postpublish": "./scripts/unbundle-parser.js"
   },
   "dependencies": {
-    "antlr4": "4.8.0",
-    "@salesforce/soql-parser": "file:../../Dependencies/salesforce-soql-parser-0.17.0.tgz"
+    "antlr4ts": "^0.5.0-alpha.3",
+    "@salesforce/soql-parser": "file:../../Dependencies/salesforce-soql-parser-0.19.0.tgz"
   },
   "devDependencies": {
-    "@types/antlr4": "4.7.2",
     "@types/jest": "22.2.3",
     "jest": "26.1.0",
     "ts-jest": "26.1.3"
