@@ -17,17 +17,22 @@ interface ConditionTemplate {
   index: number;
 }
 
+interface ModifierGroupNode extends Node {
+  allModifiersHaveValue: boolean;
+}
+
 export default class Where extends LightningElement {
   @api isLoading = false;
   @api whereFields: string[];
-  _andOr;
+  @track _conditionsStore: JsonMap[] = [];
+  _andOr = AndOr.AND;
   conditionTemplate: ConditionTemplate = {
     field: undefined,
     operator: undefined,
     criteria: { type: null, value: null },
     index: this.templateIndex
   };
-  @track _conditionsStore: JsonMap[] = [];
+  lastModifierGroupIsComplete = false;
 
   @api get whereExpr(): JsonMap {
     return { conditions: this._conditionsStore, andOr: this._andOr };
@@ -39,7 +44,10 @@ export default class Where extends LightningElement {
     } else {
       this._conditionsStore = [this.conditionTemplate];
     }
-    this._andOr = where.andOr || AndOr.AND;
+
+    if (where.andOr) {
+      this._andOr = where.andOr;
+    }
   }
 
   get templateIndex(): number {
@@ -50,39 +58,46 @@ export default class Where extends LightningElement {
     return 0;
   }
 
-  renderedCallback() {
-    const andButton = this.template.querySelector("[name='and']");
-    const orButton = this.template.querySelector("[name='or']");
+  headerSelectedClass = ' header__btn--selected';
+  get andBtnClassList() {
+    let andClassList = 'header__btn header__btn--and';
+    andClassList += this._andOr === AndOr.AND ? this.headerSelectedClass : '';
 
-    if (this._andOr === AndOr.AND) {
-      andButton.classList.add('header__btn--selected');
-      orButton.classList.remove('header__btn--selected');
-    }
-
-    if (this._andOr === AndOr.OR) {
-      orButton.classList.add('header__btn--selected');
-      andButton.classList.remove('header__btn--selected');
-    }
-
-    this.enableAddButton();
+    return andClassList;
   }
 
-  enableAddButton() {
-    const modfierGroupsRendered = this.template.querySelectorAll(
-      'querybuilder-where-modifier-group'
-    );
-    const addBtn = this.template.querySelector('[data-el-where-add-btn]');
+  get orBtnClassList() {
+    let orClassList = 'header__btn header__btn--or';
+    orClassList += this._andOr === AndOr.OR ? this.headerSelectedClass : '';
 
-    if (modfierGroupsRendered.length) {
+    return orClassList;
+  }
+
+  get addBtnClassList() {
+    const disabledBtnClass = 'btn--disabled';
+    let classList = '';
+    classList += !this.lastModifierGroupIsComplete ? disabledBtnClass : '';
+    return classList;
+  }
+
+  renderedCallback() {
+    this.checkLastModifierGroup();
+  }
+
+  getModfierGroupsRendered(): NodeList {
+    return this.template.querySelectorAll('querybuilder-where-modifier-group');
+  }
+
+  checkLastModifierGroup() {
+    const modfierGroupsRendered = this.getModfierGroupsRendered();
+
+    if (this.getModfierGroupsRendered().length) {
       const lastGroupIndex = modfierGroupsRendered.length - 1;
-      const shouldEnableAddBtn =
-        modfierGroupsRendered[lastGroupIndex].allModifiersHaveValue;
+      const lastGroupIsComplete = (modfierGroupsRendered[
+        lastGroupIndex
+      ] as ModifierGroupNode).allModifiersHaveValue;
 
-      if (shouldEnableAddBtn) {
-        addBtn.classList.remove('btn--disabled');
-      } else {
-        addBtn.classList.add('btn--disabled');
-      }
+      this.lastModifierGroupIsComplete = lastGroupIsComplete;
     }
   }
 
@@ -102,10 +117,17 @@ export default class Where extends LightningElement {
       selectedValue === AndOr.AND || selectedValue === AndOr.OR;
 
     if (isValidValue && selectedValue !== this._andOr) {
-      const andOrSelectionEvent = new CustomEvent('andorselection', {
-        detail: selectedValue
-      });
-      this.dispatchEvent(andOrSelectionEvent);
+      this._andOr = selectedValue;
+
+      if (
+        this.getModfierGroupsRendered().length > 1 &&
+        this.lastModifierGroupIsComplete
+      ) {
+        const andOrSelectionEvent = new CustomEvent('andorselection', {
+          detail: selectedValue
+        });
+        this.dispatchEvent(andOrSelectionEvent);
+      }
     }
   }
 }

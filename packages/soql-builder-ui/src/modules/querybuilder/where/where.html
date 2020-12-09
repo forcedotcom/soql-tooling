@@ -18,7 +18,7 @@
             type="button"
             name="and"
             value="AND"
-            class="header__btn header__btn--and"
+            class={andBtnClassList}
             onclick={handleSetAndOr}
           >
             AND
@@ -27,7 +27,7 @@
             type="button"
             name="or"
             value="OR"
-            class="header__btn header__btn--or"
+            class={orBtnClassList}
             onclick={handleSetAndOr}
           >
             OR
@@ -55,7 +55,7 @@
       </section>
       <footer>
         <button
-          class="btn--disabled"
+          class={addBtnClassList}
           onclick={handleAddModGroup}
           data-el-where-add-btn
         >

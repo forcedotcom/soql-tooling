@@ -126,6 +126,10 @@ button:hover {
     var(--soql-color-blue-text)
   );
 }
+button:active {
+  box-shadow: 0 0 0.3em 0em #454444;
+}
+
 .select-long {
   min-width: var(--soql-input-width);
   max-width: var(--soql-input-width);
