@@ -101,6 +101,15 @@ describe('App should', () => {
       'querybuilder-query-preview'
     );
     expect(preview.length).toEqual(1);
+
+    const where = app.shadowRoot.querySelectorAll('querybuilder-where');
+    expect(where.length).toEqual(1);
+
+    const orderBy = app.shadowRoot.querySelectorAll('querybuilder-order-by');
+    expect(orderBy.length).toEqual(1);
+
+    const limit = app.shadowRoot.querySelectorAll('querybuilder-limit');
+    expect(limit.length).toEqual(1);
   });
 
   it('block the query builder ui on unrecoverable error', async () => {
@@ -207,6 +216,73 @@ describe('App should', () => {
         type: MessageType.RUN_SOQL_QUERY
       });
     });
+  });
+
+  it('WHERE: should send message to vs code with SELECTION event', () => {
+    const where = app.shadowRoot.querySelector('querybuilder-where');
+    const postMessageSpy = jest.spyOn(messageService, 'sendMessage');
+    const eventPayload = {
+      detail: {
+        fieldCompareExpr: {
+          field: 'test',
+          operator: 'EQ',
+          criteria: { value: "'pass'" },
+          index: 0
+        },
+        andOr: 'AND'
+      }
+    };
+
+    where.dispatchEvent(
+      new CustomEvent('modifierselectionwithandor', eventPayload)
+    );
+    expect(postMessageSpy).toHaveBeenCalled();
+    expect((postMessageSpy.mock.calls[0][0] as SoqlEditorEvent).type).toEqual(
+      MessageType.UI_SOQL_CHANGED
+    );
+    expect(
+      (postMessageSpy.mock.calls[0][0] as SoqlEditorEvent).payload
+    ).toContain(eventPayload.detail.fieldCompareExpr.field);
+  });
+
+  it('WHERE: should send message to vs code with REMOVE CONDITION event', () => {
+    const where = app.shadowRoot.querySelector('querybuilder-where');
+    const postMessageSpy = jest.spyOn(messageService, 'sendMessage');
+    const eventPayload = {
+      detail: {
+        fieldCompareExpr: {
+          field: 'test',
+          index: 0
+        }
+      }
+    };
+
+    where.dispatchEvent(
+      new CustomEvent('where__conditionremoved', eventPayload)
+    );
+    expect(postMessageSpy).toHaveBeenCalled();
+    expect((postMessageSpy.mock.calls[0][0] as SoqlEditorEvent).type).toEqual(
+      MessageType.UI_SOQL_CHANGED
+    );
+    expect(
+      (postMessageSpy.mock.calls[0][0] as SoqlEditorEvent).payload
+    ).not.toContain(eventPayload.detail.fieldCompareExpr.field);
+  });
+
+  it('WHERE: should send message to vs code with AND OR selection event', () => {
+    const where = app.shadowRoot.querySelector('querybuilder-where');
+    const postMessageSpy = jest.spyOn(messageService, 'sendMessage');
+    const eventPayload = {
+      detail: {
+        andOr: 'AND'
+      }
+    };
+
+    where.dispatchEvent(new CustomEvent('andorselection', eventPayload));
+    expect(postMessageSpy).toHaveBeenCalled();
+    expect((postMessageSpy.mock.calls[0][0] as SoqlEditorEvent).type).toEqual(
+      MessageType.UI_SOQL_CHANGED
+    );
   });
 
   it('send orderby message to vs code when orderby added', () => {
