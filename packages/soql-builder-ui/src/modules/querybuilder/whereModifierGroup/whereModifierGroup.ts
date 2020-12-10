@@ -158,8 +158,9 @@ export default class WhereModifierGroup extends LightningElement {
   normalizeInput(value: string): string {
     // prevent values from being wrapped in quotes twice
     value = value.replace(/['"]+/g, '');
+    const canValueBeParsedToNumber = !isNaN(+value);
     if (
-      !isNaN(+value) ||
+      canValueBeParsedToNumber ||
       value.toLocaleLowerCase() === 'true' ||
       value.toLocaleLowerCase() === 'false'
     ) {
