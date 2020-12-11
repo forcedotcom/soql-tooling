@@ -191,11 +191,11 @@ export class ToolingModelService {
     this.changeModel(newModel);
   }
 
-  public removeWhereFieldCondition(whereObj: JsonMap) {
+  public removeWhereFieldCondition(fieldCompareExpr: JsonMap) {
     const currentModel = this.getModel();
     const whereConditions = this.getWhereConditions();
     const filteredConditions = whereConditions.filter((item) => {
-      return item.get('index') !== whereObj.index;
+      return item.get('index') !== fieldCompareExpr.index;
     });
 
     const newModel = currentModel.setIn(
