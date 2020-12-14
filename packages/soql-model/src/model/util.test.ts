@@ -15,7 +15,7 @@ const conditionFieldCompare = new Impl.FieldCompareConditionImpl(field, Soql.Com
 const conditionLike = new Impl.LikeConditionImpl(field, literal);
 const conditionInList = new Impl.InListConditionImpl(field, Soql.InOperator.In, [literal]);
 const conditionIncludes = new Impl.IncludesConditionImpl(field, Soql.IncludesOperator.Includes, [literal]);
-const conditionUnmodeled = new Impl.UnmodeledSyntaxImpl('A + B > 10');
+const conditionUnmodeled = new Impl.UnmodeledSyntaxImpl('A + B > 10', 'unmodeled:calculated-condition');
 const conditionAndOr = new Impl.AndOrConditionImpl(conditionFieldCompare, Soql.AndOr.And, conditionLike);
 const conditionNested = new Impl.NestedConditionImpl(conditionFieldCompare);
 const conditionNot = new Impl.NotConditionImpl(conditionFieldCompare);
@@ -30,7 +30,7 @@ describe('SoqlModelUtils should', () => {
             new Impl.FieldRefImpl(
               'field1',
             ),
-            new Impl.UnmodeledSyntaxImpl('alias1')
+            new Impl.UnmodeledSyntaxImpl('alias1', 'unmodeled:alias')
           )
         ]),
         new Impl.FromImpl('object1')
