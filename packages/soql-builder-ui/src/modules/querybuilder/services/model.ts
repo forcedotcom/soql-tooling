@@ -49,3 +49,51 @@ export interface ToolingModelJson extends JsonMap {
   unsupported: string[];
   originalSoqlStatement: string;
 }
+
+export const operatorOptions = [
+  {
+    value: 'EQ',
+    displayValue: '='
+  },
+  {
+    value: 'NOT_EQ',
+    displayValue: '≠'
+  },
+  {
+    value: 'LT',
+    displayValue: '<'
+  },
+  {
+    value: 'LT_EQ',
+    displayValue: '≤'
+  },
+  {
+    value: 'GT',
+    displayValue: '>'
+  },
+  {
+    value: 'GT_EQ',
+    displayValue: '≥'
+  },
+  {
+    value: 'LIKE',
+    displayValue: 'like'
+  }
+  /*
+    use these operators once work to handle
+    incomming %, _, concat with plain user text
+    is implimented.
+    */
+  /* {
+      value: 'LIKE_START',
+      displayValue: 'starts with'
+    },
+    {
+      value: 'LIKE_END',
+      displayValue: 'ends with'
+    },
+    {
+      value: 'LIKE_CONTAINS',
+      displayValue: 'contains'
+    } */
+];

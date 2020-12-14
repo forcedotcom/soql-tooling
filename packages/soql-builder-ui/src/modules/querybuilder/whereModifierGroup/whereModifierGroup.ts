@@ -8,6 +8,7 @@
 import { api, LightningElement } from 'lwc';
 import { debounce } from 'debounce';
 import { JsonMap } from '@salesforce/types';
+import { operatorOptions } from '../services/model';
 
 export default class WhereModifierGroup extends LightningElement {
   @api allFields: string[];
@@ -17,53 +18,10 @@ export default class WhereModifierGroup extends LightningElement {
   @api index;
   _criteria: JsonMap = {};
   _allModifiersHaveValue: boolean = false;
-  operatorOptions = [
-    {
-      value: 'EQ',
-      displayValue: '='
-    },
-    {
-      value: 'NOT_EQ',
-      displayValue: '≠'
-    },
-    {
-      value: 'LT',
-      displayValue: '<'
-    },
-    {
-      value: 'LT_EQ',
-      displayValue: '≤'
-    },
-    {
-      value: 'GT',
-      displayValue: '>'
-    },
-    {
-      value: 'GT_EQ',
-      displayValue: '≥'
-    },
-    {
-      value: 'LIKE',
-      displayValue: 'like'
-    }
-    /*
-    use these operators once work to handle
-    incomming %, _, concat with plain user text
-    is implimented.
-    */
-    /* {
-      value: 'LIKE_START',
-      displayValue: 'starts with'
-    },
-    {
-      value: 'LIKE_END',
-      displayValue: 'ends with'
-    },
-    {
-      value: 'LIKE_CONTAINS',
-      displayValue: 'contains'
-    } */
-  ];
+  fieldEl: HTMLSelectElement;
+  operatorEl: HTMLSelectElement;
+  criteriaEl: HTMLInputElement;
+
   handleSelectionEvent: () => void;
   // this need to be public so parent can read value
   @api get allModifiersHaveValue() {
@@ -76,18 +34,18 @@ export default class WhereModifierGroup extends LightningElement {
   }
 
   renderedCallback() {
+    this.fieldEl = this.template.querySelector('[data-el-where-field]');
+    this.operatorEl = this.template.querySelector('[data-el-where-operator]');
+    this.criteriaEl = this.template.querySelector('[data-el-where-criteria]');
+
     this.checkAllModifiersHaveValues();
   }
 
   checkAllModifiersHaveValues(): Boolean {
-    const fieldEl = this.template.querySelector('[data-el-where-field]');
-    const operatorEl = this.template.querySelector('[data-el-where-operator]');
-    const criteriaEl = this.template.querySelector('[data-el-where-criteria]');
     const allHaveValues = Boolean(
-      fieldEl.value && operatorEl.value && criteriaEl.value
+      this.fieldEl.value && this.operatorEl.value && this.criteriaEl.value
     );
     this._allModifiersHaveValue = allHaveValues;
-
     return allHaveValues;
   }
 
@@ -112,13 +70,13 @@ export default class WhereModifierGroup extends LightningElement {
   }
 
   get _selectedOperator() {
-    return this.operatorOptions.find(
+    return operatorOptions.find(
       (option) => option.value === this.selectedOperator
     );
   }
 
   get filteredOperators() {
-    return this.operatorOptions.filter((option) => {
+    return operatorOptions.filter((option) => {
       return option.value !== this.selectedOperator;
     });
   }
@@ -172,18 +130,14 @@ export default class WhereModifierGroup extends LightningElement {
 
 function selectionEventHandler(e) {
   e.preventDefault();
-  const fieldEl = this.template.querySelector('[data-el-where-field]');
-  const operatorEl = this.template.querySelector('[data-el-where-operator]');
-  const criteriaEl = this.template.querySelector('[data-el-where-criteria]');
-
   if (this.checkAllModifiersHaveValues()) {
     const modGroupSelectionEvent = new CustomEvent('modifiergroupselection', {
       detail: {
-        field: fieldEl.value,
-        operator: operatorEl.value,
+        field: this.fieldEl.value,
+        operator: this.operatorEl.value,
         criteria: {
           type: this.criteria.type,
-          value: this.normalizeInput(criteriaEl.value)
+          value: this.normalizeInput(this.criteriaEl.value)
         }, // type needs to be dynamic based on field selection
         index: this.index
       }
