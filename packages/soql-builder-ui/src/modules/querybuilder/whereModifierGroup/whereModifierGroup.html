@@ -43,13 +43,14 @@
       name="criteria"
       type="text"
       data-el-where-criteria
-      onkeyup={handleSelectionEvent}
+      oninput={handleSelectionEvent}
       value={_criteria.value}
     />
     <span
       role="button"
       class="modifier__item button__close pointer"
       onclick={handleConditionRemoved}
+      data-el-where-delete
     >
       X
     </span>
