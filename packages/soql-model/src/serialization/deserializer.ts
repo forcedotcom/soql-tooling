@@ -6,15 +6,21 @@
  */
 
 import { SOQLParser, ParserError } from '@salesforce/soql-parser';
-import { SoqlParserListener } from '@salesforce/soql-parser/lib/SoqlParserListener';
-import * as Parser from '@salesforce/soql-parser/lib/SoqlParser';
+import { SoqlParserListener } from '@salesforce/soql-parser/lib/generated/SoqlParserListener';
+import { SoqlParserVisitor } from '@salesforce/soql-parser/lib/generated/SoqlParserVisitor';
+import * as Parser from '@salesforce/soql-parser/lib/generated/SoqlParser';
 import { Messages } from '../messages/messages';
 import * as Soql from '../model/model';
 import * as Impl from '../model/impl';
-import { ParserRuleContext, Token } from 'antlr4';
-import { ErrorNodeImpl } from 'antlr4/tree/Tree';
-import { NoViableAltException, InputMismatchException } from 'antlr4/error/Errors';
-
+import { CharStream, ParserRuleContext, Token } from 'antlr4ts';
+import { NoViableAltException, InputMismatchException } from 'antlr4ts';
+import {
+  ErrorNode,
+  ParseTreeListener,
+  ParseTreeWalker,
+  AbstractParseTreeVisitor,
+} from 'antlr4ts/tree';
+import { Interval } from 'antlr4ts/misc/Interval';
 
 export class ModelDeserializer {
   protected soqlSyntax: string;
@@ -34,12 +40,12 @@ export class ModelDeserializer {
     const errors = result.getParserErrors();
     if (parseTree) {
       const queryListener = new QueryListener();
-      parseTree.enterRule(queryListener);
+      parseTree.enterRule(queryListener as ParseTreeListener);
       query = queryListener.getQuery();
     }
 
     const errorIdentifer = new ErrorIdentifier(parseTree);
-    const modelErrors = errors.map(error => errorIdentifer.identifyError(error));
+    const modelErrors = errors.map((error) => errorIdentifer.identifyError(error));
     if (query) {
       query.errors = modelErrors;
     } else {
@@ -64,7 +70,7 @@ class ErrorIdentifier {
         type: Soql.ErrorType.EMPTY,
         message: Messages.error_empty,
         lineNumber: error.getLineNumber(),
-        charInLine: error.getCharacterPositionInLine()
+        charInLine: error.getCharacterPositionInLine(),
       };
     }
     if (this.isNoSelectClauseError(error)) {
@@ -72,7 +78,7 @@ class ErrorIdentifier {
         type: Soql.ErrorType.NOSELECT,
         message: Messages.error_noSelections,
         lineNumber: error.getLineNumber(),
-        charInLine: error.getCharacterPositionInLine()
+        charInLine: error.getCharacterPositionInLine(),
       };
     }
     if (this.isNoSelectionsError(error)) {
@@ -80,7 +86,7 @@ class ErrorIdentifier {
         type: Soql.ErrorType.NOSELECTIONS,
         message: Messages.error_noSelections,
         lineNumber: error.getLineNumber(),
-        charInLine: error.getCharacterPositionInLine()
+        charInLine: error.getCharacterPositionInLine(),
       };
     }
     if (this.isNoFromClauseError(error)) {
@@ -88,7 +94,7 @@ class ErrorIdentifier {
         type: Soql.ErrorType.NOFROM,
         message: Messages.error_noFrom,
         lineNumber: error.getLineNumber(),
-        charInLine: error.getCharacterPositionInLine()
+        charInLine: error.getCharacterPositionInLine(),
       };
     }
     if (this.isIncompleteFromError(error)) {
@@ -96,7 +102,7 @@ class ErrorIdentifier {
         type: Soql.ErrorType.INCOMPLETEFROM,
         message: Messages.error_incompleteFrom,
         lineNumber: error.getLineNumber(),
-        charInLine: error.getCharacterPositionInLine()
+        charInLine: error.getCharacterPositionInLine(),
       };
     }
     if (this.isIncompleteLimitError(error)) {
@@ -104,15 +110,15 @@ class ErrorIdentifier {
         type: Soql.ErrorType.INCOMPLETELIMIT,
         message: Messages.error_incompleteLimit,
         lineNumber: error.getLineNumber(),
-        charInLine: error.getCharacterPositionInLine()
+        charInLine: error.getCharacterPositionInLine(),
       };
     }
     return {
       type: Soql.ErrorType.UNKNOWN,
       message: error.getMessage(),
       lineNumber: error.getLineNumber(),
-      charInLine: error.getCharacterPositionInLine()
-    }
+      charInLine: error.getCharacterPositionInLine(),
+    };
   }
 
   protected isEmptyError(error: ParserError): boolean {
@@ -121,44 +127,54 @@ class ErrorIdentifier {
 
   protected isNoSelectClauseError(error: ParserError): boolean {
     const context = this.matchErrorToContext(error);
-    return context instanceof Parser.SoqlSelectClauseContext
-      && context.exception instanceof InputMismatchException
-      && !this.hasNonErrorChildren(context);
+    return (
+      context instanceof Parser.SoqlSelectClauseContext &&
+      context.exception instanceof InputMismatchException &&
+      !this.hasNonErrorChildren(context)
+    );
   }
 
   protected isNoSelectionsError(error: ParserError): boolean {
     const context = this.matchErrorToContext(error);
-    return context instanceof Parser.SoqlSelectClauseContext
-      && context.exception instanceof NoViableAltException
-      && !this.hasNonErrorChildren(context);
+    return (
+      context instanceof Parser.SoqlSelectClauseContext &&
+      context.exception instanceof NoViableAltException &&
+      !this.hasNonErrorChildren(context)
+    );
   }
 
   protected isNoFromClauseError(error: ParserError): boolean {
     const context = this.matchErrorToContext(error);
-    return context instanceof Parser.SoqlFromClauseContext
-      && context.exception instanceof InputMismatchException
-      && !this.hasNonErrorChildren(context);
+    return (
+      context instanceof Parser.SoqlFromClauseContext &&
+      context.exception instanceof InputMismatchException &&
+      !this.hasNonErrorChildren(context)
+    );
   }
 
   protected isIncompleteFromError(error: ParserError): boolean {
     const context = this.matchErrorToContext(error);
-    return context instanceof Parser.SoqlIdentifierContext
-      && context.parentCtx instanceof Parser.SoqlFromExprContext
-      && context.exception instanceof InputMismatchException;
+    return (
+      context instanceof Parser.SoqlIdentifierContext &&
+      context.parent instanceof Parser.SoqlFromExprContext &&
+      context.exception instanceof InputMismatchException
+    );
   }
 
   protected isIncompleteLimitError(error: ParserError): boolean {
     const context = this.matchErrorToContext(error);
-    return context instanceof Parser.SoqlIntegerValueContext
-      && this.hasAncestorOfType(context, Parser.SoqlLimitClauseContext);
+    return (
+      context instanceof Parser.SoqlIntegerValueContext &&
+      this.hasAncestorOfType(context, Parser.SoqlLimitClauseContext)
+    );
   }
 
   protected findExceptions(context: ParserRuleContext): void {
     if (context.exception) {
       this.nodesWithExceptions.push(context);
     }
-    if (context.getChildCount() > 0) {
-      for (let i = 0; i < context.getChildCount(); i++) {
+    if (context.childCount > 0) {
+      for (let i = 0; i < context.childCount; i++) {
         const child = context.getChild(i);
         if (child instanceof ParserRuleContext) {
           this.findExceptions(child as ParserRuleContext);
@@ -170,7 +186,7 @@ class ErrorIdentifier {
   protected matchErrorToContext(error: ParserError): ParserRuleContext | undefined {
     for (let i = 0; i < this.nodesWithExceptions.length; i++) {
       const node = this.nodesWithExceptions[i];
-      if (node.exception.offendingToken === error.getToken()) {
+      if (node.exception?.getOffendingToken() === error.getToken()) {
         return node;
       }
     }
@@ -178,29 +194,38 @@ class ErrorIdentifier {
   }
 
   protected hasNonErrorChildren(context: ParserRuleContext): boolean {
-    if (context.getChildCount() > 0) {
-      for (let i = 0; i < context.getChildCount(); i++) {
+    if (context.childCount > 0) {
+      for (let i = 0; i < context.childCount; i++) {
         const child = context.getChild(i);
-        if (!(child instanceof ErrorNodeImpl)) {
+        if (!(child instanceof ErrorNode)) {
           return true;
         }
       }
     }
-    return false
+    return false;
   }
 
   protected hasAncestorOfType(context: ParserRuleContext, type: any): boolean {
     if (context instanceof type) {
       return true;
     }
-    if (context.parentCtx) {
-      return this.hasAncestorOfType(context.parentCtx, type);
+    if (context.parent) {
+      return this.hasAncestorOfType(context.parent, type);
     }
     return false;
   }
 }
 
-class QueryListener extends SoqlParserListener {
+/**
+// If we want to use a proper Visitor:
+class QueryVisitor
+  extends AbstractParseTreeVisitor<void>
+  implements SoqlParserVisitor<void> {
+  protected defaultResult(): void {}
+  visitSoqlFromExpr(ctx: Parser.SoqlFromExprContext): void {}
+}
+*/
+class QueryListener implements SoqlParserListener {
   public query?: Soql.Query;
   public select?: Soql.Select;
   public selectExpressions: Soql.SelectExpression[] = [];
@@ -217,28 +242,28 @@ class QueryListener extends SoqlParserListener {
   public update?: Soql.Update;
 
   public enterSoqlFromExpr(ctx: Parser.SoqlFromExprContext): void {
-    const idContexts = ctx.getTypedRuleContexts(Parser.SoqlIdentifierContext);
+    const idContexts = ctx.getRuleContexts(Parser.SoqlIdentifierContext);
     const hasAsClause = idContexts.length > 1;
-    const sobjectName = idContexts[0].getText();
+    const sobjectName = idContexts[0].text;
     let as: Soql.UnmodeledSyntax | undefined;
     if (hasAsClause) {
-      as = ctx.AS()
-        ? this.toUnmodeledSyntax(ctx.AS().getSymbol(), idContexts[1].stop)
-        : this.toUnmodeledSyntax(idContexts[1].start, idContexts[1].stop);
+      const safeAS = ctx.AS();
+      as =
+        safeAS !== undefined
+          ? this.toUnmodeledSyntax(safeAS.symbol, idContexts[1].stop as Token)
+          : this.toUnmodeledSyntax(idContexts[1].start, idContexts[1].stop as Token);
     }
-    const using = ctx.soqlUsingClause()
-      ? this.toUnmodeledSyntax(
-        ctx.soqlUsingClause().start,
-        ctx.soqlUsingClause().stop
-      )
+
+    const safeUSING = ctx.soqlUsingClause();
+    const using = safeUSING
+      ? this.toUnmodeledSyntax(safeUSING.start as Token, safeUSING.stop as Token)
       : undefined;
     this.from = new Impl.FromImpl(sobjectName, as, using);
   }
 
+  // @Override
   public enterSoqlFromExprs(ctx: Parser.SoqlFromExprsContext): void {
-    const fromExprContexts = ctx.getTypedRuleContexts(
-      Parser.SoqlFromExprContext
-    );
+    const fromExprContexts = ctx.getRuleContexts(Parser.SoqlFromExprContext);
     if (fromExprContexts && fromExprContexts.length === 1) {
       const fromCtx = fromExprContexts[0];
       fromCtx.enterRule(this);
@@ -246,13 +271,13 @@ class QueryListener extends SoqlParserListener {
   }
 
   public enterSoqlFromClause(ctx: Parser.SoqlFromClauseContext): void {
-    if (ctx.soqlFromExprs()) {
+    if (ctx.tryGetRuleContext(0, Parser.SoqlFromExprsContext)) {
       ctx.soqlFromExprs().enterRule(this);
     }
   }
 
   public enterSoqlSelectExprs(ctx: Parser.SoqlSelectExprsContext): void {
-    const exprContexts = ctx.getTypedRuleContexts(Parser.SoqlSelectExprContext);
+    const exprContexts = ctx.getRuleContexts(Parser.SoqlSelectExprContext);
     exprContexts.forEach((exprContext) => {
       // normally we would want to exprContext.enterRule(this) and delegate to
       // other functions but the antr4-tool's typescript definitions are not
@@ -262,20 +287,20 @@ class QueryListener extends SoqlParserListener {
         const field = this.toField(fieldCtx);
         if (field instanceof Impl.UnmodeledSyntaxImpl) {
           this.selectExpressions.push(
-            this.toUnmodeledSyntax(exprContext.start, exprContext.stop)
+            this.toUnmodeledSyntax(exprContext.start, exprContext.stop as Token)
           );
         } else {
           let alias: Soql.UnmodeledSyntax | undefined;
           const aliasCtx = (exprContext as Parser.SoqlSelectColumnExprContext).soqlAlias();
           if (aliasCtx) {
-            alias = this.toUnmodeledSyntax(aliasCtx.start, aliasCtx.stop);
+            alias = this.toUnmodeledSyntax(aliasCtx.start, aliasCtx.stop as Token);
           }
           this.selectExpressions.push(new Impl.FieldSelectionImpl(field, alias));
         }
       } else {
         // not a modeled case
         this.selectExpressions.push(
-          this.toUnmodeledSyntax(exprContext.start, exprContext.stop)
+          this.toUnmodeledSyntax(exprContext.start, exprContext.stop as Token)
         );
       }
     });
@@ -284,7 +309,7 @@ class QueryListener extends SoqlParserListener {
   public enterSoqlLimitClause(ctx: Parser.SoqlLimitClauseContext): void {
     let value = undefined;
     if (ctx.soqlIntegerValue()) {
-      const valueString = ctx.soqlIntegerValue().getText();
+      const valueString = ctx.soqlIntegerValue().text;
       value = parseInt(valueString);
     }
     if (typeof value === 'number' && value !== NaN) {
@@ -298,22 +323,22 @@ class QueryListener extends SoqlParserListener {
   }
 
   public enterSoqlOrderByClauseExprs(ctx: Parser.SoqlOrderByClauseExprsContext): void {
-    const exprContexts = ctx.getTypedRuleContexts(Parser.SoqlOrderByClauseExprContext);
-    exprContexts.forEach(exprContext => {
+    const exprContexts = ctx.getRuleContexts(Parser.SoqlOrderByClauseExprContext);
+    exprContexts.forEach((exprContext) => {
       if (exprContext instanceof Parser.SoqlOrderByClauseExprContext) {
-        const obCtx = (exprContext as Parser.SoqlOrderByClauseExprContext);
+        const obCtx = exprContext as Parser.SoqlOrderByClauseExprContext;
         const fieldCtx = obCtx.soqlOrderByClauseField();
         const field = this.toOrderByField(fieldCtx);
         const order = obCtx.ASC()
           ? Soql.Order.Ascending
-          : (obCtx.DESC()
-            ? Soql.Order.Descending
-            : undefined);
+          : obCtx.DESC()
+          ? Soql.Order.Descending
+          : undefined;
         const nullsOrder = obCtx.FIRST()
           ? Soql.NullsOrder.First
-          : (obCtx.LAST()
-            ? Soql.NullsOrder.Last
-            : undefined);
+          : obCtx.LAST()
+          ? Soql.NullsOrder.Last
+          : undefined;
         this.orderByExpressions.push(new Impl.OrderByExpressionImpl(field, order, nullsOrder));
       }
     });
@@ -330,13 +355,11 @@ class QueryListener extends SoqlParserListener {
       // other functions but the antr4-tool's typescript definitions are not
       // perfect for listeners; workaround by type-checking
       if (selectCtx instanceof Parser.SoqlSelectExprsClauseContext) {
-        (selectCtx as Parser.SoqlSelectExprsClauseContext)
-          .soqlSelectExprs()
-          .enterRule(this);
+        (selectCtx as Parser.SoqlSelectExprsClauseContext).soqlSelectExprs().enterRule(this);
         this.select = new Impl.SelectExprsImpl(this.selectExpressions);
       } else if (selectCtx instanceof Parser.SoqlSelectCountClauseContext) {
         // not a modeled case
-        this.select = this.toUnmodeledSyntax(selectCtx.start, selectCtx.stop);
+        this.select = this.toUnmodeledSyntax(selectCtx.start, selectCtx.stop as Token);
       } else {
         // no selections
         this.select = new Impl.SelectExprsImpl([]);
@@ -349,15 +372,15 @@ class QueryListener extends SoqlParserListener {
 
     const whereCtx = ctx.soqlWhereClause();
     if (whereCtx) {
-      whereCtx.enterRule(this);
+      whereCtx.enterRule(this as ParseTreeListener);
     }
     const withCtx = ctx.soqlWithClause();
     if (withCtx) {
-      this.with = this.toUnmodeledSyntax(withCtx.start, withCtx.stop);
+      this.with = this.toUnmodeledSyntax(withCtx.start, withCtx.stop as Token);
     }
     const groupByCtx = ctx.soqlGroupByClause();
     if (groupByCtx) {
-      this.groupBy = this.toUnmodeledSyntax(groupByCtx.start, groupByCtx.stop);
+      this.groupBy = this.toUnmodeledSyntax(groupByCtx.start, groupByCtx.stop as Token);
     }
     const orderByCtx = ctx.soqlOrderByClause();
     if (orderByCtx) {
@@ -369,22 +392,22 @@ class QueryListener extends SoqlParserListener {
     }
     const offsetCtx = ctx.soqlOffsetClause();
     if (offsetCtx) {
-      this.offset = this.toUnmodeledSyntax(offsetCtx.start, offsetCtx.stop);
+      this.offset = this.toUnmodeledSyntax(offsetCtx.start, offsetCtx.stop as Token);
     }
     const bindCtx = ctx.soqlBindClause();
     if (bindCtx) {
-      this.bind = this.toUnmodeledSyntax(bindCtx.start, bindCtx.stop);
+      this.bind = this.toUnmodeledSyntax(bindCtx.start, bindCtx.stop as Token);
     }
     const recordTrackingTypeCtx = ctx.soqlRecordTrackingType();
     if (recordTrackingTypeCtx) {
       this.recordTrackingType = this.toUnmodeledSyntax(
         recordTrackingTypeCtx.start,
-        recordTrackingTypeCtx.stop
+        recordTrackingTypeCtx.stop as Token
       );
     }
     const updateCtx = ctx.soqlUpdateStatsClause();
     if (updateCtx) {
-      this.update = this.toUnmodeledSyntax(updateCtx.start, updateCtx.stop);
+      this.update = this.toUnmodeledSyntax(updateCtx.start, updateCtx.stop as Token);
     }
   }
 
@@ -415,11 +438,14 @@ class QueryListener extends SoqlParserListener {
       // some error states can cause this situation
       stop = start;
     }
-    if (stop.stop < start.start) {
+    if (stop.stopIndex < start.startIndex) {
       // EOF token can cause this situation
       return new Impl.UnmodeledSyntaxImpl('');
     }
-    const text = start.getInputStream().getText(start.start, stop.stop);
+
+    const text = (start.inputStream as CharStream).getText(
+      Interval.of(start.startIndex, stop.stopIndex)
+    );
     return new Impl.UnmodeledSyntaxImpl(text);
   }
 
@@ -429,7 +455,7 @@ class QueryListener extends SoqlParserListener {
       const fieldCtx = (ctx as Parser.SoqlOrderByColumnExprContext).soqlField();
       result = this.toField(fieldCtx);
     } else {
-      result = this.toUnmodeledSyntax(ctx.start, ctx.stop);
+      result = this.toUnmodeledSyntax(ctx.start, ctx.stop as Token);
     }
 
     return result;
@@ -437,39 +463,62 @@ class QueryListener extends SoqlParserListener {
 
   protected toField(ctx: Parser.SoqlFieldContext): Soql.Field {
     let result: Soql.Field;
-    const isFunctionRef = ctx.getText().includes('(');
+    const isFunctionRef = ctx.text.includes('(');
     if (isFunctionRef) {
-      result = this.toUnmodeledSyntax(ctx.start, ctx.stop);
+      result = this.toUnmodeledSyntax(ctx.start, ctx.stop as Token);
     } else {
-      result = new Impl.FieldRefImpl(ctx.getText());
+      result = new Impl.FieldRefImpl(ctx.text);
     }
     return result;
   }
 
-  protected toCompareOperator(ctx: Parser.SoqlComparisonOperatorContext): Soql.CompareOperator {
+  protected toCompareOperator(
+    ctx: Parser.SoqlComparisonOperatorContext
+  ): Soql.CompareOperator {
     let operator = Soql.CompareOperator.EQ;
-    switch (ctx.getText()) {
-      case '=': { operator = Soql.CompareOperator.EQ; break; }
-      case '!=': { operator = Soql.CompareOperator.NOT_EQ; break; }
-      case '<>': { operator = Soql.CompareOperator.ALT_NOT_EQ; break; }
-      case '>': { operator = Soql.CompareOperator.GT; break; }
-      case '<': { operator = Soql.CompareOperator.LT; break; }
-      case '>=': { operator = Soql.CompareOperator.GT_EQ; break; }
-      case '<=': { operator = Soql.CompareOperator.LT_EQ; break; }
+    switch (ctx.text) {
+      case '=': {
+        operator = Soql.CompareOperator.EQ;
+        break;
+      }
+      case '!=': {
+        operator = Soql.CompareOperator.NOT_EQ;
+        break;
+      }
+      case '<>': {
+        operator = Soql.CompareOperator.ALT_NOT_EQ;
+        break;
+      }
+      case '>': {
+        operator = Soql.CompareOperator.GT;
+        break;
+      }
+      case '<': {
+        operator = Soql.CompareOperator.LT;
+        break;
+      }
+      case '>=': {
+        operator = Soql.CompareOperator.GT_EQ;
+        break;
+      }
+      case '<=': {
+        operator = Soql.CompareOperator.LT_EQ;
+        break;
+      }
     }
     return operator;
   }
 
   protected toCompareValues(ctx: ParserRuleContext): Soql.CompareValue[] {
-    const literalCtxs = ctx.getTypedRuleContexts(Parser.SoqlLiteralValueContext);
-    return literalCtxs.map(literalCtx => this.toCompareValue(literalCtx));
+    const literalCtxs = ctx.getRuleContexts(Parser.SoqlLiteralValueContext);
+    return literalCtxs.map((literalCtx) => this.toCompareValue(literalCtx));
   }
 
   protected toCompareValue(ctx: ParserRuleContext): Soql.CompareValue {
     if (ctx instanceof Parser.SoqlColonExprLiteralValueContext) {
-      return this.toUnmodeledSyntax(ctx.start, ctx.stop);
+      return this.toUnmodeledSyntax(ctx.start, ctx.stop as Token);
     } else if (ctx instanceof Parser.SoqlColonLikeValueContext) {
-      return this.toUnmodeledSyntax(ctx.start, ctx.stop);
+      return this.toUnmodeledSyntax(ctx.start, ctx.stop as Token);
     }
     return this.toLiteral(ctx);
   }
@@ -482,23 +531,23 @@ class QueryListener extends SoqlParserListener {
       ctx = ctx.soqlCommonLiterals();
     }
     if (ctx instanceof Parser.SoqlDateLiteralContext) {
-      return new Impl.LiteralImpl(Soql.LiteralType.Date, ctx.getText());
+      return new Impl.LiteralImpl(Soql.LiteralType.Date, ctx.text);
     } else if (ctx instanceof Parser.SoqlDateTimeLiteralContext) {
-      return new Impl.LiteralImpl(Soql.LiteralType.Date, ctx.getText());
+      return new Impl.LiteralImpl(Soql.LiteralType.Date, ctx.text);
     } else if (ctx instanceof Parser.SoqlTimeLiteralContext) {
-      return new Impl.LiteralImpl(Soql.LiteralType.Date, ctx.getText());
+      return new Impl.LiteralImpl(Soql.LiteralType.Date, ctx.text);
     } else if (ctx instanceof Parser.SoqlDateFormulaLiteralContext) {
-      return new Impl.LiteralImpl(Soql.LiteralType.Date, ctx.getText());
+      return new Impl.LiteralImpl(Soql.LiteralType.Date, ctx.text);
     } else if (ctx instanceof Parser.SoqlNumberLiteralContext) {
-      return new Impl.LiteralImpl(Soql.LiteralType.Number, ctx.getText());
+      return new Impl.LiteralImpl(Soql.LiteralType.Number, ctx.text);
     } else if (ctx instanceof Parser.SoqlNullLiteralContext) {
-      return new Impl.LiteralImpl(Soql.LiteralType.Null, ctx.getText());
+      return new Impl.LiteralImpl(Soql.LiteralType.Null, ctx.text);
     } else if (ctx instanceof Parser.SoqlBooleanLiteralContext) {
-      return new Impl.LiteralImpl(Soql.LiteralType.Boolean, ctx.getText());
+      return new Impl.LiteralImpl(Soql.LiteralType.Boolean, ctx.text);
     } else if (ctx instanceof Parser.SoqlMultiCurrencyContext) {
-      return new Impl.LiteralImpl(Soql.LiteralType.Currency, ctx.getText());
+      return new Impl.LiteralImpl(Soql.LiteralType.Currency, ctx.text);
     }
-    return new Impl.LiteralImpl(Soql.LiteralType.String, ctx.getText());
+    return new Impl.LiteralImpl(Soql.LiteralType.String, ctx.text);
   }
 
   protected exprsToCondition(ctx: Parser.SoqlWhereExprsContext): Soql.Condition {
@@ -512,8 +561,8 @@ class QueryListener extends SoqlParserListener {
       const orCtx = andOrExprCtx.soqlOrWhere();
       if (andCtx) {
         andOr = Soql.AndOr.And;
-        const andExprs = andCtx.getTypedRuleContexts(Parser.SoqlWhereExprContext);
-        const conds = andExprs.map(expr => this.exprToCondition(expr));
+        const andExprs = andCtx.getRuleContexts(Parser.SoqlWhereExprContext);
+        const conds = andExprs.map((expr) => this.exprToCondition(expr));
         while (conds.length > 0) {
           const next = conds.pop();
           if (next) {
@@ -531,8 +580,8 @@ class QueryListener extends SoqlParserListener {
         }
       } else if (orCtx) {
         andOr = Soql.AndOr.Or;
-        const orExprs = orCtx.getTypedRuleContexts(Parser.SoqlWhereExprContext);
-        const conds = orExprs.map(expr => this.exprToCondition(expr));
+        const orExprs = orCtx.getRuleContexts(Parser.SoqlWhereExprContext);
+        const conds = orExprs.map((expr) => this.exprToCondition(expr));
         while (conds.length > 0) {
           const next = conds.pop();
           if (next) {
@@ -596,6 +645,6 @@ class QueryListener extends SoqlParserListener {
       // const values = this.toCompareValues(ctx.soqlLiteralValues());
       // return new Impl.InListConditionImpl(field, operator, values);
     }
-    return this.toUnmodeledSyntax(ctx.start, ctx.stop);
+    return this.toUnmodeledSyntax(ctx.start, ctx.stop as Token);
   }
 }
