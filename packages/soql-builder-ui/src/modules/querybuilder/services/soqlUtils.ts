@@ -66,8 +66,7 @@ export function convertSoqlModelToUiModel(
           };
         });
 
-      const andOrFromSoqlModel = queryModel.where.condition.andOr;
-      where.andOr = andOrFromSoqlModel;
+      where.andOr = queryModel.where.condition.andOr;
     } else {
       unsupported.push('where:complex-group');
     }
