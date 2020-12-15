@@ -1,6 +1,6 @@
 {
   "name": "@salesforce/soql-language-server",
-  "version": "0.2.7",
+  "version": "0.2.9",
   "description": "SOQL Language Server",
   "engines": {
     "node": "*"
@@ -22,6 +22,7 @@
     "antlr4ts": "^0.5.0-alpha.3",
     "antlr4-c3": "^1.1.13",
     "vscode-languageserver": "6.1.1",
+    "vscode-languageserver-protocol": "3.15.3",
     "vscode-languageserver-textdocument": "1.0.1",
     "@salesforce/soql-parser": "file:../../Dependencies/salesforce-soql-parser-0.19.0.tgz"
   },
