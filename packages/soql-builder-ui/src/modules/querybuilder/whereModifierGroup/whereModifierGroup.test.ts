@@ -140,7 +140,7 @@ describe('WhereModifierGroup should', () => {
     expect(handler).toHaveBeenCalled();
   });
 
-  it('should display the correct operator', () => {
+  it('display the correct operator', () => {
     modifierGroup.selectedOperator = 'LT';
     document.body.appendChild(modifierGroup);
 

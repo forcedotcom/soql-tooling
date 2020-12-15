@@ -51,11 +51,7 @@ export default class Where extends LightningElement {
   }
 
   get templateIndex(): number {
-    if (this._conditionsStore) {
-      const numberOfConditions = this._conditionsStore.length;
-      return numberOfConditions;
-    }
-    return 0;
+    return this._conditionsStore.length;
   }
 
   headerSelectedClass = ' header__btn--selected';
