@@ -227,12 +227,14 @@ export class ToolingModelService {
     if (event && event.type) {
       switch (event.type) {
         case MessageType.TEXT_SOQL_CHANGED: {
-          const originalSoqlStatement = event.payload as string;
-          const soqlJSModel = convertSoqlToUiModel(originalSoqlStatement);
-          soqlJSModel.originalSoqlStatement = originalSoqlStatement;
-
-          const updatedModel = fromJS(soqlJSModel);
-          if (!updatedModel.equals(this.immutableModel.getValue())) {
+          const incomingSoqlStatement = event.payload as string;
+          if (
+            incomingSoqlStatement !==
+            this.getModel().get(ModelProps.ORIGINAL_SOQL_STATEMENT)
+          ) {
+            const soqlJSModel = convertSoqlToUiModel(incomingSoqlStatement);
+            soqlJSModel.originalSoqlStatement = incomingSoqlStatement;
+            const updatedModel = fromJS(soqlJSModel);
             this.immutableModel.next(updatedModel);
           }
           break;
