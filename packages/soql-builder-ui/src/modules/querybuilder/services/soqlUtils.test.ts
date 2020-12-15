@@ -35,6 +35,8 @@ describe('SoqlUtils', () => {
   };
   const soqlOne =
     "Select Name, Id from Account WHERE Name = 'pwt' AND Id = 123456 ORDER BY Name ASC NULLS FIRST LIMIT 11";
+  const unsupportedWhereExpr =
+    "Select Name, Id from Account WHERE (Name = 'pwt' AND Id = 123456) OR Id = 654321 ORDER BY Name ASC NULLS FIRST LIMIT 11";
   it('transform UI Model to Soql', () => {
     const transformedSoql = convertUiModelToSoql(uiModelOne);
     expect(transformedSoql).toContain(uiModelOne.fields[0]);
@@ -57,5 +59,12 @@ describe('SoqlUtils', () => {
   it('transforms Soql to UI Model', () => {
     const transformedUiModel = convertSoqlToUiModel(soqlOne);
     expect(transformedUiModel).toEqual(uiModelOne);
+  });
+
+  it('catches unsupported syntyax in where', () => {
+    const transformedUiModel = convertSoqlToUiModel(unsupportedWhereExpr);
+    expect(transformedUiModel.where.conditions.length).toBe(0);
+    expect(transformedUiModel.unsupported.length).toBe(1);
+    expect(transformedUiModel.unsupported[0]).toContain('where:');
   });
 });

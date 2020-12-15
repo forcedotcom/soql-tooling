@@ -23,6 +23,7 @@ export function convertSoqlToUiModel(soql: string): ToolingModelJson {
 export function convertSoqlModelToUiModel(
   queryModel: Soql.Query
 ): ToolingModelJson {
+  const unsupported = [];
   const fields =
     queryModel.select &&
     (queryModel.select as Soql.SelectExprs).selectExpressions
@@ -41,28 +42,35 @@ export function convertSoqlModelToUiModel(
   let where;
   if (queryModel.where && queryModel.where.condition) {
     const conditionsObj = queryModel.where.condition;
-    where = SoqlModelUtils.simpleGroupToArray(conditionsObj);
-    where.conditions = where.conditions
-      .filter((condition) => !SoqlModelUtils.containsUnmodeledSyntax(condition))
-      .map((expression, index) => {
-        const operator =
-          expression instanceof Impl.LikeConditionImpl
-            ? 'LIKE'
-            : SoqlModelUtils.getKeyByValue(
-                Soql.CompareOperator,
-                expression.operator
-              );
 
-        return {
-          field: expression.field.fieldName,
-          operator: operator,
-          criteria: expression.compareValue,
-          index
-        };
-      });
+    if (SoqlModelUtils.isSimpleGroup(conditionsObj)) {
+      where = SoqlModelUtils.simpleGroupToArray(conditionsObj);
+      where.conditions = where.conditions
+        .filter(
+          (condition) => !SoqlModelUtils.containsUnmodeledSyntax(condition)
+        )
+        .map((expression, index) => {
+          const operator =
+            expression instanceof Impl.LikeConditionImpl
+              ? 'LIKE'
+              : SoqlModelUtils.getKeyByValue(
+                  Soql.CompareOperator,
+                  expression.operator
+                );
 
-    const andOrFromSoqlModel = queryModel.where.condition.andOr;
-    where.andOr = andOrFromSoqlModel;
+          return {
+            field: expression.field.fieldName,
+            operator: operator,
+            criteria: expression.compareValue,
+            index
+          };
+        });
+
+      const andOrFromSoqlModel = queryModel.where.condition.andOr;
+      where.andOr = andOrFromSoqlModel;
+    } else {
+      unsupported.push('where:complex-group');
+    }
   }
 
   const orderBy = queryModel.orderBy
@@ -83,7 +91,6 @@ export function convertSoqlModelToUiModel(
     : undefined;
 
   const errors = queryModel.errors;
-  const unsupported = [];
   for (const key in queryModel) {
     // eslint-disable-next-line no-prototype-builtins
     if (queryModel.hasOwnProperty(key)) {
