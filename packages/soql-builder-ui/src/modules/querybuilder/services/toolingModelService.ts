@@ -58,19 +58,7 @@ export class ToolingModelService {
     return this.immutableModel.getValue();
   }
 
-  private getFields() {
-    return this.getModel().get(ModelProps.FIELDS) as List<string>;
-  }
-
-  private getOrderBy() {
-    return this.getModel().get(ModelProps.ORDER_BY) as List<JsonMap>;
-  }
-
-  private getWhereConditions() {
-    return this.getModel()
-      .get(ModelProps.WHERE)
-      .get(ModelProps.WHERE_CONDITIONS) as List<JsonMap>;
-  }
+  /* ---- OBJECTS ---- */
 
   // This method is destructive, will clear any selections except sObject.
   public setSObject(sObject: string) {
@@ -78,6 +66,12 @@ export class ToolingModelService {
     const newModelWithSelection = emptyModel.set(ModelProps.SOBJECT, sObject);
 
     this.changeModel(newModelWithSelection);
+  }
+
+  /* ---- FIELDS ---- */
+
+  private getFields() {
+    return this.getModel().get(ModelProps.FIELDS) as List<string>;
   }
 
   public addField(field: string) {
@@ -102,17 +96,14 @@ export class ToolingModelService {
     this.changeModel(newModelWithFieldRemoved);
   }
 
-  private hasOrderByField(field: string) {
-    return this.getOrderBy().findIndex((item) => item.get('field') === field);
+  /* ---- ORDER BY ---- */
+
+  private getOrderBy() {
+    return this.getModel().get(ModelProps.ORDER_BY) as List<JsonMap>;
   }
 
-  private hasWhereField(index: string) {
-    if (this.getWhereConditions().count() > 0) {
-      return this.getWhereConditions().find(
-        (item) => item.get('index') === index
-      );
-    }
-    return false;
+  private hasOrderByField(field: string) {
+    return this.getOrderBy().findIndex((item) => item.get('field') === field);
   }
 
   public addUpdateOrderByField(orderByObj: JsonMap) {
@@ -147,6 +138,23 @@ export class ToolingModelService {
     this.changeModel(newModelWithFieldRemoved);
   }
 
+  /* ---- WHERE ---- */
+
+  private getWhereConditions() {
+    return this.getModel()
+      .get(ModelProps.WHERE)
+      .get(ModelProps.WHERE_CONDITIONS) as List<JsonMap>;
+  }
+
+  private hasWhereConditionBy(index: string) {
+    if (this.getWhereConditions().count() > 0) {
+      return this.getWhereConditions().find(
+        (item) => item.get('index') === index
+      );
+    }
+    return false;
+  }
+
   public setAndOr(andOr: string) {
     const currentModel = this.getModel();
     const newModel = currentModel.setIn(
@@ -159,25 +167,25 @@ export class ToolingModelService {
 
   public upsertWhereFieldExpr(whereObj: JsonMap) {
     const currentModel = this.getModel();
-    let updatedWhereField;
+    let updatedWhereCondition;
     const { fieldCompareExpr, andOr } = whereObj;
-    const existingExpr = this.hasWhereField(fieldCompareExpr.index);
+    const existingExpr = this.hasWhereConditionBy(fieldCompareExpr.index);
     if (existingExpr) {
-      updatedWhereField = this.getWhereConditions().update(
+      updatedWhereCondition = this.getWhereConditions().update(
         fieldCompareExpr.index,
         () => {
           return fromJS(fieldCompareExpr);
         }
       );
     } else {
-      updatedWhereField = this.getWhereConditions().push(
+      updatedWhereCondition = this.getWhereConditions().push(
         fromJS(fieldCompareExpr)
       );
     }
 
     let newModel = currentModel.setIn(
       [ModelProps.WHERE, ModelProps.WHERE_CONDITIONS],
-      updatedWhereField
+      updatedWhereCondition
     );
     /*
     The UI model should always be aware
@@ -206,10 +214,14 @@ export class ToolingModelService {
     this.changeModel(newModel);
   }
 
+  /* ---- LIMIT ---- */
+
   public changeLimit(limit: string) {
     const newLimitModel = this.getModel().set(ModelProps.LIMIT, limit || '');
     this.changeModel(newLimitModel);
   }
+
+  /* ---- MESSAGING ---- */
 
   private onIncommingMessage(event: SoqlEditorEvent) {
     if (event && event.type) {
@@ -230,6 +242,8 @@ export class ToolingModelService {
       }
     }
   }
+
+  /* ---- STATE & MODEL ---- */
 
   public saveViewState(model: ToolingModel) {
     try {
