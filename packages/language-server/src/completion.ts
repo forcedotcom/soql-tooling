@@ -62,11 +62,10 @@ export function completionsFor(
     SoqlParser.RULE_soqlFromExprs,
     SoqlParser.RULE_soqlFromExpr,
     SoqlParser.RULE_soqlField,
-    // SoqlParser.RULE_soqlOrderByClauseField,
     SoqlParser.RULE_soqlUpdateStatsClause,
     SoqlParser.RULE_soqlSelectClause,
     SoqlParser.RULE_soqlInteger,
-    // SoqlParser.RULE_parseReservedForFieldName, // <-- We list it here so that C3 ignores tokens of that rule
+    SoqlParser.RULE_parseReservedForFieldName, // <-- We list it here so that C3 ignores tokens of that rule
   ]);
   const tokenIndex = findCursorTokenIndex(tokenStream, {
     line,
@@ -428,70 +427,32 @@ class SoqlQueryExtractor implements SoqlParserListener {
   ): string | undefined {
     const listener = new SoqlQueryExtractor(cursorTokenIndex);
     ParseTreeWalker.DEFAULT.walk<SoqlParserListener>(listener, parsedQueryTree);
-    // return listener.findSObjectName(cursorTokenIndex);
     return listener.findInnerQuery(cursorTokenIndex)?.sobjectName;
   }
-  /**
-  private isInside(innerQuery: InnerSoqlQuery, index: number): boolean {
-    const startIndex = innerQuery.soqlInnerQueryNode.start.tokenIndex;
-
-    return (
-      startIndex <= index &&
-      (!innerQuery.soqlInnerQueryNode.stop ||
-        innerQuery.soqlInnerQueryNode.stop.tokenIndex >= index)
-    );
-  }
-  public findSObjectNameOLD(atIndex: number): string | undefined {
-    let closest: InnerSoqlQuery | undefined;
-
-    for (let pair of this.innerSoqlQueries.values()) {
-      if (
-        this.isInside(pair, atIndex) &&
-        (!closest ||
-          atIndex - pair.select.tokenIndex <
-            atIndex - closest.select.tokenIndex)
-      ) {
-        closest = pair;
-      }
-    }
-    return closest?.sobjectName;
-  }
-  **/
-
-  private distanceToQuery(
+  private queryContainsTokenIndex(
     innerQuery: InnerSoqlQuery,
     atTokenIndex: number
-  ): number {
-    const queryNode =
-      innerQuery.soqlInnerQueryNode.parent?.ruleContext.ruleIndex ===
-      SoqlParser.RULE_soqlSelectExpr
-        ? innerQuery.soqlInnerQueryNode.parent
-        : innerQuery.soqlInnerQueryNode;
+  ): boolean {
+    // NOTE: We use the parent node to take into account the enclosing
+    // parentheses (in the case of inner SELECTs), and the whole text until EOF
+    // (for the top-level SELECT). BTW: soqlInnerQueryNode always has a parent.
+    const queryNode = innerQuery.soqlInnerQueryNode.parent
+      ? innerQuery.soqlInnerQueryNode.parent
+      : innerQuery.soqlInnerQueryNode;
 
     const startIndex = queryNode.start.tokenIndex;
     const stopIndex = queryNode.stop?.tokenIndex;
 
-    if (startIndex >= atTokenIndex || !stopIndex) {
-      return Number.MAX_VALUE;
-    }
-
-    if (stopIndex >= atTokenIndex) {
-      return 0;
-    }
-    return atTokenIndex - stopIndex;
+    return (
+      atTokenIndex > startIndex && !!stopIndex && atTokenIndex <= stopIndex
+    );
   }
 
-  public findInnerQuery(atIndex: number): InnerSoqlQuery | undefined {
+  private findInnerQuery(atIndex: number): InnerSoqlQuery | undefined {
     let closestQuery: InnerSoqlQuery | undefined;
-    let closestDistance: number = Number.MAX_VALUE;
-
     for (let query of this.innerSoqlQueries.values()) {
-      const d = this.distanceToQuery(query, atIndex);
-      if (d <= closestDistance) {
-        //|| (d == closestDistance && query.select.startIndex < close) {
-        closestDistance = d;
+      if (this.queryContainsTokenIndex(query, atIndex)) {
         closestQuery = query;
-        // if (d == 0) break;
       }
     }
     return closestQuery;
@@ -515,9 +476,6 @@ class SoqlQueryExtractor implements SoqlParserListener {
   }
 
   visitErrorNode(node: ErrorNode) {
-    console.log(
-      ' ==== visitErrorNode symbol.tokenIndex: ' + node._symbol.tokenIndex
-    );
     if (node.parent) {
       const parentRule = node.parent?.ruleContext.ruleIndex;
 
@@ -529,8 +487,6 @@ class SoqlQueryExtractor implements SoqlParserListener {
       ) {
         const fromToken = node.symbol;
         const sobjectName = node.parent.getChild(1).text;
-        // this.fromsStack.push([fromToken, sobjectName]);
-        // this.matchSELECT_FROM();
 
         const soqlInnerQueryNode = this.findSoqlInnerQueryAncestor(node.parent);
         if (soqlInnerQueryNode) {
@@ -542,20 +498,13 @@ class SoqlQueryExtractor implements SoqlParserListener {
             innerQuery.sobjectName = sobjectName;
           }
         }
-      } else if (parentRule === SoqlParser.RULE_soqlSelectClause) {
-        // TODO
+        // } else if (parentRule === SoqlParser.RULE_soqlSelectClause) {
+        // }
       }
     }
   }
+
   enterSoqlInnerQuery(ctx: SoqlInnerQueryContext) {
-    console.log(
-      ' ==== enterSoqlInnerQuery ctx.start/stop.tokenIndex: ' +
-        ctx.start.tokenIndex +
-        ' ' +
-        ctx.stop?.tokenIndex
-    );
-    // this.selectsStack.push(ctx.start);
-    // this.soqlInnerQuery2SelectFromPair.has(ctx.invokingState);
     this.innerSoqlQueries.set(ctx.start.tokenIndex, {
       select: ctx.start,
       soqlInnerQueryNode: ctx,
@@ -563,20 +512,11 @@ class SoqlQueryExtractor implements SoqlParserListener {
   }
 
   exitSoqlFromExprs(ctx: SoqlFromExprsContext) {
-    console.log(
-      ' ==== exitSoqlFromExprs ctx.start/stop.tokenIndex: ' +
-        ctx.start.tokenIndex +
-        ' ' +
-        ctx.stop?.tokenIndex
-    );
-
     const soqlInnerQueryNode = this.findSoqlInnerQueryAncestor(ctx);
 
     if (ctx.children && ctx.children.length > 0 && soqlInnerQueryNode) {
       const fromToken = ctx.parent?.start as Token;
       const sobjectName = ctx.getChild(0).getChild(0).text;
-      // this.fromsStack.push([fromToken, sobjectName]);
-
       const selectFromPair = this.innerSoqlQueries.get(
         soqlInnerQueryNode.start.tokenIndex
       );
@@ -587,13 +527,6 @@ class SoqlQueryExtractor implements SoqlParserListener {
     }
   }
 
-  exitSoqlInnerQuery(ctx: SoqlInnerQueryContext) {
-    console.log(
-      ' ==== exitSoqlInnerQuery ctx.start/stop.tokenIndex: ' +
-        ctx.start.tokenIndex +
-        ' ' +
-        ctx.stop?.tokenIndex
-    );
-    // const soqlInnerQueryNode = this.findSoqlInnerQueryAncestor(ctx);
-  }
+  // exitSoqlInnerQuery(ctx: SoqlInnerQueryContext) {
+  // }
 }

@@ -130,17 +130,9 @@ describe('Code Completion on nested select fields: SELECT ... FROM XYZ', () => {
 
 // describe.only('ONLY', () => {
 //   validateCompletionsFor(
-//     'SELECT (SELECT ), | FROM Foo',
-//     sobjectsFieldsFor('Foo')
+//     'SELECT (SELECT |) FROM Foo',
+//     sobjectsFieldsFor('Object')
 //   );
-// validateCompletionsFor(
-//   'SELECT | (SELECT bar FROM Bar) FROM Foo',
-//   sobjectsFieldsFor('Foo')
-// );
-// validateCompletionsFor(
-//   'SELECT (SELECT |) FROM Foo',
-//   sobjectsFieldsFor('Object')
-// );
 // });
 
 describe('Code Completion on SELECT XYZ FROM...', () => {
@@ -242,6 +234,11 @@ describe('Some keyword candidates after FROM clause', () => {
   );
 
   validateCompletionsFor(
+    'SELECT id FROM Account WITH |',
+    expectKeywords('DATA CATEGORY')
+  );
+
+  validateCompletionsFor(
     'SELECT Account.Name, (SELECT FirstName, LastName FROM Contacts |) FROM Account',
     expectKeywords(
       'FOR',
@@ -254,7 +251,7 @@ describe('Some keyword candidates after FROM clause', () => {
       'UPDATE TRACKING',
       'UPDATE VIEWSTAT'
     ),
-    true
+    { skip: true }
   );
 });
 
@@ -269,10 +266,10 @@ function expectKeywords(...words: string[]): CompletionItem[] {
 function validateCompletionsFor(
   text: string,
   expectedItems: CompletionItem[],
-  skip: boolean = false,
-  cursorChar: string = '|'
+  options: { skip?: boolean; only?: boolean; cursorChar?: string } = {}
 ) {
-  const itFn = skip ? xit : it;
+  const itFn = options.skip ? xit : options.only ? it.only : it;
+  const cursorChar = options.cursorChar || '|';
   itFn(text, () => {
     if (text.indexOf(cursorChar) != text.lastIndexOf(cursorChar)) {
       throw new Error(
