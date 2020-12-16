@@ -11,6 +11,7 @@ import { VscodeMessageService } from './message/vscodeMessageService';
 import { IMessageService } from './message/iMessageService';
 import { BehaviorSubject } from 'rxjs';
 import { MessageType, SoqlEditorEvent } from './message/soqlEditorEvent';
+import { AndOr } from '../services/model';
 
 describe('Tooling Model Service', () => {
   let modelService: ToolingModelService;
@@ -19,6 +20,17 @@ describe('Tooling Model Service', () => {
   let mockField2 = 'field2';
   let mockSobject = 'sObject1';
   let mockOrderBy = { field: 'orderBy1', order: 'ASC', nulls: 'NULLS LAST' };
+  const getMockWhereObj = () => {
+    return {
+      fieldCompareExpr: {
+        field: 'Name',
+        operator: 'EQ',
+        criteria: { type: 'STRING', value: "'pwt'" },
+        index: 0
+      },
+      andOr: 'AND'
+    };
+  };
   let query: ToolingModelJson;
   let jimmyQuery = 'SELECT Hey, Joe from JimmyHendrixCatalog';
   let accountQuery = 'SELECT Id from Account';
@@ -47,7 +59,7 @@ describe('Tooling Model Service', () => {
     checkForDefaultQuery();
     query = undefined;
 
-    modelService.query.subscribe((val) => {
+    modelService.UIModel.subscribe((val) => {
       query = val;
     });
   });
@@ -56,92 +68,185 @@ describe('Tooling Model Service', () => {
     jest.resetAllMocks();
   });
 
-  it('can set an SObject selection', () => {
-    modelService.setSObject(mockSobject);
+  describe('SOBJECTS', () => {
+    it('can set an SObject selection', () => {
+      modelService.setSObject(mockSobject);
 
-    expect(query!.sObject).toBe(mockSobject);
+      expect(query!.sObject).toBe(mockSobject);
+    });
   });
 
-  it('can Add, Delete Fields and saves changes', () => {
-    (messageService.setState as jest.Mock).mockClear();
-    expect(messageService.setState).toHaveBeenCalledTimes(0);
-    query = ToolingModelService.toolingModelTemplate;
+  describe('FIELDS', () => {
+    it('can Add, Delete Fields and saves changes', () => {
+      (messageService.setState as jest.Mock).mockClear();
+      expect(messageService.setState).toHaveBeenCalledTimes(0);
+      query = ToolingModelService.toolingModelTemplate;
 
-    expect(query!.fields.length).toEqual(0);
+      expect(query!.fields.length).toEqual(0);
 
-    // Add
-    modelService.addField(mockField1);
-    modelService.addField(mockField2);
-    expect(query!.fields.length).toBe(2);
-    expect(query!.fields).toContain(mockField1);
-    expect(query!.fields).toContain(mockField2);
-    // Delete
-    modelService.removeField(mockField1);
-    expect(query!.fields.length).toBe(1);
-    expect(query!.fields).toContain(mockField2);
-    // verify saves
-    expect(messageService.setState).toHaveBeenCalledTimes(3);
+      // Add
+      modelService.addField(mockField1);
+      modelService.addField(mockField2);
+      expect(query!.fields.length).toBe(2);
+      expect(query!.fields).toContain(mockField1);
+      expect(query!.fields).toContain(mockField2);
+      // Delete
+      modelService.removeField(mockField1);
+      expect(query!.fields.length).toBe(1);
+      expect(query!.fields).toContain(mockField2);
+      // verify saves
+      expect(messageService.setState).toHaveBeenCalledTimes(3);
+    });
   });
 
-  it('should handle error turning immutable model into js', () => {
-    checkForDefaultQuery();
-    const soqlEvent = { ...soqlEditorEvent };
-    soqlEvent.payload = jimmyQuery;
-    (messageService.messagesToUI as BehaviorSubject<SoqlEditorEvent>).next(
-      soqlEvent
-    );
-    expect(query!.fields.length).toBe(2);
+  describe('EVENTS', () => {
+    it('should handle error turning immutable model into js', () => {
+      checkForDefaultQuery();
+      const soqlEvent = { ...soqlEditorEvent };
+      soqlEvent.payload = jimmyQuery;
+      (messageService.messagesToUI as BehaviorSubject<SoqlEditorEvent>).next(
+        soqlEvent
+      );
+      expect(query!.fields.length).toBe(2);
+    });
+
+    it('should handle SOQL_TEXT_CHANGED event but not others', () => {
+      checkForDefaultQuery();
+      const soqlEvent = { ...soqlEditorEvent };
+      soqlEvent.payload = jimmyQuery;
+      (messageService.messagesToUI as BehaviorSubject<SoqlEditorEvent>).next(
+        soqlEvent
+      );
+      expect(query!.fields.length).toBe(2);
+      expect(query!.originalSoqlStatement).toEqual(jimmyQuery);
+      soqlEvent.type = MessageType.SOBJECTS_RESPONSE;
+      soqlEvent.payload = jimmyQuery.replace('Hey, Joe', 'What');
+      (messageService.messagesToUI as BehaviorSubject<SoqlEditorEvent>).next(
+        soqlEvent
+      );
+      // query should not have changed
+      expect(query!.fields.length).toBe(2);
+      expect(query!.originalSoqlStatement).toEqual(jimmyQuery);
+    });
+
+    it('should send message when ui changes the query', () => {
+      expect(messageService.sendMessage).not.toHaveBeenCalled();
+      // Add
+      modelService.addField(mockField1);
+      expect(messageService.sendMessage).toHaveBeenCalled();
+    });
+
+    it('should restore state', () => {
+      expect(query!.sObject).toEqual('');
+      const accountJson = {
+        ...ToolingModelService.toolingModelTemplate
+      };
+      accountJson.sObject = 'Account';
+      jest.spyOn(messageService, 'getState').mockReturnValue(accountJson);
+      modelService.restoreViewState();
+      expect(query!.sObject).toEqual(accountJson.sObject);
+    });
+
+    it('Receive SOQL Text from editor', () => {
+      const soqlText = 'Select Name1, Id1 from Account1';
+      const soqlEvent = { ...soqlEditorEvent };
+      soqlEvent.payload = soqlText;
+      (messageService.messagesToUI as BehaviorSubject<SoqlEditorEvent>).next(
+        soqlEvent
+      );
+      expect(query.sObject).toEqual('Account1');
+      expect(query.fields[0]).toEqual('Name1');
+      expect(query.fields[1]).toEqual('Id1');
+      expect(query.errors.length).toEqual(0);
+      expect(query.unsupported.length).toEqual(0);
+    });
   });
 
-  it('should handle SOQL_TEXT_CHANGED event but not others', () => {
-    checkForDefaultQuery();
-    const soqlEvent = { ...soqlEditorEvent };
-    soqlEvent.payload = jimmyQuery;
-    (messageService.messagesToUI as BehaviorSubject<SoqlEditorEvent>).next(
-      soqlEvent
-    );
-    expect(query!.fields.length).toBe(2);
-    expect(query!.originalSoqlStatement).toEqual(jimmyQuery);
-    soqlEvent.type = MessageType.SOBJECTS_RESPONSE;
-    soqlEvent.payload = jimmyQuery.replace('Hey, Joe', 'What');
-    (messageService.messagesToUI as BehaviorSubject<SoqlEditorEvent>).next(
-      soqlEvent
-    );
-    // query should not have changed
-    expect(query!.fields.length).toBe(2);
-    expect(query!.originalSoqlStatement).toEqual(jimmyQuery);
-  });
+  describe('WHERE', () => {
+    it('should ADD condition by index in the model', () => {
+      (messageService.setState as jest.Mock).mockClear();
+      expect(messageService.setState).toHaveBeenCalledTimes(0);
+      query = ToolingModelService.toolingModelTemplate;
 
-  it('should send message when ui changes the query', () => {
-    expect(messageService.sendMessage).not.toHaveBeenCalled();
-    // Add
-    modelService.addField(mockField1);
-    expect(messageService.sendMessage).toHaveBeenCalled();
-  });
+      expect(query!.where.conditions.length).toEqual(0);
 
-  it('should restore state', () => {
-    expect(query!.sObject).toEqual('');
-    const accountJson = {
-      ...ToolingModelService.toolingModelTemplate
-    };
-    accountJson.sObject = 'Account';
-    jest.spyOn(messageService, 'getState').mockReturnValue(accountJson);
-    modelService.restoreViewState();
-    expect(query!.sObject).toEqual(accountJson.sObject);
-  });
+      const mockWhereObj = getMockWhereObj();
+      modelService.upsertWhereFieldExpr(mockWhereObj);
 
-  it('Receive SOQL Text from editor', () => {
-    const soqlText = 'Select Name1, Id1 from Account1';
-    const soqlEvent = { ...soqlEditorEvent };
-    soqlEvent.payload = soqlText;
-    (messageService.messagesToUI as BehaviorSubject<SoqlEditorEvent>).next(
-      soqlEvent
-    );
-    expect(query.sObject).toEqual('Account1');
-    expect(query.fields[0]).toEqual('Name1');
-    expect(query.fields[1]).toEqual('Id1');
-    expect(query.errors.length).toEqual(0);
-    expect(query.unsupported.length).toEqual(0);
+      expect(query!.where.conditions.length).toBe(1);
+      expect(query!.where.conditions[0].field).toContain(
+        mockWhereObj.fieldCompareExpr.field
+      );
+      expect(query!.where.conditions[0].operator).toContain(
+        mockWhereObj.fieldCompareExpr.operator
+      );
+      expect(query!.where.conditions[0].criteria).toEqual(
+        mockWhereObj.fieldCompareExpr.criteria
+      );
+      expect(query!.where.conditions[0].index).toEqual(
+        mockWhereObj.fieldCompareExpr.index
+      );
+      // Does not duplicate
+      modelService.upsertWhereFieldExpr(mockWhereObj);
+      expect(query!.where.conditions.length).toBe(1);
+      // Should allow multiple conditions to be set
+      let newMock = getMockWhereObj();
+      newMock.fieldCompareExpr.index = 1;
+      modelService.upsertWhereFieldExpr(newMock);
+      expect(query!.where.conditions.length).toBe(2);
+    });
+
+    it('should UPDATE the same condition by index', () => {
+      (messageService.setState as jest.Mock).mockClear();
+      expect(messageService.setState).toHaveBeenCalledTimes(0);
+      query = ToolingModelService.toolingModelTemplate;
+
+      expect(query!.where.conditions.length).toEqual(0);
+
+      const mockWhereObj = getMockWhereObj();
+      modelService.upsertWhereFieldExpr(mockWhereObj);
+
+      expect(query!.where.conditions.length).toBe(1);
+      expect(query!.where.conditions[0].field).toContain(
+        mockWhereObj.fieldCompareExpr.field
+      );
+      // update field on condition with same index
+      const newField = 'marcs_bank_account';
+      let newMock = getMockWhereObj();
+      newMock.fieldCompareExpr.field = newField;
+      modelService.upsertWhereFieldExpr(newMock);
+      expect(query!.where.conditions.length).toBe(1);
+      expect(query!.where.conditions[0].field).toContain(newField);
+    });
+
+    it('should DELETE condition by index', () => {
+      (messageService.setState as jest.Mock).mockClear();
+      expect(messageService.setState).toHaveBeenCalledTimes(0);
+      query = ToolingModelService.toolingModelTemplate;
+
+      expect(query!.where.conditions.length).toEqual(0);
+
+      modelService.upsertWhereFieldExpr(getMockWhereObj());
+      expect(query!.where.conditions.length).toBe(1);
+      modelService.removeWhereFieldCondition(
+        getMockWhereObj().fieldCompareExpr
+      );
+      expect(query!.where.conditions.length).toBe(0);
+    });
+
+    it('should UPDATE AND | OR in the model', () => {
+      (messageService.setState as jest.Mock).mockClear();
+      expect(messageService.setState).toHaveBeenCalledTimes(0);
+      query = ToolingModelService.toolingModelTemplate;
+
+      expect(query!.where.andOr).toBeUndefined();
+
+      modelService.setAndOr(AndOr.AND);
+      expect(query!.where.andOr).toContain(AndOr.AND);
+
+      modelService.setAndOr(AndOr.OR);
+      expect(query!.where.andOr).toContain(AndOr.OR);
+    });
   });
 
   it('Emit telemetry when error/unsupported in soql statement', () => {

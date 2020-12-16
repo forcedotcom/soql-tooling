@@ -18,7 +18,7 @@
     <article class="querybuilder-body">
       <section class="querybuilder-form">
         <querybuilder-from
-          onobjectselected={handleObjectChange}
+          onfrom__object_selected={handleObjectChange}
           sobjects={sObjects}
           selected={query.sObject}
           has-error={hasRecoverableFromError}
@@ -28,17 +28,26 @@
         <querybuilder-fields
           selected-fields={query.fields}
           fields={fields}
-          onfieldselected={handleFieldSelected}
-          onfieldremoved={handleFieldRemoved}
+          onfields__selected={handleFieldSelected}
+          onfields__removed={handleFieldRemoved}
           has-error={hasRecoverableFieldsError}
           is-loading={isFieldsLoading}
           class={theme}
         ></querybuilder-fields>
+        <querybuilder-where
+          where-expr={query.where}
+          where-fields={fields}
+          onwhere__group_selection={handleWhereSelection}
+          onwhere__andor_selection={handleAndOrSelection}
+          onwhere__condition_removed={handleRemoveWhereCondition}
+          is-loading={isFieldsLoading}
+          class={theme}
+        ></querybuilder-where>
         <querybuilder-order-by
           selected-order-by-fields={query.orderBy}
           order-by-fields={fields}
-          onorderbyselected={handleOrderBySelected}
-          onorderbyremoved={handleOrderByRemoved}
+          onorderby__selected={handleOrderBySelected}
+          onorderby__removed={handleOrderByRemoved}
           has-error={hasRecoverableOrderByError}
           is-loading={isFieldsLoading}
           class={theme}
@@ -46,7 +55,7 @@
         <querybuilder-limit
           limit={query.limit}
           has-error={hasRecoverableLimitError}
-          onlimitchanged={handleLimitChanged}
+          onlimit__changed={handleLimitChanged}
           class={theme}
         ></querybuilder-limit>
         <!-- div.unsupported-syntax should always be

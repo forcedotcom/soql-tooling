@@ -72,7 +72,7 @@ export default class App extends LightningElement {
   }
 
   connectedCallback() {
-    this.modelService.query.subscribe((newQuery: ToolingModelJson) => {
+    this.modelService.UIModel.subscribe((newQuery: ToolingModelJson) => {
       this.inspectErrors(newQuery.errors);
       if (this.hasUnrecoverableError === false) {
         this.loadSObjectMetadata(newQuery);
@@ -159,7 +159,7 @@ export default class App extends LightningElement {
       }
     });
   }
-
+  /* ---- SOBJECT HANDLERS ---- */
   handleObjectChange(e) {
     const selectedSObjectName = e.detail.selectedSobject;
     this.onSObjectChanged(selectedSObjectName);
@@ -174,7 +174,7 @@ export default class App extends LightningElement {
       this.toolingSDK.loadSObjectMetatada(sobjectName);
     }
   }
-
+  /* ---- FIELD HANDLERS ---- */
   handleFieldSelected(e) {
     this.modelService.addField(e.detail.field);
   }
@@ -182,17 +182,26 @@ export default class App extends LightningElement {
   handleFieldRemoved(e) {
     this.modelService.removeField(e.detail.field);
   }
-
+  /* ---- ORDER BY HANDLERS ---- */
   handleOrderBySelected(e) {
     this.modelService.addUpdateOrderByField(e.detail);
   }
-
   handleOrderByRemoved(e) {
     this.modelService.removeOrderByField(e.detail.field);
   }
-
+  /* ---- LIMIT HANDLERS ---- */
   handleLimitChanged(e) {
     this.modelService.changeLimit(e.detail.limit);
+  }
+  /* ---- WHERE HANDLERS ---- */
+  handleWhereSelection(e) {
+    this.modelService.upsertWhereFieldExpr(e.detail);
+  }
+  handleAndOrSelection(e) {
+    this.modelService.setAndOr(e.detail);
+  }
+  handleRemoveWhereCondition(e) {
+    this.modelService.removeWhereFieldCondition(e.detail);
   }
 
   handleRunQuery() {

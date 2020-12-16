@@ -26,7 +26,7 @@ export default class Fields extends LightningElement {
 
   handleFieldRemoved(e) {
     e.preventDefault();
-    const fieldRemovedEvent = new CustomEvent('fieldremoved', {
+    const fieldRemovedEvent = new CustomEvent('fields__removed', {
       detail: { field: e.target.dataset.field }
     });
     this.dispatchEvent(fieldRemovedEvent);

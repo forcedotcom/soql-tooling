@@ -45,7 +45,7 @@ export default class OrderBy extends LightningElement {
 
   handleOrderByRemoved(e) {
     e.preventDefault();
-    const orderByRemovedEvent = new CustomEvent('orderbyremoved', {
+    const orderByRemovedEvent = new CustomEvent('orderby__removed', {
       detail: { field: e.target.dataset.field }
     });
     this.dispatchEvent(orderByRemovedEvent);
