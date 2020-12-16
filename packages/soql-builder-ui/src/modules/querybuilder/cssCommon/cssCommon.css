@@ -130,6 +130,15 @@ button:active {
   box-shadow: 0 0 0.3em 0em #454444;
 }
 
+.btn--disabled {
+  background-color: var(
+    --vscode-list-inactiveSelectionBackground,
+    var(--soql-color-medium-grey)
+  );
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
 .select-long {
   min-width: var(--soql-input-width);
   max-width: var(--soql-input-width);
