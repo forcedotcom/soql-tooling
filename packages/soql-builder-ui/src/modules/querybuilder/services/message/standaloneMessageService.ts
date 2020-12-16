@@ -18,17 +18,6 @@ class MockVscode {
   private localStorage = getLocalStorage();
   postMessage(messageObj) {
     this.window.parent.postMessage(messageObj, '*');
-    if (messageObj.type === MessageType.RUN_SOQL_QUERY) {
-      // send run_query_done after 3 seconds for standalone
-      setTimeout(function () {
-        this.window.postMessage(
-          { type: MessageType.RUN_SOQL_QUERY_DONE },
-          '*'
-        );
-      },
-        3000
-      );
-    }
   }
   public getState(): JsonMap {
     let state = this.localStorage.getItem('query');
