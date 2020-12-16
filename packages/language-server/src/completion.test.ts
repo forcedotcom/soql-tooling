@@ -126,14 +126,28 @@ describe('Code Completion on nested select fields: SELECT ... FROM XYZ', () => {
     'SELECT foo, (|) FROM Foo',
     expectKeywords('SELECT').concat(SELECT_snippet)
   );
-});
 
-// describe.only('ONLY', () => {
-//   validateCompletionsFor(
-//     'SELECT (SELECT |) FROM Foo',
-//     sobjectsFieldsFor('Object')
-//   );
-// });
+  validateCompletionsFor(
+    'SELECT foo, (SELECT bar FROM Bar), (SELECT | FROM Xyz) FROM Foo',
+    sobjectsFieldsFor('Xyz')
+  );
+  validateCompletionsFor(
+    'SELECT foo, (SELECT bar FROM Bar), (SELECT xyz, | FROM Xyz) FROM Foo',
+    sobjectsFieldsFor('Xyz')
+  );
+  validateCompletionsFor(
+    'SELECT foo, | (SELECT bar FROM Bar), (SELECT xyz FROM Xyz) FROM Foo',
+    sobjectsFieldsFor('Foo')
+  );
+  validateCompletionsFor(
+    'SELECT foo, (SELECT bar FROM Bar), | (SELECT xyz FROM Xyz) FROM Foo',
+    sobjectsFieldsFor('Foo')
+  );
+  validateCompletionsFor(
+    'SELECT foo, (SELECT | FROM Bar), (SELECT xyz FROM Xyz) FROM Foo',
+    sobjectsFieldsFor('Bar')
+  );
+});
 
 describe('Code Completion on SELECT XYZ FROM...', () => {
   validateCompletionsFor('SELECT id FROM |', expectedSObjectCompletions);
