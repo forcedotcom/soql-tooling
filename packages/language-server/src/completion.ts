@@ -10,7 +10,12 @@ import {
   InsertTextFormat,
 } from 'vscode-languageserver';
 
-import { CommonTokenStream, Parser, TokenStream } from 'antlr4ts';
+import {
+  CommonTokenStream,
+  Parser,
+  ParserRuleContext,
+  TokenStream,
+} from 'antlr4ts';
 
 import * as c3 from 'antlr4-c3';
 import { format } from 'util';
@@ -32,7 +37,6 @@ export function completionsFor(
   parser.errorHandler = new SoqlCompletionErrorStrategy();
 
   const parsedQuery = parser.soqlQuery();
-  const core = createC3CompletionEngine(parser);
   const completionTokenIndex = findCursorTokenIndex(tokenStream, {
     line,
     column: column,
@@ -45,10 +49,12 @@ export function completionsFor(
     return [];
   }
 
-  const c3Candidates = core.collectCandidates(
-    completionTokenIndex,
-    parsedQuery
+  const c3Candidates = collectC3CompletionCandidates(
+    parser,
+    parsedQuery,
+    completionTokenIndex
   );
+
   const itemsFromTokens: CompletionItem[] = generateCandidatesFromTokens(
     c3Candidates.tokens,
     lexer
@@ -63,14 +69,19 @@ export function completionsFor(
   const completionItems = itemsFromTokens.concat(itemsFromRules);
 
   // If we got no proposals from C3, handle some special cases "manually"
-  if (completionItems.length == 0) {
-    return handleSpecialCases(parsedQuery, tokenStream, completionTokenIndex);
-  }
-
-  return completionItems;
+  return handleSpecialCases(
+    parsedQuery,
+    tokenStream,
+    completionTokenIndex,
+    completionItems
+  );
 }
 
-function createC3CompletionEngine(parser: Parser) {
+function collectC3CompletionCandidates(
+  parser: Parser,
+  parsedQuery: ParserRuleContext,
+  completionTokenIndex: number
+) {
   const core = new c3.CodeCompletionCore(parser);
   core.translateRulesTopDown = true;
   core.ignoredTokens = new Set([
@@ -79,6 +90,9 @@ function createC3CompletionEngine(parser: Parser) {
     SoqlLexer.COMMA,
     SoqlLexer.PLUS,
     SoqlLexer.MINUS,
+    // Ignore COUNT as a token. Handle it explicitly in Rules because the g4 grammar
+    // declares 'COUNT()' explicitly, but not 'COUNT(xyz)'
+    SoqlLexer.COUNT,
   ]);
 
   core.preferredRules = new Set([
@@ -86,12 +100,13 @@ function createC3CompletionEngine(parser: Parser) {
     SoqlParser.RULE_soqlFromExpr,
     SoqlParser.RULE_soqlField,
     SoqlParser.RULE_soqlUpdateStatsClause,
-    SoqlParser.RULE_soqlSelectClause,
     SoqlParser.RULE_soqlInteger,
     SoqlParser.RULE_parseReservedForFieldName, // <-- We list it here so that C3 ignores tokens of that rule
   ]);
-  return core;
+
+  return core.collectCandidates(completionTokenIndex, parsedQuery);
 }
+
 const possibleIdentifierPrefix = /[\w]$/;
 export type CursorPosition = { line: number; column: number };
 /**
@@ -182,22 +197,6 @@ function generateCandidatesFromRules(
 
   for (let [ruleId, ruleData] of c3Rules) {
     switch (ruleId) {
-      case SoqlParser.RULE_soqlSelectClause:
-        if (tokenIndex <= ruleData.startTokenIndex) {
-          completionItems.push(newKeywordItem('SELECT'));
-
-          if (
-            [SoqlLexer.IDENTIFIER, SoqlLexer.SELECT, SoqlLexer.FROM].indexOf(
-              tokenStream.get(tokenIndex).type
-            ) < 0 &&
-            !isCursorBefore(tokenStream, tokenIndex, [SoqlLexer.FROM])
-          ) {
-            completionItems.push(
-              newSnippetItem('SELECT ... FROM ...', 'SELECT $2 FROM $1')
-            );
-          }
-        }
-        break;
       case SoqlParser.RULE_soqlUpdateStatsClause:
         // NOTE: We handle this one as a Rule instead of Tokens because
         // "TRACKING" and "VIEWSTAT" are not part of the grammar
@@ -224,6 +223,8 @@ function generateCandidatesFromRules(
             ruleData.ruleList[ruleData.ruleList.length - 1] ===
             SoqlParser.RULE_soqlSelectExpr
           ) {
+            completionItems.push(newKeywordItem('COUNT()'));
+            completionItems.push(newSnippetItem('COUNT(...)', 'COUNT($1)'));
             completionItems.push(
               newSnippetItem('(SELECT ... FROM ...)', '(SELECT $2 FROM $1)')
             );
@@ -247,26 +248,48 @@ function generateCandidatesFromRules(
 function handleSpecialCases(
   parsedQuery: SoqlQueryContext,
   tokenStream: TokenStream,
-  tokenIndex: number
+  tokenIndex: number,
+  completionItems: CompletionItem[]
 ): CompletionItem[] {
-  const completionItems: CompletionItem[] = [];
+  if (completionItems.length == 0) {
+    // SELECT FROM |
+    if (
+      isCursorAfter(tokenStream, tokenIndex, [SoqlLexer.SELECT, SoqlLexer.FROM])
+    ) {
+      completionItems.push(newObjectItem(SOBJECTS_ITEM_LABEL_PLACEHOLDER));
+    }
+    // SELECT (SELECT ), | FROM
+    else if (
+      isCursorAfter(tokenStream, tokenIndex, [SoqlLexer.COMMA]) &&
+      isCursorBefore(tokenStream, tokenIndex, [SoqlLexer.FROM])
+    ) {
+      const fromSObject =
+        SoqlQueryExtractor.getSObjectFor(parsedQuery, tokenIndex) || 'Object';
+      completionItems.push(
+        newFieldItem(format(SOBJECT_FIELDS_LABEL_PLACEHOLDER, fromSObject))
+      );
+      completionItems.push(newKeywordItem('TYPEOF'));
+      completionItems.push(newKeywordItem('DISTANCE'));
+      completionItems.push(newKeywordItem('COUNT()'));
+      completionItems.push(newSnippetItem('COUNT(...)', 'COUNT($1)'));
+      completionItems.push(
+        newSnippetItem('(SELECT ... FROM ...)', '(SELECT $2 FROM $1)')
+      );
+    }
+  }
 
-  if (
-    isCursorAfter(tokenStream, tokenIndex, [SoqlLexer.SELECT, SoqlLexer.FROM])
-  ) {
-    completionItems.push(newObjectItem(SOBJECTS_ITEM_LABEL_PLACEHOLDER));
-  } else if (
-    isCursorAfter(tokenStream, tokenIndex, [SoqlLexer.COMMA]) &&
-    isCursorBefore(tokenStream, tokenIndex, [SoqlLexer.FROM])
-  ) {
-    const fromSObject =
-      SoqlQueryExtractor.getSObjectFor(parsedQuery, tokenIndex) || 'Object';
-    completionItems.push(
-      newFieldItem(format(SOBJECT_FIELDS_LABEL_PLACEHOLDER, fromSObject))
-    );
-    completionItems.push(
-      newSnippetItem('(SELECT ... FROM ...)', '(SELECT $2 FROM $1)')
-    );
+  // Provide smart snippet for `SELECT`:
+  if (completionItems.some((item) => item.label === 'SELECT')) {
+    if (
+      [SoqlLexer.IDENTIFIER, SoqlLexer.SELECT, SoqlLexer.FROM].indexOf(
+        tokenStream.get(tokenIndex).type
+      ) < 0 &&
+      !isCursorBefore(tokenStream, tokenIndex, [SoqlLexer.FROM])
+    ) {
+      completionItems.push(
+        newSnippetItem('SELECT ... FROM ...', 'SELECT $2 FROM $1')
+      );
+    }
   }
 
   return completionItems;

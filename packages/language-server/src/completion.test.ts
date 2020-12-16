@@ -18,11 +18,20 @@ const INNER_SELECT_snippet = {
   insertTextFormat: InsertTextFormat.Snippet,
 };
 
+const COUNT_snippet = {
+  kind: CompletionItemKind.Snippet,
+  label: 'COUNT(...)',
+  insertText: 'COUNT($1)',
+  insertTextFormat: InsertTextFormat.Snippet,
+};
+
 const expectedSimpleFieldCompletions: CompletionItem[] = [
   {
     kind: CompletionItemKind.Field,
     label: '__SOBJECT_FIELDS_PLACEHOLDER:Object',
   },
+  ...expectKeywords('TYPEOF', 'DISTANCE', 'COUNT()'),
+  COUNT_snippet,
   INNER_SELECT_snippet,
 ]; /*.concat(expectKeywords('COUNT')) */
 
@@ -34,6 +43,7 @@ const expectedSObjectCompletions: CompletionItem[] = [
 ];
 
 describe('Code Completion on SELECT ...', () => {
+  validateCompletionsFor('|', expectKeywords('SELECT').concat(SELECT_snippet));
   validateCompletionsFor('SELE|', expectKeywords('SELECT'));
   validateCompletionsFor('SELECT|', expectKeywords('SELECT'));
   validateCompletionsFor('SELECT |', expectedSimpleFieldCompletions);
@@ -222,7 +232,10 @@ describe('Code Completion on SELECT FROM (no columns on SELECT)', () => {
 
 describe('Code Completion for ORDER BY', () => {
   validateCompletionsFor('SELECT id FROM Account ORDER BY |', [
-    ...sobjectsFieldsFor('Account', false),
+    {
+      kind: CompletionItemKind.Field,
+      label: '__SOBJECT_FIELDS_PLACEHOLDER:Account',
+    },
     ...expectKeywords('DISTANCE'),
   ]);
 });
@@ -255,6 +268,7 @@ describe('Some keyword candidates after FROM clause', () => {
   validateCompletionsFor(
     'SELECT Account.Name, (SELECT FirstName, LastName FROM Contacts |) FROM Account',
     expectKeywords(
+      ')',
       'FOR',
       'OFFSET',
       'LIMIT',
@@ -264,8 +278,7 @@ describe('Some keyword candidates after FROM clause', () => {
       'WHERE',
       'UPDATE TRACKING',
       'UPDATE VIEWSTAT'
-    ),
-    { skip: true }
+    )
   );
 });
 
@@ -309,15 +322,14 @@ function getCursorPosition(text: string, cursorChar: string): [number, number] {
   throw new Error(`Cursor ${cursorChar} not found in ${text} !`);
 }
 
-function sobjectsFieldsFor(
-  sbojectName: string,
-  addInnerSelectSnippet: boolean = true
-) {
+function sobjectsFieldsFor(sbojectName: string) {
   return [
     {
       kind: CompletionItemKind.Field,
       label: '__SOBJECT_FIELDS_PLACEHOLDER:' + sbojectName,
     },
-    ...(addInnerSelectSnippet ? [INNER_SELECT_snippet] : []),
+    ...expectKeywords('TYPEOF', 'DISTANCE', 'COUNT()'),
+    COUNT_snippet,
+    INNER_SELECT_snippet,
   ];
 }
