@@ -104,6 +104,16 @@ describe('Code Completion on nested select fields: SELECT ... FROM XYZ', () => {
     sobjectsFieldsFor('Foo')
   );
 
+  validateCompletionsFor(
+    'SELECT (SELECT |) FROM Foo',
+    sobjectsFieldsFor('Object')
+  );
+
+  validateCompletionsFor(
+    'SELECT (SELECT ), | FROM Foo',
+    sobjectsFieldsFor('Foo')
+  );
+
   validateCompletionsFor('SELECT foo, ( | FROM Foo', expectKeywords('SELECT'));
   validateCompletionsFor('SELECT foo, ( |FROM Foo', expectKeywords('SELECT'));
   validateCompletionsFor('SELECT foo, (| FROM Foo', expectKeywords('SELECT'));
@@ -117,6 +127,21 @@ describe('Code Completion on nested select fields: SELECT ... FROM XYZ', () => {
     expectKeywords('SELECT').concat(SELECT_snippet)
   );
 });
+
+// describe.only('ONLY', () => {
+//   validateCompletionsFor(
+//     'SELECT (SELECT ), | FROM Foo',
+//     sobjectsFieldsFor('Foo')
+//   );
+// validateCompletionsFor(
+//   'SELECT | (SELECT bar FROM Bar) FROM Foo',
+//   sobjectsFieldsFor('Foo')
+// );
+// validateCompletionsFor(
+//   'SELECT (SELECT |) FROM Foo',
+//   sobjectsFieldsFor('Object')
+// );
+// });
 
 describe('Code Completion on SELECT XYZ FROM...', () => {
   validateCompletionsFor('SELECT id FROM |', expectedSObjectCompletions);
@@ -189,10 +214,47 @@ describe('Code Completion on SELECT FROM (no columns on SELECT)', () => {
   validateCompletionsFor('SELECTHHH  FROMXXX |', []);
 });
 
-describe('Some keyword candidates', () => {
+describe('Code Completion for ORDER BY', () => {
+  validateCompletionsFor('SELECT id FROM Account ORDER BY |', [
+    ...sobjectsFieldsFor('Account', false),
+    ...expectKeywords('DISTANCE'),
+  ]);
+});
+
+describe('Some keyword candidates after FROM clause', () => {
   validateCompletionsFor(
     'SELECT id FROM Account |',
-    expectKeywords('LIMIT', 'WHERE', 'ORDER BY', 'GROUP BY')
+    expectKeywords(
+      'FOR',
+      'OFFSET',
+      'LIMIT',
+      'ORDER BY',
+      'GROUP BY',
+      'WITH',
+      'WHERE',
+      'UPDATE TRACKING',
+      'UPDATE VIEWSTAT'
+    )
+  );
+  validateCompletionsFor(
+    'SELECT id FROM Account FOR |',
+    expectKeywords('VIEW', 'REFERENCE')
+  );
+
+  validateCompletionsFor(
+    'SELECT Account.Name, (SELECT FirstName, LastName FROM Contacts |) FROM Account',
+    expectKeywords(
+      'FOR',
+      'OFFSET',
+      'LIMIT',
+      'ORDER BY',
+      'GROUP BY',
+      'WITH',
+      'WHERE',
+      'UPDATE TRACKING',
+      'UPDATE VIEWSTAT'
+    ),
+    true
   );
 });
 
@@ -207,9 +269,11 @@ function expectKeywords(...words: string[]): CompletionItem[] {
 function validateCompletionsFor(
   text: string,
   expectedItems: CompletionItem[],
+  skip: boolean = false,
   cursorChar: string = '|'
 ) {
-  it(text, () => {
+  const itFn = skip ? xit : it;
+  itFn(text, () => {
     if (text.indexOf(cursorChar) != text.lastIndexOf(cursorChar)) {
       throw new Error(
         `Test text must have 1 and only 1 cursor (char: ${cursorChar})`
@@ -222,7 +286,7 @@ function validateCompletionsFor(
       line,
       column
     );
-    expect(completions).toEqual(expectedItems);
+    expect(new Set(completions)).toEqual(new Set(expectedItems));
   });
 }
 
@@ -234,12 +298,15 @@ function getCursorPosition(text: string, cursorChar: string): [number, number] {
   throw new Error(`Cursor ${cursorChar} not found in ${text} !`);
 }
 
-function sobjectsFieldsFor(sbojectName: string) {
+function sobjectsFieldsFor(
+  sbojectName: string,
+  addInnerSelectSnippet: boolean = true
+) {
   return [
     {
       kind: CompletionItemKind.Field,
       label: '__SOBJECT_FIELDS_PLACEHOLDER:' + sbojectName,
     },
-    INNER_SELECT_snippet,
+    ...(addInnerSelectSnippet ? [INNER_SELECT_snippet] : []),
   ];
 }

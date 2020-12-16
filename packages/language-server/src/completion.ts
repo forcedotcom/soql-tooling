@@ -18,14 +18,21 @@ import {
 
 import {
   CommonTokenStream,
+  DefaultErrorStrategy,
   ParserRuleContext,
   Token,
   TokenStream,
 } from 'antlr4ts';
-import { ParseTreeWalker, ParseTreeListener, ErrorNode } from 'antlr4ts/tree';
+import {
+  ParseTreeWalker,
+  ParseTreeListener,
+  ErrorNode,
+  RuleNode,
+} from 'antlr4ts/tree';
 
 import * as c3 from 'antlr4-c3';
 import { format } from 'util';
+import { SoqlCompletionErrorStrategy } from './completion/SoqlCompletionErrorStrategy';
 
 const SOBJECTS_ITEM_LABEL_PLACEHOLDER = '__SOBJECTS_PLACEHOLDER';
 const SOBJECT_FIELDS_LABEL_PLACEHOLDER = '__SOBJECT_FIELDS_PLACEHOLDER:%s';
@@ -39,16 +46,27 @@ export function completionsFor(
   const tokenStream = new CommonTokenStream(lexer);
   const parser = new SoqlParser(tokenStream);
   parser.removeErrorListeners();
+  parser.errorHandler = new SoqlCompletionErrorStrategy();
+
   const parsedQuery = parser.soqlQuery();
   const core = new c3.CodeCompletionCore(parser);
   core.translateRulesTopDown = true;
+  core.ignoredTokens = new Set([
+    SoqlLexer.BIND,
+    SoqlLexer.LPAREN,
+    SoqlLexer.COMMA,
+    SoqlLexer.PLUS,
+    SoqlLexer.MINUS,
+  ]);
   core.preferredRules = new Set([
     SoqlParser.RULE_soqlFromExprs,
     SoqlParser.RULE_soqlFromExpr,
     SoqlParser.RULE_soqlField,
-    SoqlParser.RULE_soqlGroupByClause,
-    SoqlParser.RULE_soqlOrderByClause,
+    // SoqlParser.RULE_soqlOrderByClauseField,
+    SoqlParser.RULE_soqlUpdateStatsClause,
     SoqlParser.RULE_soqlSelectClause,
+    SoqlParser.RULE_soqlInteger,
+    // SoqlParser.RULE_parseReservedForFieldName, // <-- We list it here so that C3 ignores tokens of that rule
   ]);
   const tokenIndex = findCursorTokenIndex(tokenStream, {
     line,
@@ -86,14 +104,12 @@ export function completionsFor(
           }
         }
         break;
-      case SoqlParser.RULE_soqlGroupByClause:
+      case SoqlParser.RULE_soqlUpdateStatsClause:
+        // NOTE: We handle this one as a Rule instead of Tokens because
+        // "TRACKING" and "VIEWSTAT" are not part of the grammar
         if (tokenIndex == ruleData.startTokenIndex) {
-          completionItems.push(newKeywordItem('GROUP BY'));
-        }
-        break;
-      case SoqlParser.RULE_soqlOrderByClause:
-        if (tokenIndex == ruleData.startTokenIndex) {
-          completionItems.push(newKeywordItem('ORDER BY'));
+          completionItems.push(newKeywordItem('UPDATE TRACKING'));
+          completionItems.push(newKeywordItem('UPDATE VIEWSTAT'));
         }
         break;
       case SoqlParser.RULE_soqlFromExprs:
@@ -105,14 +121,29 @@ export function completionsFor(
       case SoqlParser.RULE_soqlField:
         if (tokenIndex == ruleData.startTokenIndex) {
           const fromSObject =
-            FromExpressionExtractor.getSObjectFor(parsedQuery, tokenIndex) ||
+            SoqlQueryExtractor.getSObjectFor(parsedQuery, tokenIndex) ||
             'Object';
           completionItems.push(
             newFieldItem(format(SOBJECT_FIELDS_LABEL_PLACEHOLDER, fromSObject))
           );
-          completionItems.push(
-            newSnippetItem('(SELECT ... FROM ...)', '(SELECT $2 FROM $1)')
-          );
+          if (
+            ruleData.ruleList[ruleData.ruleList.length - 1] ===
+            SoqlParser.RULE_soqlSelectExpr
+          ) {
+            completionItems.push(
+              newSnippetItem('(SELECT ... FROM ...)', '(SELECT $2 FROM $1)')
+            );
+          }
+        }
+        break;
+      case SoqlParser.RULE_soqlInteger:
+        if (tokenIndex == ruleData.startTokenIndex) {
+          completionItems.push(newNumberItem('0'));
+          completionItems.push(newNumberItem('1'));
+          completionItems.push(newNumberItem('5'));
+          completionItems.push(newNumberItem('10'));
+          completionItems.push(newNumberItem('25'));
+          completionItems.push(newNumberItem('100'));
         }
         break;
     }
@@ -124,6 +155,18 @@ export function completionsFor(
       isCursorAfter(tokenStream, tokenIndex, [SoqlLexer.SELECT, SoqlLexer.FROM])
     ) {
       completionItems.push(newObjectItem(SOBJECTS_ITEM_LABEL_PLACEHOLDER));
+    } else if (
+      isCursorAfter(tokenStream, tokenIndex, [SoqlLexer.COMMA]) &&
+      isCursorBefore(tokenStream, tokenIndex, [SoqlLexer.FROM])
+    ) {
+      const fromSObject =
+        SoqlQueryExtractor.getSObjectFor(parsedQuery, tokenIndex) || 'Object';
+      completionItems.push(
+        newFieldItem(format(SOBJECT_FIELDS_LABEL_PLACEHOLDER, fromSObject))
+      );
+      completionItems.push(
+        newSnippetItem('(SELECT ... FROM ...)', '(SELECT $2 FROM $1)')
+      );
     }
   }
 
@@ -192,6 +235,12 @@ function newFieldItem(text: string): CompletionItem {
   };
 }
 
+function newNumberItem(text: string): CompletionItem {
+  return {
+    label: text,
+    kind: CompletionItemKind.Constant,
+  };
+}
 function newObjectItem(text: string): CompletionItem {
   return {
     label: text,
@@ -207,25 +256,35 @@ function newSnippetItem(label: string, snippet: string): CompletionItem {
     insertTextFormat: InsertTextFormat.Snippet,
   };
 }
-const allowedTokens = [
-  SoqlLexer.COUNT,
-  SoqlLexer.FROM,
-  SoqlLexer.WHERE,
-  SoqlLexer.LIMIT,
-];
+
+function tokenTypeToCandidateString(
+  lexer: SoqlLexer,
+  tokenType: number
+): string {
+  return lexer.vocabulary
+    .getLiteralName(tokenType)
+    ?.toUpperCase()
+    .replace(/^'|'$/g, '') as string;
+}
 function generateCandidatesFromTokens(
   tokens: Map<number, c3.TokenList>,
   lexer: SoqlLexer
 ): CompletionItem[] {
   const items: CompletionItem[] = [];
   for (let [tokenType, followingTokens] of tokens) {
-    if (allowedTokens.indexOf(tokenType) >= 0) {
-      const candidate = lexer.vocabulary
-        .getLiteralName(tokenType)
-        ?.toUpperCase()
-        .replace(/^'|'$/g, '') as string;
-      items.push(newKeywordItem(candidate));
-    }
+    const baseKeyword = tokenTypeToCandidateString(lexer, tokenType);
+    if (!baseKeyword) continue;
+    const followingKeywords = followingTokens
+      .map((t) => tokenTypeToCandidateString(lexer, t))
+      .join(' ');
+
+    items.push(
+      newKeywordItem(
+        followingKeywords.length > 0
+          ? baseKeyword + ' ' + followingKeywords
+          : baseKeyword
+      )
+    );
   }
   return items;
 }
@@ -266,12 +325,14 @@ function isCursorBefore(
   }
   return false;
 }
+/***********
 
 interface SelectFromPair {
   select: Token;
   from: Token;
   sobjectName: string;
 }
+
 class FromExpressionExtractor implements SoqlParserListener {
   sobjectName?: string;
   closestStartIndex = -1;
@@ -292,7 +353,7 @@ class FromExpressionExtractor implements SoqlParserListener {
   }
 
   private isInside(pair: SelectFromPair, index: number): boolean {
-    return pair.select.tokenIndex <= index && pair.from.tokenIndex >= index;
+    return pair.select.tokenIndex <= index && pair?.from.tokenIndex >= index;
   }
   public findSObjectName(index: number): string | undefined {
     let closest;
@@ -318,6 +379,7 @@ class FromExpressionExtractor implements SoqlParserListener {
       });
     }
   }
+
   visitErrorNode(node: ErrorNode) {
     if (
       node.symbol.type === SoqlLexer.FROM &&
@@ -339,5 +401,199 @@ class FromExpressionExtractor implements SoqlParserListener {
       const sobjectName = ctx.getChild(0).getChild(0).text;
       this.foundMatch(fromToken, sobjectName);
     }
+  }
+}
+
+*******/
+
+interface InnerSoqlQuery {
+  soqlInnerQueryNode: SoqlInnerQueryContext;
+  select: Token;
+  from?: Token;
+  sobjectName?: string;
+}
+class SoqlQueryExtractor implements SoqlParserListener {
+  selectsStack: Token[] = [];
+  fromsStack: Array<[Token, string]> = [];
+
+  matchedSelectFroms: Array<InnerSoqlQuery> = [];
+
+  innerSoqlQueries = new Map<number, InnerSoqlQuery>();
+
+  constructor(private cursorTokenIndex: number) {}
+
+  static getSObjectFor(
+    parsedQueryTree: SoqlQueryContext,
+    cursorTokenIndex: number
+  ): string | undefined {
+    const listener = new SoqlQueryExtractor(cursorTokenIndex);
+    ParseTreeWalker.DEFAULT.walk<SoqlParserListener>(listener, parsedQueryTree);
+    // return listener.findSObjectName(cursorTokenIndex);
+    return listener.findInnerQuery(cursorTokenIndex)?.sobjectName;
+  }
+  /**
+  private isInside(innerQuery: InnerSoqlQuery, index: number): boolean {
+    const startIndex = innerQuery.soqlInnerQueryNode.start.tokenIndex;
+
+    return (
+      startIndex <= index &&
+      (!innerQuery.soqlInnerQueryNode.stop ||
+        innerQuery.soqlInnerQueryNode.stop.tokenIndex >= index)
+    );
+  }
+  public findSObjectNameOLD(atIndex: number): string | undefined {
+    let closest: InnerSoqlQuery | undefined;
+
+    for (let pair of this.innerSoqlQueries.values()) {
+      if (
+        this.isInside(pair, atIndex) &&
+        (!closest ||
+          atIndex - pair.select.tokenIndex <
+            atIndex - closest.select.tokenIndex)
+      ) {
+        closest = pair;
+      }
+    }
+    return closest?.sobjectName;
+  }
+  **/
+
+  private distanceToQuery(
+    innerQuery: InnerSoqlQuery,
+    atTokenIndex: number
+  ): number {
+    const queryNode =
+      innerQuery.soqlInnerQueryNode.parent?.ruleContext.ruleIndex ===
+      SoqlParser.RULE_soqlSelectExpr
+        ? innerQuery.soqlInnerQueryNode.parent
+        : innerQuery.soqlInnerQueryNode;
+
+    const startIndex = queryNode.start.tokenIndex;
+    const stopIndex = queryNode.stop?.tokenIndex;
+
+    if (startIndex >= atTokenIndex || !stopIndex) {
+      return Number.MAX_VALUE;
+    }
+
+    if (stopIndex >= atTokenIndex) {
+      return 0;
+    }
+    return atTokenIndex - stopIndex;
+  }
+
+  public findInnerQuery(atIndex: number): InnerSoqlQuery | undefined {
+    let closestQuery: InnerSoqlQuery | undefined;
+    let closestDistance: number = Number.MAX_VALUE;
+
+    for (let query of this.innerSoqlQueries.values()) {
+      const d = this.distanceToQuery(query, atIndex);
+      if (d <= closestDistance) {
+        //|| (d == closestDistance && query.select.startIndex < close) {
+        closestDistance = d;
+        closestQuery = query;
+        // if (d == 0) break;
+      }
+    }
+    return closestQuery;
+  }
+
+  private findSoqlInnerQueryAncestor(
+    node: RuleNode | undefined
+  ): SoqlInnerQueryContext | undefined {
+    let soqlInnerQueryNode = node;
+    while (
+      soqlInnerQueryNode &&
+      soqlInnerQueryNode.ruleContext.ruleIndex !==
+        SoqlParser.RULE_soqlInnerQuery
+    ) {
+      soqlInnerQueryNode = soqlInnerQueryNode.parent;
+    }
+
+    return soqlInnerQueryNode
+      ? (soqlInnerQueryNode as SoqlInnerQueryContext)
+      : undefined;
+  }
+
+  visitErrorNode(node: ErrorNode) {
+    console.log(
+      ' ==== visitErrorNode symbol.tokenIndex: ' + node._symbol.tokenIndex
+    );
+    if (node.parent) {
+      const parentRule = node.parent?.ruleContext.ruleIndex;
+
+      if (
+        parentRule === SoqlParser.RULE_soqlSelectExpr &&
+        node.symbol.type === SoqlLexer.FROM &&
+        node.parent &&
+        node.parent.childCount >= 2
+      ) {
+        const fromToken = node.symbol;
+        const sobjectName = node.parent.getChild(1).text;
+        // this.fromsStack.push([fromToken, sobjectName]);
+        // this.matchSELECT_FROM();
+
+        const soqlInnerQueryNode = this.findSoqlInnerQueryAncestor(node.parent);
+        if (soqlInnerQueryNode) {
+          const innerQuery = this.innerSoqlQueries.get(
+            (soqlInnerQueryNode as SoqlInnerQueryContext).start.tokenIndex
+          );
+          if (innerQuery) {
+            innerQuery.from = fromToken;
+            innerQuery.sobjectName = sobjectName;
+          }
+        }
+      } else if (parentRule === SoqlParser.RULE_soqlSelectClause) {
+        // TODO
+      }
+    }
+  }
+  enterSoqlInnerQuery(ctx: SoqlInnerQueryContext) {
+    console.log(
+      ' ==== enterSoqlInnerQuery ctx.start/stop.tokenIndex: ' +
+        ctx.start.tokenIndex +
+        ' ' +
+        ctx.stop?.tokenIndex
+    );
+    // this.selectsStack.push(ctx.start);
+    // this.soqlInnerQuery2SelectFromPair.has(ctx.invokingState);
+    this.innerSoqlQueries.set(ctx.start.tokenIndex, {
+      select: ctx.start,
+      soqlInnerQueryNode: ctx,
+    });
+  }
+
+  exitSoqlFromExprs(ctx: SoqlFromExprsContext) {
+    console.log(
+      ' ==== exitSoqlFromExprs ctx.start/stop.tokenIndex: ' +
+        ctx.start.tokenIndex +
+        ' ' +
+        ctx.stop?.tokenIndex
+    );
+
+    const soqlInnerQueryNode = this.findSoqlInnerQueryAncestor(ctx);
+
+    if (ctx.children && ctx.children.length > 0 && soqlInnerQueryNode) {
+      const fromToken = ctx.parent?.start as Token;
+      const sobjectName = ctx.getChild(0).getChild(0).text;
+      // this.fromsStack.push([fromToken, sobjectName]);
+
+      const selectFromPair = this.innerSoqlQueries.get(
+        soqlInnerQueryNode.start.tokenIndex
+      );
+      if (selectFromPair) {
+        selectFromPair.from = fromToken;
+        selectFromPair.sobjectName = sobjectName;
+      }
+    }
+  }
+
+  exitSoqlInnerQuery(ctx: SoqlInnerQueryContext) {
+    console.log(
+      ' ==== exitSoqlInnerQuery ctx.start/stop.tokenIndex: ' +
+        ctx.start.tokenIndex +
+        ' ' +
+        ctx.stop?.tokenIndex
+    );
+    // const soqlInnerQueryNode = this.findSoqlInnerQueryAncestor(ctx);
   }
 }
