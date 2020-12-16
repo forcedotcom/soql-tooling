@@ -11,7 +11,7 @@
     <header class="querybuilder-header">
       <querybuilder-header
         class={theme}
-        onrunquery={handleRunQuery}
+        onheader__run_query={handleRunQuery}
       ></querybuilder-header>
     </header>
     <article class="querybuilder-body">
@@ -41,7 +41,7 @@
           </template>
         </template>
         <querybuilder-from
-          onobjectselected={handleObjectChange}
+          onfrom__object_selected={handleObjectChange}
           sobjects={sObjects}
           selected={query.sObject}
           has-error={hasRecoverableFromError}
@@ -51,8 +51,8 @@
         <querybuilder-fields
           selected-fields={query.fields}
           fields={fields}
-          onfieldselected={handleFieldSelected}
-          onfieldremoved={handleFieldRemoved}
+          onfields__selected={handleFieldSelected}
+          onfields__removed={handleFieldRemoved}
           has-error={hasRecoverableFieldsError}
           is-loading={isFieldsLoading}
           class={theme}
@@ -69,8 +69,8 @@
         <querybuilder-order-by
           selected-order-by-fields={query.orderBy}
           order-by-fields={fields}
-          onorderbyselected={handleOrderBySelected}
-          onorderbyremoved={handleOrderByRemoved}
+          onorderby__selected={handleOrderBySelected}
+          onorderby__removed={handleOrderByRemoved}
           has-error={hasRecoverableOrderByError}
           is-loading={isFieldsLoading}
           class={theme}
@@ -78,7 +78,7 @@
         <querybuilder-limit
           limit={query.limit}
           has-error={hasRecoverableLimitError}
-          onlimitchanged={handleLimitChanged}
+          onlimit__changed={handleLimitChanged}
           class={theme}
         ></querybuilder-limit>
       </section>

@@ -57,7 +57,7 @@ describe('From', () => {
     document.body.appendChild(from);
 
     const handler = jest.fn();
-    from.addEventListener('objectselected', handler);
+    from.addEventListener('from__object_selected', handler);
     const selectEl = from.shadowRoot.querySelector('select');
     selectEl.dispatchEvent(new Event('change'));
 
