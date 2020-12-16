@@ -17,7 +17,7 @@ import {
   MessageType,
   SoqlEditorEvent
 } from '../services/message/soqlEditorEvent';
-import { ArgumentOutOfRangeError, BehaviorSubject, Observable } from 'rxjs';
+import { BehaviorSubject, Observable } from 'rxjs';
 import { MessageServiceFactory } from '../services/message/messageServiceFactory';
 import { IMessageService } from '../services/message/iMessageService';
 import { StandaloneMessageService } from '../services/message/standaloneMessageService';
