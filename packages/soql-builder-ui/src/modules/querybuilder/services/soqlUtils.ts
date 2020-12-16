@@ -23,6 +23,7 @@ export function convertSoqlToUiModel(soql: string): ToolingModelJson {
 export function convertSoqlModelToUiModel(
   queryModel: Soql.Query
 ): ToolingModelJson {
+  const unsupported = [];
   const fields =
     queryModel.select &&
     (queryModel.select as Soql.SelectExprs).selectExpressions
@@ -37,6 +38,40 @@ export function convertSoqlModelToUiModel(
       : undefined;
 
   const sObject = queryModel.from && queryModel.from.sobjectName;
+
+  let where;
+  if (queryModel.where && queryModel.where.condition) {
+    const conditionsObj = queryModel.where.condition;
+
+    if (SoqlModelUtils.isSimpleGroup(conditionsObj)) {
+      where = SoqlModelUtils.simpleGroupToArray(conditionsObj);
+      where.conditions = where.conditions
+        .filter(
+          (condition) => !SoqlModelUtils.containsUnmodeledSyntax(condition)
+        )
+        .map((expression, index) => {
+          const operator =
+            expression instanceof Impl.LikeConditionImpl
+              ? 'LIKE'
+              : SoqlModelUtils.getKeyByValue(
+                  Soql.CompareOperator,
+                  expression.operator
+                );
+
+          return {
+            field: expression.field.fieldName,
+            operator: operator,
+            criteria: expression.compareValue,
+            index
+          };
+        });
+
+      where.andOr = queryModel.where.condition.andOr;
+    } else {
+      unsupported.push('where:complex-group');
+    }
+  }
+
   const orderBy = queryModel.orderBy
     ? queryModel.orderBy.orderByExpressions
         // TODO: Deal with empty OrderBy.  returns unmodelled syntax.
@@ -49,12 +84,12 @@ export function convertSoqlModelToUiModel(
           };
         })
     : [];
+
   const limit = queryModel.limit
     ? queryModel.limit.limit.toString()
     : undefined;
 
   const errors = queryModel.errors;
-  const unsupported = [];
   for (const key in queryModel) {
     // eslint-disable-next-line no-prototype-builtins
     if (queryModel.hasOwnProperty(key)) {
@@ -71,6 +106,7 @@ export function convertSoqlModelToUiModel(
   const toolingModelTemplate: ToolingModelJson = {
     sObject: sObject || '',
     fields: fields || [],
+    where: where || { conditions: [], andOr: undefined },
     orderBy: orderBy || [],
     limit: limit || '',
     errors: errors || [],
@@ -92,6 +128,41 @@ function convertUiModelToSoqlModel(uiModel: ToolingModelJson): Soql.Query {
   const selectExprs = uiModel.fields.map(
     (field) => new Impl.FieldSelectionImpl(new Impl.FieldRefImpl(field))
   );
+
+  let whereExprsImpl;
+  if (uiModel.where && uiModel.where.conditions.length) {
+    const whereExprsArray = uiModel.where.conditions.map((where) => {
+      const criteriaImpl =
+        where.criteria instanceof Impl.LiteralImpl
+          ? where.criteria
+          : new Impl.LiteralImpl(
+              where.criteria.type,
+              `${where.criteria.value}`
+            );
+      // this logic is temporary until we handle starts, ends with, contains
+      if (where.operator === 'LIKE') {
+        return new Impl.LikeConditionImpl(
+          new Impl.FieldRefImpl(where.field),
+          criteriaImpl
+        );
+      }
+
+      return new Impl.FieldCompareConditionImpl(
+        new Impl.FieldRefImpl(where.field),
+        Soql.CompareOperator[where.operator],
+        criteriaImpl
+      );
+    });
+
+    const andOr = uiModel.where.andOr;
+    whereExprsImpl = SoqlModelUtils.arrayToSimpleGroup(whereExprsArray, andOr);
+  }
+
+  const where =
+    whereExprsImpl && Object.keys(whereExprsImpl).length
+      ? new Impl.WhereImpl(whereExprsImpl)
+      : undefined;
+
   const orderByExprs = uiModel.orderBy.map(
     (orderBy) =>
       new Impl.OrderByExpressionImpl(
@@ -107,7 +178,7 @@ function convertUiModelToSoqlModel(uiModel: ToolingModelJson): Soql.Query {
   const queryModel = new Impl.QueryImpl(
     new Impl.SelectExprsImpl(selectExprs),
     new Impl.FromImpl(uiModel.sObject),
-    undefined,
+    where,
     undefined,
     undefined,
     orderBy,

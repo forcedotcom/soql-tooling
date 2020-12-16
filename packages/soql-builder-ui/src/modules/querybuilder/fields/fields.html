@@ -26,7 +26,9 @@
         onclick={handleFieldSelection}
         multiple
       >
-        <option value="" class="placeholder" data-el-default-option>{defaultOptionText}</option>
+        <option value="" class="placeholder" data-el-default-option>
+          {defaultOptionText}
+        </option>
         <template for:each={fields} for:item="field">
           <option key={field} value={field}>{field}</option>
         </template>
@@ -36,6 +38,7 @@
           <div class="selected-field" key={field}>
             {field}
             <span
+              role="button"
               class="pointer delete-trigger"
               onclick={handleFieldRemoved}
               data-field={field}

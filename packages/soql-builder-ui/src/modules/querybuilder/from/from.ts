@@ -32,7 +32,7 @@ export default class From extends LightningElement {
     e.preventDefault();
     const selectedSobject = e.target.value;
     if (selectedSobject && selectedSobject.length) {
-      const sObjectSelected = new CustomEvent('objectselected', {
+      const sObjectSelected = new CustomEvent('from__object_selected', {
         detail: { selectedSobject }
       });
       this.dispatchEvent(sObjectSelected);

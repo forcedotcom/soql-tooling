@@ -30,7 +30,7 @@ describe('OrderBy should', () => {
     document.body.appendChild(orderBy);
 
     const handler = jest.fn();
-    orderBy.addEventListener('orderbyselected', handler);
+    orderBy.addEventListener('orderby__selected', handler);
     const selectField = orderBy.shadowRoot.querySelector(
       '[data-el-orderby-field]'
     );
@@ -50,7 +50,7 @@ describe('OrderBy should', () => {
     document.body.appendChild(orderBy);
 
     const handler = jest.fn();
-    orderBy.addEventListener('orderbyselected', handler);
+    orderBy.addEventListener('orderby__selected', handler);
     const selectField = orderBy.shadowRoot.querySelector(
       '[data-el-orderby-field]'
     );
@@ -78,7 +78,7 @@ describe('OrderBy should', () => {
     document.body.appendChild(orderBy);
 
     const handler = jest.fn();
-    orderBy.addEventListener('orderbyselected', handler);
+    orderBy.addEventListener('orderby__selected', handler);
     const selectField = orderBy.shadowRoot.querySelector(
       '[data-el-orderby-field]'
     );
@@ -96,7 +96,7 @@ describe('OrderBy should', () => {
     document.body.appendChild(orderBy);
 
     const handler = jest.fn();
-    orderBy.addEventListener('orderbyremoved', handler);
+    orderBy.addEventListener('orderby__removed', handler);
 
     const selectedFieldCloseEl = orderBy.shadowRoot.querySelector(
       "[data-field='foo']"
@@ -117,9 +117,7 @@ describe('OrderBy should', () => {
     orderBy.selectedOrderByFields = [{ field: 'foo' }];
 
     return Promise.resolve().then(() => {
-      selectedFieldEl = orderBy.shadowRoot.querySelectorAll(
-        '.selected-field'
-      );
+      selectedFieldEl = orderBy.shadowRoot.querySelectorAll('.selected-field');
       expect(selectedFieldEl.length).toBe(1);
     });
   });

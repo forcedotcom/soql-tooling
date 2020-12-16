@@ -13,6 +13,12 @@
   * variables are not used in default styles
   */
 
+*,
+*:before,
+*:after {
+  box-sizing: border-box;
+}
+
 /* STANDARD COMPONENT LAYOUT ---------- */
 .section-container {
   display: flex;
@@ -23,6 +29,15 @@
 .section_label-container {
   width: var(--soql-label-width);
   min-width: var(--soql-label-width);
+}
+
+/* TODO: we should change the name of the var
+the width of all the children should be
+default to the width of the parent.
+*/
+.section_selection-container {
+  min-width: var(--soql-input-width);
+  max-width: var(--soql-input-width);
 }
 
 .section_label-container label {
@@ -40,7 +55,9 @@
 
 .selected-field {
   margin: 0.5rem 0.5rem 0 0;
-  display: inline-block;
+  display: flex;
+  justify-content: center;
+  align-items: center;
   height: 1.25rem;
   font-size: smaller;
   background-color: var(
@@ -48,7 +65,7 @@
     var(--soql-color-medium-grey)
   );
   color: var(--vscode-foreground, var(--soql-white));
-  padding: 6px 4px 0 12px;
+  padding: 4px 4px;
   border-radius: 3px;
 }
 :host(.contrast) .selected-field {
@@ -58,7 +75,7 @@
 .delete-trigger {
   margin: 0 0.25rem 0 0.5rem;
   color: var(--vscode-button-foreground, var(--soql-white));
-  font-weight: lighter;
+  font-weight: bold;
   font-size: smaller;
 }
 
@@ -109,6 +126,10 @@ button:hover {
     var(--soql-color-blue-text)
   );
 }
+button:active {
+  box-shadow: 0 0 0.3em 0em #454444;
+}
+
 .select-long {
   min-width: var(--soql-input-width);
   max-width: var(--soql-input-width);

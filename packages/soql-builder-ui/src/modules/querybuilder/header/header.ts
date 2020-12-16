@@ -10,7 +10,7 @@ import { LightningElement } from 'lwc';
 export default class Header extends LightningElement {
   handleRunQuery(e: Event) {
     e.preventDefault();
-    const runEvent = new CustomEvent('runquery');
+    const runEvent = new CustomEvent('header__run_query');
     this.dispatchEvent(runEvent);
   }
 }

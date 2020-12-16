@@ -25,7 +25,7 @@ export default class OrderBy extends LightningElement {
     const orderEl = this.template.querySelector('[data-el-orderby-order]');
     const nullsEl = this.template.querySelector('[data-el-orderby-nulls]');
     if (orderbyEl && orderbyEl.value && orderbyEl.value.length) {
-      const orderBySelectedEvent = new CustomEvent('orderbyselected', {
+      const orderBySelectedEvent = new CustomEvent('orderby__selected', {
         detail: {
           field: orderbyEl.value,
           order: orderEl.value,
@@ -38,7 +38,7 @@ export default class OrderBy extends LightningElement {
 
   handleOrderByRemoved(e) {
     e.preventDefault();
-    const orderByRemovedEvent = new CustomEvent('orderbyremoved', {
+    const orderByRemovedEvent = new CustomEvent('orderby__removed', {
       detail: { field: e.target.dataset.field }
     });
     this.dispatchEvent(orderByRemovedEvent);
