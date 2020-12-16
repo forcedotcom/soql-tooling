@@ -10,10 +10,10 @@
   <header>
     <div class="container">
       <template if:false={isRunning}>
-        <button class="run-button" onclick={handleRunQuery}>Run Query</button>
+        <button onclick={handleRunQuery}>Run Query</button>
       </template>
       <template if:true={isRunning}>
-        <button class="running-button" disabled>Running...</button>
+        <button disabled>Running...</button>
       </template>
     </div>
   </header>
