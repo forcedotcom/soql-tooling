@@ -211,7 +211,7 @@ describe('Where', () => {
         'button[value=AND]'
       );
 
-      whereCmp.addEventListener('andorselection', handler);
+      whereCmp.addEventListener('where__andor_selection', handler);
       orButton.click();
       expect(handler).not.toHaveBeenCalled();
 
@@ -232,7 +232,7 @@ describe('Where', () => {
       const orButton: HTMLButtonElement = whereCmp.shadowRoot.querySelector(
         'button[value=OR]'
       );
-      whereCmp.addEventListener('andorselection', handler);
+      whereCmp.addEventListener('where__andor_selection', handler);
 
       expect(modfierGroups.length).toBe(3);
       expect(whereCmp.testLastModifierGroupIsComplete).toBe(false);
@@ -247,7 +247,7 @@ describe('Where', () => {
       whereCmp.whereExpr = modelManager.getModelWithTwoConditions();
       document.body.appendChild(whereCmp);
       const modGroupHandler = jest.fn();
-      whereCmp.addEventListener('modifierselectionwithandor', modGroupHandler);
+      whereCmp.addEventListener('where__group_selection', modGroupHandler);
       const firstModfierGroup = whereCmp.shadowRoot.querySelector(
         'querybuilder-where-modifier-group'
       );

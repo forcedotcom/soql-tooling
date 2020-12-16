@@ -60,9 +60,9 @@
         <querybuilder-where
           where-expr={query.where}
           where-fields={fields}
-          onmodifierselectionwithandor={handleWhereSelection}
-          onandorselection={handleAndOrSelection}
-          onwhere__conditionremoved={handleRemoveWhereCondition}
+          onwhere__group_selection={handleWhereSelection}
+          onwhere__andor_selection={handleAndOrSelection}
+          onwhere__condition_removed={handleRemoveWhereCondition}
           is-loading={isFieldsLoading}
           class={theme}
         ></querybuilder-where>

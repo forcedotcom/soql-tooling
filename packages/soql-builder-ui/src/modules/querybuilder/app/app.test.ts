@@ -252,7 +252,7 @@ describe('App should', () => {
       };
 
       where.dispatchEvent(
-        new CustomEvent('modifierselectionwithandor', eventPayload)
+        new CustomEvent('where__group_selection', eventPayload)
       );
       expect(postMessageSpy).toHaveBeenCalled();
       expect((postMessageSpy.mock.calls[0][0] as SoqlEditorEvent).type).toEqual(
@@ -276,7 +276,7 @@ describe('App should', () => {
       };
 
       where.dispatchEvent(
-        new CustomEvent('where__conditionremoved', eventPayload)
+        new CustomEvent('where__condition_removed', eventPayload)
       );
       expect(postMessageSpy).toHaveBeenCalled();
       expect((postMessageSpy.mock.calls[0][0] as SoqlEditorEvent).type).toEqual(
@@ -296,7 +296,9 @@ describe('App should', () => {
         }
       };
 
-      where.dispatchEvent(new CustomEvent('andorselection', eventPayload));
+      where.dispatchEvent(
+        new CustomEvent('where__andor_selection', eventPayload)
+      );
       expect(postMessageSpy).toHaveBeenCalled();
       expect((postMessageSpy.mock.calls[0][0] as SoqlEditorEvent).type).toEqual(
         MessageType.UI_SOQL_CHANGED

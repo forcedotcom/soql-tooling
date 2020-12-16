@@ -119,7 +119,7 @@ export default class Where extends LightningElement {
         this.getModfierGroupsRendered().length > 1 &&
         this.lastModifierGroupIsComplete
       ) {
-        const andOrSelectionEvent = new CustomEvent('andorselection', {
+        const andOrSelectionEvent = new CustomEvent('where__andor_selection', {
           detail: selectedValue
         });
         this.dispatchEvent(andOrSelectionEvent);
@@ -129,12 +129,12 @@ export default class Where extends LightningElement {
 
   handleModifierGroupSelection(e) {
     e.preventDefault();
-    const modifierSelectionWithAndOrEvent = new CustomEvent(
-      'modifierselectionwithandor',
+    const where__group_selectionEvent = new CustomEvent(
+      'where__group_selection',
       {
         detail: { fieldCompareExpr: e.detail, andOr: this._andOr }
       }
     );
-    this.dispatchEvent(modifierSelectionWithAndOrEvent);
+    this.dispatchEvent(where__group_selectionEvent);
   }
 }

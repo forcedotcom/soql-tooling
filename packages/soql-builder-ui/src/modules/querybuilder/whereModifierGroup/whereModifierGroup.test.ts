@@ -130,7 +130,7 @@ describe('WhereModifierGroup should', () => {
   it('emit event when modifier group is removed', () => {
     document.body.appendChild(modifierGroup);
     const handler = jest.fn();
-    modifierGroup.addEventListener('where__conditionremoved', handler);
+    modifierGroup.addEventListener('where__condition_removed', handler);
 
     const closeButton = modifierGroup.shadowRoot.querySelector(
       '[data-el-where-delete]'

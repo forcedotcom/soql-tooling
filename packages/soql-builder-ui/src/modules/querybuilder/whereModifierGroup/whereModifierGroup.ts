@@ -95,7 +95,7 @@ export default class WhereModifierGroup extends LightningElement {
 
   handleConditionRemoved(e) {
     e.preventDefault();
-    const conditionRemovedEvent = new CustomEvent('where__conditionremoved', {
+    const conditionRemovedEvent = new CustomEvent('where__condition_removed', {
       detail: {
         index: this.index
       },
