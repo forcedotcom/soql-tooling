@@ -25,16 +25,6 @@ const COUNT_snippet = {
   insertTextFormat: InsertTextFormat.Snippet,
 };
 
-const expectedSimpleFieldCompletions: CompletionItem[] = [
-  {
-    kind: CompletionItemKind.Field,
-    label: '__SOBJECT_FIELDS_PLACEHOLDER:Object',
-  },
-  ...expectKeywords('TYPEOF', 'DISTANCE', 'COUNT()'),
-  COUNT_snippet,
-  INNER_SELECT_snippet,
-]; /*.concat(expectKeywords('COUNT')) */
-
 const expectedSObjectCompletions: CompletionItem[] = [
   {
     kind: CompletionItemKind.Class,
@@ -42,16 +32,26 @@ const expectedSObjectCompletions: CompletionItem[] = [
   },
 ];
 
+describe('Code Completion on invalid cursor position', () => {
+  it('Should return empty if cursor is on non-exitent line', () => {
+    expect(completionsFor('SELECT id FROM Foo', 2, 5)).toHaveLength(0);
+  });
+});
+
 describe('Code Completion on SELECT ...', () => {
-  validateCompletionsFor('|', expectKeywords('SELECT').concat(SELECT_snippet));
-  validateCompletionsFor('SELE|', expectKeywords('SELECT'));
-  validateCompletionsFor('SELECT|', expectKeywords('SELECT'));
-  validateCompletionsFor('SELECT |', expectedSimpleFieldCompletions);
-  validateCompletionsFor('SELECT\n|', expectedSimpleFieldCompletions);
-  validateCompletionsFor('SELECT\n |', expectedSimpleFieldCompletions);
-  validateCompletionsFor('SELECT id, |', expectedSimpleFieldCompletions);
-  validateCompletionsFor('SELECT id, boo,|', expectedSimpleFieldCompletions);
-  validateCompletionsFor('SELECT id|', expectedSimpleFieldCompletions);
+  validateCompletionsFor('|', [...expectKeywords('SELECT'), SELECT_snippet]);
+  validateCompletionsFor('SELE|', [
+    ...expectKeywords('SELECT'),
+    SELECT_snippet,
+  ]);
+  validateCompletionsFor('| FROM', expectKeywords('SELECT'));
+  validateCompletionsFor('SELECT|', []);
+  validateCompletionsFor('SELECT |', sobjectsFieldsFor('Object'));
+  validateCompletionsFor('SELECT\n|', sobjectsFieldsFor('Object'));
+  validateCompletionsFor('SELECT\n |', sobjectsFieldsFor('Object'));
+  validateCompletionsFor('SELECT id, |', sobjectsFieldsFor('Object'));
+  validateCompletionsFor('SELECT id, boo,|', sobjectsFieldsFor('Object'));
+  validateCompletionsFor('SELECT id|', sobjectsFieldsFor('Object'));
   validateCompletionsFor('SELECT id |', expectKeywords('FROM'));
 });
 
@@ -65,6 +65,7 @@ describe('Code Completion on select fields: SELECT ... FROM XYZ', () => {
   validateCompletionsFor('SELECT id,| FROM Foo', sobjectsFieldsFor('Foo'));
   validateCompletionsFor('SELECT |, id FROM Foo', sobjectsFieldsFor('Foo'));
   validateCompletionsFor('SELECT |, id, FROM Foo', sobjectsFieldsFor('Foo'));
+  validateCompletionsFor('SELECT id,| FROM', sobjectsFieldsFor('Object'));
 
   // with alias
   validateCompletionsFor('SELECT id,| FROM Foo F', sobjectsFieldsFor('Foo'));
@@ -164,7 +165,7 @@ describe('Code Completion on SELECT XYZ FROM...', () => {
   validateCompletionsFor('SELECT id\nFROM |', expectedSObjectCompletions);
 
   // cursor touching FROM should not complete with Sobject name
-  validateCompletionsFor('SELECT id\nFROM|', expectKeywords('FROM'));
+  validateCompletionsFor('SELECT id\nFROM|', []);
   validateCompletionsFor(
     'SELECT id FROM |WHERE ORDER BY',
     expectedSObjectCompletions
@@ -218,13 +219,10 @@ describe('Code Completion on SELECT FROM (no columns on SELECT)', () => {
   );
 
   describe('Cursor is still touching FROM: it should still complete with fieldnames, and not SObject names', () => {
-    validateCompletionsFor('SELECT FROM|', expectedSimpleFieldCompletions);
+    validateCompletionsFor('SELECT FROM|', sobjectsFieldsFor('Object'));
 
-    validateCompletionsFor('SELECT\nFROM|', expectedSimpleFieldCompletions);
-    validateCompletionsFor(
-      'SELECT\nFROM|\nWHERE',
-      expectedSimpleFieldCompletions
-    );
+    validateCompletionsFor('SELECT\nFROM|', sobjectsFieldsFor('Object'));
+    validateCompletionsFor('SELECT\nFROM|\nWHERE', sobjectsFieldsFor('Object'));
   });
 
   validateCompletionsFor('SELECTHHH  FROMXXX |', []);
@@ -268,7 +266,6 @@ describe('Some keyword candidates after FROM clause', () => {
   validateCompletionsFor(
     'SELECT Account.Name, (SELECT FirstName, LastName FROM Contacts |) FROM Account',
     expectKeywords(
-      ')',
       'FOR',
       'OFFSET',
       'LIMIT',
@@ -280,6 +277,11 @@ describe('Some keyword candidates after FROM clause', () => {
       'UPDATE VIEWSTAT'
     )
   );
+
+  validateCompletionsFor(
+    'SELECT id FROM Account LIMIT |',
+    expectItems(CompletionItemKind.Constant, '0', '1', '5', '10', '25', '100')
+  );
 });
 
 function expectKeywords(...words: string[]): CompletionItem[] {
@@ -287,6 +289,16 @@ function expectKeywords(...words: string[]): CompletionItem[] {
     kind: CompletionItemKind.Keyword,
     label: s,
     insertText: s + ' ',
+  }));
+}
+
+function expectItems(
+  kind: CompletionItemKind,
+  ...labels: string[]
+): CompletionItem[] {
+  return labels.map((s) => ({
+    kind: kind,
+    label: s,
   }));
 }
 

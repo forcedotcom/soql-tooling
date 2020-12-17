@@ -57,7 +57,9 @@ export function completionsFor(
 
   const itemsFromTokens: CompletionItem[] = generateCandidatesFromTokens(
     c3Candidates.tokens,
-    lexer
+    lexer,
+    tokenStream,
+    completionTokenIndex
   );
   const itemsFromRules: CompletionItem[] = generateCandidatesFromRules(
     c3Candidates.rules,
@@ -89,6 +91,11 @@ function collectC3CompletionCandidates(
     SoqlLexer.LPAREN,
     SoqlLexer.COMMA,
     SoqlLexer.PLUS,
+    SoqlLexer.MINUS,
+    SoqlLexer.LT,
+    SoqlLexer.GT,
+    SoqlLexer.EQ,
+    SoqlLexer.COLON,
     SoqlLexer.MINUS,
     // Ignore COUNT as a token. Handle it explicitly in Rules because the g4 grammar
     // declares 'COUNT()' explicitly, but not 'COUNT(xyz)'
@@ -131,10 +138,6 @@ export function findCursorTokenIndex(
   for (let i = 0; i < tokenStream.size; i++) {
     const t = tokenStream.get(i);
 
-    if (t.line > cursor.line) {
-      return i;
-    }
-
     let tokenStartCol = t.charPositionInLine;
     let tokenEndCol = tokenStartCol + (t.text as string).length;
 
@@ -153,6 +156,7 @@ export function findCursorTokenIndex(
       } else return i;
     }
   }
+  return undefined;
 }
 
 function tokenTypeToCandidateString(
@@ -166,12 +170,18 @@ function tokenTypeToCandidateString(
 }
 function generateCandidatesFromTokens(
   tokens: Map<number, c3.TokenList>,
-  lexer: SoqlLexer
+  lexer: SoqlLexer,
+  tokenStream: TokenStream,
+  tokenIndex: number
 ): CompletionItem[] {
   const items: CompletionItem[] = [];
   for (let [tokenType, followingTokens] of tokens) {
+    if (tokenType === tokenStream.get(tokenIndex).type) {
+      continue;
+    }
     const baseKeyword = tokenTypeToCandidateString(lexer, tokenType);
     if (!baseKeyword) continue;
+
     const followingKeywords = followingTokens
       .map((t) => tokenTypeToCandidateString(lexer, t))
       .join(' ');
@@ -232,7 +242,7 @@ function generateCandidatesFromRules(
         }
         break;
       case SoqlParser.RULE_soqlInteger:
-        if (tokenIndex == ruleData.startTokenIndex) {
+        if (isCursorAfter(tokenStream, tokenIndex, [SoqlLexer.LIMIT])) {
           completionItems.push(newNumberItem('0'));
           completionItems.push(newNumberItem('1'));
           completionItems.push(newNumberItem('5'));
@@ -258,7 +268,7 @@ function handleSpecialCases(
     ) {
       completionItems.push(newObjectItem(SOBJECTS_ITEM_LABEL_PLACEHOLDER));
     }
-    // SELECT (SELECT ), | FROM
+    // SELECT (SELECT ), | FROM Xyz
     else if (
       isCursorAfter(tokenStream, tokenIndex, [SoqlLexer.COMMA]) &&
       isCursorBefore(tokenStream, tokenIndex, [SoqlLexer.FROM])
@@ -280,12 +290,7 @@ function handleSpecialCases(
 
   // Provide smart snippet for `SELECT`:
   if (completionItems.some((item) => item.label === 'SELECT')) {
-    if (
-      [SoqlLexer.IDENTIFIER, SoqlLexer.SELECT, SoqlLexer.FROM].indexOf(
-        tokenStream.get(tokenIndex).type
-      ) < 0 &&
-      !isCursorBefore(tokenStream, tokenIndex, [SoqlLexer.FROM])
-    ) {
+    if (!isCursorBefore(tokenStream, tokenIndex, [SoqlLexer.FROM])) {
       completionItems.push(
         newSnippetItem('SELECT ... FROM ...', 'SELECT $2 FROM $1')
       );
