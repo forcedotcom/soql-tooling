@@ -234,7 +234,7 @@ describe('Code Completion for ORDER BY', () => {
       kind: CompletionItemKind.Field,
       label: '__SOBJECT_FIELDS_PLACEHOLDER:Account',
     },
-    ...expectKeywords('DISTANCE'),
+    ...expectKeywords('DISTANCE('),
   ]);
 });
 
@@ -281,11 +281,30 @@ describe('Some keyword candidates after FROM clause', () => {
   validateCompletionsFor('SELECT id FROM Account LIMIT |', []);
 });
 
+describe('WHERE clause', () => {
+  validateCompletionsFor('SELECT id FROM Account WHERE |', [
+    ...expectKeywords('DISTANCE(', 'NOT'),
+    {
+      kind: CompletionItemKind.Field,
+      label: '__SOBJECT_FIELDS_PLACEHOLDER:Account',
+    },
+  ]);
+});
+
+describe('Some special functions', () => {
+  validateCompletionsFor('SELECT DISTANCE(|) FROM Account', [
+    {
+      kind: CompletionItemKind.Field,
+      label: '__SOBJECT_FIELDS_PLACEHOLDER:Account',
+    },
+  ]);
+});
+
 function expectKeywords(...words: string[]): CompletionItem[] {
   return words.map((s) => ({
     kind: CompletionItemKind.Keyword,
     label: s,
-    insertText: s + ' ',
+    insertText: s + (s.endsWith('(') ? '' : ' '),
   }));
 }
 
@@ -337,7 +356,7 @@ function sobjectsFieldsFor(sbojectName: string) {
       kind: CompletionItemKind.Field,
       label: '__SOBJECT_FIELDS_PLACEHOLDER:' + sbojectName,
     },
-    ...expectKeywords('TYPEOF', 'DISTANCE', 'COUNT()'),
+    ...expectKeywords('TYPEOF', 'DISTANCE(', 'COUNT()'),
     COUNT_snippet,
     INNER_SELECT_snippet,
   ];

@@ -88,16 +88,19 @@ function collectC3CompletionCandidates(
   completionTokenIndex: number
 ) {
   const core = new c3.CodeCompletionCore(parser);
-  core.translateRulesTopDown = true;
+  core.translateRulesTopDown = false;
+
+  // core.debugOutputWithTransitions = true;
+  // core.showDebugOutput = true;
+  // core.showRuleStack = true;
+  // core.showResult = true;
   core.ignoredTokens = new Set([
     SoqlLexer.BIND,
     SoqlLexer.LPAREN,
+    // SoqlLexer.DISTANCE, // Handle it explicitly, as other built-in functions?
     SoqlLexer.COMMA,
     SoqlLexer.PLUS,
     SoqlLexer.MINUS,
-    SoqlLexer.LT,
-    SoqlLexer.GT,
-    SoqlLexer.EQ,
     SoqlLexer.COLON,
     SoqlLexer.MINUS,
     // Ignore COUNT as a token. Handle it explicitly in Rules because the g4 grammar
@@ -110,7 +113,8 @@ function collectC3CompletionCandidates(
     SoqlParser.RULE_soqlFromExpr,
     SoqlParser.RULE_soqlField,
     SoqlParser.RULE_soqlUpdateStatsClause,
-    SoqlParser.RULE_parseReservedForFieldName, // <-- We list it here so that C3 ignores tokens of that rule
+    SoqlParser.RULE_soqlIdentifier,
+    // SoqlParser.RULE_parseReservedForFieldName, // <-- We list it here so that C3 ignores tokens of that rule
   ]);
 
   return core.collectCandidates(completionTokenIndex, parsedQuery);
@@ -189,13 +193,20 @@ function generateCandidatesFromTokens(
       .map((t) => tokenTypeToCandidateString(lexer, t))
       .join(' ');
 
-    items.push(
-      newKeywordItem(
-        followingKeywords.length > 0
-          ? baseKeyword + ' ' + followingKeywords
-          : baseKeyword
-      )
-    );
+    let itemText =
+      followingKeywords.length > 0
+        ? baseKeyword + ' ' + followingKeywords
+        : baseKeyword;
+
+    // Some "manual" improvements for some keywords:
+    if (['IN', 'NOT IN'].includes(itemText)) {
+      itemText = itemText + ' (';
+    } else if (['INCLUDES', 'EXCLUDES', 'DISTANCE'].includes(itemText)) {
+      itemText = itemText + '(';
+    } else if (['<', '>'].includes(itemText)) {
+      items.push(newKeywordItem(itemText + '='));
+    }
+    items.push(newKeywordItem(itemText));
   }
   return items;
 }
@@ -244,6 +255,25 @@ function generateCandidatesFromRules(
           }
         }
         break;
+
+      // For some reason, c3 doesn't propose rule `soqlField` when inside soqlWhereExpr,
+      // but it does propose soqlIdentifier, so we hinge off it for where expressions
+      case SoqlParser.RULE_soqlIdentifier:
+        if (
+          tokenIndex == ruleData.startTokenIndex &&
+          [
+            SoqlParser.RULE_soqlWhereExpr,
+            SoqlParser.RULE_soqlDistanceExpr,
+          ].includes(ruleData.ruleList[ruleData.ruleList.length - 1])
+        ) {
+          const fromSObject =
+            SoqlQueryExtractor.getSObjectFor(parsedQuery, tokenIndex) ||
+            'Object';
+          completionItems.push(
+            newFieldItem(format(SOBJECT_FIELDS_LABEL_PLACEHOLDER, fromSObject))
+          );
+        }
+        break;
     }
   }
   return completionItems;
@@ -273,7 +303,7 @@ function handleSpecialCases(
         newFieldItem(format(SOBJECT_FIELDS_LABEL_PLACEHOLDER, fromSObject))
       );
       completionItems.push(newKeywordItem('TYPEOF'));
-      completionItems.push(newKeywordItem('DISTANCE'));
+      completionItems.push(newKeywordItem('DISTANCE('));
       completionItems.push(newKeywordItem('COUNT()'));
       completionItems.push(newSnippetItem('COUNT(...)', 'COUNT($1)'));
       completionItems.push(
@@ -290,7 +320,6 @@ function handleSpecialCases(
       );
     }
   }
-
   return completionItems;
 }
 
@@ -335,7 +364,7 @@ function newKeywordItem(text: string): CompletionItem {
   return {
     label: text,
     kind: CompletionItemKind.Keyword,
-    insertText: text + ' ',
+    insertText: text + (text.endsWith('(') ? '' : ' '),
   };
 }
 function newFieldItem(text: string): CompletionItem {
