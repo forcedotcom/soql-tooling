@@ -109,13 +109,13 @@ button:hover {
     var(--soql-color-blue-text)
   );
 }
-button:disabled {
-  color: var(--vscode-foreground, var(--soql-foreground));
+.btn--disabled {
   background-color: var(
     --vscode-list-inactiveSelectionBackground,
-    var(--soql-color-light-grey)
+    var(--soql-color-medium-grey)
   );
-  cursor: default;
+  cursor: not-allowed;
+  pointer-events: none;
 }
 .select-long {
   min-width: var(--soql-input-width);
