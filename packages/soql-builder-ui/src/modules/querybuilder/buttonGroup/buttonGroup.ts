@@ -13,24 +13,17 @@ export default class ButtonGroup extends LightningElement {
   @api buttonLabels: string[];
   @api selectedIndex = '-1';
 
-  renderedCallback() {
-    const buttonElements = this.template.querySelectorAll('button');
-    buttonElements.forEach(element => {
-      this.applyStyle(element);
-    });
-  }
-
   get buttonData() {
     return this.buttonLabels
       ? this.buttonLabels.map(label => {
-        return { label: label, key: `${this.buttonLabels.indexOf(label)}` };
+        const idx = this.buttonLabels.indexOf(label);
+        return { label: label, key: `idx`, className: this.getClassName(idx) };
       })
       : [];
   }
 
-  applyStyle(element: any) {
+  getClassName(idx: number): string {
     let classList = "btn";
-    const idx = parseInt(element.attributes.index.value);
     if (this.isFirst(idx)) {
       classList += " btn--first";
     }
@@ -40,7 +33,7 @@ export default class ButtonGroup extends LightningElement {
     if (this.isSelected(idx)) {
       classList += " btn--selected";
     }
-    element.className = classList;
+    return classList;
   }
 
   isFirst(index: number): boolean {
