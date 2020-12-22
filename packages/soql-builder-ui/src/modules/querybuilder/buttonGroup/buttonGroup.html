@@ -8,7 +8,7 @@
  <template>
   <div class="btn--group" selection={selectedIndex}>
     <template for:each={buttonData} for:item="data" for:index="index">
-      <button type="button" name={data.label} key={data.key} value={data.label} index={index} class={data.className} onclick={handleButtonClicked}>
+      <button type="button" name={data.label} key={data.key} value={data.value} index={index} class={data.className} onclick={handleButtonClicked}>
         {data.label}
       </button>
     </template>

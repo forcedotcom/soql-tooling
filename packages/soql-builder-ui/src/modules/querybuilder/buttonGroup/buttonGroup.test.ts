@@ -11,13 +11,16 @@ import ButtonGroup from 'querybuilder/buttonGroup';
 
 describe('ButtonGroup should', () => {
   let buttonGroup: LightningElement;
-  let buttonLabels = ['foo', 'bar'];
+  let buttonValues = [
+    { label: 'foo', value: 'FOO' },
+    { label: 'bar', value: 'BAR' }
+  ];
 
   beforeEach(() => {
     buttonGroup = createElement('querybuilder-button-group', {
       is: ButtonGroup
     });
-    buttonGroup.buttonLabels = buttonLabels;
+    buttonGroup.buttonValues = buttonValues;
   });
 
   afterEach(() => {
@@ -30,11 +33,13 @@ describe('ButtonGroup should', () => {
     document.body.appendChild(buttonGroup);
 
     const buttonElements = buttonGroup.shadowRoot.querySelectorAll('button');
-    expect(buttonElements.length).toEqual(buttonLabels.length);
+    expect(buttonElements.length).toEqual(buttonValues.length);
     buttonElements.forEach(element => {
       const idx = parseInt(element.attributes.index.value);
       const name = element.attributes.name.value;
-      expect(name).toEqual(buttonLabels[idx]);
+      const value = element.attributes.value.value;
+      expect(name).toEqual(buttonValues[idx].label);
+      expect(value).toEqual(buttonValues[idx].value);
     });
   });
 
