@@ -8,18 +8,35 @@
  */
 
 import { api, LightningElement, track } from 'lwc';
+import { tsMethodSignature } from '../../../../../../../../Library/Caches/typescript/4.0/node_modules/@babel/types/lib/index';
+
+interface ButtonData {
+  key: string;
+  label: string;
+  className: string;
+}
 
 export default class ButtonGroup extends LightningElement {
-  @api buttonLabels: string[];
   @api selectedIndex = '-1';
-
-  get buttonData() {
-    return this.buttonLabels
-      ? this.buttonLabels.map(label => {
-        const idx = this.buttonLabels.indexOf(label);
-        return { label: label, key: `idx`, className: this.getClassName(idx) };
-      })
+  @api get buttonLabels() {
+    return this.buttonData
+      ? this.buttonData.map(data => data.label)
       : [];
+  }
+  set buttonLabels(_buttonLabels: string[]) {
+    this.buttonData = _buttonLabels.map(label => {
+      const idx = _buttonLabels.indexOf(label);
+      return { label: label, key: `idx`, className: this.getClassName(idx) };
+
+    })
+  }
+  @track
+  buttonData: ButtonData[];
+
+  updateClasses(): void {
+    this.buttonData.forEach((data, index) =>
+      data.className = this.getClassName(index)
+    );
   }
 
   getClassName(idx: number): string {
@@ -52,6 +69,7 @@ export default class ButtonGroup extends LightningElement {
 
   handleButtonClicked(e) {
     this.selectedIndex = e.currentTarget.attributes.index.value;
+    this.updateClasses();
     const event = new CustomEvent('selection__changed', {
       detail: { selection: this.selection }
     });
