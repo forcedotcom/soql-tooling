@@ -1,0 +1,16 @@
+<!--
+  Copyright (c) 2020, salesforce.com, inc.
+  All rights reserved.
+  Licensed under the BSD 3-Clause license.
+  For full license text, see LICENSE.txt file in the repo root or https://opensource.org/licenses/BSD-3-Clause
+
+ -->
+ <template>
+  <div class="btn--group" selection={selectedIndex}>
+    <template for:each={buttonData} for:item="data" for:index="index">
+      <button type="button" name={data.label} key={data.key} value={data.label} index={index} onclick={handleButtonClicked}>
+        {data.label}
+      </button>
+    </template>
+  </div>
+</template>
