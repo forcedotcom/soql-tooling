@@ -20,10 +20,14 @@ import {
 import * as c3 from 'antlr4-c3';
 import { format } from 'util';
 import { SoqlCompletionErrorStrategy } from './completion/SoqlCompletionErrorStrategy';
-import { SoqlQueryExtractor } from './completion/SoqlQueryExtractor';
+import {
+  parseWHEREExprField,
+  parseFROMSObject,
+} from './completion/soql-query-analysis';
 
 const SOBJECTS_ITEM_LABEL_PLACEHOLDER = '__SOBJECTS_PLACEHOLDER';
 const SOBJECT_FIELDS_LABEL_PLACEHOLDER = '__SOBJECT_FIELDS_PLACEHOLDER:%s';
+const LITERAL_VALUES_FOR_FIELD = '__LITERAL_VALUES_FOR_FIELD:%s,%s';
 const UPDATE_TRACKING = 'UPDATE TRACKING';
 const UPDATE_VIEWSTAT = 'UPDATE VIEWSTAT';
 const DEFAULT_SOBJECT = 'Object';
@@ -60,6 +64,7 @@ export function completionsFor(
 
   const itemsFromTokens: CompletionItem[] = generateCandidatesFromTokens(
     c3Candidates.tokens,
+    parsedQuery,
     lexer,
     tokenStream,
     completionTokenIndex
@@ -89,15 +94,10 @@ function collectC3CompletionCandidates(
 ) {
   const core = new c3.CodeCompletionCore(parser);
   core.translateRulesTopDown = false;
-
-  // core.debugOutputWithTransitions = true;
-  // core.showDebugOutput = true;
-  // core.showRuleStack = true;
-  // core.showResult = true;
   core.ignoredTokens = new Set([
     SoqlLexer.BIND,
     SoqlLexer.LPAREN,
-    // SoqlLexer.DISTANCE, // Handle it explicitly, as other built-in functions?
+    // SoqlLexer.DISTANCE, // Maybe handle it explicitly, as other built-in functions?
     SoqlLexer.COMMA,
     SoqlLexer.PLUS,
     SoqlLexer.MINUS,
@@ -114,7 +114,8 @@ function collectC3CompletionCandidates(
     SoqlParser.RULE_soqlField,
     SoqlParser.RULE_soqlUpdateStatsClause,
     SoqlParser.RULE_soqlIdentifier,
-    // SoqlParser.RULE_parseReservedForFieldName, // <-- We list it here so that C3 ignores tokens of that rule
+    SoqlParser.RULE_soqlLiteralValue,
+    SoqlParser.RULE_soqlLikeLiteral,
   ]);
 
   return core.collectCandidates(completionTokenIndex, parsedQuery);
@@ -177,6 +178,7 @@ function tokenTypeToCandidateString(
 }
 function generateCandidatesFromTokens(
   tokens: Map<number, c3.TokenList>,
+  parsedQuery: SoqlQueryContext,
   lexer: SoqlLexer,
   tokenStream: TokenStream,
   tokenIndex: number
@@ -203,10 +205,34 @@ function generateCandidatesFromTokens(
       itemText = itemText + ' (';
     } else if (['INCLUDES', 'EXCLUDES', 'DISTANCE'].includes(itemText)) {
       itemText = itemText + '(';
-    } else if (['<', '>'].includes(itemText)) {
-      items.push(newKeywordItem(itemText + '='));
     }
-    items.push(newKeywordItem(itemText));
+
+    const fieldDependentOperators: Set<number> = new Set<number>([
+      SoqlLexer.LT,
+      SoqlLexer.GT,
+      SoqlLexer.INCLUDES,
+      SoqlLexer.EXCLUDES,
+      SoqlLexer.LIKE,
+    ]);
+    const newItem = newKeywordItem(itemText);
+
+    if (fieldDependentOperators.has(tokenType)) {
+      const soqlField = parseWHEREExprField(parsedQuery, tokenIndex);
+      if (soqlField) {
+        newItem.data = { relatedSoqlField: soqlField };
+      }
+    }
+
+    items.push(newItem);
+
+    // Clone extra related operators missing by C3 proposals
+    if (['<', '>'].includes(itemText)) {
+      items.push({ ...newItem, ...newKeywordItem(itemText + '=') });
+    }
+    if (itemText === '=') {
+      items.push({ ...newItem, ...newKeywordItem('!=') });
+      items.push({ ...newItem, ...newKeywordItem('<>') });
+    }
   }
   return items;
 }
@@ -238,8 +264,7 @@ function generateCandidatesFromRules(
       case SoqlParser.RULE_soqlField:
         if (tokenIndex == ruleData.startTokenIndex) {
           const fromSObject =
-            SoqlQueryExtractor.getSObjectFor(parsedQuery, tokenIndex) ||
-            DEFAULT_SOBJECT;
+            parseFROMSObject(parsedQuery, tokenIndex) || DEFAULT_SOBJECT;
           completionItems.push(
             newFieldItem(format(SOBJECT_FIELDS_LABEL_PLACEHOLDER, fromSObject))
           );
@@ -267,10 +292,24 @@ function generateCandidatesFromRules(
           ].includes(ruleData.ruleList[ruleData.ruleList.length - 1])
         ) {
           const fromSObject =
-            SoqlQueryExtractor.getSObjectFor(parsedQuery, tokenIndex) ||
-            'Object';
+            parseFROMSObject(parsedQuery, tokenIndex) || 'Object';
           completionItems.push(
             newFieldItem(format(SOBJECT_FIELDS_LABEL_PLACEHOLDER, fromSObject))
+          );
+        }
+        break;
+      case SoqlParser.RULE_soqlLiteralValue:
+      case SoqlParser.RULE_soqlLikeLiteral:
+        const soqlField = parseWHEREExprField(parsedQuery, tokenIndex);
+        if (soqlField) {
+          completionItems.push(
+            newConstantItem(
+              format(
+                LITERAL_VALUES_FOR_FIELD,
+                soqlField.sobjectName,
+                soqlField.fieldName
+              )
+            )
           );
         }
         break;
@@ -297,8 +336,7 @@ function handleSpecialCases(
       isCursorBefore(tokenStream, tokenIndex, [SoqlLexer.FROM])
     ) {
       const fromSObject =
-        SoqlQueryExtractor.getSObjectFor(parsedQuery, tokenIndex) ||
-        DEFAULT_SOBJECT;
+        parseFROMSObject(parsedQuery, tokenIndex) || DEFAULT_SOBJECT;
       completionItems.push(
         newFieldItem(format(SOBJECT_FIELDS_LABEL_PLACEHOLDER, fromSObject))
       );
@@ -364,7 +402,7 @@ function newKeywordItem(text: string): CompletionItem {
   return {
     label: text,
     kind: CompletionItemKind.Keyword,
-    insertText: text + (text.endsWith('(') ? '' : ' '),
+    insertText: text,
   };
 }
 function newFieldItem(text: string): CompletionItem {
@@ -373,8 +411,7 @@ function newFieldItem(text: string): CompletionItem {
     kind: CompletionItemKind.Field,
   };
 }
-
-function newNumberItem(text: string): CompletionItem {
+function newConstantItem(text: string): CompletionItem {
   return {
     label: text,
     kind: CompletionItemKind.Constant,

@@ -289,6 +289,94 @@ describe('WHERE clause', () => {
       label: '__SOBJECT_FIELDS_PLACEHOLDER:Account',
     },
   ]);
+  validateCompletionsFor('SELECT id FROM Account WHERE Name |', [
+    ...expectKeywords('IN (', 'NOT IN (', '=', '!=', '<>'),
+    ...expectKeywordsWithFieldData('Account', 'Name', [
+      'INCLUDES(',
+      'EXCLUDES(',
+      '<',
+      '<=',
+      '>',
+      '>=',
+      'LIKE',
+    ]),
+  ]);
+  validateCompletionsFor('SELECT id FROM Account WHERE Type IN (|', [
+    ...expectKeywords('SELECT'),
+    SELECT_snippet,
+    {
+      kind: CompletionItemKind.Constant,
+      label: '__LITERAL_VALUES_FOR_FIELD:Account,Type',
+    },
+  ]);
+  validateCompletionsFor(
+    "SELECT id FROM Account WHERE Type IN ('Customer', |)",
+    [
+      {
+        kind: CompletionItemKind.Constant,
+        label: '__LITERAL_VALUES_FOR_FIELD:Account,Type',
+      },
+    ]
+  );
+  validateCompletionsFor(
+    "SELECT id FROM Account WHERE Type IN (|, 'Customer')",
+    [
+      ...expectKeywords('SELECT'),
+      SELECT_snippet,
+      {
+        kind: CompletionItemKind.Constant,
+        label: '__LITERAL_VALUES_FOR_FIELD:Account,Type',
+      },
+    ]
+  );
+  validateCompletionsFor(
+    'SELECT Channel FROM QuickText WHERE Channel INCLUDES(|',
+    [
+      {
+        kind: CompletionItemKind.Constant,
+        label: '__LITERAL_VALUES_FOR_FIELD:QuickText,Channel',
+      },
+    ]
+  );
+  validateCompletionsFor(
+    "SELECT Channel FROM QuickText WHERE Channel EXCLUDES('Email', |",
+    [
+      {
+        kind: CompletionItemKind.Constant,
+        label: '__LITERAL_VALUES_FOR_FIELD:QuickText,Channel',
+      },
+    ]
+  );
+  validateCompletionsFor('SELECT id FROM Account WHERE Type = |', [
+    {
+      kind: CompletionItemKind.Constant,
+      label: '__LITERAL_VALUES_FOR_FIELD:Account,Type',
+    },
+  ]);
+  validateCompletionsFor(
+    "SELECT id FROM Account WHERE Type = 'Boo' OR Name = |",
+    [
+      {
+        kind: CompletionItemKind.Constant,
+        label: '__LITERAL_VALUES_FOR_FIELD:Account,Name',
+      },
+    ]
+  );
+  validateCompletionsFor(
+    "SELECT id FROM Account WHERE Type = 'Boo' OR Name LIKE |",
+    [
+      {
+        kind: CompletionItemKind.Constant,
+        label: '__LITERAL_VALUES_FOR_FIELD:Account,Name',
+      },
+    ]
+  );
+  validateCompletionsFor('SELECT id FROM Account WHERE Account.Type = |', [
+    {
+      kind: CompletionItemKind.Constant,
+      label: '__LITERAL_VALUES_FOR_FIELD:Account,Type',
+    },
+  ]);
 });
 
 describe('Some special functions', () => {
@@ -304,10 +392,23 @@ function expectKeywords(...words: string[]): CompletionItem[] {
   return words.map((s) => ({
     kind: CompletionItemKind.Keyword,
     label: s,
-    insertText: s + (s.endsWith('(') ? '' : ' '),
+    insertText: s,
   }));
 }
-
+function expectKeywordsWithFieldData(
+  sobjectName: string,
+  fieldName: string,
+  words: string[]
+): CompletionItem[] {
+  return words.map((s) => ({
+    kind: CompletionItemKind.Keyword,
+    label: s,
+    insertText: s,
+    data: {
+      relatedSoqlField: { sobjectName: sobjectName, fieldName: fieldName },
+    },
+  }));
+}
 function expectItems(
   kind: CompletionItemKind,
   ...labels: string[]
@@ -338,7 +439,11 @@ function validateCompletionsFor(
       line,
       column
     );
-    expect(new Set(completions)).toEqual(new Set(expectedItems));
+
+    // NOTE: we don't use Sets here because when there are failures, the error
+    // message is not useful
+    expectedItems.forEach((item) => expect(completions).toContainEqual(item));
+    completions.forEach((item) => expect(expectedItems).toContainEqual(item));
   });
 }
 
