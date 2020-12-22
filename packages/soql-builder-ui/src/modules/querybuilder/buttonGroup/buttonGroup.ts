@@ -26,7 +26,7 @@ export default class ButtonGroup extends LightningElement {
   set buttonLabels(_buttonLabels: string[]) {
     this.buttonData = _buttonLabels.map(label => {
       const idx = _buttonLabels.indexOf(label);
-      return { label: label, key: `idx`, className: this.getClassName(idx) };
+      return { label: label, key: `${idx}`, className: this.getClassName(idx) };
 
     })
   }
@@ -63,15 +63,11 @@ export default class ButtonGroup extends LightningElement {
     return index === parseInt(this.selectedIndex);
   }
 
-  @api get selection() {
-    return parseInt(this.selectedIndex);
-  }
-
   handleButtonClicked(e) {
     this.selectedIndex = e.currentTarget.attributes.index.value;
     this.updateClasses();
     const event = new CustomEvent('selection__changed', {
-      detail: { selection: this.selection }
+      detail: { selection: parseInt(this.selectedIndex) }
     });
     this.dispatchEvent(event);
   }

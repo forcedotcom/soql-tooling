@@ -41,14 +41,14 @@ describe('ButtonGroup should', () => {
   it('return selection index -1 when selectedIndex not specified', () => {
     document.body.appendChild(buttonGroup);
 
-    expect(buttonGroup.selection).toEqual(-1);
+    expect(buttonGroup.selectedIndex).toEqual('-1');
   });
 
   it('select button with selectedIndex when specified', () => {
     buttonGroup.selectedIndex = '1';
     document.body.appendChild(buttonGroup);
 
-    expect(buttonGroup.selection).toEqual(1);
+    expect(buttonGroup.selectedIndex).toEqual('1');
   });
 
   it('fire selection changed event when button clicked', () => {
@@ -57,19 +57,11 @@ describe('ButtonGroup should', () => {
     buttonGroup.addEventListener('selection__changed', handler);
     document.body.appendChild(buttonGroup);
 
-    const buttonElements = buttonGroup.shadowRoot.querySelectorAll('button');
-    let button0;
-    for (let i = 0; i < buttonElements.length; i++) {
-      const element = buttonElements[i];
-      if (element.attributes.index.value === '0') {
-        button0 = element;
-        break;
-      }
-    }
+    let button0 = buttonGroup.shadowRoot.querySelectorAll('button')[0];
     expect(button0).toBeTruthy();
     button0.click();
 
-    expect(buttonGroup.selection).toEqual(0);
+    expect(buttonGroup.selectedIndex).toEqual('0');
     expect(handler).toHaveBeenCalled();
   });
 });

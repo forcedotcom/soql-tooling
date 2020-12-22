@@ -11,7 +11,7 @@
   align-self: flex-start;
 }
 .btn {
-  height: 1.5em;
+  height: 1.5rem;
   border: 1px solid;
   border-left-width: 1px;
   border-right-width: 1px;
@@ -25,7 +25,7 @@
     var(--soql-color-dark-blue)
   );
   cursor: pointer;
-  box-shadow: inset 0 0 1em 0em #454444;
+  box-shadow: inset 0 0 1rem 0rem #454444;
   border-top-left-radius: 0;
   border-top-right-radius: 0;
   border-bottom-left-radius: 0;
@@ -51,5 +51,5 @@
     var(--soql-color-medium-blue)
   );
   color: var(--vscode-button-foreground, var(--soql-white));
-  box-shadow: 0 0 0.5em 0em #454444;
+  box-shadow: 0 0 0.51em 0rem #454444;
 }
