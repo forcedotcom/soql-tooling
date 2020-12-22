@@ -15,7 +15,7 @@ const conditionFieldCompare = new Impl.FieldCompareConditionImpl(field, Soql.Com
 const conditionLike = new Impl.LikeConditionImpl(field, literal);
 const conditionInList = new Impl.InListConditionImpl(field, Soql.InOperator.In, [literal]);
 const conditionIncludes = new Impl.IncludesConditionImpl(field, Soql.IncludesOperator.Includes, [literal]);
-const conditionUnmodeled = new Impl.UnmodeledSyntaxImpl('A + B > 10');
+const conditionUnmodeled = new Impl.UnmodeledSyntaxImpl('A + B > 10', 'unmodeled:calculated-condition');
 const conditionAndOr = new Impl.AndOrConditionImpl(conditionFieldCompare, Soql.AndOr.And, conditionLike);
 const conditionNested = new Impl.NestedConditionImpl(conditionFieldCompare);
 const conditionNot = new Impl.NotConditionImpl(conditionFieldCompare);
@@ -30,7 +30,7 @@ describe('SoqlModelUtils should', () => {
             new Impl.FieldRefImpl(
               'field1',
             ),
-            new Impl.UnmodeledSyntaxImpl('alias1')
+            new Impl.UnmodeledSyntaxImpl('alias1', 'unmodeled:alias')
           )
         ]),
         new Impl.FromImpl('object1')
@@ -116,5 +116,39 @@ describe('SoqlModelUtils should', () => {
     let actual = true;
     nonSimpleGroups.forEach(condition => actual &&= !SoqlModelUtils.isSimpleGroup(condition));
     expect(actual).toBeTruthy();
+  });
+  it('throws from simpleGroupToArray if condition not simple group', () => {
+    const nonSimpleGroup = new Impl.AndOrConditionImpl(conditionFieldCompare, Soql.AndOr.Or, conditionAndOr);
+    expect(() => SoqlModelUtils.simpleGroupToArray(nonSimpleGroup)).toThrow();
+  });
+  it('returns array and operator from simpleGroupToArray for simple group', () => {
+    const simpleGroup = new Impl.AndOrConditionImpl(conditionFieldCompare, Soql.AndOr.And, conditionAndOr);
+    const { conditions, andOr } = SoqlModelUtils.simpleGroupToArray(simpleGroup);
+    expect(conditions.length).toEqual(3);
+    expect(andOr).toEqual(Soql.AndOr.And);
+  });
+  it('throws from arrayToSimpleGroup if conditions array empty', () => {
+    const conditions: Soql.Condition[] = [];
+    expect(() => SoqlModelUtils.arrayToSimpleGroup(conditions)).toThrow();
+  });
+  it('throws from arrayToSimpleGroup if >1 condition and operator missing', () => {
+    const conditions: Soql.Condition[] = [conditionFieldCompare, conditionLike];
+    expect(() => SoqlModelUtils.arrayToSimpleGroup(conditions)).toThrow();
+  });
+  it('returns simple group condition from arrayToSimpleGroup', () => {
+    const conditions = [conditionFieldCompare, conditionLike, conditionInList];
+    const andOr = Soql.AndOr.Or;
+
+    const expected = new Impl.AndOrConditionImpl(
+      conditions[0],
+      andOr,
+      new Impl.AndOrConditionImpl(
+        conditions[1],
+        andOr,
+        conditions[2]
+      )
+    );
+    const actual = SoqlModelUtils.arrayToSimpleGroup(conditions, andOr);
+    expect(actual).toEqual(expected);
   });
 });
