@@ -24,6 +24,9 @@ import { SoqlQueryExtractor } from './completion/SoqlQueryExtractor';
 
 const SOBJECTS_ITEM_LABEL_PLACEHOLDER = '__SOBJECTS_PLACEHOLDER';
 const SOBJECT_FIELDS_LABEL_PLACEHOLDER = '__SOBJECT_FIELDS_PLACEHOLDER:%s';
+const UPDATE_TRACKING = 'UPDATE TRACKING';
+const UPDATE_VIEWSTAT = 'UPDATE VIEWSTAT';
+const DEFAULT_SOBJECT = 'Object';
 
 export function completionsFor(
   text: string,
@@ -117,18 +120,19 @@ function collectC3CompletionCandidates(
 const possibleIdentifierPrefix = /[\w]$/;
 export type CursorPosition = { line: number; column: number };
 /**
-  Return the token index for which we want to provide completion candidates,
-  which depends on the cursor possition.
-
-  Examples:
-
-  SELECT id| FROM x     : Cursor touching the previous identifier token:
-                          we want to continue completing that prior token position
-  SELECT id |FROM x     : Cursor NOT touching the previous identifier token:
-                          we want to complete what comes on this new position
-  SELECT id   |  FROM x : Cursor within whitespace block: we want to complete what
-                          comes after the whitespace (we must return a non-WS token index)
-*/
+ * @returns the token index for which we want to provide completion candidates,
+ * which depends on the cursor possition.
+ *
+ * @example
+ * ```soql
+ * SELECT id| FROM x    : Cursor touching the previous identifier token:
+ *                        we want to continue completing that prior token position
+ * SELECT id |FROM x    : Cursor NOT touching the previous identifier token:
+ *                        we want to complete what comes on this new position
+ * SELECT id   | FROM x : Cursor within whitespace block: we want to complete what
+ *                        comes after the whitespace (we must return a non-WS token index)
+ * ```
+ */
 export function findCursorTokenIndex(
   tokenStream: TokenStream,
   cursor: CursorPosition
@@ -211,8 +215,8 @@ function generateCandidatesFromRules(
         // NOTE: We handle this one as a Rule instead of Tokens because
         // "TRACKING" and "VIEWSTAT" are not part of the grammar
         if (tokenIndex == ruleData.startTokenIndex) {
-          completionItems.push(newKeywordItem('UPDATE TRACKING'));
-          completionItems.push(newKeywordItem('UPDATE VIEWSTAT'));
+          completionItems.push(newKeywordItem(UPDATE_TRACKING));
+          completionItems.push(newKeywordItem(UPDATE_VIEWSTAT));
         }
         break;
       case SoqlParser.RULE_soqlFromExprs:
@@ -225,7 +229,7 @@ function generateCandidatesFromRules(
         if (tokenIndex == ruleData.startTokenIndex) {
           const fromSObject =
             SoqlQueryExtractor.getSObjectFor(parsedQuery, tokenIndex) ||
-            'Object';
+            DEFAULT_SOBJECT;
           completionItems.push(
             newFieldItem(format(SOBJECT_FIELDS_LABEL_PLACEHOLDER, fromSObject))
           );
@@ -274,7 +278,8 @@ function handleSpecialCases(
       isCursorBefore(tokenStream, tokenIndex, [SoqlLexer.FROM])
     ) {
       const fromSObject =
-        SoqlQueryExtractor.getSObjectFor(parsedQuery, tokenIndex) || 'Object';
+        SoqlQueryExtractor.getSObjectFor(parsedQuery, tokenIndex) ||
+        DEFAULT_SOBJECT;
       completionItems.push(
         newFieldItem(format(SOBJECT_FIELDS_LABEL_PLACEHOLDER, fromSObject))
       );
