@@ -32,7 +32,6 @@
 }
 
 .select__clear-search {
-  /* font-size: 1em; */
   align-self: center;
   padding-right: 5px;
   cursor: pointer;
@@ -47,7 +46,7 @@
     var(--vscode-list-inactiveSelectionBackground, var(--soql-color-light-grey));
   border-radius: 3px;
   width: var(--soql-input-width);
-  min-height: 20%;
+  min-height: 10%;
   max-height: 50%;
   overflow-y: scroll;
   /* hidden by default */

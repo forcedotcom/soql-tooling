@@ -37,7 +37,6 @@ export default class CustomSelect extends LightningElement {
   }
 
   renderedCallback() {
-    console.log('Custom Select Rendered');
     this.optionsWrapper = this.template.querySelector('.options__wrapper');
     this.fieldSearchBar = this.template.querySelector(
       'input[name=fieldSearchBar]'
@@ -214,9 +213,8 @@ export default class CustomSelect extends LightningElement {
     3. The user navigates up/down the list and hits 'Enter'
 */
   addSelectedField(fieldName: string = this.searchTerm) {
-    // send and selection event now
     // Only add valid fields, need to be case insensitive.
-    /*     const validFieldMatch: string[] = this.availableFields.filter((field) => {
+    const validFieldMatch: string[] = this.availableFields.filter((field) => {
       return field.toLowerCase() === fieldName.toLowerCase();
     });
 
@@ -228,11 +226,10 @@ export default class CustomSelect extends LightningElement {
         }
       });
       this.dispatchEvent(fieldSelectionEvent);
-      // this.selectedFields = [...this.selectedFields, validFieldMatch[0]];
       this.resetSearchBar();
     } else {
       console.error('that is not a valid field');
-    } */
+    }
   }
 
   resetSearchBar() {
