@@ -95,6 +95,15 @@ export default class TypedInput extends LightningElement {
     this.fireInputChanged();
   }
 
+  get booleanSelectedIndex() {
+    const value = this.input.value.toUpperCase();
+    return value === 'TRUE'
+      ? '0'
+      : value === 'FALSE'
+        ? '1'
+        : '-1';
+  }
+
   handleBooleanInput(e) {
     this.input = e.detail.value;
     this.fireInputChanged();
