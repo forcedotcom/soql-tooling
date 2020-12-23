@@ -13,25 +13,34 @@ import { tsMethodSignature } from '../../../../../../../../Library/Caches/typesc
 interface ButtonData {
   key: string;
   label: string;
+  value: any;
   className: string;
+}
+
+interface ButtonValue {
+  label: string;
+  value: any;
 }
 
 export default class ButtonGroup extends LightningElement {
   @api selectedIndex = '-1';
-  @api get buttonLabels() {
+  @api get buttonValues() {
     return this.buttonData
-      ? this.buttonData.map(data => data.label)
-      : [];
+      ? this.buttonData.map(data => { return { label: data.label, value: JSON.parse(data.value) }; })
+      : new Array<ButtonValue>();
   }
-  set buttonLabels(_buttonLabels: string[]) {
-    this.buttonData = _buttonLabels.map(label => {
-      const idx = _buttonLabels.indexOf(label);
-      return { label: label, key: `${idx}`, className: this.getClassName(idx) };
-
-    })
+  set buttonValues(_buttonValues: ButtonValue[]) {
+    this.buttonData = _buttonValues.map(bv => {
+      const idx = _buttonValues.indexOf(bv);
+      return { label: bv.label, value: JSON.stringify(bv.value), key: `${idx}`, className: this.getClassName(idx) };
+    });
   }
   @track
   buttonData: ButtonData[];
+
+  renderedCallback() {
+    this.updateClasses();
+  }
 
   updateClasses(): void {
     this.buttonData.forEach((data, index) =>
@@ -57,7 +66,7 @@ export default class ButtonGroup extends LightningElement {
     return index === 0;
   }
   isLast(index: number): boolean {
-    return index === this.buttonLabels.length - 1;
+    return index === this.buttonValues.length - 1;
   }
   isSelected(index: number): boolean {
     return index === parseInt(this.selectedIndex);
@@ -65,9 +74,13 @@ export default class ButtonGroup extends LightningElement {
 
   handleButtonClicked(e) {
     this.selectedIndex = e.currentTarget.attributes.index.value;
+    const value = JSON.parse(e.currentTarget.attributes.value.value);
     this.updateClasses();
     const event = new CustomEvent('selection__changed', {
-      detail: { selection: parseInt(this.selectedIndex) }
+      detail: {
+        selection: parseInt(this.selectedIndex),
+        value
+      }
     });
     this.dispatchEvent(event);
   }

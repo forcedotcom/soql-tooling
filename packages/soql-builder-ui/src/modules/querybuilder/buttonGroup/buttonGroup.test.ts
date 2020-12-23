@@ -12,8 +12,8 @@ import ButtonGroup from 'querybuilder/buttonGroup';
 describe('ButtonGroup should', () => {
   let buttonGroup: LightningElement;
   let buttonValues = [
-    { label: 'foo', value: 'FOO' },
-    { label: 'bar', value: 'BAR' }
+    { label: 'foo', value: { foo: 'FOO' } },
+    { label: 'bar', value: { bar: 'BAR' } }
   ];
 
   beforeEach(() => {
@@ -39,7 +39,7 @@ describe('ButtonGroup should', () => {
       const name = element.attributes.name.value;
       const value = element.attributes.value.value;
       expect(name).toEqual(buttonValues[idx].label);
-      expect(value).toEqual(buttonValues[idx].value);
+      expect(value).toEqual(JSON.stringify(buttonValues[idx].value));
     });
   });
 
