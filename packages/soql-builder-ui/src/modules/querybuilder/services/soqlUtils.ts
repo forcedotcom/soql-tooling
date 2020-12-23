@@ -54,7 +54,7 @@ export function convertSoqlModelToUiModel(
     : undefined;
 
   const errors = queryModel.errors;
-  let unsupported = [];
+  const unsupported = [];
   for (const key in queryModel) {
     // eslint-disable-next-line no-prototype-builtins
     if (queryModel.hasOwnProperty(key)) {

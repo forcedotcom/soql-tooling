@@ -44,5 +44,6 @@ describe('Telemetry Utils', () => {
     expect(telemetry.errors[0]).toContain(error1.grammarRule);
     expect(telemetry.unsupported.length).toEqual(query.unsupported.length);
     expect(telemetry.unsupported[0]).toEqual(unsupported1.reason);
+    expect(JSON.stringify(telemetry)).not.toContain(query.fields[0]);
   });
 });
