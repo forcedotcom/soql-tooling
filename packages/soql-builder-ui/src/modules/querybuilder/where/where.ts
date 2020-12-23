@@ -9,6 +9,7 @@
 import { api, LightningElement, track } from 'lwc';
 import { JsonMap } from '@salesforce/ts-types';
 import { AndOr } from '../services/model';
+import { SObjectTypeUtils } from '../services/sobjectUtils';
 
 interface ConditionTemplate {
   field: undefined;
@@ -24,6 +25,7 @@ interface ModifierGroupNode extends Node {
 export default class Where extends LightningElement {
   @api isLoading = false;
   @api whereFields: string[];
+  @api sobjectTypeUtils: SObjectTypeUtils;
   @track _conditionsStore: JsonMap[] = [];
   _andOr = AndOr.AND;
   conditionTemplate: ConditionTemplate = {

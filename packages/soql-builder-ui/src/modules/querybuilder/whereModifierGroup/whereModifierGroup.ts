@@ -5,10 +5,12 @@
  *  For full license text, see LICENSE.txt file in the repo root or https://opensource.org/licenses/BSD-3-Clause
  *
  */
-import { api, LightningElement } from 'lwc';
+import { api, LightningElement, track } from 'lwc';
 import { debounce } from 'debounce';
 import { JsonMap } from '@salesforce/types';
 import { operatorOptions } from '../services/model';
+import { SObjectType, SObjectTypeUtils } from '../services/sobjectUtils';
+
 
 export default class WhereModifierGroup extends LightningElement {
   @api allFields: string[];
@@ -16,11 +18,14 @@ export default class WhereModifierGroup extends LightningElement {
   @api selectedOperator: string;
   @api isLoading = false;
   @api index;
+  @api sobjectTypeUtils: SObjectTypeUtils;
   _criteria: JsonMap = {};
   _allModifiersHaveValue: boolean = false;
   fieldEl: HTMLSelectElement;
   operatorEl: HTMLSelectElement;
   criteriaEl: HTMLInputElement;
+  @track
+  errorMessage = '';
 
   handleSelectionEvent: () => void;
   // this need to be public so parent can read value
@@ -126,11 +131,49 @@ export default class WhereModifierGroup extends LightningElement {
     }
     return `'${value}'`;
   }
+
+  validateInput(): boolean {
+    if (this.checkAllModifiersHaveValues()) {
+      const fieldName = this.selectedField = this.fieldEl.value;
+      const op = this.selectedOperator = this.operatorEl.value;
+      const crit = this.criteria = {
+        type: this.criteria.type,
+        value: this.normalizeInput(this.criteriaEl.value)
+      };
+      this.errorMessage = '';
+
+      const type = this.sobjectTypeUtils ? this.sobjectTypeUtils.getType(fieldName) : SObjectType.AnyType;
+      switch (type) {
+        case SObjectType.Boolean: {
+          if (!(crit.value.toLowerCase() === 'true' || crit.value.toLowerCase() === 'false')) {
+            this.errorMessage = 'Value must be TRUE or FALSE';
+            return false;
+          } else if (!(op === 'EQ' || op === 'NOT_EQ')) {
+            this.errorMessage = 'Operator must be = or ≠';
+            return false;
+          }
+          break;
+        }
+      }
+
+      return true;
+    }
+
+    return false;
+  }
 }
 
 function selectionEventHandler(e) {
   e.preventDefault();
-  if (this.checkAllModifiersHaveValues()) {
+
+  const fieldName = this.fieldEl.value;
+  if (fieldName && this.sobjectTypeUtils) {
+    console.log(`Field name=${fieldName} type=${this.sobjectTypeUtils.getType(fieldName)}`);
+  } else {
+    console.log(`Field name=${fieldName} no type`);
+  }
+
+  if (this.checkAllModifiersHaveValues() && this.validateInput()) {
     const modGroupSelectionEvent = new CustomEvent('modifiergroupselection', {
       detail: {
         field: this.fieldEl.value,
