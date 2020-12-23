@@ -146,7 +146,8 @@ describe('Tooling Model Service', () => {
 
   it('Emit telemetry when error/unsupported in soql statement', () => {
     (messageService.sendMessage as jest.Mock).mockClear();
-    const soqlText = "Select Name1, Id1 from Account1 WHERE Name1 = 'Pickles'";
+    const soqlText =
+      "Select Name1, Id1 from Account1 WHERE Name1 = 'Pickles' GROUP BY";
     const soqlEvent = { ...soqlEditorEvent };
     soqlEvent.payload = soqlText;
     (messageService.messagesToUI as BehaviorSubject<SoqlEditorEvent>).next(

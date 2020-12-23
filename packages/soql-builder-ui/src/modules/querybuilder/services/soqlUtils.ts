@@ -54,7 +54,7 @@ export function convertSoqlModelToUiModel(
     : undefined;
 
   const errors = queryModel.errors;
-  const unsupported = [];
+  let unsupported = [];
   for (const key in queryModel) {
     // eslint-disable-next-line no-prototype-builtins
     if (queryModel.hasOwnProperty(key)) {
@@ -62,7 +62,7 @@ export function convertSoqlModelToUiModel(
       const prop = queryModel[key];
       if (typeof prop === 'object') {
         if (SoqlModelUtils.containsUnmodeledSyntax(prop)) {
-          unsupported.push(prop.unmodeledSyntax);
+          SoqlModelUtils.getUnmodeledSyntax(prop, unsupported);
         }
       }
     }

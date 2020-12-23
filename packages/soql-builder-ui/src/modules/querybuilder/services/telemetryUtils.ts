@@ -6,8 +6,8 @@ export interface TelemetryModelJson extends JsonMap {
   fields: number;
   orderBy: number;
   limit: string;
-  errors: number;
-  unsupported: number;
+  errors: string[];
+  unsupported: string[];
 }
 
 export function createQueryTelemetry(
@@ -18,7 +18,9 @@ export function createQueryTelemetry(
   telemetry.fields = query.fields.length;
   telemetry.orderBy = query.orderBy.length;
   telemetry.limit = query.limit;
-  telemetry.errors = query.errors.length;
-  telemetry.unsupported = query.unsupported.length;
+  telemetry.errors = query.errors.map(
+    (err) => `${err.type}:${err.grammarRule}`
+  );
+  telemetry.unsupported = query.unsupported.map((unsup) => unsup.reason);
   return telemetry;
 }

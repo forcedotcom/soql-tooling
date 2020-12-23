@@ -27,7 +27,7 @@ export interface ToolingModel extends IMap {
   orderBy: List<Map>;
   limit: string;
   errors: List<Map>;
-  unsupported: string[];
+  unsupported: List<Map>;
 }
 // Public inteface for accessing modelService.query
 export interface ToolingModelJson extends JsonMap {
@@ -36,7 +36,7 @@ export interface ToolingModelJson extends JsonMap {
   orderBy: JsonMap[];
   limit: string;
   errors: JsonMap[];
-  unsupported: string[];
+  unsupported: JsonMap[];
   originalSoqlStatement: string;
 }
 
@@ -163,7 +163,6 @@ export class ToolingModelService {
           const originalSoqlStatement = event.payload as string;
           const soqlJSModel = convertSoqlToUiModel(originalSoqlStatement);
           soqlJSModel.originalSoqlStatement = originalSoqlStatement;
-
           const updatedModel = fromJS(soqlJSModel);
           if (!updatedModel.equals(this.model.getValue())) {
             if (
