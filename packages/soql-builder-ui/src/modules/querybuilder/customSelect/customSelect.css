@@ -1,0 +1,84 @@
+@import 'querybuilder/cssCommon';
+
+/* ======= SELECT ======= */
+.select__wrapper {
+  display: flex;
+  justify-content: space-between;
+  position: relative;
+  width: 100%;
+  height: 1.5rem;
+  border: 1px solid
+    var(--vscode-list-inactiveSelectionBackground, var(--soql-color-light-grey));
+  border-radius: 3px;
+  background-color: var(--vscode-sideBar-background, var(--soql-background));
+}
+/* .select__wrapper::before {
+  position: absolute;
+  content: '🔍';
+  font-size: 1em;
+  top: 1px;
+  padding-left: 5px;
+  background-color: var(--vscode-sideBar-background, var(--soql-background));
+} */
+
+.select__input {
+  width: 90%;
+  height: 1em;
+  padding: 4px;
+  border: none;
+}
+.select:focus {
+  outline: none;
+}
+
+.select__clear-search {
+  /* font-size: 1em; */
+  align-self: center;
+  padding-right: 5px;
+  cursor: pointer;
+}
+
+/* ======== OPTIONS ======== */
+
+.options__wrapper {
+  position: absolute;
+  top: 64px;
+  border: 1px solid
+    var(--vscode-list-inactiveSelectionBackground, var(--soql-color-light-grey));
+  border-radius: 3px;
+  width: var(--soql-input-width);
+  min-height: 20%;
+  max-height: 50%;
+  overflow-y: scroll;
+  /* hidden by default */
+  visibility: hidden;
+  opacity: 0;
+  transition: opacity 0.2s;
+  pointer-events: none;
+  z-index: 200;
+  background-color: var(--vscode-sideBar-background, var(--soql-background));
+}
+
+.options--open {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: all;
+}
+
+.option {
+  padding-left: 5px;
+}
+.option:hover {
+  background-color: #4dd0e130;
+}
+.option:focus {
+  background-color: #4dd0e130;
+}
+.option--highlight {
+  background-color: #4dd0e130;
+}
+
+.misc-input {
+  margin-top: 20px;
+  width: 90%;
+}
