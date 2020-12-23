@@ -45,6 +45,30 @@ export default class App extends LightningElement {
       : 0;
   }
 
+  /*****
+    get buttonValues() {
+      return [
+        { label: 'B1', value: 'B1' },
+        { label: 'B2', value: 'B2' },
+        { label: 'B3', value: 'B3' }
+      ];
+    }
+    get stringInput() {
+      return {
+        type: 'STRING',
+        value: 'string value'
+      };
+    }
+    get booleanInput() {
+      return {
+        type: 'BOOLEAN',
+        value: 'FALSE'
+      }
+    }
+    handleInputValueChanged(e) {
+      console.log(`Input changed: { type: ${e.detail.input.type}, value: ${e.detail.input.value} }`);
+    }
+  *****/
   get hasUnrecoverable() {
     return !this.hasUnsupported && this.hasUnrecoverableError;
   }

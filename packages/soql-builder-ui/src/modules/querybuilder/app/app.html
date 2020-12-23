@@ -16,6 +16,16 @@
     </header>
     <article class="querybuilder-body">
       <section class="querybuilder-form">
+        <!--
+        <querybuilder-typed-input
+          input={stringInput}
+          oninput__changed={handleInputValueChanged}>
+        </querybuilder-typed-input>
+        <querybuilder-typed-input
+          input={booleanInput}
+          oninput__changed={handleInputValueChanged}>
+        </querybuilder-typed-input>
+      -->
         <template if:true={blockQueryBuilder}>
           <div class="unsupported-syntax"></div>
           <template if:true={hasUnsupported}>
