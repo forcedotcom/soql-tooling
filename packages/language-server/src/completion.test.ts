@@ -232,7 +232,8 @@ describe('Code Completion for ORDER BY', () => {
   validateCompletionsFor('SELECT id FROM Account ORDER BY |', [
     {
       kind: CompletionItemKind.Field,
-      label: '__SOBJECT_FIELDS_PLACEHOLDER:Account',
+      label: '__SOBJECT_FIELDS_PLACEHOLDER',
+      data: { soqlContext: { sobjectName: 'Account' } },
     },
     ...expectKeywords('DISTANCE('),
   ]);
@@ -286,7 +287,8 @@ describe('WHERE clause', () => {
     ...expectKeywords('DISTANCE(', 'NOT'),
     {
       kind: CompletionItemKind.Field,
-      label: '__SOBJECT_FIELDS_PLACEHOLDER:Account',
+      label: '__SOBJECT_FIELDS_PLACEHOLDER',
+      data: { soqlContext: { sobjectName: 'Account' } },
     },
   ]);
   validateCompletionsFor('SELECT id FROM Account WHERE Name |', [
@@ -306,7 +308,14 @@ describe('WHERE clause', () => {
     SELECT_snippet,
     {
       kind: CompletionItemKind.Constant,
-      label: '__LITERAL_VALUES_FOR_FIELD:Account,Type',
+      label: '__LITERAL_VALUES_FOR_FIELD',
+      data: {
+        soqlContext: {
+          sobjectName: 'Account',
+          fieldName: 'Type',
+          notNillable: false,
+        },
+      },
     },
   ]);
   validateCompletionsFor(
@@ -314,7 +323,14 @@ describe('WHERE clause', () => {
     [
       {
         kind: CompletionItemKind.Constant,
-        label: '__LITERAL_VALUES_FOR_FIELD:Account,Type',
+        label: '__LITERAL_VALUES_FOR_FIELD',
+        data: {
+          soqlContext: {
+            sobjectName: 'Account',
+            fieldName: 'Type',
+            notNillable: false,
+          },
+        },
       },
     ]
   );
@@ -325,16 +341,32 @@ describe('WHERE clause', () => {
       SELECT_snippet,
       {
         kind: CompletionItemKind.Constant,
-        label: '__LITERAL_VALUES_FOR_FIELD:Account,Type',
+        label: '__LITERAL_VALUES_FOR_FIELD',
+        data: {
+          soqlContext: {
+            sobjectName: 'Account',
+            fieldName: 'Type',
+            notNillable: false,
+          },
+        },
       },
     ]
   );
+
+  // NOTE: Unlike IN(), INCLUDES()/EXCLUDES() never support NULL in the list
   validateCompletionsFor(
     'SELECT Channel FROM QuickText WHERE Channel INCLUDES(|',
     [
       {
         kind: CompletionItemKind.Constant,
-        label: '__LITERAL_VALUES_FOR_FIELD:QuickText,Channel',
+        label: '__LITERAL_VALUES_FOR_FIELD',
+        data: {
+          soqlContext: {
+            sobjectName: 'QuickText',
+            fieldName: 'Channel',
+            notNillable: true,
+          },
+        },
       },
     ]
   );
@@ -343,14 +375,28 @@ describe('WHERE clause', () => {
     [
       {
         kind: CompletionItemKind.Constant,
-        label: '__LITERAL_VALUES_FOR_FIELD:QuickText,Channel',
+        label: '__LITERAL_VALUES_FOR_FIELD',
+        data: {
+          soqlContext: {
+            sobjectName: 'QuickText',
+            fieldName: 'Channel',
+            notNillable: true,
+          },
+        },
       },
     ]
   );
   validateCompletionsFor('SELECT id FROM Account WHERE Type = |', [
     {
       kind: CompletionItemKind.Constant,
-      label: '__LITERAL_VALUES_FOR_FIELD:Account,Type',
+      label: '__LITERAL_VALUES_FOR_FIELD',
+      data: {
+        soqlContext: {
+          sobjectName: 'Account',
+          fieldName: 'Type',
+          notNillable: false,
+        },
+      },
     },
   ]);
   validateCompletionsFor(
@@ -358,7 +404,14 @@ describe('WHERE clause', () => {
     [
       {
         kind: CompletionItemKind.Constant,
-        label: '__LITERAL_VALUES_FOR_FIELD:Account,Name',
+        label: '__LITERAL_VALUES_FOR_FIELD',
+        data: {
+          soqlContext: {
+            sobjectName: 'Account',
+            fieldName: 'Name',
+            notNillable: false,
+          },
+        },
       },
     ]
   );
@@ -367,14 +420,28 @@ describe('WHERE clause', () => {
     [
       {
         kind: CompletionItemKind.Constant,
-        label: '__LITERAL_VALUES_FOR_FIELD:Account,Name',
+        label: '__LITERAL_VALUES_FOR_FIELD',
+        data: {
+          soqlContext: {
+            sobjectName: 'Account',
+            fieldName: 'Name',
+            notNillable: true,
+          },
+        },
       },
     ]
   );
   validateCompletionsFor('SELECT id FROM Account WHERE Account.Type = |', [
     {
       kind: CompletionItemKind.Constant,
-      label: '__LITERAL_VALUES_FOR_FIELD:Account,Type',
+      label: '__LITERAL_VALUES_FOR_FIELD',
+      data: {
+        soqlContext: {
+          sobjectName: 'Account',
+          fieldName: 'Type',
+          notNillable: false,
+        },
+      },
     },
   ]);
 });
@@ -383,7 +450,8 @@ describe('Some special functions', () => {
   validateCompletionsFor('SELECT DISTANCE(|) FROM Account', [
     {
       kind: CompletionItemKind.Field,
-      label: '__SOBJECT_FIELDS_PLACEHOLDER:Account',
+      label: '__SOBJECT_FIELDS_PLACEHOLDER',
+      data: { soqlContext: { sobjectName: 'Account' } },
     },
   ]);
 });
@@ -405,7 +473,7 @@ function expectKeywordsWithFieldData(
     label: s,
     insertText: s,
     data: {
-      relatedSoqlField: { sobjectName: sobjectName, fieldName: fieldName },
+      soqlContext: { sobjectName: sobjectName, fieldName: fieldName },
     },
   }));
 }
@@ -455,11 +523,12 @@ function getCursorPosition(text: string, cursorChar: string): [number, number] {
   throw new Error(`Cursor ${cursorChar} not found in ${text} !`);
 }
 
-function sobjectsFieldsFor(sbojectName: string) {
+function sobjectsFieldsFor(sobjectName: string) {
   return [
     {
       kind: CompletionItemKind.Field,
-      label: '__SOBJECT_FIELDS_PLACEHOLDER:' + sbojectName,
+      label: '__SOBJECT_FIELDS_PLACEHOLDER',
+      data: { soqlContext: { sobjectName: sobjectName } },
     },
     ...expectKeywords('TYPEOF', 'DISTANCE(', 'COUNT()'),
     COUNT_snippet,

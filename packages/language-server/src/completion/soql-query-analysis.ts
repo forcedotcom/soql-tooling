@@ -107,6 +107,7 @@ class SoqlFROMAnalyzer implements SoqlParserListener {
 interface ParsedSoqlField {
   sobjectName: string;
   fieldName: string;
+  operator?: string;
 }
 
 export function parseWHEREExprField(
@@ -133,11 +134,7 @@ class SoqlFieldAnalyzer implements SoqlParserListener {
     private sobject: string
   ) {}
 
-  // visitErrorNode(node: ErrorNode): void {
-  //   console.log('=== visitErrorNode');
-  // }
   enterEveryRule(ctx: ParserRuleContext) {
-    // console.log('=== enterEveryRule ' + ctx.constructor.name);
     if (ctx.ruleContext.ruleIndex === SoqlParser.RULE_soqlWhereExpr) {
       if (ctx.start.tokenIndex <= this.cursorTokenIndex) {
         const distance = this.cursorTokenIndex - ctx.start.tokenIndex;
@@ -146,33 +143,22 @@ class SoqlFieldAnalyzer implements SoqlParserListener {
           const soqlField = ctx.getChild(0).text;
 
           // Handle basic "dot" expressions
+          // TODO: Support Aliases
           const fieldComponents = soqlField.split('.', 2);
           if (fieldComponents[0] === this.sobject) {
             fieldComponents.shift();
           }
-          // TODO: Support Aliases
+
+          const operator =
+            ctx.childCount > 2 ? ctx.getChild(1).text : undefined;
+
           this.result = {
             sobjectName: this.sobject,
             fieldName: fieldComponents.join('.'),
+            operator: operator,
           };
         }
       }
-    }
-  }
-  // exitEveryRule(ctx: ParserRuleContext) {
-  //   console.log('=== exitEveryRule ' + ctx.constructor.name);
-  // }
-
-  enterSoqlWhereExpr(ctx: SoqlWhereExprContext): void {
-    console.log('=== enterSoqlWhereExpr ' + ctx.constructor.name);
-
-    if (
-      ctx.start.tokenIndex <= this.cursorTokenIndex &&
-      ctx.stop &&
-      ctx.stop.tokenIndex >= this.cursorTokenIndex
-    ) {
-      const identifier = ctx.getChild(0); // soqlIdentifier?
-      this.result = { sobjectName: this.sobject, fieldName: identifier.text };
     }
   }
 }

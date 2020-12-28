@@ -26,8 +26,8 @@ import {
 } from './completion/soql-query-analysis';
 
 const SOBJECTS_ITEM_LABEL_PLACEHOLDER = '__SOBJECTS_PLACEHOLDER';
-const SOBJECT_FIELDS_LABEL_PLACEHOLDER = '__SOBJECT_FIELDS_PLACEHOLDER:%s';
-const LITERAL_VALUES_FOR_FIELD = '__LITERAL_VALUES_FOR_FIELD:%s,%s';
+const SOBJECT_FIELDS_LABEL_PLACEHOLDER = '__SOBJECT_FIELDS_PLACEHOLDER';
+const LITERAL_VALUES_FOR_FIELD = '__LITERAL_VALUES_FOR_FIELD';
 const UPDATE_TRACKING = 'UPDATE TRACKING';
 const UPDATE_VIEWSTAT = 'UPDATE VIEWSTAT';
 const DEFAULT_SOBJECT = 'Object';
@@ -214,12 +214,13 @@ function generateCandidatesFromTokens(
       SoqlLexer.EXCLUDES,
       SoqlLexer.LIKE,
     ]);
-    const newItem = newKeywordItem(itemText);
+
+    let newItem = newKeywordItem(itemText);
 
     if (fieldDependentOperators.has(tokenType)) {
       const soqlField = parseWHEREExprField(parsedQuery, tokenIndex);
       if (soqlField) {
-        newItem.data = { relatedSoqlField: soqlField };
+        newItem = withSoqlContext(newItem, soqlField);
       }
     }
 
@@ -237,6 +238,15 @@ function generateCandidatesFromTokens(
   return items;
 }
 
+const nonNullableOperators: Set<string> = new Set<string>([
+  '<',
+  '<=',
+  '>',
+  '>=',
+  'INCLUDES',
+  'EXCLUDES',
+  'LIKE',
+]);
 function generateCandidatesFromRules(
   c3Rules: Map<number, c3.CandidateRule>,
   parsedQuery: SoqlQueryContext,
@@ -266,7 +276,9 @@ function generateCandidatesFromRules(
           const fromSObject =
             parseFROMSObject(parsedQuery, tokenIndex) || DEFAULT_SOBJECT;
           completionItems.push(
-            newFieldItem(format(SOBJECT_FIELDS_LABEL_PLACEHOLDER, fromSObject))
+            withSoqlContext(newFieldItem(SOBJECT_FIELDS_LABEL_PLACEHOLDER), {
+              sobjectName: fromSObject,
+            })
           );
           if (
             ruleData.ruleList[ruleData.ruleList.length - 1] ===
@@ -294,22 +306,24 @@ function generateCandidatesFromRules(
           const fromSObject =
             parseFROMSObject(parsedQuery, tokenIndex) || 'Object';
           completionItems.push(
-            newFieldItem(format(SOBJECT_FIELDS_LABEL_PLACEHOLDER, fromSObject))
+            withSoqlContext(newFieldItem(SOBJECT_FIELDS_LABEL_PLACEHOLDER), {
+              sobjectName: fromSObject,
+            })
           );
         }
         break;
       case SoqlParser.RULE_soqlLiteralValue:
       case SoqlParser.RULE_soqlLikeLiteral:
-        const soqlField = parseWHEREExprField(parsedQuery, tokenIndex);
-        if (soqlField) {
+        const soqlFieldExpr = parseWHEREExprField(parsedQuery, tokenIndex);
+        if (soqlFieldExpr) {
           completionItems.push(
-            newConstantItem(
-              format(
-                LITERAL_VALUES_FOR_FIELD,
-                soqlField.sobjectName,
-                soqlField.fieldName
-              )
-            )
+            withSoqlContext(newConstantItem(LITERAL_VALUES_FOR_FIELD), {
+              sobjectName: soqlFieldExpr.sobjectName,
+              fieldName: soqlFieldExpr.fieldName,
+              notNillable:
+                soqlFieldExpr.operator !== undefined &&
+                nonNullableOperators.has(soqlFieldExpr.operator),
+            })
           );
         }
         break;
@@ -338,7 +352,9 @@ function handleSpecialCases(
       const fromSObject =
         parseFROMSObject(parsedQuery, tokenIndex) || DEFAULT_SOBJECT;
       completionItems.push(
-        newFieldItem(format(SOBJECT_FIELDS_LABEL_PLACEHOLDER, fromSObject))
+        withSoqlContext(newFieldItem(SOBJECT_FIELDS_LABEL_PLACEHOLDER), {
+          sobjectName: fromSObject,
+        })
       );
       completionItems.push(newKeywordItem('TYPEOF'));
       completionItems.push(newKeywordItem('DISTANCE('));
@@ -404,6 +420,20 @@ function newKeywordItem(text: string): CompletionItem {
     kind: CompletionItemKind.Keyword,
     insertText: text,
   };
+}
+
+interface SoqlItemContext {
+  sobjectName: string;
+  fieldName?: string;
+  notNillable?: boolean;
+}
+
+function withSoqlContext(
+  item: CompletionItem,
+  soqlItemCtx: SoqlItemContext
+): CompletionItem {
+  item.data = { soqlContext: soqlItemCtx };
+  return item;
 }
 function newFieldItem(text: string): CompletionItem {
   return {
