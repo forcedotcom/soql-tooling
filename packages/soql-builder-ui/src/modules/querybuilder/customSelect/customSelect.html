@@ -3,9 +3,9 @@
     <input
       class="select__input"
       name="fieldSearchBar"
-      placeholder="Search fields..."
+      placeholder={placeholderText}
       value={searchTerm}
-      oninput={handleFieldSearch}
+      oninput={handleInputChange}
       onclick={handleOpenOptions}
       onkeydown={handleKeyDown}
     />

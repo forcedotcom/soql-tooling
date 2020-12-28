@@ -1,11 +1,12 @@
 import { api, track, LightningElement } from 'lwc';
 
 export default class CustomSelect extends LightningElement {
-  @api allFields: string[]; // all possible fields
-  _selectedFields: string[] = []; // selections made from text
+  @api isLoading = false;
+  @api allFields: string[];
+  @api selectedFields: string[] = [];
   @track _renderedFields: string[] = []; // the fields that are rendered for the user to select
-  searchTerm = ''; // the value of the input el
-  originalUserInput = ''; // any charaters originally typed by the user
+  searchTerm = '';
+  originalUserInput = '';
   fieldSearchBar: HTMLInputElement;
   optionsWrapper: HTMLElement;
   optionList: HTMLCollection;
@@ -13,14 +14,9 @@ export default class CustomSelect extends LightningElement {
   availableFields: string[] = []; // all possible fields minus the selected fields.
   activeOptionIndex = -1;
 
-  @api get selectedFields() {
-    return this._selectedFields;
-  }
-
-  set selectedFields(selectedfields: string[]) {
-    this._selectedFields = selectedfields;
-
+  getAvailableFields() {
     this.availableFields = this.allFields.filter((field) => {
+      // use filter instead, .toLowerCase
       return !this.selectedFields.includes(field);
     });
   }
@@ -29,6 +25,10 @@ export default class CustomSelect extends LightningElement {
     return !!this.searchTerm;
   }
 
+  get placeholderText() {
+    // TODO: i18n
+    return this.isLoading ? 'Loading...' : 'Search fields...';
+  }
   // close the options menu when user click outside element
   connectedCallback() {
     document.addEventListener('click', () => {
@@ -37,22 +37,22 @@ export default class CustomSelect extends LightningElement {
   }
 
   renderedCallback() {
+    // console.log(
+    //   '_________________________________\n',
+    //   '++ CHILD Custom Select State: ',
+    //   '\nallFields:',
+    //   this.allFields,
+    //   '\nselectedFields:',
+    //   this.selectedFields,
+    //   '\navailableFields:',
+    //   this.availableFields,
+    //   '\n_________________________________'
+    // );
     this.optionsWrapper = this.template.querySelector('.options__wrapper');
     this.fieldSearchBar = this.template.querySelector(
       'input[name=fieldSearchBar]'
     );
     this.optionList = this.optionsWrapper.children;
-  }
-  // get list of fields that match user input
-  filterFieldsBySearchTerm() {
-    if (this.searchTerm) {
-      const filteredFields = this.availableFields.filter((field) => {
-        return field.toLowerCase().includes(this.searchTerm.toLowerCase());
-      });
-      this._renderedFields = filteredFields;
-    } else {
-      this._renderedFields = this.availableFields;
-    }
   }
 
   handleCloseOptions() {
@@ -66,15 +66,25 @@ export default class CustomSelect extends LightningElement {
     this.optionsWrapper.classList.add('options--open');
     this.optionListIsOpen = true;
   }
-
+  // called when user click on select input, should be clicks on wrapper?
   handleOpenOptions(e) {
     e.preventDefault();
     e.stopPropagation();
-    this.filterFieldsBySearchTerm();
+    this.getAvailableFields();
+    this._renderedFields = this.availableFields;
     this.openOptionsMenu();
   }
-  // respond to changes in input value, typing.
-  handleFieldSearch(e) {
+
+  filterFieldsBySearchTerm() {
+    if (this.searchTerm) {
+      const filteredFields = this.availableFields.filter((field) => {
+        return field.toLowerCase().includes(this.searchTerm.toLowerCase());
+      });
+      this._renderedFields = filteredFields;
+    }
+  }
+  // respond to changes in input value, typing, paste.
+  handleInputChange(e) {
     e.preventDefault();
     this.openOptionsMenu();
     // if the user deletes the text
@@ -105,7 +115,7 @@ export default class CustomSelect extends LightningElement {
       console.log('NO Option Value from DOM!');
     }
   }
-
+  // will fire with both character and non-character keys
   handleKeyDown(e) {
     const key: string = e.key;
     const activeOption: Element = this.optionList[this.activeOptionIndex];
@@ -195,10 +205,7 @@ export default class CustomSelect extends LightningElement {
       });
     }
   }
-  /*
-  get the value of an option when the user selects
-  from the list with 'Enter'
-*/
+
   getCurrentOptionValue(): string {
     return this.optionList[this.activeOptionIndex]
       ? this.optionList[this.activeOptionIndex].getAttribute(
@@ -206,14 +213,8 @@ export default class CustomSelect extends LightningElement {
         )
       : '';
   }
-  /*
-  I need to ba able to add a selection when:
-    1. The user types in the search and hits 'Enter'
-    2. Clicks on an option in the list
-    3. The user navigates up/down the list and hits 'Enter'
-*/
+
   addSelectedField(fieldName: string = this.searchTerm) {
-    // Only add valid fields, need to be case insensitive.
     const validFieldMatch: string[] = this.availableFields.filter((field) => {
       return field.toLowerCase() === fieldName.toLowerCase();
     });
