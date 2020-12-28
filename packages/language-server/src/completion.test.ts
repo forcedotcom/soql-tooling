@@ -278,10 +278,7 @@ describe('Some keyword candidates after FROM clause', () => {
     )
   );
 
-  validateCompletionsFor(
-    'SELECT id FROM Account LIMIT |',
-    expectItems(CompletionItemKind.Constant, '0', '1', '5', '10', '25', '100')
-  );
+  validateCompletionsFor('SELECT id FROM Account LIMIT |', []);
 });
 
 function expectKeywords(...words: string[]): CompletionItem[] {

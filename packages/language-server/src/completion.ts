@@ -110,7 +110,6 @@ function collectC3CompletionCandidates(
     SoqlParser.RULE_soqlFromExpr,
     SoqlParser.RULE_soqlField,
     SoqlParser.RULE_soqlUpdateStatsClause,
-    SoqlParser.RULE_soqlInteger,
     SoqlParser.RULE_parseReservedForFieldName, // <-- We list it here so that C3 ignores tokens of that rule
   ]);
 
@@ -243,16 +242,6 @@ function generateCandidatesFromRules(
               newSnippetItem('(SELECT ... FROM ...)', '(SELECT $2 FROM $1)')
             );
           }
-        }
-        break;
-      case SoqlParser.RULE_soqlInteger:
-        if (isCursorAfter(tokenStream, tokenIndex, [SoqlLexer.LIMIT])) {
-          completionItems.push(newNumberItem('0'));
-          completionItems.push(newNumberItem('1'));
-          completionItems.push(newNumberItem('5'));
-          completionItems.push(newNumberItem('10'));
-          completionItems.push(newNumberItem('25'));
-          completionItems.push(newNumberItem('100'));
         }
         break;
     }
