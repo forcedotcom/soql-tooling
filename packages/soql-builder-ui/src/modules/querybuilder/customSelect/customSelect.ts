@@ -15,9 +15,12 @@ export default class CustomSelect extends LightningElement {
   activeOptionIndex = -1;
 
   getAvailableFields() {
+    const lowerCaseSelections = this.selectedFields.map((field) => {
+      return field.toLowerCase();
+    });
+
     this.availableFields = this.allFields.filter((field) => {
-      // use filter instead, .toLowerCase
-      return !this.selectedFields.includes(field);
+      return !lowerCaseSelections.includes(field.toLowerCase());
     });
   }
 
@@ -37,17 +40,6 @@ export default class CustomSelect extends LightningElement {
   }
 
   renderedCallback() {
-    // console.log(
-    //   '_________________________________\n',
-    //   '++ CHILD Custom Select State: ',
-    //   '\nallFields:',
-    //   this.allFields,
-    //   '\nselectedFields:',
-    //   this.selectedFields,
-    //   '\navailableFields:',
-    //   this.availableFields,
-    //   '\n_________________________________'
-    // );
     this.optionsWrapper = this.template.querySelector('.options__wrapper');
     this.fieldSearchBar = this.template.querySelector(
       'input[name=fieldSearchBar]'
