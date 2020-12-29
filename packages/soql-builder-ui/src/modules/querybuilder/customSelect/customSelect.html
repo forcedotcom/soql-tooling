@@ -2,7 +2,7 @@
   <div class="select__wrapper select-long">
     <input
       class="select__input"
-      name="fieldSearchBar"
+      name="search-bar"
       placeholder={placeholderText}
       value={searchTerm}
       oninput={handleInputChange}
@@ -21,15 +21,15 @@
     </template>
   </div>
   <div class="options__wrapper">
-    <template for:each={_renderedFields} for:item="field">
+    <template for:each={_renderedOptions} for:item="optionName">
       <p
         tabindex="0"
         onclick={handleOptionClickSelection}
-        key={field}
+        key={optionName}
         class="option"
-        data-option-value={field}
+        data-option-value={optionName}
       >
-        {field}
+        {optionName}
       </p>
     </template>
   </div>
