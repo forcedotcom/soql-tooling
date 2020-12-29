@@ -4,14 +4,14 @@ export default class CustomSelect extends LightningElement {
   @api isLoading = false;
   @api allOptions: string[];
   @api selectedOptions: string[] = [];
-  @track _renderedOptions: string[] = []; // the options that are rendered for the user to select
+  @track _renderedOptions: string[] = [];
+  availableOptions: string[] = [];
   _placeholderText = '';
   searchTerm = '';
   originalUserInput = '';
   optionsWrapper: HTMLElement;
   optionList: HTMLCollection;
   optionListIsOpen = false;
-  availableOptions: string[] = []; // all possible options minus the selected options.
   activeOptionIndex = -1;
 
   get hasSearchTerm() {
