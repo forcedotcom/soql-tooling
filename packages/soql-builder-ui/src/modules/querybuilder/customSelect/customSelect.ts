@@ -15,13 +15,13 @@ export default class CustomSelect extends LightningElement {
   activeOptionIndex = -1;
 
   getAvailableFields() {
-    const lowerCaseSelections = this.selectedFields.map((field) => {
-      return field.toLowerCase();
-    });
-
-    this.availableFields = this.allFields.filter((field) => {
-      return !lowerCaseSelections.includes(field.toLowerCase());
-    });
+    this.availableFields = this.allFields.filter(
+      (baseField) =>
+        !this.selectedFields.some(
+          (selectedField) =>
+            selectedField.toLowerCase() === baseField.toLowerCase()
+        )
+    );
   }
 
   get hasSearchTerm() {
