@@ -12,7 +12,10 @@
   border-radius: 3px;
   background-color: var(--vscode-sideBar-background, var(--soql-background));
 }
-/* rotate nueter symbol to mimic search icon */
+/*
+- rotate nueter symbol to mimic search icon
+- these styles are set for vs code, alignment is off in standalone
+*/
 .select__wrapper::before {
   position: absolute;
   content: '⚲';
