@@ -31,6 +31,18 @@ const LITERAL_VALUES_FOR_FIELD = '__LITERAL_VALUES_FOR_FIELD';
 const UPDATE_TRACKING = 'UPDATE TRACKING';
 const UPDATE_VIEWSTAT = 'UPDATE VIEWSTAT';
 const DEFAULT_SOBJECT = 'Object';
+const aggregateFunctions = [
+  'AVG',
+  'MAX',
+  'MIN',
+  'SUM',
+  'COUNT',
+  'COUNT_DISTINCT',
+];
+
+const itemsForAggregateFunctions = aggregateFunctions.map((name) =>
+  newSnippetItem(name + '(...)', name + '($1)')
+);
 
 export function completionsFor(
   text: string,
@@ -105,7 +117,7 @@ function collectC3CompletionCandidates(
     SoqlLexer.MINUS,
     // Ignore COUNT as a token. Handle it explicitly in Rules because the g4 grammar
     // declares 'COUNT()' explicitly, but not 'COUNT(xyz)'
-    SoqlLexer.COUNT,
+    // SoqlLexer.COUNT,
   ]);
 
   core.preferredRules = new Set([
@@ -217,6 +229,8 @@ function generateCandidatesFromTokens(
       itemText = itemText + ' (';
     } else if (['INCLUDES', 'EXCLUDES', 'DISTANCE'].includes(itemText)) {
       itemText = itemText + '(';
+    } else if (itemText === 'COUNT') {
+      itemText = 'COUNT()';
     }
 
     const fieldDependentOperators: Set<number> = new Set<number>([
@@ -296,8 +310,9 @@ function generateCandidatesFromRules(
             ruleData.ruleList[ruleData.ruleList.length - 1] ===
             SoqlParser.RULE_soqlSelectExpr
           ) {
-            completionItems.push(newKeywordItem('COUNT()'));
-            completionItems.push(newSnippetItem('COUNT(...)', 'COUNT($1)'));
+            // completionItems.push(newKeywordItem('COUNT()'));
+            // completionItems.push(newSnippetItem('COUNT(...)', 'COUNT($1)'));
+            completionItems.push(...itemsForAggregateFunctions);
             completionItems.push(
               newSnippetItem('(SELECT ... FROM ...)', '(SELECT $2 FROM $1)')
             );
@@ -355,26 +370,6 @@ function handleSpecialCases(
       isCursorAfter(tokenStream, tokenIndex, [SoqlLexer.SELECT, SoqlLexer.FROM])
     ) {
       completionItems.push(newObjectItem(SOBJECTS_ITEM_LABEL_PLACEHOLDER));
-    }
-    // SELECT (SELECT ), | FROM Xyz
-    else if (
-      isCursorAfter(tokenStream, tokenIndex, [SoqlLexer.COMMA]) &&
-      isCursorBefore(tokenStream, tokenIndex, [SoqlLexer.FROM])
-    ) {
-      const fromSObject =
-        parseFROMSObject(parsedQuery, tokenIndex) || DEFAULT_SOBJECT;
-      completionItems.push(
-        withSoqlContext(newFieldItem(SOBJECT_FIELDS_LABEL_PLACEHOLDER), {
-          sobjectName: fromSObject,
-        })
-      );
-      completionItems.push(newKeywordItem('TYPEOF'));
-      completionItems.push(newKeywordItem('DISTANCE('));
-      completionItems.push(newKeywordItem('COUNT()'));
-      completionItems.push(newSnippetItem('COUNT(...)', 'COUNT($1)'));
-      completionItems.push(
-        newSnippetItem('(SELECT ... FROM ...)', '(SELECT $2 FROM $1)')
-      );
     }
   }
 

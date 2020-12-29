@@ -25,6 +25,14 @@ const COUNT_snippet = {
   insertTextFormat: InsertTextFormat.Snippet,
 };
 
+function aggregateFunctionSnippet(name: string) {
+  return {
+    kind: CompletionItemKind.Snippet,
+    label: name + '(...)',
+    insertText: name + '($1)',
+    insertTextFormat: InsertTextFormat.Snippet,
+  };
+}
 const expectedSObjectCompletions: CompletionItem[] = [
   {
     kind: CompletionItemKind.Class,
@@ -46,38 +54,86 @@ describe('Code Completion on SELECT ...', () => {
   ]);
   validateCompletionsFor('| FROM', expectKeywords('SELECT'));
   validateCompletionsFor('SELECT|', []);
-  validateCompletionsFor('SELECT |', sobjectsFieldsFor('Object'));
-  validateCompletionsFor('SELECT\n|', sobjectsFieldsFor('Object'));
-  validateCompletionsFor('SELECT\n |', sobjectsFieldsFor('Object'));
+
+  // "COUNT()" can only be used on its own, unlike "COUNT(fieldName)".
+  // So we expect it on completions only right after "SELECT"
+  validateCompletionsFor('SELECT |', [
+    ...expectKeywords('COUNT()'),
+    ...sobjectsFieldsFor('Object'),
+  ]);
+  validateCompletionsFor('SELECT\n|', [
+    ...expectKeywords('COUNT()'),
+    ...sobjectsFieldsFor('Object'),
+  ]);
+  validateCompletionsFor('SELECT\n |', [
+    ...expectKeywords('COUNT()'),
+    ...sobjectsFieldsFor('Object'),
+  ]);
   validateCompletionsFor('SELECT id, |', sobjectsFieldsFor('Object'));
   validateCompletionsFor('SELECT id, boo,|', sobjectsFieldsFor('Object'));
-  validateCompletionsFor('SELECT id|', sobjectsFieldsFor('Object'));
+  validateCompletionsFor('SELECT id|', [
+    ...expectKeywords('COUNT()'),
+    ...sobjectsFieldsFor('Object'),
+  ]);
   validateCompletionsFor('SELECT id |', expectKeywords('FROM'));
+  validateCompletionsFor('SELECT COUNT() |', expectKeywords('FROM'));
+  validateCompletionsFor('SELECT COUNT(), |', []);
 });
 
 describe('Code Completion on select fields: SELECT ... FROM XYZ', () => {
-  validateCompletionsFor('SELECT | FROM Object', sobjectsFieldsFor('Object'));
-  validateCompletionsFor('SELECT | FROM Foo', sobjectsFieldsFor('Foo'));
-  validateCompletionsFor('SELECT |FROM Object', sobjectsFieldsFor('Object'));
-  validateCompletionsFor('SELECT |FROM Foo', sobjectsFieldsFor('Foo'));
-  validateCompletionsFor('SELECT | FROM Foo, Bar', sobjectsFieldsFor('Foo'));
+  // "COUNT()" can only be used on its own, unlike "COUNT(fieldName)".
+  // So we expect it on completions only right after "SELECT"
+  validateCompletionsFor('SELECT | FROM Object', [
+    ...expectKeywords('COUNT()'),
+    ...sobjectsFieldsFor('Object'),
+  ]);
+  validateCompletionsFor('SELECT | FROM Foo', [
+    ...expectKeywords('COUNT()'),
+    ...sobjectsFieldsFor('Foo'),
+  ]);
+  validateCompletionsFor('SELECT |FROM Object', [
+    ...expectKeywords('COUNT()'),
+    ...sobjectsFieldsFor('Object'),
+  ]);
+  validateCompletionsFor('SELECT |FROM Foo', [
+    ...expectKeywords('COUNT()'),
+    ...sobjectsFieldsFor('Foo'),
+  ]);
+  validateCompletionsFor('SELECT | FROM Foo, Bar', [
+    ...expectKeywords('COUNT()'),
+    ...sobjectsFieldsFor('Foo'),
+  ]);
   validateCompletionsFor('SELECT id, | FROM Foo', sobjectsFieldsFor('Foo'));
   validateCompletionsFor('SELECT id,| FROM Foo', sobjectsFieldsFor('Foo'));
-  validateCompletionsFor('SELECT |, id FROM Foo', sobjectsFieldsFor('Foo'));
-  validateCompletionsFor('SELECT |, id, FROM Foo', sobjectsFieldsFor('Foo'));
+  validateCompletionsFor('SELECT |, id FROM Foo', [
+    ...expectKeywords('COUNT()'),
+    ...sobjectsFieldsFor('Foo'),
+  ]);
+  validateCompletionsFor('SELECT |, id, FROM Foo', [
+    ...expectKeywords('COUNT()'),
+    ...sobjectsFieldsFor('Foo'),
+  ]);
   validateCompletionsFor('SELECT id,| FROM', sobjectsFieldsFor('Object'));
 
   // with alias
   validateCompletionsFor('SELECT id,| FROM Foo F', sobjectsFieldsFor('Foo'));
-  validateCompletionsFor('SELECT |, id FROM Foo F', sobjectsFieldsFor('Foo'));
-  validateCompletionsFor('SELECT |, id, FROM Foo F', sobjectsFieldsFor('Foo'));
+  validateCompletionsFor('SELECT |, id FROM Foo F', [
+    ...expectKeywords('COUNT()'),
+    ...sobjectsFieldsFor('Foo'),
+  ]);
+  validateCompletionsFor('SELECT |, id, FROM Foo F', [
+    ...expectKeywords('COUNT()'),
+    ...sobjectsFieldsFor('Foo'),
+  ]);
 });
 
 describe('Code Completion on nested select fields: SELECT ... FROM XYZ', () => {
-  validateCompletionsFor(
-    'SELECT | (SELECT bar FROM Bar) FROM Foo',
-    sobjectsFieldsFor('Foo')
-  );
+  // "COUNT()" can only be used on its own, unlike "COUNT(fieldName)".
+  // So we expect it on completions only right after "SELECT"
+  validateCompletionsFor('SELECT | (SELECT bar FROM Bar) FROM Foo', [
+    ...expectKeywords('COUNT()'),
+    ...sobjectsFieldsFor('Foo'),
+  ]);
   validateCompletionsFor(
     'SELECT (SELECT bar FROM Bar),| FROM Foo',
     sobjectsFieldsFor('Foo')
@@ -90,39 +146,42 @@ describe('Code Completion on nested select fields: SELECT ... FROM XYZ', () => {
     'SELECT id, | (SELECT bar FROM Bar) FROM Foo',
     sobjectsFieldsFor('Foo')
   );
-  validateCompletionsFor(
-    'SELECT foo, (SELECT | FROM Bar) FROM Foo',
-    sobjectsFieldsFor('Bar')
-  );
-  validateCompletionsFor(
-    'SELECT foo, (SELECT |, bar FROM Bar) FROM Foo',
-    sobjectsFieldsFor('Bar')
-  );
+  validateCompletionsFor('SELECT foo, (SELECT | FROM Bar) FROM Foo', [
+    ...expectKeywords('COUNT()'),
+    ...sobjectsFieldsFor('Bar'),
+  ]);
+  validateCompletionsFor('SELECT foo, (SELECT |, bar FROM Bar) FROM Foo', [
+    ...expectKeywords('COUNT()'),
+    ...sobjectsFieldsFor('Bar'),
+  ]);
   validateCompletionsFor(
     'SELECT foo, (SELECT bar, | FROM Bar) FROM Foo',
     sobjectsFieldsFor('Bar')
   );
   validateCompletionsFor(
     'SELECT foo, (SELECT bar, (SELECT | FROM XYZ) FROM Bar) FROM Foo',
-    sobjectsFieldsFor('XYZ')
+    [...expectKeywords('COUNT()'), ...sobjectsFieldsFor('XYZ')]
   );
   validateCompletionsFor(
     'SELECT foo, (SELECT |, (SELECT xyz FROM XYZ) FROM Bar) FROM Foo',
-    sobjectsFieldsFor('Bar')
+    [...expectKeywords('COUNT()'), ...sobjectsFieldsFor('Bar')]
   );
   validateCompletionsFor(
     'SELECT | (SELECT bar, (SELECT xyz FROM XYZ) FROM Bar) FROM Foo',
-    sobjectsFieldsFor('Foo')
+    [...expectKeywords('COUNT()'), ...sobjectsFieldsFor('Foo')]
   );
 
-  validateCompletionsFor(
-    'SELECT (SELECT |) FROM Foo',
-    sobjectsFieldsFor('Object')
-  );
+  validateCompletionsFor('SELECT (SELECT |) FROM Foo', [
+    ...expectKeywords('COUNT()'),
+    ...sobjectsFieldsFor('Object'),
+  ]);
 
+  // We used to have special code just to handle this particular case one...
+  // Not worth it, that's why it's skipped now. Would be nice to solve it in a generic way
   validateCompletionsFor(
     'SELECT (SELECT ), | FROM Foo',
-    sobjectsFieldsFor('Foo')
+    sobjectsFieldsFor('Foo'),
+    { skip: true }
   );
 
   validateCompletionsFor('SELECT foo, ( | FROM Foo', expectKeywords('SELECT'));
@@ -140,7 +199,7 @@ describe('Code Completion on nested select fields: SELECT ... FROM XYZ', () => {
 
   validateCompletionsFor(
     'SELECT foo, (SELECT bar FROM Bar), (SELECT | FROM Xyz) FROM Foo',
-    sobjectsFieldsFor('Xyz')
+    [...expectKeywords('COUNT()'), ...sobjectsFieldsFor('Xyz')]
   );
   validateCompletionsFor(
     'SELECT foo, (SELECT bar FROM Bar), (SELECT xyz, | FROM Xyz) FROM Foo',
@@ -156,7 +215,7 @@ describe('Code Completion on nested select fields: SELECT ... FROM XYZ', () => {
   );
   validateCompletionsFor(
     'SELECT foo, (SELECT | FROM Bar), (SELECT xyz FROM Xyz) FROM Foo',
-    sobjectsFieldsFor('Bar')
+    [...expectKeywords('COUNT()'), ...sobjectsFieldsFor('Bar')]
   );
 });
 
@@ -206,7 +265,7 @@ describe('Code Completion on nested SELECT fields FROM', () => {
 });
 
 describe('Code Completion on SELECT FROM (no columns on SELECT)', () => {
-  validateCompletionsFor('SELECT FROM |', expectedSObjectCompletions);
+  validateCompletionsFor('SELECT FROM |', expectedSObjectCompletions, {});
   validateCompletionsFor('SELECT\nFROM |', expectedSObjectCompletions);
 
   validateCompletionsFor(
@@ -219,10 +278,19 @@ describe('Code Completion on SELECT FROM (no columns on SELECT)', () => {
   );
 
   describe('Cursor is still touching FROM: it should still complete with fieldnames, and not SObject names', () => {
-    validateCompletionsFor('SELECT FROM|', sobjectsFieldsFor('Object'));
+    validateCompletionsFor('SELECT FROM|', [
+      ...expectKeywords('COUNT()'),
+      ...sobjectsFieldsFor('Object'),
+    ]);
 
-    validateCompletionsFor('SELECT\nFROM|', sobjectsFieldsFor('Object'));
-    validateCompletionsFor('SELECT\nFROM|\nWHERE', sobjectsFieldsFor('Object'));
+    validateCompletionsFor('SELECT\nFROM|', [
+      ...expectKeywords('COUNT()'),
+      ...sobjectsFieldsFor('Object'),
+    ]);
+    validateCompletionsFor('SELECT\nFROM|\nWHERE', [
+      ...expectKeywords('COUNT()'),
+      ...sobjectsFieldsFor('Object'),
+    ]);
   });
 
   validateCompletionsFor('SELECTHHH  FROMXXX |', []);
@@ -563,8 +631,13 @@ function sobjectsFieldsFor(sobjectName: string) {
       label: '__SOBJECT_FIELDS_PLACEHOLDER',
       data: { soqlContext: { sobjectName: sobjectName } },
     },
-    ...expectKeywords('TYPEOF', 'DISTANCE(', 'COUNT()'),
-    COUNT_snippet,
+    ...expectKeywords('TYPEOF', 'DISTANCE('),
+    aggregateFunctionSnippet('AVG'),
+    aggregateFunctionSnippet('MIN'),
+    aggregateFunctionSnippet('MAX'),
+    aggregateFunctionSnippet('SUM'),
+    aggregateFunctionSnippet('COUNT'),
+    aggregateFunctionSnippet('COUNT_DISTINCT'),
     INNER_SELECT_snippet,
   ];
 }
