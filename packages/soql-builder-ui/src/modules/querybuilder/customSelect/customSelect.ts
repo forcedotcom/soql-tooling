@@ -11,7 +11,7 @@ export default class CustomSelect extends LightningElement {
   originalUserInput = '';
   optionsWrapper: HTMLElement;
   optionList: HTMLCollection;
-  optionListIsOpen = false;
+  optionListIsHidden = true;
   activeOptionIndex = -1;
 
   get hasSearchTerm() {
@@ -92,8 +92,8 @@ export default class CustomSelect extends LightningElement {
     }
   }
 
-  haveOptionsToNavigate() {
-    return this.optionListIsOpen && this.optionList.length;
+  haveOptionsToNavigate(): boolean {
+    return !!(!this.optionListIsHidden && this.optionList.length);
   }
 
   clearActiveHighlight() {
@@ -125,7 +125,7 @@ export default class CustomSelect extends LightningElement {
 
   openOptionsMenu() {
     this.optionsWrapper.classList.add('options--open');
-    this.optionListIsOpen = true;
+    this.optionListIsHidden = false;
   }
 
   /* ======= EVENT HANDLERS ======= */
@@ -143,7 +143,7 @@ export default class CustomSelect extends LightningElement {
     this.clearActiveHighlight();
     this.activeOptionIndex = -1;
     this.optionsWrapper.classList.remove('options--open');
-    this.optionListIsOpen = false;
+    this.optionListIsHidden = true;
   }
   // respond to changes in input value, typing, paste.
   handleInputChange(e) {

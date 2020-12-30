@@ -20,7 +20,7 @@
       </div>
     </template>
   </div>
-  <div class="options__wrapper">
+  <div class="options__wrapper" aria-hidden={optionListIsHidden}>
     <template for:each={_renderedOptions} for:item="optionName">
       <p
         tabindex="0"

@@ -63,7 +63,7 @@
   max-height: 50%;
   overflow-y: scroll;
   /* hidden by default */
-  visibility: hidden;
+  display: none;
   opacity: 0;
   transition: opacity 0.2s;
   pointer-events: none;
@@ -73,7 +73,7 @@
 
 .options--open {
   opacity: 1;
-  visibility: visible;
+  display: block;
   pointer-events: all;
 }
 
