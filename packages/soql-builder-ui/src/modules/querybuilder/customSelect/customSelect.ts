@@ -99,7 +99,10 @@ export default class CustomSelect extends LightningElement {
   }
 
   haveOptionsToNavigate(): boolean {
-    return !!(!this.optionListIsHidden && this.optionList.length);
+    return (
+      !!(!this.optionListIsHidden && this.optionList.length) &&
+      !this.noResultsFound
+    );
   }
 
   clearActiveHighlight() {
