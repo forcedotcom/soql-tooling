@@ -114,7 +114,6 @@ export default class CustomSelect extends LightningElement {
     if (this.optionList[position]) {
       this.optionList[position].classList.add('option--highlight');
       this.optionList[position].scrollIntoView({
-        behavior: 'smooth',
         block: 'end',
         inline: 'nearest'
       });
@@ -127,6 +126,7 @@ export default class CustomSelect extends LightningElement {
     this.searchTerm = '';
     this.originalUserInput = '';
     this.activeOptionIndex = -1;
+    this.numberOfSearchResults = undefined;
   }
 
   openOptionsMenu() {
@@ -152,6 +152,7 @@ export default class CustomSelect extends LightningElement {
   handleCloseOptions() {
     this.clearActiveHighlight();
     this.activeOptionIndex = -1;
+    this.numberOfSearchResults = undefined;
     this.optionsWrapper.classList.remove('options--open');
     this.optionListIsHidden = true;
   }

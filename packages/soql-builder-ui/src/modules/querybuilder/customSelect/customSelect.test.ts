@@ -125,6 +125,11 @@ describe('Custom Select', () => {
       searchBar.dispatchEvent(new Event('input'));
     });
 
+    afterEach(() => {
+      // close the options list to reset
+      document.dispatchEvent(new Event('click'));
+    });
+
     it('should render a list of options', () => {
       searchBar.click();
       return Promise.resolve().then(() => {
