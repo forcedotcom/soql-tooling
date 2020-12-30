@@ -110,6 +110,51 @@ describe('Custom Select', () => {
           expect(optionsList.getAttribute('aria-hidden')).toBe('true');
         });
     });
+
+    it('should reset the search bar when X is clicked', () => {
+      let optionsList;
+      let clearSearchBtn;
+      document.body.appendChild(customSelect);
+      const searchBar = customSelect.shadowRoot.querySelector(
+        'input[name=search-bar]'
+      );
+      clearSearchBtn = customSelect.shadowRoot.querySelector(
+        '.select__clear-search'
+      );
+      expect(searchBar.value).toBe('');
+      expect(clearSearchBtn).toBeNull();
+
+      searchBar.click();
+      return Promise.resolve()
+        .then(() => {
+          optionsList = customSelect.shadowRoot.querySelector(
+            '.options__wrapper'
+          );
+          expect(optionsList.getAttribute('aria-hidden')).toBe('false');
+          searchBar.value = 'Foo';
+          searchBar.dispatchEvent(new Event('input'));
+        })
+        .then(() => {
+          clearSearchBtn = customSelect.shadowRoot.querySelector(
+            '.select__clear-search'
+          );
+          expect(clearSearchBtn).not.toBeNull();
+          expect(searchBar.value).toBe('Foo');
+
+          clearSearchBtn.click();
+        })
+        .then(() => {
+          optionsList = customSelect.shadowRoot.querySelector(
+            '.options__wrapper'
+          );
+          clearSearchBtn = customSelect.shadowRoot.querySelector(
+            '.select__clear-search'
+          );
+          expect(optionsList.getAttribute('aria-hidden')).toBe('true');
+          expect(searchBar.value).toBe('');
+          expect(clearSearchBtn).toBeNull();
+        });
+    });
   });
 
   describe('OPTIONS', () => {
