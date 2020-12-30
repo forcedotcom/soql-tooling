@@ -63,7 +63,7 @@ describe('Custom Select', () => {
       });
     });
 
-    it('should NOT display the list of options by default', () => {
+    it('should NOT display the options wrapper by default', () => {
       document.body.appendChild(customSelect);
       const optionsList = customSelect.shadowRoot.querySelector(
         '.options__wrapper'
@@ -72,7 +72,7 @@ describe('Custom Select', () => {
       expect(optionsList.getAttribute('aria-hidden')).toBe('true');
     });
 
-    it('should display the list of options when input is clicked', () => {
+    it('should display the options wrapper when input is clicked', () => {
       document.body.appendChild(customSelect);
       const searchBar = customSelect.shadowRoot.querySelector(
         'input[name=search-bar]'
@@ -115,11 +115,89 @@ describe('Custom Select', () => {
   });
 
   describe('OPTIONS', () => {
-    it('should only display options not already selected', () => {});
+    it('should render a list of options', () => {
+      document.body.appendChild(customSelect);
+      const searchBar = customSelect.shadowRoot.querySelector(
+        'input[name=search-bar]'
+      );
+      searchBar.click();
+      return Promise.resolve().then(() => {
+        const optionsList = customSelect.shadowRoot.querySelector(
+          '.options__wrapper'
+        );
 
-    it('should ignore character case of selected options', () => {});
+        expect(optionsList.children.length).toBe(
+          customSelect.allOptions.length
+        );
 
-    it('should fire a selection event when clicked', () => {});
+        for (let option of customSelect.allOptions) {
+          expect(optionsList.innerHTML).toContain(option);
+        }
+      });
+    });
+
+    it('should only display options not already selected', () => {
+      customSelect.selectedOptions = ['Foo'];
+      document.body.appendChild(customSelect);
+      const searchBar = customSelect.shadowRoot.querySelector(
+        'input[name=search-bar]'
+      );
+      searchBar.click();
+      return Promise.resolve().then(() => {
+        const optionsList = customSelect.shadowRoot.querySelector(
+          '.options__wrapper'
+        );
+
+        expect(optionsList.children.length).toBe(
+          customSelect.allOptions.length - customSelect.selectedOptions.length
+        );
+        expect(optionsList.innerHTML).not.toContain('Foo');
+      });
+    });
+
+    it('should ignore character case of selected options', () => {
+      customSelect.selectedOptions = ['foo', 'bar'];
+      document.body.appendChild(customSelect);
+      const searchBar = customSelect.shadowRoot.querySelector(
+        'input[name=search-bar]'
+      );
+      searchBar.click();
+      return Promise.resolve().then(() => {
+        const optionsList = customSelect.shadowRoot.querySelector(
+          '.options__wrapper'
+        );
+
+        expect(optionsList.children.length).toBe(
+          customSelect.allOptions.length - customSelect.selectedOptions.length
+        );
+        expect(optionsList.innerHTML).not.toContain('Foo');
+        expect(optionsList.innerHTML).not.toContain('Bar');
+      });
+    });
+
+    it('should fire a selection event when clicked', () => {
+      document.body.appendChild(customSelect);
+      const searchBar = customSelect.shadowRoot.querySelector(
+        'input[name=search-bar]'
+      );
+      const handler = jest.fn();
+      customSelect.addEventListener('option__selection', handler);
+
+      searchBar.click();
+      return Promise.resolve().then(() => {
+        const optionsList = customSelect.shadowRoot.querySelector(
+          '.options__wrapper'
+        );
+        const firstOption = optionsList.firstChild;
+        const optionValue = firstOption.getAttribute('data-option-value');
+        firstOption.click();
+
+        expect(handler).toHaveBeenCalled();
+        expect(handler.mock.calls[0][0].detail.optionValue).toEqual(
+          optionValue
+        );
+      });
+    });
   });
 
   describe('KEYBOARD EVENTS', () => {
