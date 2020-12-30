@@ -23,6 +23,7 @@ describe('Custom Select', () => {
     while (document.body.firstChild) {
       document.body.removeChild(document.body.firstChild);
     }
+    jest.clearAllMocks();
   });
 
   describe('UI RENDERING', () => {
@@ -99,16 +100,13 @@ describe('Custom Select', () => {
           optionsList = customSelect.shadowRoot.querySelector(
             '.options__wrapper'
           );
-
           expect(optionsList.getAttribute('aria-hidden')).toBe('false');
-
           document.dispatchEvent(new Event('click'));
         })
         .then(() => {
           optionsList = customSelect.shadowRoot.querySelector(
             '.options__wrapper'
           );
-
           expect(optionsList.getAttribute('aria-hidden')).toBe('true');
         });
     });
@@ -175,6 +173,35 @@ describe('Custom Select', () => {
       });
     });
 
+    it('should show options that match a user search', () => {
+      let optionsList;
+      document.body.appendChild(customSelect);
+      const searchBar = customSelect.shadowRoot.querySelector(
+        'input[name=search-bar]'
+      );
+      searchBar.click();
+      return Promise.resolve()
+        .then(() => {
+          optionsList = customSelect.shadowRoot.querySelector(
+            '.options__wrapper'
+          );
+
+          expect(optionsList.getAttribute('aria-hidden')).toBe('false');
+          expect(optionsList.children.length).toBe(
+            customSelect.allOptions.length
+          );
+          searchBar.value = 'foo';
+          searchBar.dispatchEvent(new Event('input'));
+        })
+        .then(() => {
+          expect(optionsList.children.length).toBe(1);
+          const optionValue = optionsList.firstChild.getAttribute(
+            'data-option-value'
+          );
+          expect(optionValue).toBe('Foo');
+        });
+    });
+
     it('should fire a selection event when clicked', () => {
       document.body.appendChild(customSelect);
       const searchBar = customSelect.shadowRoot.querySelector(
@@ -201,12 +228,166 @@ describe('Custom Select', () => {
   });
 
   describe('KEYBOARD EVENTS', () => {
-    it('should allow navigation with DOWN ARROW', () => {});
+    let mockScrollIntoView;
 
-    it('should allow navigation with UP ARROW', () => {});
+    beforeEach(() => {
+      mockScrollIntoView = jest.fn();
+      window.HTMLElement.prototype.scrollIntoView = mockScrollIntoView;
+    });
 
-    it('should allow option selection with ENTER', () => {});
+    afterEach(() => {
+      // close the options list to reset
+      document.dispatchEvent(new Event('click'));
+    });
 
-    it('should close options list with ESCAPE', () => {});
+    it('should NOT have any highlight options when opened', () => {
+      document.body.appendChild(customSelect);
+      const searchBar = customSelect.shadowRoot.querySelector(
+        'input[name=search-bar]'
+      );
+      searchBar.click();
+      return Promise.resolve().then(() => {
+        const optionsList = customSelect.shadowRoot.querySelector(
+          '.options__wrapper'
+        );
+
+        for (let option of optionsList.children) {
+          expect(option.classList).not.toContain('option--highlight');
+        }
+      });
+    });
+
+    it('should allow navigation with DOWN ARROW', () => {
+      let firstOption;
+      let optionsList;
+      document.body.appendChild(customSelect);
+      const searchBar = customSelect.shadowRoot.querySelector(
+        'input[name=search-bar]'
+      );
+      // open the list of options
+      searchBar.click();
+      return Promise.resolve()
+        .then(() => {
+          optionsList = customSelect.shadowRoot.querySelector(
+            '.options__wrapper'
+          );
+          firstOption = optionsList.firstChild;
+          searchBar.dispatchEvent(
+            new KeyboardEvent('keydown', { key: 'ArrowDown' })
+          );
+        })
+        .then(() => {
+          expect(firstOption.classList).toContain('option--highlight');
+          expect(mockScrollIntoView).toHaveBeenCalled();
+
+          searchBar.dispatchEvent(
+            new KeyboardEvent('keydown', { key: 'ArrowDown' })
+          );
+        })
+        .then(() => {
+          // only the second option should should be highlighted
+          expect(firstOption.classList).not.toContain('option--highlight');
+          expect(optionsList.children[1].classList).toContain(
+            'option--highlight'
+          );
+        });
+    });
+
+    it('should allow navigation with UP ARROW', () => {
+      let lastOption;
+      let optionsList;
+      document.body.appendChild(customSelect);
+      const searchBar = customSelect.shadowRoot.querySelector(
+        'input[name=search-bar]'
+      );
+      // open the list of options
+      searchBar.click();
+      return Promise.resolve()
+        .then(() => {
+          optionsList = customSelect.shadowRoot.querySelector(
+            '.options__wrapper'
+          );
+          lastOption = optionsList.lastChild;
+          searchBar.dispatchEvent(
+            new KeyboardEvent('keydown', { key: 'ArrowUp' })
+          );
+        })
+        .then(() => {
+          expect(lastOption.classList).toContain('option--highlight');
+          expect(mockScrollIntoView).toHaveBeenCalled();
+
+          searchBar.dispatchEvent(
+            new KeyboardEvent('keydown', { key: 'ArrowUp' })
+          );
+        })
+        .then(() => {
+          // only the second to last option should should be highlighted
+          expect(lastOption.classList).not.toContain('option--highlight');
+          const secondToLastIndex = optionsList.children.length - 2;
+          expect(optionsList.children[secondToLastIndex].classList).toContain(
+            'option--highlight'
+          );
+        });
+    });
+
+    it('should allow option selection with ENTER', () => {
+      let firstOption;
+      let optionsList;
+      document.body.appendChild(customSelect);
+      const searchBar = customSelect.shadowRoot.querySelector(
+        'input[name=search-bar]'
+      );
+      const handler = jest.fn();
+      customSelect.addEventListener('option__selection', handler);
+      // open the list of options
+      searchBar.click();
+      return Promise.resolve()
+        .then(() => {
+          optionsList = customSelect.shadowRoot.querySelector(
+            '.options__wrapper'
+          );
+          firstOption = optionsList.firstChild;
+          searchBar.dispatchEvent(
+            new KeyboardEvent('keydown', { key: 'ArrowDown' })
+          );
+        })
+        .then(() => {
+          searchBar.dispatchEvent(
+            new KeyboardEvent('keydown', { key: 'Enter' })
+          );
+          const optionValue = firstOption.getAttribute('data-option-value');
+          firstOption.click();
+
+          expect(handler).toHaveBeenCalled();
+          expect(handler.mock.calls[0][0].detail.optionValue).toEqual(
+            optionValue
+          );
+        });
+    });
+
+    it('should close options list with ESCAPE', () => {
+      let optionsList;
+      document.body.appendChild(customSelect);
+      const searchBar = customSelect.shadowRoot.querySelector(
+        'input[name=search-bar]'
+      );
+      searchBar.click();
+      return Promise.resolve()
+        .then(() => {
+          optionsList = customSelect.shadowRoot.querySelector(
+            '.options__wrapper'
+          );
+          expect(optionsList.getAttribute('aria-hidden')).toBe('false');
+          searchBar.dispatchEvent(
+            new KeyboardEvent('keydown', { key: 'Escape' })
+          );
+        })
+        .then(() => {
+          optionsList = customSelect.shadowRoot.querySelector(
+            '.options__wrapper'
+          );
+          expect(optionsList.getAttribute('aria-hidden')).toBe('true');
+        });
+    });
   });
 });
