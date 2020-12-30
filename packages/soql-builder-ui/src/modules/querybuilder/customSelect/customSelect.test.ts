@@ -113,11 +113,19 @@ describe('Custom Select', () => {
   });
 
   describe('OPTIONS', () => {
-    it('should render a list of options', () => {
+    let searchBar;
+
+    beforeEach(() => {
       document.body.appendChild(customSelect);
-      const searchBar = customSelect.shadowRoot.querySelector(
+      searchBar = customSelect.shadowRoot.querySelector(
         'input[name=search-bar]'
       );
+      // clear search bar value
+      searchBar.value = '';
+      searchBar.dispatchEvent(new Event('input'));
+    });
+
+    it('should render a list of options', () => {
       searchBar.click();
       return Promise.resolve().then(() => {
         const optionsList = customSelect.shadowRoot.querySelector(
@@ -136,10 +144,7 @@ describe('Custom Select', () => {
 
     it('should only display options not already selected', () => {
       customSelect.selectedOptions = ['Foo'];
-      document.body.appendChild(customSelect);
-      const searchBar = customSelect.shadowRoot.querySelector(
-        'input[name=search-bar]'
-      );
+
       searchBar.click();
       return Promise.resolve().then(() => {
         const optionsList = customSelect.shadowRoot.querySelector(
@@ -155,10 +160,7 @@ describe('Custom Select', () => {
 
     it('should ignore character case of selected options', () => {
       customSelect.selectedOptions = ['foo', 'bar'];
-      document.body.appendChild(customSelect);
-      const searchBar = customSelect.shadowRoot.querySelector(
-        'input[name=search-bar]'
-      );
+
       searchBar.click();
       return Promise.resolve().then(() => {
         const optionsList = customSelect.shadowRoot.querySelector(
@@ -175,10 +177,7 @@ describe('Custom Select', () => {
 
     it('should show options that match a user search', () => {
       let optionsList;
-      document.body.appendChild(customSelect);
-      const searchBar = customSelect.shadowRoot.querySelector(
-        'input[name=search-bar]'
-      );
+
       searchBar.click();
       return Promise.resolve()
         .then(() => {
@@ -202,11 +201,32 @@ describe('Custom Select', () => {
         });
     });
 
+    it('should let the user know where there are no search results', () => {
+      let optionsList;
+
+      searchBar.click();
+      return Promise.resolve()
+        .then(() => {
+          optionsList = customSelect.shadowRoot.querySelector(
+            '.options__wrapper'
+          );
+          expect(optionsList.getAttribute('aria-hidden')).toBe('false');
+          expect(optionsList.children.length).toBe(
+            customSelect.allOptions.length
+          );
+          searchBar.value = 'no match';
+          searchBar.dispatchEvent(new Event('input'));
+        })
+        .then(() => {
+          expect(optionsList.children.length).toBe(1);
+          expect(optionsList.firstChild.classList).toContain(
+            'option--placeholder'
+          );
+          expect(optionsList.firstChild.innerHTML).toContain('No results');
+        });
+    });
+
     it('should fire a selection event when clicked', () => {
-      document.body.appendChild(customSelect);
-      const searchBar = customSelect.shadowRoot.querySelector(
-        'input[name=search-bar]'
-      );
       const handler = jest.fn();
       customSelect.addEventListener('option__selection', handler);
 
