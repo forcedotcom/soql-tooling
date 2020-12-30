@@ -93,8 +93,6 @@ export default class CustomSelect extends LightningElement {
       });
       this.dispatchEvent(optionSelectionEvent);
       this.resetSearchBar();
-    } else {
-      console.error('that is not a valid field');
     }
   }
 
