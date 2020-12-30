@@ -229,10 +229,18 @@ describe('Custom Select', () => {
 
   describe('KEYBOARD EVENTS', () => {
     let mockScrollIntoView;
+    let searchBar;
 
     beforeEach(() => {
       mockScrollIntoView = jest.fn();
       window.HTMLElement.prototype.scrollIntoView = mockScrollIntoView;
+      document.body.appendChild(customSelect);
+      searchBar = customSelect.shadowRoot.querySelector(
+        'input[name=search-bar]'
+      );
+      // clear search bar value
+      searchBar.value = '';
+      searchBar.dispatchEvent(new Event('input'));
     });
 
     afterEach(() => {
@@ -241,10 +249,6 @@ describe('Custom Select', () => {
     });
 
     it('should NOT have any highlight options when opened', () => {
-      document.body.appendChild(customSelect);
-      const searchBar = customSelect.shadowRoot.querySelector(
-        'input[name=search-bar]'
-      );
       searchBar.click();
       return Promise.resolve().then(() => {
         const optionsList = customSelect.shadowRoot.querySelector(
@@ -260,10 +264,6 @@ describe('Custom Select', () => {
     it('should allow navigation with DOWN ARROW', () => {
       let firstOption;
       let optionsList;
-      document.body.appendChild(customSelect);
-      const searchBar = customSelect.shadowRoot.querySelector(
-        'input[name=search-bar]'
-      );
       // open the list of options
       searchBar.click();
       return Promise.resolve()
@@ -296,10 +296,6 @@ describe('Custom Select', () => {
     it('should allow navigation with UP ARROW', () => {
       let lastOption;
       let optionsList;
-      document.body.appendChild(customSelect);
-      const searchBar = customSelect.shadowRoot.querySelector(
-        'input[name=search-bar]'
-      );
       // open the list of options
       searchBar.click();
       return Promise.resolve()
@@ -333,10 +329,6 @@ describe('Custom Select', () => {
     it('should allow option selection with ENTER', () => {
       let firstOption;
       let optionsList;
-      document.body.appendChild(customSelect);
-      const searchBar = customSelect.shadowRoot.querySelector(
-        'input[name=search-bar]'
-      );
       const handler = jest.fn();
       customSelect.addEventListener('option__selection', handler);
       // open the list of options
@@ -367,10 +359,6 @@ describe('Custom Select', () => {
 
     it('should close options list with ESCAPE', () => {
       let optionsList;
-      document.body.appendChild(customSelect);
-      const searchBar = customSelect.shadowRoot.querySelector(
-        'input[name=search-bar]'
-      );
       searchBar.click();
       return Promise.resolve()
         .then(() => {

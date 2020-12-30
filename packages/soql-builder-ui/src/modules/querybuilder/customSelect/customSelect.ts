@@ -9,11 +9,11 @@ export default class CustomSelect extends LightningElement {
   _placeholderText = '';
   searchTerm = '';
   originalUserInput = '';
-  numberOfSearchResults = 0;
   optionsWrapper: HTMLElement;
   optionList: HTMLCollection;
   optionListIsHidden = true;
   activeOptionIndex = -1;
+  numberOfSearchResults;
 
   get hasSearchTerm() {
     return !!this.searchTerm;
@@ -99,11 +99,7 @@ export default class CustomSelect extends LightningElement {
   }
 
   haveOptionsToNavigate(): boolean {
-    return !!(
-      !this.optionListIsHidden &&
-      this.optionList.length &&
-      this.numberOfSearchResults > 0
-    );
+    return !!(!this.optionListIsHidden && this.optionList.length);
   }
 
   clearActiveHighlight() {
