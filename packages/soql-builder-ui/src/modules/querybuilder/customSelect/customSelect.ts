@@ -9,6 +9,7 @@ export default class CustomSelect extends LightningElement {
   _placeholderText = '';
   searchTerm = '';
   originalUserInput = '';
+  numberOfSearchResults = 0;
   optionsWrapper: HTMLElement;
   optionList: HTMLCollection;
   optionListIsHidden = true;
@@ -16,6 +17,10 @@ export default class CustomSelect extends LightningElement {
 
   get hasSearchTerm() {
     return !!this.searchTerm;
+  }
+
+  get noResultsFound() {
+    return this.hasSearchTerm && this.numberOfSearchResults === 0;
   }
 
   @api
@@ -59,6 +64,7 @@ export default class CustomSelect extends LightningElement {
       const filteredOptions = this.availableOptions.filter((option) => {
         return option.toLowerCase().includes(this.searchTerm.toLowerCase());
       });
+      this.numberOfSearchResults = filteredOptions.length;
       this._renderedOptions = filteredOptions;
     }
   }
@@ -93,7 +99,11 @@ export default class CustomSelect extends LightningElement {
   }
 
   haveOptionsToNavigate(): boolean {
-    return !!(!this.optionListIsHidden && this.optionList.length);
+    return !!(
+      !this.optionListIsHidden &&
+      this.optionList.length &&
+      this.numberOfSearchResults > 0
+    );
   }
 
   clearActiveHighlight() {
@@ -135,7 +145,11 @@ export default class CustomSelect extends LightningElement {
     e.preventDefault();
     e.stopPropagation();
     this.getAvailableOptions();
-    this._renderedOptions = this.availableOptions;
+    if (this.hasSearchTerm) {
+      this.filterOptionsBySearchTerm();
+    } else {
+      this._renderedOptions = this.availableOptions;
+    }
     this.openOptionsMenu();
   }
 
@@ -145,7 +159,7 @@ export default class CustomSelect extends LightningElement {
     this.optionsWrapper.classList.remove('options--open');
     this.optionListIsHidden = true;
   }
-  // respond to changes in input value, typing, paste.
+  // respond to changes in input value: typing, paste events.
   handleInputChange(e) {
     e.preventDefault();
     this.openOptionsMenu();
@@ -157,6 +171,10 @@ export default class CustomSelect extends LightningElement {
 
     this.searchTerm = e.target.value;
     this.originalUserInput = this.searchTerm;
+
+    if (!this.availableOptions.length) {
+      this.getAvailableOptions();
+    }
     this.filterOptionsBySearchTerm();
   }
 
