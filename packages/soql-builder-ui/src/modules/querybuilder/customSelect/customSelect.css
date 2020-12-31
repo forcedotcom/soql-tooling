@@ -46,10 +46,6 @@
   cursor: pointer;
 }
 
-.select__arrow--down {
-  font-size: 1em;
-}
-
 /* ======== OPTIONS ======== */
 
 .options__wrapper {
