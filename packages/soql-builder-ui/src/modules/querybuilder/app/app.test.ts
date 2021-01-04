@@ -33,6 +33,7 @@ class TestMessageService implements IMessageService {
 }
 
 class TestApp extends App {
+  @api
   query: ToolingModelJson = ToolingModelService.toolingModelTemplate;
   @api
   fields;
@@ -139,6 +140,24 @@ describe('App should', () => {
           type: MessageType.RUN_SOQL_QUERY
         });
       });
+    });
+
+    it('not process an incoming message if the soql statement has not changed', () => {
+      let soqlStatement = accountQuery;
+      messageService.messagesToUI.next(createSoqlEditorEvent(soqlStatement));
+      expect(app.query.originalSoqlStatement).toEqual(soqlStatement);
+      expect(app.query.fields.length).toEqual(1);
+      // add a field
+      soqlStatement = 'Select Id, Name from Account';
+      messageService.messagesToUI.next(createSoqlEditorEvent(soqlStatement));
+      expect(app.query.originalSoqlStatement).toEqual(soqlStatement);
+      expect(app.query.fields.length).toEqual(2);
+
+      // manipulate the query fields manually, then send same statement.
+      // a sly way to determine that the message was ignored.
+      app.query.fields = [];
+      messageService.messagesToUI.next(createSoqlEditorEvent(soqlStatement));
+      expect(app.query.fields.length).toEqual(0);
     });
   });
 
