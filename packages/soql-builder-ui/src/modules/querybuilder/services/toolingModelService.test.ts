@@ -160,6 +160,21 @@ describe('Tooling Model Service', () => {
       expect(query.errors.length).toEqual(0);
       expect(query.unsupported.length).toEqual(0);
     });
+
+    it('Ignore messages that have the exact same soql statement', () => {
+      const spy = jest.fn();
+      modelService.UIModel.subscribe(spy);
+      // Behavior subject new subscriber gets called immediately with current value.
+      expect(spy).toHaveBeenCalledTimes(1);
+      (messageService.messagesToUI as BehaviorSubject<SoqlEditorEvent>).next(
+        soqlEditorEvent
+      );
+      expect(spy).toHaveBeenCalledTimes(2);
+      (messageService.messagesToUI as BehaviorSubject<SoqlEditorEvent>).next(
+        soqlEditorEvent
+      );
+      expect(spy).toHaveBeenCalledTimes(2);
+    });
   });
 
   describe('WHERE', () => {
