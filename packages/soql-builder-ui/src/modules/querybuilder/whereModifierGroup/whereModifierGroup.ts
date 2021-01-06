@@ -7,9 +7,11 @@
  */
 import { api, LightningElement, track } from 'lwc';
 import { debounce } from 'debounce';
+import { Soql } from '@salesforce/soql-model';
 import { JsonMap } from '@salesforce/types';
 import { operatorOptions } from '../services/model';
 import { SObjectType, SObjectTypeUtils } from '../services/sobjectUtils';
+import { displayValueToSoqlStringLiteral, soqlStringLiteralToDisplayValue } from '../services/soqlUtils';
 
 
 export default class WhereModifierGroup extends LightningElement {
@@ -90,8 +92,8 @@ export default class WhereModifierGroup extends LightningElement {
     return this._criteria;
   }
   set criteria(criteria) {
-    if (criteria && criteria.value) {
-      const cleanedValue = criteria.value.replace(/['"]+/g, '');
+    if (criteria && criteria.type && criteria.value) {
+      const cleanedValue = this.displayValue(criteria.type, criteria.value);
       this._criteria = { ...criteria, value: cleanedValue };
     } else {
       this._criteria = criteria;
@@ -111,38 +113,93 @@ export default class WhereModifierGroup extends LightningElement {
     this.dispatchEvent(conditionRemovedEvent);
   }
 
-  /*
-  This should be temporary until we have more specific validation.
-  For now, this will wrap the user input in quotes unless
-  the value is:
-  - a number
-  - a boolean value
-  */
-  normalizeInput(value: string): string {
-    // prevent values from being wrapped in quotes twice
-    value = value.replace(/['"]+/g, '');
-    const canValueBeParsedToNumber = !isNaN(+value);
-    if (
-      canValueBeParsedToNumber ||
-      value.toLocaleLowerCase() === 'true' ||
-      value.toLocaleLowerCase() === 'false'
-    ) {
-      return value;
+  displayValue(type: Soql.LiteralType, rawValue: string): string {
+    let displayValue = rawValue;
+    switch (type) {
+      case Soql.LiteralType.String: {
+        displayValue = soqlStringLiteralToDisplayValue(rawValue);
+        break;
+      }
     }
-    return `'${value}'`;
+    return displayValue;
+  }
+
+  normalizeInput(type: SObjectType, value: string): string {
+    let normalized = value;
+    switch (type) {
+      case SObjectType.Boolean:
+      case SObjectType.Integer:
+      case SObjectType.Long:
+      case SObjectType.Double:
+      case SObjectType.Date:
+      case SObjectType.DateTime:
+      case SObjectType.Time: {
+        // do nothing
+        break;
+      }
+      default: {
+        // treat like string
+        if (value.toLowerCase().trim() !== 'null') {
+          normalized = displayValueToSoqlStringLiteral(value);
+        }
+        break;
+      }
+    }
+    return normalized;
+  }
+
+  getSObjectType(fieldName: string): SObjectType {
+    return this.sobjectTypeUtils ? this.sobjectTypeUtils.getType(fieldName) : SObjectType.AnyType;
+  }
+
+  getCriteriaType(type: SObjectType, value: string): Soql.LiteralType {
+    let criteriaType = Soql.LiteralType.String;
+    if (value.toLowerCase() === 'null') {
+      return Soql.LiteralType.NULL;
+    } else {
+      switch (type) {
+        case SObjectType.Boolean: {
+          criteriaType = Soql.LiteralType.Boolean;
+          break;
+        }
+        case SObjectType.Currency: {
+          criteriaType = Soql.LiteralType.Currency;
+          break;
+        }
+        case SObjectType.DateTime:
+        case SObjectType.Date:
+        case SObjectType.Time: {
+          criteriaType = Soql.LiteralType.Date;
+          break;
+        }
+        case SObjectType.Integer:
+        case SObjectType.Long:
+        case SObjectType.Percent:
+        case SObjectType.Double: {
+          criteriaType = Soql.LiteralType.Number;
+          break;
+        }
+      }
+    }
+    return criteriaType;
   }
 
   validateInput(): boolean {
     if (this.checkAllModifiersHaveValues()) {
+
       const fieldName = this.selectedField = this.fieldEl.value;
       const op = this.selectedOperator = this.operatorEl.value;
+
+      const type = this.getSObjectType(fieldName);
+      const normalizedInput = this.normalizeInput(type, this.criteriaEl.value);
+      const critType = this.getCriteriaType(type, normalizedInput);
+
       const crit = this.criteria = {
-        type: this.criteria.type,
-        value: this.normalizeInput(this.criteriaEl.value)
+        type: critType,
+        value: normalizedInput
       };
       this.errorMessage = '';
 
-      const type = this.sobjectTypeUtils ? this.sobjectTypeUtils.getType(fieldName) : SObjectType.AnyType;
       switch (type) {
         case SObjectType.Boolean: {
           if (!(crit.value.toLowerCase() === 'true' || crit.value.toLowerCase() === 'false')) {
@@ -154,24 +211,32 @@ export default class WhereModifierGroup extends LightningElement {
           }
           break;
         }
+        case SObjectType.Integer:
+        case SObjectType.Long: {
+          const intPattern = /^[+-]?[0-9]+$/;
+          if (!intPattern.test(crit.value.trim())) {
+            this.errorMessage = 'Value must be a whole number';
+            return false;
+          }
+          break;
+        }
+        case SObjectType.Double: {
+          const floatPattern = /^[+-]?[0-9]*[.]?[0-9]+$/;
+          if (!floatPattern.test(crit.value.trim())) {
+            this.errorMessage = 'Value must be numeric';
+            return false;
+          }
+          break;
+        }
       }
-
-      return true;
     }
 
-    return false;
+    return true;
   }
 }
 
 function selectionEventHandler(e) {
   e.preventDefault();
-
-  const fieldName = this.fieldEl.value;
-  if (fieldName && this.sobjectTypeUtils) {
-    console.log(`Field name=${fieldName} type=${this.sobjectTypeUtils.getType(fieldName)}`);
-  } else {
-    console.log(`Field name=${fieldName} no type`);
-  }
 
   if (this.checkAllModifiersHaveValues() && this.validateInput()) {
     const modGroupSelectionEvent = new CustomEvent('modifiergroupselection', {
@@ -180,7 +245,7 @@ function selectionEventHandler(e) {
         operator: this.operatorEl.value,
         criteria: {
           type: this.criteria.type,
-          value: this.normalizeInput(this.criteriaEl.value)
+          value: this.normalizeInput(this.getSObjectType(this.fieldEl.value), this.criteriaEl.value)
         }, // type needs to be dynamic based on field selection
         index: this.index
       }

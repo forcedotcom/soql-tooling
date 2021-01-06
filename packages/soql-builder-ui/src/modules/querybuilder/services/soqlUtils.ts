@@ -26,15 +26,15 @@ export function convertSoqlModelToUiModel(
   const unsupported = [];
   const fields =
     queryModel.select &&
-    (queryModel.select as Soql.SelectExprs).selectExpressions
+      (queryModel.select as Soql.SelectExprs).selectExpressions
       ? (queryModel.select as Soql.SelectExprs).selectExpressions
-          .filter((expr) => !SoqlModelUtils.containsUnmodeledSyntax(expr))
-          .map((expr) => {
-            if (expr.field.fieldName) {
-              return expr.field.fieldName;
-            }
-            return undefined;
-          })
+        .filter((expr) => !SoqlModelUtils.containsUnmodeledSyntax(expr))
+        .map((expr) => {
+          if (expr.field.fieldName) {
+            return expr.field.fieldName;
+          }
+          return undefined;
+        })
       : undefined;
 
   const sObject = queryModel.from && queryModel.from.sobjectName;
@@ -54,9 +54,9 @@ export function convertSoqlModelToUiModel(
             expression instanceof Impl.LikeConditionImpl
               ? 'LIKE'
               : SoqlModelUtils.getKeyByValue(
-                  Soql.CompareOperator,
-                  expression.operator
-                );
+                Soql.CompareOperator,
+                expression.operator
+              );
 
           return {
             field: expression.field.fieldName,
@@ -74,15 +74,15 @@ export function convertSoqlModelToUiModel(
 
   const orderBy = queryModel.orderBy
     ? queryModel.orderBy.orderByExpressions
-        // TODO: Deal with empty OrderBy.  returns unmodelled syntax.
-        .filter((expr) => !SoqlModelUtils.containsUnmodeledSyntax(expr))
-        .map((expression) => {
-          return {
-            field: expression.field.fieldName,
-            order: expression.order,
-            nulls: expression.nullsOrder
-          };
-        })
+      // TODO: Deal with empty OrderBy.  returns unmodelled syntax.
+      .filter((expr) => !SoqlModelUtils.containsUnmodeledSyntax(expr))
+      .map((expression) => {
+        return {
+          field: expression.field.fieldName,
+          order: expression.order,
+          nulls: expression.nullsOrder
+        };
+      })
     : [];
 
   const limit = queryModel.limit
@@ -136,9 +136,9 @@ function convertUiModelToSoqlModel(uiModel: ToolingModelJson): Soql.Query {
         where.criteria instanceof Impl.LiteralImpl
           ? where.criteria
           : new Impl.LiteralImpl(
-              where.criteria.type,
-              `${where.criteria.value}`
-            );
+            where.criteria.type,
+            `${where.criteria.value}`
+          );
       // this logic is temporary until we handle starts, ends with, contains
       if (where.operator === 'LIKE') {
         return new Impl.LikeConditionImpl(
@@ -191,4 +191,38 @@ function convertSoqlModelToSoql(soqlModel: Soql.Query): string {
   const serializer = new ModelSerializer(soqlModel);
   const query = serializer.serialize();
   return query;
+}
+
+export function soqlStringLiteralToDisplayValue(soqlString: string): string {
+  let displayValue = soqlString;
+
+  // unquote
+  if (displayValue.startsWith("'")) {
+    displayValue = displayValue.substring(1);
+  }
+  if (displayValue.endsWith("'")) {
+    displayValue = displayValue.substring(0, displayValue.length - 1);
+  }
+
+  // unescape
+  displayValue = displayValue.replace(/\\"/g, '"');
+  displayValue = displayValue.replace(/\\'/g, '\'');
+  displayValue = displayValue.replace(/\\\\/g, '\\');
+
+  return displayValue;
+}
+
+export function displayValueToSoqlStringLiteral(displayString: string): string {
+  // string
+  let normalized = displayString;
+
+  // escape
+  normalized = normalized.replace(/\\/g, '\\\\');
+  normalized = normalized.replace(/'/g, '\\\'');
+  normalized = normalized.replace(/"/g, '\\"');
+
+  // quote
+  normalized = `'${normalized}'`;
+
+  return normalized;
 }

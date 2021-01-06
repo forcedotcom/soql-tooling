@@ -4,7 +4,7 @@
  * Licensed under the BSD 3-Clause license.
  * For full license text, see LICENSE.txt file in the repo root or https://opensource.org/licenses/BSD-3-Clause
  */
-import { convertUiModelToSoql, convertSoqlToUiModel } from './soqlUtils';
+import { convertUiModelToSoql, convertSoqlToUiModel, soqlStringLiteralToDisplayValue, displayValueToSoqlStringLiteral } from './soqlUtils';
 import { ToolingModelJson } from './toolingModelService';
 
 describe('SoqlUtils', () => {
@@ -66,5 +66,29 @@ describe('SoqlUtils', () => {
     expect(transformedUiModel.where.conditions.length).toBe(0);
     expect(transformedUiModel.unsupported.length).toBe(1);
     expect(transformedUiModel.unsupported[0]).toContain('where:');
+  });
+  describe('soqlStringLiteralToDisplayValue should', () => {
+    it('strip quotes from SOQL string literal', () => {
+      const expected = "hello";
+      const actual = soqlStringLiteralToDisplayValue("'hello'");
+      expect(actual).toEqual(expected);
+    });
+    it('strip SOQL literal string escape characters', () => {
+      const expected = "'\"\\";
+      const actual = soqlStringLiteralToDisplayValue("'\\'\\\"\\\\'");
+      expect(actual).toEqual(expected);
+    });
+  });
+  describe('displayValueToSoqlStringLiteral should', () => {
+    it('surround display value with quotes', () => {
+      const expected = "'hello'";
+      const actual = displayValueToSoqlStringLiteral("hello");
+      expect(actual).toEqual(expected);
+    });
+    it('escape characters that need to be escaped in SOQL string literals', () => {
+      const expected = "'\\'\\\"\\\\'";
+      const actual = displayValueToSoqlStringLiteral("'\"\\");
+      expect(actual).toEqual(expected);
+    });
   });
 });

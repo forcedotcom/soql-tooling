@@ -28,6 +28,7 @@ import {
   recoverableLimitErrors
 } from '../error/errorModel';
 import { getBodyClass } from '../services/globals';
+import { SObjectTypeUtils } from '../services/sobjectUtils';
 
 export default class App extends LightningElement {
   @track
@@ -38,6 +39,15 @@ export default class App extends LightningElement {
   modelService: ToolingModelService;
   messageService: IMessageService;
   theme = 'light';
+  _sobjectTypeUtils: SObjectTypeUtils;
+
+  get sobjectTypeUtils(): SObjectTypeUtils {
+    return this._sobjectTypeUtils;
+  }
+
+  set sobjectTypeUtils(utils: SObjectTypeUtils) {
+    this._sobjectTypeUtils = utils;
+  }
 
   get hasUnsupported() {
     return this.query && this.query.unsupported
@@ -45,30 +55,6 @@ export default class App extends LightningElement {
       : 0;
   }
 
-  /*****
-    get buttonValues() {
-      return [
-        { label: 'B1', value: 'B1' },
-        { label: 'B2', value: 'B2' },
-        { label: 'B3', value: 'B3' }
-      ];
-    }
-    get stringInput() {
-      return {
-        type: 'STRING',
-        value: 'string value'
-      };
-    }
-    get booleanInput() {
-      return {
-        type: 'BOOLEAN',
-        value: 'FALSE'
-      }
-    }
-    handleInputValueChanged(e) {
-      console.log(`Input changed: { type: ${e.detail.input.type}, value: ${e.detail.input.value} }`);
-    }
-  *****/
   get hasUnrecoverable() {
     return !this.hasUnsupported && this.hasUnrecoverableError;
   }
@@ -114,6 +100,7 @@ export default class App extends LightningElement {
         sobjectMetadata && sobjectMetadata.fields
           ? sobjectMetadata.fields.map((f) => f.name)
           : [];
+      this.sobjectTypeUtils = new SObjectTypeUtils(sobjectMetadata);
     });
     this.loadSObjectDefinitions();
     this.modelService.restoreViewState();
