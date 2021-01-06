@@ -444,6 +444,39 @@ describe('WHERE clause', () => {
       },
     },
   ]);
+
+  validateCompletionsFor(
+    `SELECT Name FROM Account WHERE LastActivityDate < |`,
+    [
+      {
+        kind: CompletionItemKind.Constant,
+        label: '__LITERAL_VALUES_FOR_FIELD',
+        data: {
+          soqlContext: {
+            sobjectName: 'Account',
+            fieldName: 'LastActivityDate',
+            notNillable: true,
+          },
+        },
+      },
+    ]
+  );
+  validateCompletionsFor(
+    `SELECT Name FROM Account WHERE LastActivityDate > |`,
+    [
+      {
+        kind: CompletionItemKind.Constant,
+        label: '__LITERAL_VALUES_FOR_FIELD',
+        data: {
+          soqlContext: {
+            sobjectName: 'Account',
+            fieldName: 'LastActivityDate',
+            notNillable: true,
+          },
+        },
+      },
+    ]
+  );
 });
 
 describe('Some special functions', () => {

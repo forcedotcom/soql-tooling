@@ -185,7 +185,19 @@ function generateCandidatesFromTokens(
 ): CompletionItem[] {
   const items: CompletionItem[] = [];
   for (let [tokenType, followingTokens] of tokens) {
+    // Don't propose what's already at the cursor position
     if (tokenType === tokenStream.get(tokenIndex).type) {
+      continue;
+    }
+
+    // Even though the grammar allows spaces between the < > and = signs
+    // (for example, this is valid: `field <  =  'value'`), we don't want to
+    // propose code completions like that
+    if (
+      tokenType === SoqlLexer.EQ &&
+      (isCursorAfter(tokenStream, tokenIndex, [SoqlLexer.LT]) ||
+        isCursorAfter(tokenStream, tokenIndex, [SoqlLexer.GT]))
+    ) {
       continue;
     }
     const baseKeyword = tokenTypeToCandidateString(lexer, tokenType);
