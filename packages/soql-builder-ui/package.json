@@ -10,7 +10,7 @@
   "dependencies": {
     "immutable": "3.8.2",
     "rxjs": "^6.6.2",
-    "@salesforce/soql-model": "0.1.17"
+    "@salesforce/soql-model": "0.1.18"
   },
   "devDependencies": {
     "@lwc/jest-preset": "^7.0.0",
