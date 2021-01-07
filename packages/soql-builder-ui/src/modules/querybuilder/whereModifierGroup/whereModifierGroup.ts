@@ -11,7 +11,7 @@ import { Soql } from '@salesforce/soql-model';
 import { JsonMap } from '@salesforce/types';
 import { operatorOptions } from '../services/model';
 import { SObjectType, SObjectTypeUtils } from '../services/sobjectUtils';
-import { displayValueToSoqlStringLiteral, soqlStringLiteralToDisplayValue } from '../services/soqlUtils';
+import { displayValueToSoqlStringLiteral, isDateLiteral, soqlStringLiteralToDisplayValue } from '../services/soqlUtils';
 
 
 export default class WhereModifierGroup extends LightningElement {
@@ -152,6 +152,11 @@ export default class WhereModifierGroup extends LightningElement {
     return this.sobjectTypeUtils ? this.sobjectTypeUtils.getType(fieldName) : SObjectType.AnyType;
   }
 
+  getPicklistValues(fieldName: string): string[] {
+    // values need to be quoted
+    return this.sobjectTypeUtils ? this.sobjectTypeUtils.getPicklistValues(fieldName).map(value => `'${value}'`) : [];
+  }
+
   getCriteriaType(type: SObjectType, value: string): Soql.LiteralType {
     let criteriaType = Soql.LiteralType.String;
     if (value.toLowerCase() === 'null') {
@@ -217,6 +222,9 @@ export default class WhereModifierGroup extends LightningElement {
           if (!intPattern.test(crit.value.trim())) {
             this.errorMessage = 'Value must be a whole number';
             return false;
+          } else if (op === 'LIKE') {
+            this.errorMessage = 'LIKE operator cannot be used for this field type';
+            return false;
           }
           break;
         }
@@ -225,8 +233,39 @@ export default class WhereModifierGroup extends LightningElement {
           if (!floatPattern.test(crit.value.trim())) {
             this.errorMessage = 'Value must be numeric';
             return false;
+          } else if (op === 'LIKE') {
+            this.errorMessage = 'LIKE operator cannot be used for this field type';
+            return false;
           }
           break;
+        }
+        case SObjectType.Picklist:
+        case SObjectType.MultiPicklist: {
+          if (op === 'EQ') {
+            const picklistValues = this.getPicklistValues(fieldName);
+            if (!picklistValues.includes(crit.value)) {
+              const commaSeparatedValues = picklistValues.reduce((soFar, next) => {
+                if (soFar.length > 0) {
+                  soFar += ', ';
+                }
+                soFar += next;
+                return soFar;
+              });
+              this.errorMessage = `Value must be one of: ${commaSeparatedValues}`;
+              return false;
+            }
+          }
+          break;
+        }
+        case SObjectType.Date:
+        case SObjectType.DateTime: {
+          if (!isDateLiteral(crit.value)) {
+            this.errorMessage = 'Date value is not valid';
+            return false;
+          } else if (op === 'LIKE') {
+            this.errorMessage = 'LIKE operator cannot be used for this field type';
+            return false;
+          }
         }
       }
     }
