@@ -78,6 +78,12 @@ describe('Code Completion on SELECT ...', () => {
   validateCompletionsFor('SELECT id |', expectKeywords('FROM'));
   validateCompletionsFor('SELECT COUNT() |', expectKeywords('FROM'));
   validateCompletionsFor('SELECT COUNT(), |', []);
+
+  // Inside Functions:
+  validateCompletionsFor(
+    'SELECT OwnerId, COUNT(|) FROM Account GROUP BY OwnerId',
+    []
+  );
 });
 
 describe('Code Completion on select fields: SELECT ... FROM XYZ', () => {
@@ -176,8 +182,9 @@ describe('Code Completion on nested select fields: SELECT ... FROM XYZ', () => {
     ...sobjectsFieldsFor('Object'),
   ]);
 
-  // We used to have special code just to handle this particular case one...
-  // Not worth it, that's why it's skipped now. Would be nice to solve it in a generic way
+  // We used to have special code just to handle this particular case.
+  // Not worth it, that's why it's skipped now.
+  // We keep the test here because it'd be nice to solve it in a generic way
   validateCompletionsFor(
     'SELECT (SELECT ), | FROM Foo',
     sobjectsFieldsFor('Foo'),
@@ -304,6 +311,17 @@ describe('Code Completion for ORDER BY', () => {
       data: { soqlContext: { sobjectName: 'Account' } },
     },
     ...expectKeywords('DISTANCE('),
+  ]);
+});
+
+describe('Code Completion for GROUP BY', () => {
+  validateCompletionsFor('SELECT id FROM Account GROUP BY |', [
+    {
+      kind: CompletionItemKind.Field,
+      label: '__SOBJECT_FIELDS_PLACEHOLDER',
+      data: { soqlContext: { sobjectName: 'Account' } },
+    },
+    ...expectKeywords('ROLLUP', 'CUBE'),
   ]);
 });
 
@@ -547,8 +565,39 @@ describe('WHERE clause', () => {
   );
 });
 
-describe('Some special functions', () => {
+describe('SELECT Function expressions', () => {
   validateCompletionsFor('SELECT DISTANCE(|) FROM Account', [
+    {
+      kind: CompletionItemKind.Field,
+      label: '__SOBJECT_FIELDS_PLACEHOLDER',
+      data: { soqlContext: { sobjectName: 'Account' } },
+    },
+  ]);
+
+  validateCompletionsFor('SELECT AVG(|) FROM Account', [
+    {
+      kind: CompletionItemKind.Field,
+      label: '__SOBJECT_FIELDS_PLACEHOLDER',
+      data: { soqlContext: { sobjectName: 'Account' } },
+    },
+  ]);
+
+  validateCompletionsFor('SELECT AVG(| FROM Account', [
+    {
+      kind: CompletionItemKind.Field,
+      label: '__SOBJECT_FIELDS_PLACEHOLDER',
+      data: { soqlContext: { sobjectName: 'Account' } },
+    },
+  ]);
+
+  validateCompletionsFor('SELECT AVG(|), Id FROM Account', [
+    {
+      kind: CompletionItemKind.Field,
+      label: '__SOBJECT_FIELDS_PLACEHOLDER',
+      data: { soqlContext: { sobjectName: 'Account' } },
+    },
+  ]);
+  validateCompletionsFor('SELECT Id, AVG(|) FROM Account', [
     {
       kind: CompletionItemKind.Field,
       label: '__SOBJECT_FIELDS_PLACEHOLDER',

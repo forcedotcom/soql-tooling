@@ -31,6 +31,13 @@ const LITERAL_VALUES_FOR_FIELD = '__LITERAL_VALUES_FOR_FIELD';
 const UPDATE_TRACKING = 'UPDATE TRACKING';
 const UPDATE_VIEWSTAT = 'UPDATE VIEWSTAT';
 const DEFAULT_SOBJECT = 'Object';
+
+/**
+ * List of aggregate functions which can be used in SELECT fields.
+ *
+ * NOTE: The g4 grammar declares `COUNT()` explicitly, but not `COUNT(xyz)`.
+ * We cover the `COUNT(xyz)` case here:
+ */
 const aggregateFunctions = [
   'AVG',
   'MAX',
@@ -115,9 +122,6 @@ function collectC3CompletionCandidates(
     SoqlLexer.MINUS,
     SoqlLexer.COLON,
     SoqlLexer.MINUS,
-    // Ignore COUNT as a token. Handle it explicitly in Rules because the g4 grammar
-    // declares 'COUNT()' explicitly, but not 'COUNT(xyz)'
-    // SoqlLexer.COUNT,
   ]);
 
   core.preferredRules = new Set([
@@ -230,6 +234,8 @@ function generateCandidatesFromTokens(
     } else if (['INCLUDES', 'EXCLUDES', 'DISTANCE'].includes(itemText)) {
       itemText = itemText + '(';
     } else if (itemText === 'COUNT') {
+      // NOTE: The g4 grammar declares `COUNT()` explicitly, but not `COUNT(xyz)`.
+      // Here we cover the first case:
       itemText = 'COUNT()';
     }
 
@@ -298,26 +304,40 @@ function generateCandidatesFromRules(
         break;
 
       case SoqlParser.RULE_soqlField:
-        if (tokenIndex == ruleData.startTokenIndex) {
-          const fromSObject =
-            parseFROMSObject(parsedQuery, tokenIndex) || DEFAULT_SOBJECT;
+        const fromSObject =
+          parseFROMSObject(parsedQuery, tokenIndex) || DEFAULT_SOBJECT;
+        if (
+          tokenIndex === ruleData.startTokenIndex ||
+          isCursorAfter(tokenStream, tokenIndex, [
+            SoqlLexer.IDENTIFIER,
+            SoqlLexer.LPAREN,
+          ])
+        ) {
           completionItems.push(
             withSoqlContext(newFieldItem(SOBJECT_FIELDS_LABEL_PLACEHOLDER), {
               sobjectName: fromSObject,
             })
           );
-          if (
-            ruleData.ruleList[ruleData.ruleList.length - 1] ===
-            SoqlParser.RULE_soqlSelectExpr
-          ) {
-            // completionItems.push(newKeywordItem('COUNT()'));
-            // completionItems.push(newSnippetItem('COUNT(...)', 'COUNT($1)'));
-            completionItems.push(...itemsForAggregateFunctions);
-            completionItems.push(
-              newSnippetItem('(SELECT ... FROM ...)', '(SELECT $2 FROM $1)')
-            );
-          }
         }
+
+        // SELECT | FROM Xyz
+        if (
+          ruleData.ruleList[ruleData.ruleList.length - 1] ===
+            SoqlParser.RULE_soqlSelectExpr &&
+          tokenIndex === ruleData.startTokenIndex
+        ) {
+          completionItems.push(...itemsForAggregateFunctions);
+          completionItems.push(
+            newSnippetItem('(SELECT ... FROM ...)', '(SELECT $2 FROM $1)')
+          );
+        }
+        // ... GROUP BY |
+        // else if (
+        //   ruleData.ruleList[ruleData.ruleList.length - 1] ===
+        //   SoqlParser.RULE_soqlGroupByExprs
+        // ) {
+        // }
+
         break;
 
       // For some reason, c3 doesn't propose rule `soqlField` when inside soqlWhereExpr,
@@ -446,6 +466,7 @@ function newFieldItem(text: string): CompletionItem {
   return {
     label: text,
     kind: CompletionItemKind.Field,
+    // preselect: true,
   };
 }
 function newConstantItem(text: string): CompletionItem {
