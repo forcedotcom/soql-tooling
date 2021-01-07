@@ -45,6 +45,10 @@ export class VscodeMessageService implements IMessageService {
     this.vscode.postMessage(event);
   }
 
+  public sendTelemetry(telemetry: JSON) {
+    this.vscode.postMessage({ type: MessageType.UI_TELEMETRY, payload: telemetry})
+  }
+
   public getState() {
     let state = this.vscode.getState();
     return state;
