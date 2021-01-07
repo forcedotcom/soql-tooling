@@ -207,7 +207,7 @@ export interface InListCondition extends Condition {
 }
 
 export interface Where extends SoqlModelObject {
-  condition: Condition;
+  condition?: Condition;
 }
 
 export interface With extends SoqlModelObject { }
@@ -221,6 +221,7 @@ export interface UnmodeledSyntax
   extends Select,
   SelectExpression,
   Field,
+  Where,
   Condition,
   CompareValue,
   With,
