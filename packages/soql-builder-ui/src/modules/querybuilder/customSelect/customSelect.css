@@ -25,7 +25,8 @@
   left: 6px;
   transform: rotate(45deg);
   border-radius: 50%;
-  background-color: var(--vscode-sideBar-background, var(--soql-background));
+  background-color: transparent;
+  vertical-align:bottom;
 }
 
 .select__input {

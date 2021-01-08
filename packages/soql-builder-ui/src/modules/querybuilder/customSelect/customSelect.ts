@@ -37,13 +37,19 @@ export default class CustomSelect extends LightningElement {
 
   // close the options menu when user click outside element
   connectedCallback() {
-    document.addEventListener('click', () => {
-      this.handleCloseOptions();
-    });
+    console.log('connected callback');
+    document.addEventListener('click', this.handleCloseOptions);
+  }
+
+  // prevent a memory leak
+  disconnectedCallback() {
+    console.log('disconnected callback');
+    document.removeEventListener('click', this.handleCloseOptions);
   }
 
   renderedCallback() {
-    this.optionsWrapper = this.template.querySelector('.options__wrapper');
+    this.optionsWrapper =
+      this.optionsWrapper || this.template.querySelector('.options__wrapper');
     this.optionList = this.optionsWrapper.children;
   }
 
@@ -88,7 +94,7 @@ export default class CustomSelect extends LightningElement {
       const optionValue = validOptionMatch[0];
       const optionSelectionEvent = new CustomEvent('option__selection', {
         detail: {
-          optionValue
+          value: optionValue
         }
       });
       this.dispatchEvent(optionSelectionEvent);
@@ -96,7 +102,7 @@ export default class CustomSelect extends LightningElement {
     }
   }
 
-  haveOptionsToNavigate(): boolean {
+  hasOptionsToNavigate(): boolean {
     return (
       !!(!this.optionListIsHidden && this.optionList.length) &&
       !this.noResultsFound
@@ -150,13 +156,17 @@ export default class CustomSelect extends LightningElement {
     this.openOptionsMenu();
   }
 
-  handleCloseOptions() {
+  /**
+   * This syntax allow the function to retain context of this
+   * while also usable with addEventListener and removeEventListener
+   */
+  handleCloseOptions = () => {
     this.clearActiveHighlight();
     this.activeOptionIndex = -1;
     this.numberOfSearchResults = undefined;
     this.optionsWrapper.classList.remove('options--open');
     this.optionListIsHidden = true;
-  }
+  };
   // respond to changes in input value: typing, paste events.
   handleInputChange(e) {
     e.preventDefault();
@@ -198,7 +208,7 @@ export default class CustomSelect extends LightningElement {
 
     switch (key) {
       case 'ArrowDown':
-        if (this.haveOptionsToNavigate()) {
+        if (this.hasOptionsToNavigate()) {
           this.clearActiveHighlight();
 
           if (activeOption === this.optionsWrapper.lastElementChild) {
@@ -217,7 +227,7 @@ export default class CustomSelect extends LightningElement {
         }
         break;
       case 'ArrowUp':
-        if (this.haveOptionsToNavigate()) {
+        if (this.hasOptionsToNavigate()) {
           // this will keep the input cursor at the end of the text.
           e.preventDefault();
           this.clearActiveHighlight();

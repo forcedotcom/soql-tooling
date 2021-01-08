@@ -36,7 +36,7 @@ describe('Fields', () => {
       'querybuilder-custom-select'
     );
     customSelect.dispatchEvent(
-      new CustomEvent('option__selection', { detail: { optionValue: 'foo' } })
+      new CustomEvent('option__selection', { detail: { value: 'foo' } })
     );
 
     expect(handler).toHaveBeenCalled();

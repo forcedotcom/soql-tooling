@@ -1,3 +1,4 @@
+/* eslint-disable @lwc/lwc/no-inner-html */
 /*
  *  Copyright (c) 2020, salesforce.com, inc.
  *  All rights reserved.
@@ -7,15 +8,39 @@
  */
 
 import { createElement } from 'lwc';
-import CustomSelect from 'querybuilder/customSelect';
+import CustomSelect from './customSelect';
 
 describe('Custom Select', () => {
-  const customSelect = createElement('querybuilder-custom-select', {
-    is: CustomSelect
-  });
+  let customSelect;
+
+  // Common strings
+  const OPTION_FOO = 'Foo';
+  const OPTION_BAR = 'Bar';
+  const OPTION_BAZ = 'Baz';
+  const PLACEHOLDER = 'placeholder';
+  const ARIA_HIDDEN = 'aria-hidden';
+  const DATA_OPTION_VALUE = 'data-option-value';
+  const OPTION_HIGHLIGHT = 'option--highlight';
+  const EVENT_OPTION_SELECTION = 'option__selection';
+  const EVENT_KEYDOWN = 'keydown';
+  const EVENT_INPUT = 'input';
+
+  // Query Helpers
+  const getInputSearchBar = () => {
+    return customSelect.shadowRoot.querySelector('input[name=search-bar]');
+  };
+  const getOptionsWrapper = () => {
+    return customSelect.shadowRoot.querySelector('.options__wrapper');
+  };
+  const getClearSearch = () => {
+    return customSelect.shadowRoot.querySelector('.select__clear-search');
+  };
 
   beforeEach(() => {
-    customSelect.allOptions = ['Foo', 'Bar', 'Baz'];
+    customSelect = createElement('querybuilder-custom-select', {
+      is: CustomSelect
+    });
+    customSelect.allOptions = [OPTION_FOO, OPTION_BAR, OPTION_BAZ];
     customSelect.selectedOptions = [];
   });
 
@@ -30,20 +55,16 @@ describe('Custom Select', () => {
     it('should alert user when loading', async () => {
       document.body.appendChild(customSelect);
       expect(customSelect.isLoading).toEqual(false);
-      let searchBar = customSelect.shadowRoot.querySelector(
-        'input[name=search-bar]'
-      );
-      expect(searchBar.getAttribute('placeholder').toLowerCase()).not.toContain(
+      let searchBar = getInputSearchBar();
+      expect(searchBar.getAttribute(PLACEHOLDER).toLowerCase()).not.toContain(
         'loading'
       );
 
       customSelect.isLoading = true;
       return Promise.resolve().then(() => {
-        searchBar = customSelect.shadowRoot.querySelector(
-          'input[name=search-bar]'
-        );
+        searchBar = getInputSearchBar();
         expect(customSelect.isLoading).toEqual(true);
-        expect(searchBar.getAttribute('placeholder').toLowerCase()).toContain(
+        expect(searchBar.getAttribute(PLACEHOLDER).toLowerCase()).toContain(
           'loading'
         );
         customSelect.isLoading = false;
@@ -53,61 +74,46 @@ describe('Custom Select', () => {
     it('should use placeholder api', () => {
       document.body.appendChild(customSelect);
       const exampleText = 'hold my beer';
-      let searchBar = customSelect.shadowRoot.querySelector(
-        'input[name=search-bar]'
-      );
-      expect(searchBar.getAttribute('placeholder')).toBe('');
+      let searchBar = getInputSearchBar();
+      expect(searchBar.getAttribute(PLACEHOLDER)).toBe('');
 
       customSelect.placeholderText = exampleText;
       return Promise.resolve().then(() => {
-        expect(searchBar.getAttribute('placeholder')).toBe(exampleText);
+        expect(searchBar.getAttribute(PLACEHOLDER)).toBe(exampleText);
       });
     });
 
     it('should NOT display the options wrapper by default', () => {
       document.body.appendChild(customSelect);
-      const optionsList = customSelect.shadowRoot.querySelector(
-        '.options__wrapper'
-      );
+      const optionsList = getOptionsWrapper();
 
-      expect(optionsList.getAttribute('aria-hidden')).toBe('true');
+      expect(optionsList.getAttribute(ARIA_HIDDEN)).toBe('true');
     });
 
     it('should display the options wrapper when input is clicked', () => {
       document.body.appendChild(customSelect);
-      const searchBar = customSelect.shadowRoot.querySelector(
-        'input[name=search-bar]'
-      );
+      const searchBar = getInputSearchBar();
       searchBar.click();
       return Promise.resolve().then(() => {
-        const optionsList = customSelect.shadowRoot.querySelector(
-          '.options__wrapper'
-        );
-
-        expect(optionsList.getAttribute('aria-hidden')).toBe('false');
+        const optionsList = getOptionsWrapper();
+        expect(optionsList.getAttribute(ARIA_HIDDEN)).toBe('false');
       });
     });
 
     it('should close the list of options with document click event', () => {
       let optionsList;
       document.body.appendChild(customSelect);
-      const searchBar = customSelect.shadowRoot.querySelector(
-        'input[name=search-bar]'
-      );
+      const searchBar = getInputSearchBar();
       searchBar.click();
       return Promise.resolve()
         .then(() => {
-          optionsList = customSelect.shadowRoot.querySelector(
-            '.options__wrapper'
-          );
-          expect(optionsList.getAttribute('aria-hidden')).toBe('false');
+          optionsList = getOptionsWrapper();
+          expect(optionsList.getAttribute(ARIA_HIDDEN)).toBe('false');
           document.dispatchEvent(new Event('click'));
         })
         .then(() => {
-          optionsList = customSelect.shadowRoot.querySelector(
-            '.options__wrapper'
-          );
-          expect(optionsList.getAttribute('aria-hidden')).toBe('true');
+          optionsList = getOptionsWrapper();
+          expect(optionsList.getAttribute(ARIA_HIDDEN)).toBe('true');
         });
     });
 
@@ -115,42 +121,30 @@ describe('Custom Select', () => {
       let optionsList;
       let clearSearchBtn;
       document.body.appendChild(customSelect);
-      const searchBar = customSelect.shadowRoot.querySelector(
-        'input[name=search-bar]'
-      );
-      clearSearchBtn = customSelect.shadowRoot.querySelector(
-        '.select__clear-search'
-      );
+      const searchBar = getInputSearchBar();
+      clearSearchBtn = getClearSearch();
       expect(searchBar.value).toBe('');
       expect(clearSearchBtn).toBeNull();
 
       searchBar.click();
       return Promise.resolve()
         .then(() => {
-          optionsList = customSelect.shadowRoot.querySelector(
-            '.options__wrapper'
-          );
-          expect(optionsList.getAttribute('aria-hidden')).toBe('false');
-          searchBar.value = 'Foo';
-          searchBar.dispatchEvent(new Event('input'));
+          optionsList = getOptionsWrapper();
+          expect(optionsList.getAttribute(ARIA_HIDDEN)).toBe('false');
+          searchBar.value = OPTION_FOO;
+          searchBar.dispatchEvent(new Event(EVENT_INPUT));
         })
         .then(() => {
-          clearSearchBtn = customSelect.shadowRoot.querySelector(
-            '.select__clear-search'
-          );
+          clearSearchBtn = getClearSearch();
           expect(clearSearchBtn).not.toBeNull();
-          expect(searchBar.value).toBe('Foo');
+          expect(searchBar.value).toBe(OPTION_FOO);
 
           clearSearchBtn.click();
         })
         .then(() => {
-          optionsList = customSelect.shadowRoot.querySelector(
-            '.options__wrapper'
-          );
-          clearSearchBtn = customSelect.shadowRoot.querySelector(
-            '.select__clear-search'
-          );
-          expect(optionsList.getAttribute('aria-hidden')).toBe('true');
+          optionsList = getOptionsWrapper();
+          clearSearchBtn = getClearSearch();
+          expect(optionsList.getAttribute(ARIA_HIDDEN)).toBe('true');
           expect(searchBar.value).toBe('');
           expect(clearSearchBtn).toBeNull();
         });
@@ -162,12 +156,10 @@ describe('Custom Select', () => {
 
     beforeEach(() => {
       document.body.appendChild(customSelect);
-      searchBar = customSelect.shadowRoot.querySelector(
-        'input[name=search-bar]'
-      );
+      searchBar = getInputSearchBar();
       // clear search bar value
       searchBar.value = '';
-      searchBar.dispatchEvent(new Event('input'));
+      searchBar.dispatchEvent(new Event(EVENT_INPUT));
     });
 
     afterEach(() => {
@@ -178,9 +170,7 @@ describe('Custom Select', () => {
     it('should render a list of options', () => {
       searchBar.click();
       return Promise.resolve().then(() => {
-        const optionsList = customSelect.shadowRoot.querySelector(
-          '.options__wrapper'
-        );
+        const optionsList = getOptionsWrapper();
 
         expect(optionsList.children.length).toBe(
           customSelect.allOptions.length
@@ -193,18 +183,17 @@ describe('Custom Select', () => {
     });
 
     it('should only display options not already selected', () => {
-      customSelect.selectedOptions = ['Foo'];
+      customSelect.selectedOptions = [OPTION_FOO];
 
       searchBar.click();
       return Promise.resolve().then(() => {
-        const optionsList = customSelect.shadowRoot.querySelector(
-          '.options__wrapper'
-        );
+        const optionsList = getOptionsWrapper();
 
         expect(optionsList.children.length).toBe(
           customSelect.allOptions.length - customSelect.selectedOptions.length
         );
-        expect(optionsList.innerHTML).not.toContain('Foo');
+
+        expect(optionsList.innerHTML).not.toContain(OPTION_FOO);
       });
     });
 
@@ -213,41 +202,37 @@ describe('Custom Select', () => {
 
       searchBar.click();
       return Promise.resolve().then(() => {
-        const optionsList = customSelect.shadowRoot.querySelector(
-          '.options__wrapper'
-        );
+        const optionsList = getOptionsWrapper();
 
         expect(optionsList.children.length).toBe(
           customSelect.allOptions.length - customSelect.selectedOptions.length
         );
-        expect(optionsList.innerHTML).not.toContain('Foo');
-        expect(optionsList.innerHTML).not.toContain('Bar');
+        expect(optionsList.innerHTML).not.toContain(OPTION_FOO);
+        expect(optionsList.innerHTML).not.toContain(OPTION_BAR);
       });
     });
 
-    it('should show options that match a user search', () => {
+    it('should show options that match a user search case insensitive', () => {
       let optionsList;
 
       searchBar.click();
       return Promise.resolve()
         .then(() => {
-          optionsList = customSelect.shadowRoot.querySelector(
-            '.options__wrapper'
-          );
+          optionsList = getOptionsWrapper();
 
-          expect(optionsList.getAttribute('aria-hidden')).toBe('false');
+          expect(optionsList.getAttribute(ARIA_HIDDEN)).toBe('false');
           expect(optionsList.children.length).toBe(
             customSelect.allOptions.length
           );
           searchBar.value = 'foo';
-          searchBar.dispatchEvent(new Event('input'));
+          searchBar.dispatchEvent(new Event(EVENT_INPUT));
         })
         .then(() => {
           expect(optionsList.children.length).toBe(1);
           const optionValue = optionsList.firstChild.getAttribute(
-            'data-option-value'
+            DATA_OPTION_VALUE
           );
-          expect(optionValue).toBe('Foo');
+          expect(optionValue).toBe(OPTION_FOO);
         });
     });
 
@@ -257,15 +242,13 @@ describe('Custom Select', () => {
       searchBar.click();
       return Promise.resolve()
         .then(() => {
-          optionsList = customSelect.shadowRoot.querySelector(
-            '.options__wrapper'
-          );
-          expect(optionsList.getAttribute('aria-hidden')).toBe('false');
+          optionsList = getOptionsWrapper();
+          expect(optionsList.getAttribute(ARIA_HIDDEN)).toBe('false');
           expect(optionsList.children.length).toBe(
             customSelect.allOptions.length
           );
           searchBar.value = 'no match';
-          searchBar.dispatchEvent(new Event('input'));
+          searchBar.dispatchEvent(new Event(EVENT_INPUT));
         })
         .then(() => {
           expect(optionsList.children.length).toBe(1);
@@ -278,21 +261,17 @@ describe('Custom Select', () => {
 
     it('should fire a selection event when clicked', () => {
       const handler = jest.fn();
-      customSelect.addEventListener('option__selection', handler);
+      customSelect.addEventListener(EVENT_OPTION_SELECTION, handler);
 
       searchBar.click();
       return Promise.resolve().then(() => {
-        const optionsList = customSelect.shadowRoot.querySelector(
-          '.options__wrapper'
-        );
+        const optionsList = getOptionsWrapper();
         const firstOption = optionsList.firstChild;
-        const optionValue = firstOption.getAttribute('data-option-value');
+        const optionValue = firstOption.getAttribute(DATA_OPTION_VALUE);
         firstOption.click();
 
         expect(handler).toHaveBeenCalled();
-        expect(handler.mock.calls[0][0].detail.optionValue).toEqual(
-          optionValue
-        );
+        expect(handler.mock.calls[0][0].detail.value).toEqual(optionValue);
       });
     });
   });
@@ -305,12 +284,10 @@ describe('Custom Select', () => {
       mockScrollIntoView = jest.fn();
       window.HTMLElement.prototype.scrollIntoView = mockScrollIntoView;
       document.body.appendChild(customSelect);
-      searchBar = customSelect.shadowRoot.querySelector(
-        'input[name=search-bar]'
-      );
+      searchBar = getInputSearchBar();
       // clear search bar value
       searchBar.value = '';
-      searchBar.dispatchEvent(new Event('input'));
+      searchBar.dispatchEvent(new Event(EVENT_INPUT));
     });
 
     afterEach(() => {
@@ -321,12 +298,10 @@ describe('Custom Select', () => {
     it('should NOT have any highlight options when opened', () => {
       searchBar.click();
       return Promise.resolve().then(() => {
-        const optionsList = customSelect.shadowRoot.querySelector(
-          '.options__wrapper'
-        );
+        const optionsList = getOptionsWrapper();
 
         for (let option of optionsList.children) {
-          expect(option.classList).not.toContain('option--highlight');
+          expect(option.classList).not.toContain(OPTION_HIGHLIGHT);
         }
       });
     });
@@ -338,28 +313,24 @@ describe('Custom Select', () => {
       searchBar.click();
       return Promise.resolve()
         .then(() => {
-          optionsList = customSelect.shadowRoot.querySelector(
-            '.options__wrapper'
-          );
+          optionsList = getOptionsWrapper();
           firstOption = optionsList.firstChild;
           searchBar.dispatchEvent(
-            new KeyboardEvent('keydown', { key: 'ArrowDown' })
+            new KeyboardEvent(EVENT_KEYDOWN, { key: 'ArrowDown' })
           );
         })
         .then(() => {
-          expect(firstOption.classList).toContain('option--highlight');
+          expect(firstOption.classList).toContain(OPTION_HIGHLIGHT);
           expect(mockScrollIntoView).toHaveBeenCalled();
 
           searchBar.dispatchEvent(
-            new KeyboardEvent('keydown', { key: 'ArrowDown' })
+            new KeyboardEvent(EVENT_KEYDOWN, { key: 'ArrowDown' })
           );
         })
         .then(() => {
           // only the second option should should be highlighted
-          expect(firstOption.classList).not.toContain('option--highlight');
-          expect(optionsList.children[1].classList).toContain(
-            'option--highlight'
-          );
+          expect(firstOption.classList).not.toContain(OPTION_HIGHLIGHT);
+          expect(optionsList.children[1].classList).toContain(OPTION_HIGHLIGHT);
         });
     });
 
@@ -370,28 +341,26 @@ describe('Custom Select', () => {
       searchBar.click();
       return Promise.resolve()
         .then(() => {
-          optionsList = customSelect.shadowRoot.querySelector(
-            '.options__wrapper'
-          );
+          optionsList = getOptionsWrapper();
           lastOption = optionsList.lastChild;
           searchBar.dispatchEvent(
-            new KeyboardEvent('keydown', { key: 'ArrowUp' })
+            new KeyboardEvent(EVENT_KEYDOWN, { key: 'ArrowUp' })
           );
         })
         .then(() => {
-          expect(lastOption.classList).toContain('option--highlight');
+          expect(lastOption.classList).toContain(OPTION_HIGHLIGHT);
           expect(mockScrollIntoView).toHaveBeenCalled();
 
           searchBar.dispatchEvent(
-            new KeyboardEvent('keydown', { key: 'ArrowUp' })
+            new KeyboardEvent(EVENT_KEYDOWN, { key: 'ArrowUp' })
           );
         })
         .then(() => {
           // only the second to last option should should be highlighted
-          expect(lastOption.classList).not.toContain('option--highlight');
+          expect(lastOption.classList).not.toContain(OPTION_HIGHLIGHT);
           const secondToLastIndex = optionsList.children.length - 2;
           expect(optionsList.children[secondToLastIndex].classList).toContain(
-            'option--highlight'
+            OPTION_HIGHLIGHT
           );
         });
     });
@@ -400,30 +369,26 @@ describe('Custom Select', () => {
       let firstOption;
       let optionsList;
       const handler = jest.fn();
-      customSelect.addEventListener('option__selection', handler);
+      customSelect.addEventListener(EVENT_OPTION_SELECTION, handler);
       // open the list of options
       searchBar.click();
       return Promise.resolve()
         .then(() => {
-          optionsList = customSelect.shadowRoot.querySelector(
-            '.options__wrapper'
-          );
+          optionsList = getOptionsWrapper();
           firstOption = optionsList.firstChild;
           searchBar.dispatchEvent(
-            new KeyboardEvent('keydown', { key: 'ArrowDown' })
+            new KeyboardEvent(EVENT_KEYDOWN, { key: 'ArrowDown' })
           );
         })
         .then(() => {
           searchBar.dispatchEvent(
-            new KeyboardEvent('keydown', { key: 'Enter' })
+            new KeyboardEvent(EVENT_KEYDOWN, { key: 'Enter' })
           );
-          const optionValue = firstOption.getAttribute('data-option-value');
+          const optionValue = firstOption.getAttribute(DATA_OPTION_VALUE);
           firstOption.click();
 
           expect(handler).toHaveBeenCalled();
-          expect(handler.mock.calls[0][0].detail.optionValue).toEqual(
-            optionValue
-          );
+          expect(handler.mock.calls[0][0].detail.value).toEqual(optionValue);
         });
     });
 
@@ -432,19 +397,15 @@ describe('Custom Select', () => {
       searchBar.click();
       return Promise.resolve()
         .then(() => {
-          optionsList = customSelect.shadowRoot.querySelector(
-            '.options__wrapper'
-          );
-          expect(optionsList.getAttribute('aria-hidden')).toBe('false');
+          optionsList = getOptionsWrapper();
+          expect(optionsList.getAttribute(ARIA_HIDDEN)).toBe('false');
           searchBar.dispatchEvent(
-            new KeyboardEvent('keydown', { key: 'Escape' })
+            new KeyboardEvent(EVENT_KEYDOWN, { key: 'Escape' })
           );
         })
         .then(() => {
-          optionsList = customSelect.shadowRoot.querySelector(
-            '.options__wrapper'
-          );
-          expect(optionsList.getAttribute('aria-hidden')).toBe('true');
+          optionsList = getOptionsWrapper();
+          expect(optionsList.getAttribute(ARIA_HIDDEN)).toBe('true');
         });
     });
   });

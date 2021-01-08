@@ -16,9 +16,9 @@ export default class Fields extends LightningElement {
 
   handleFieldSelection(e) {
     e.preventDefault();
-    if (e.detail && e.detail.optionValue) {
+    if (e.detail && e.detail.value) {
       const fieldSelectedEvent = new CustomEvent('fieldselected', {
-        detail: { field: e.detail.optionValue }
+        detail: { field: e.detail.value }
       });
       this.dispatchEvent(fieldSelectedEvent);
     }

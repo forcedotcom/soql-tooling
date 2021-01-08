@@ -46,7 +46,7 @@ export default class App extends LightningElement {
   }
 
   get hasUnrecoverable() {
-    return !this.hasUnsupported && this.hasUnrecoverableError
+    return !this.hasUnsupported && this.hasUnrecoverableError;
   }
 
   get blockQueryBuilder() {
@@ -88,7 +88,7 @@ export default class App extends LightningElement {
       this.isFieldsLoading = false;
       this.fields =
         sobjectMetadata && sobjectMetadata.fields
-          ? sobjectMetadata.fields.map((f) => f.name)
+          ? sobjectMetadata.fields.map((f) => f.name).sort()
           : [];
     });
     this.loadSObjectDefinitions();
