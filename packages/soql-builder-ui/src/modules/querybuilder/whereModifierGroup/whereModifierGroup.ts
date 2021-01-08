@@ -267,6 +267,7 @@ export default class WhereModifierGroup extends LightningElement {
             this.errorMessage = 'LIKE operator cannot be used for this field type';
             return false;
           }
+          break;
         }
         case SObjectType.Currency: {
           if (!isCurrencyLiteral(crit.value)) {
@@ -276,6 +277,7 @@ export default class WhereModifierGroup extends LightningElement {
             this.errorMessage = 'LIKE operator cannot be used for this field type';
             return false;
           }
+          break;
         }
       }
     }
