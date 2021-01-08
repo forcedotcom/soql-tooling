@@ -11,7 +11,7 @@ import { Soql } from '@salesforce/soql-model';
 import { JsonMap } from '@salesforce/types';
 import { operatorOptions } from '../services/model';
 import { SObjectType, SObjectTypeUtils } from '../services/sobjectUtils';
-import { displayValueToSoqlStringLiteral, isDateLiteral, soqlStringLiteralToDisplayValue } from '../services/soqlUtils';
+import { displayValueToSoqlStringLiteral, isCurrencyLiteral, isDateLiteral, soqlStringLiteralToDisplayValue } from '../services/soqlUtils';
 
 
 export default class WhereModifierGroup extends LightningElement {
@@ -133,7 +133,8 @@ export default class WhereModifierGroup extends LightningElement {
       case SObjectType.Double:
       case SObjectType.Date:
       case SObjectType.DateTime:
-      case SObjectType.Time: {
+      case SObjectType.Time:
+      case SObjectType.Currency: {
         // do nothing
         break;
       }
@@ -261,6 +262,15 @@ export default class WhereModifierGroup extends LightningElement {
         case SObjectType.DateTime: {
           if (!isDateLiteral(crit.value)) {
             this.errorMessage = 'Date value is not valid';
+            return false;
+          } else if (op === 'LIKE') {
+            this.errorMessage = 'LIKE operator cannot be used for this field type';
+            return false;
+          }
+        }
+        case SObjectType.Currency: {
+          if (!isCurrencyLiteral(crit.value)) {
+            this.errorMessage = 'Currency value is not valid';
             return false;
           } else if (op === 'LIKE') {
             this.errorMessage = 'LIKE operator cannot be used for this field type';

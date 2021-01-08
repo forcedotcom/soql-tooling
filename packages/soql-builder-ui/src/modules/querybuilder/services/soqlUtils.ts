@@ -57,6 +57,10 @@ const parameterizedDateRangeLiteralPrefixes = [
   'next_n_fiscal_years:'
 ];
 
+export function isCurrencyLiteral(s: string): boolean {
+  return /^[a-zA-Z]{3}[+-]?[0-9]*[.]?[0-9]+$/.test(s.trim());
+}
+
 export function isDateLiteral(s: string): boolean {
   return isDatePattern(s) || isDateRangeLiteral(s);
 }

@@ -4,7 +4,7 @@
  * Licensed under the BSD 3-Clause license.
  * For full license text, see LICENSE.txt file in the repo root or https://opensource.org/licenses/BSD-3-Clause
  */
-import { convertUiModelToSoql, convertSoqlToUiModel, soqlStringLiteralToDisplayValue, displayValueToSoqlStringLiteral, isDateLiteral } from './soqlUtils';
+import { convertUiModelToSoql, convertSoqlToUiModel, soqlStringLiteralToDisplayValue, displayValueToSoqlStringLiteral, isDateLiteral, isCurrencyLiteral } from './soqlUtils';
 import { ToolingModelJson } from './toolingModelService';
 
 describe('SoqlUtils', () => {
@@ -122,5 +122,16 @@ describe('SoqlUtils', () => {
       expect(isDateLiteral('last_n_weeks:')).toBeFalsy();
       expect(isDateLiteral('last_n_weeks')).toBeFalsy();
     });
+  });
+  describe('isCurrencyLiteral should', () => {
+    it('return true for correctly formatted currency literals', () => {
+      expect(isCurrencyLiteral('USD+13.25')).toBeTruthy();
+      expect(isCurrencyLiteral('ABC-13')).toBeTruthy();
+      expect(isCurrencyLiteral('DEF134501')).toBeTruthy();
+    });
+    it('return false for incorrectly formatted currency literals', () => {
+      expect(isCurrencyLiteral('USD 13.25')).toBeFalsy();
+      expect(isCurrencyLiteral('not currency')).toBeFalsy();
+    })
   });
 });
