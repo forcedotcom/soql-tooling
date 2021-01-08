@@ -21,12 +21,10 @@
   position: absolute;
   content: '⚲';
   font-size: 1.5em;
-  bottom: -2px;
   left: 6px;
   transform: rotate(45deg);
   border-radius: 50%;
   background-color: transparent;
-  vertical-align:bottom;
 }
 
 .select__input {
