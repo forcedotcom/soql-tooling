@@ -7,7 +7,7 @@
 
 import { Messages } from '../messages/messages';
 import { SObjectFieldType } from '../model/model';
-import { DateOperatorValidator, DateValidator } from './dateValidator';
+import { DateValidator } from './dateValidator';
 
 describe('DateValidator should', () => {
   const validator = new DateValidator({ type: SObjectFieldType.Date });
@@ -42,21 +42,5 @@ describe('DateValidator should', () => {
     expect(validator.validate('ast_n_weeks: 35')).toEqual(notValidResult);
     expect(validator.validate('last_n_weeks:')).toEqual(notValidResult);
     expect(validator.validate('last_n_weeks')).toEqual(notValidResult);
-  });
-});
-
-describe('DateOperatorValidator should', () => {
-  const validator = new DateOperatorValidator({ type: SObjectFieldType.DateTime });
-  it('return valid result for accepted operator', () => {
-    const expected = { isValid: true };
-    expect(validator.validate('eq')).toEqual(expected);
-  });
-  it('return not valid result for not accepted operator', () => {
-    const expected = { isValid: false, message: Messages.error_operatorInput.replace('{0}', 'LIKE') };
-    expect(validator.validate('like')).toEqual(expected);
-  });
-  it('return not valid result for unrecognized operator', () => {
-    const expected = { isValid: false, message: Messages.error_operatorInput.replace('{0}', 'unrecognized') };
-    expect(validator.validate('unrecognized')).toEqual(expected);
   });
 });

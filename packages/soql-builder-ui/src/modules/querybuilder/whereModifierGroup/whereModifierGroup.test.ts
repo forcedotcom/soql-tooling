@@ -9,7 +9,7 @@
 import { createElement } from 'lwc';
 import WhereModifierGroup from 'querybuilder/whereModifierGroup';
 import { debounce } from 'debounce';
-import { SObjectType, SObjectTypeUtils } from '../services/sobjectUtils';
+import { SObjectTypeUtils } from '../services/sobjectUtils';
 
 jest.mock('debounce');
 // @ts-ignore

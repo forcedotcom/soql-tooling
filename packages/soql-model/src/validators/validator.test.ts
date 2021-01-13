@@ -7,7 +7,7 @@
 
 import { Messages } from '../messages/messages';
 import { SObjectFieldType } from '../model/model';
-import { DefaultOperatorValidator, DefaultValidator } from './validator';
+import { DefaultValidator, OperatorValidator } from './validator';
 
 describe('DefaultValidator should', () => {
   it('return valid result', () => {
@@ -17,14 +17,33 @@ describe('DefaultValidator should', () => {
   });
 });
 
-describe('DefaultOperatorValidator should', () => {
-  const validator = new DefaultOperatorValidator({ type: SObjectFieldType.AnyType });
-  it('return valid result for any SOQL operator', () => {
+describe('OperatorValidator should', () => {
+  const booleanOperatorValidator = new OperatorValidator({ type: SObjectFieldType.Boolean });
+  const currencyOperatorValidator = new OperatorValidator({ type: SObjectFieldType.Currency });
+  const dateOperatorValidator = new OperatorValidator({ type: SObjectFieldType.Date });
+  const numericOperatorValidator = new OperatorValidator({ type: SObjectFieldType.Long });
+  const stringOperatorValidator = new OperatorValidator({ type: SObjectFieldType.String });
+  it('return valid result for accepted operator', () => {
     const expected = { isValid: true };
-    expect(validator.validate('includes')).toEqual(expected);
+    expect(booleanOperatorValidator.validate('eq')).toEqual(expected);
+    expect(currencyOperatorValidator.validate('eq')).toEqual(expected);
+    expect(dateOperatorValidator.validate('eq')).toEqual(expected);
+    expect(numericOperatorValidator.validate('eq')).toEqual(expected);
+    expect(stringOperatorValidator.validate('eq')).toEqual(expected);
+  });
+  it('return not valid result for not accepted operator', () => {
+    const expected = { isValid: false, message: Messages.error_operatorInput.replace('{0}', 'LIKE') };
+    expect(booleanOperatorValidator.validate('like')).toEqual(expected);
+    expect(currencyOperatorValidator.validate('like')).toEqual(expected);
+    expect(dateOperatorValidator.validate('like')).toEqual(expected);
+    expect(numericOperatorValidator.validate('like')).toEqual(expected);
   });
   it('return not valid result for unrecognized operator', () => {
     const expected = { isValid: false, message: Messages.error_operatorInput.replace('{0}', 'unrecognized') };
-    expect(validator.validate('unrecognized')).toEqual(expected);
+    expect(booleanOperatorValidator.validate('unrecognized')).toEqual(expected);
+    expect(currencyOperatorValidator.validate('unrecognized')).toEqual(expected);
+    expect(dateOperatorValidator.validate('unrecognized')).toEqual(expected);
+    expect(numericOperatorValidator.validate('unrecognized')).toEqual(expected);
+    expect(stringOperatorValidator.validate('unrecognized')).toEqual(expected);
   });
 });

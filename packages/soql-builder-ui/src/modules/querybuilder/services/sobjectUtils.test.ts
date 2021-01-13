@@ -4,7 +4,8 @@
  * Licensed under the BSD 3-Clause license.
  * For full license text, see LICENSE.txt file in the repo root or https://opensource.org/licenses/BSD-3-Clause
  */
-import { SObjectTypeUtils, SObjectType } from './sobjectUtils';
+import { Soql } from '@salesforce/soql-model';
+import { SObjectTypeUtils } from './sobjectUtils';
 
 
 describe('SObjectTypeUtils should', () => {
@@ -27,18 +28,18 @@ describe('SObjectTypeUtils should', () => {
 
   it('return the type of a field found in an SObject', () => {
     const expected = [
-      SObjectType.Id,
-      SObjectType.String,
-      SObjectType.Picklist,
-      SObjectType.Currency,
-      SObjectType.Address,
-      SObjectType.Boolean,
-      SObjectType.Picklist,
-      SObjectType.Reference,
-      SObjectType.Reference,
-      SObjectType.String,
-      SObjectType.Picklist,
-      SObjectType.Phone
+      Soql.SObjectFieldType.Id,
+      Soql.SObjectFieldType.String,
+      Soql.SObjectFieldType.Picklist,
+      Soql.SObjectFieldType.Currency,
+      Soql.SObjectFieldType.Address,
+      Soql.SObjectFieldType.Boolean,
+      Soql.SObjectFieldType.Picklist,
+      Soql.SObjectFieldType.Reference,
+      Soql.SObjectFieldType.Reference,
+      Soql.SObjectFieldType.String,
+      Soql.SObjectFieldType.Picklist,
+      Soql.SObjectFieldType.Phone
     ];
     const sobjectTypeUtils = new SObjectTypeUtils(sobjectMetadata);
     const actual = sobjectMetadata.fields.map(field => sobjectTypeUtils.getType(field.name));
@@ -47,7 +48,7 @@ describe('SObjectTypeUtils should', () => {
   });
 
   it('return AnyType by default like when a field cannot be found', () => {
-    const expected = SObjectType.AnyType;
+    const expected = Soql.SObjectFieldType.AnyType;
     const actual = new SObjectTypeUtils(sobjectMetadata).getType('foo');
 
     expect(actual).toEqual(expected);

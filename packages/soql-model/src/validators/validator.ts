@@ -49,26 +49,25 @@ interface Operator {
 }
 
 const allOperators = [
-  { description: OPERATOR_EQ, display: '=' },
-  { description: OPERATOR_NOT_EQ, display: '!=' },
-  { description: OPERATOR_ALT_NOT_EQ, display: '<>' },
-  { description: OPERATOR_LT_EQ, display: '<=' },
-  { description: OPERATOR_GT_EQ, display: '>=' },
-  { description: OPERATOR_LT, display: '<' },
-  { description: OPERATOR_GT, display: '>' },
-  { description: OPERATOR_LIKE, display: 'LIKE' },
-  { description: OPERATOR_IN, display: 'IN' },
-  { description: OPERATOR_NOT_IN, display: 'NOT IN' },
-  { description: OPERATOR_INCLUDES, display: 'INCLUDES' },
-  { description: OPERATOR_EXCLUDES, display: 'EXCLUDES' }
+  { description: OPERATOR_EQ, display: '=', types: [SObjectFieldType.AnyType, SObjectFieldType.Base64, SObjectFieldType.Boolean, SObjectFieldType.Combobox, SObjectFieldType.ComplexValue, SObjectFieldType.Currency, SObjectFieldType.Date, SObjectFieldType.DateTime, SObjectFieldType.Double, SObjectFieldType.Email, SObjectFieldType.EncryptedString, SObjectFieldType.Id, SObjectFieldType.Integer, SObjectFieldType.Location, SObjectFieldType.Long, SObjectFieldType.MultiPicklist, SObjectFieldType.Percent, SObjectFieldType.Phone, SObjectFieldType.Picklist, SObjectFieldType.Reference, SObjectFieldType.String, SObjectFieldType.TextArea, SObjectFieldType.Time, SObjectFieldType.Url] },
+  { description: OPERATOR_NOT_EQ, display: '!=', types: [SObjectFieldType.AnyType, SObjectFieldType.Base64, SObjectFieldType.Boolean, SObjectFieldType.Combobox, SObjectFieldType.ComplexValue, SObjectFieldType.Currency, SObjectFieldType.Date, SObjectFieldType.DateTime, SObjectFieldType.Double, SObjectFieldType.Email, SObjectFieldType.EncryptedString, SObjectFieldType.Id, SObjectFieldType.Integer, SObjectFieldType.Location, SObjectFieldType.Long, SObjectFieldType.MultiPicklist, SObjectFieldType.Percent, SObjectFieldType.Phone, SObjectFieldType.Picklist, SObjectFieldType.Reference, SObjectFieldType.String, SObjectFieldType.TextArea, SObjectFieldType.Time, SObjectFieldType.Url] },
+  { description: OPERATOR_ALT_NOT_EQ, display: '<>', types: [SObjectFieldType.AnyType, SObjectFieldType.Base64, SObjectFieldType.Boolean, SObjectFieldType.Combobox, SObjectFieldType.ComplexValue, SObjectFieldType.Currency, SObjectFieldType.Date, SObjectFieldType.DateTime, SObjectFieldType.Double, SObjectFieldType.Email, SObjectFieldType.EncryptedString, SObjectFieldType.Id, SObjectFieldType.Integer, SObjectFieldType.Location, SObjectFieldType.Long, SObjectFieldType.MultiPicklist, SObjectFieldType.Percent, SObjectFieldType.Phone, SObjectFieldType.Picklist, SObjectFieldType.Reference, SObjectFieldType.String, SObjectFieldType.TextArea, SObjectFieldType.Time, SObjectFieldType.Url] },
+  { description: OPERATOR_LT_EQ, display: '<=', types: [SObjectFieldType.AnyType, SObjectFieldType.Base64, SObjectFieldType.Combobox, SObjectFieldType.ComplexValue, SObjectFieldType.Currency, SObjectFieldType.Date, SObjectFieldType.DateTime, SObjectFieldType.Double, SObjectFieldType.Email, SObjectFieldType.EncryptedString, SObjectFieldType.Id, SObjectFieldType.Integer, SObjectFieldType.Location, SObjectFieldType.Long, SObjectFieldType.MultiPicklist, SObjectFieldType.Percent, SObjectFieldType.Phone, SObjectFieldType.Picklist, SObjectFieldType.Reference, SObjectFieldType.String, SObjectFieldType.TextArea, SObjectFieldType.Time, SObjectFieldType.Url] },
+  { description: OPERATOR_GT_EQ, display: '>=', types: [SObjectFieldType.AnyType, SObjectFieldType.Base64, SObjectFieldType.Combobox, SObjectFieldType.ComplexValue, SObjectFieldType.Currency, SObjectFieldType.Date, SObjectFieldType.DateTime, SObjectFieldType.Double, SObjectFieldType.Email, SObjectFieldType.EncryptedString, SObjectFieldType.Id, SObjectFieldType.Integer, SObjectFieldType.Location, SObjectFieldType.Long, SObjectFieldType.MultiPicklist, SObjectFieldType.Percent, SObjectFieldType.Phone, SObjectFieldType.Picklist, SObjectFieldType.Reference, SObjectFieldType.String, SObjectFieldType.TextArea, SObjectFieldType.Time, SObjectFieldType.Url] },
+  { description: OPERATOR_LT, display: '<', types: [SObjectFieldType.AnyType, SObjectFieldType.Base64, SObjectFieldType.Combobox, SObjectFieldType.ComplexValue, SObjectFieldType.Currency, SObjectFieldType.Date, SObjectFieldType.DateTime, SObjectFieldType.Double, SObjectFieldType.Email, SObjectFieldType.EncryptedString, SObjectFieldType.Id, SObjectFieldType.Integer, SObjectFieldType.Location, SObjectFieldType.Long, SObjectFieldType.MultiPicklist, SObjectFieldType.Percent, SObjectFieldType.Phone, SObjectFieldType.Picklist, SObjectFieldType.Reference, SObjectFieldType.String, SObjectFieldType.TextArea, SObjectFieldType.Time, SObjectFieldType.Url] },
+  { description: OPERATOR_GT, display: '>', types: [SObjectFieldType.AnyType, SObjectFieldType.Base64, SObjectFieldType.Combobox, SObjectFieldType.ComplexValue, SObjectFieldType.Currency, SObjectFieldType.Date, SObjectFieldType.DateTime, SObjectFieldType.Double, SObjectFieldType.Email, SObjectFieldType.EncryptedString, SObjectFieldType.Id, SObjectFieldType.Integer, SObjectFieldType.Location, SObjectFieldType.Long, SObjectFieldType.MultiPicklist, SObjectFieldType.Percent, SObjectFieldType.Phone, SObjectFieldType.Picklist, SObjectFieldType.Reference, SObjectFieldType.String, SObjectFieldType.TextArea, SObjectFieldType.Time, SObjectFieldType.Url] },
+  { description: OPERATOR_LIKE, display: 'LIKE', types: [SObjectFieldType.AnyType, SObjectFieldType.Combobox, SObjectFieldType.ComplexValue, SObjectFieldType.Email, SObjectFieldType.EncryptedString, SObjectFieldType.Id, SObjectFieldType.Location, SObjectFieldType.MultiPicklist, SObjectFieldType.Phone, SObjectFieldType.Picklist, SObjectFieldType.Reference, SObjectFieldType.String, SObjectFieldType.TextArea, SObjectFieldType.Url] },
+  { description: OPERATOR_IN, display: 'IN', types: [SObjectFieldType.AnyType, SObjectFieldType.Base64, SObjectFieldType.Combobox, SObjectFieldType.ComplexValue, SObjectFieldType.Currency, SObjectFieldType.Date, SObjectFieldType.DateTime, SObjectFieldType.Double, SObjectFieldType.Email, SObjectFieldType.EncryptedString, SObjectFieldType.Id, SObjectFieldType.Integer, SObjectFieldType.Location, SObjectFieldType.Long, SObjectFieldType.MultiPicklist, SObjectFieldType.Percent, SObjectFieldType.Phone, SObjectFieldType.Picklist, SObjectFieldType.Reference, SObjectFieldType.String, SObjectFieldType.TextArea, SObjectFieldType.Time, SObjectFieldType.Url] },
+  { description: OPERATOR_NOT_IN, display: 'NOT IN', types: [SObjectFieldType.AnyType, SObjectFieldType.Base64, SObjectFieldType.Combobox, SObjectFieldType.ComplexValue, SObjectFieldType.Currency, SObjectFieldType.Date, SObjectFieldType.DateTime, SObjectFieldType.Double, SObjectFieldType.Email, SObjectFieldType.EncryptedString, SObjectFieldType.Id, SObjectFieldType.Integer, SObjectFieldType.Location, SObjectFieldType.Long, SObjectFieldType.MultiPicklist, SObjectFieldType.Percent, SObjectFieldType.Phone, SObjectFieldType.Picklist, SObjectFieldType.Reference, SObjectFieldType.String, SObjectFieldType.TextArea, SObjectFieldType.Time, SObjectFieldType.Url] },
+  { description: OPERATOR_INCLUDES, display: 'INCLUDES', types: [SObjectFieldType.MultiPicklist] },
+  { description: OPERATOR_EXCLUDES, display: 'EXCLUDES', types: [SObjectFieldType.MultiPicklist] }
 ]
 
-export abstract class OperatorValidator extends Validator {
-  public abstract getAcceptedOperators(): string[];
+export class OperatorValidator extends Validator {
   public validate(input: string): ValidateResult {
-    const isValid = this.getAcceptedOperators().includes(input.toUpperCase().trim());
     const operator = allOperators.find(operator => operator.description === input.toUpperCase().trim());
     const display = operator ? operator.display : input;
+    const isValid = operator ? operator.types.includes(this.options.type) : false;
     const message = isValid ? undefined : Messages.error_operatorInput.replace('{0}', display);
     return { isValid, message };
   }

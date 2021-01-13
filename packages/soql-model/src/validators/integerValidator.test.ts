@@ -7,7 +7,7 @@
 
 import { Messages } from '../messages/messages';
 import { SObjectFieldType } from '../model/model';
-import { IntegerOperatorValidator, IntegerValidator } from './integerValidator';
+import { IntegerValidator } from './integerValidator';
 
 describe('IntegerValidator should', () => {
   const validator = new IntegerValidator({ type: SObjectFieldType.Integer });
@@ -24,21 +24,5 @@ describe('IntegerValidator should', () => {
   });
   it('return not valid result for non-numeric input', () => {
     expect(validator.validate('NaN')).toEqual(notValidResult);
-  });
-});
-
-describe('IntegerOperatorValidator should', () => {
-  const validator = new IntegerOperatorValidator({ type: SObjectFieldType.Integer });
-  it('return valid result for accepted operator', () => {
-    const expected = { isValid: true };
-    expect(validator.validate('eq')).toEqual(expected);
-  });
-  it('return not valid result for not accepted operator', () => {
-    const expected = { isValid: false, message: Messages.error_operatorInput.replace('{0}', 'LIKE') };
-    expect(validator.validate('like')).toEqual(expected);
-  });
-  it('return not valid result for unrecognized operator', () => {
-    const expected = { isValid: false, message: Messages.error_operatorInput.replace('{0}', 'unrecognized') };
-    expect(validator.validate('unrecognized')).toEqual(expected);
   });
 });

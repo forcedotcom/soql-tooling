@@ -10,7 +10,7 @@ import { debounce } from 'debounce';
 import { Soql, ValidatorFactory } from '@salesforce/soql-model';
 import { JsonMap } from '@salesforce/types';
 import { operatorOptions } from '../services/model';
-import { SObjectType, SObjectTypeUtils } from '../services/sobjectUtils';
+import { SObjectTypeUtils } from '../services/sobjectUtils';
 import { displayValueToSoqlStringLiteral, soqlStringLiteralToDisplayValue } from '../services/soqlUtils';
 
 
@@ -124,17 +124,17 @@ export default class WhereModifierGroup extends LightningElement {
     return displayValue;
   }
 
-  normalizeInput(type: SObjectType, value: string): string {
+  normalizeInput(type: Soql.SObjectFieldType, value: string): string {
     let normalized = value;
     switch (type) {
-      case SObjectType.Boolean:
-      case SObjectType.Integer:
-      case SObjectType.Long:
-      case SObjectType.Double:
-      case SObjectType.Date:
-      case SObjectType.DateTime:
-      case SObjectType.Time:
-      case SObjectType.Currency: {
+      case Soql.SObjectFieldType.Boolean:
+      case Soql.SObjectFieldType.Integer:
+      case Soql.SObjectFieldType.Long:
+      case Soql.SObjectFieldType.Double:
+      case Soql.SObjectFieldType.Date:
+      case Soql.SObjectFieldType.DateTime:
+      case Soql.SObjectFieldType.Time:
+      case Soql.SObjectFieldType.Currency: {
         // do nothing
         break;
       }
@@ -149,8 +149,8 @@ export default class WhereModifierGroup extends LightningElement {
     return normalized;
   }
 
-  getSObjectType(fieldName: string): SObjectType {
-    return this.sobjectTypeUtils ? this.sobjectTypeUtils.getType(fieldName) : SObjectType.AnyType;
+  getSObjectFieldType(fieldName: string): Soql.SObjectFieldType {
+    return this.sobjectTypeUtils ? this.sobjectTypeUtils.getType(fieldName) : Soql.SObjectFieldType.AnyType;
   }
 
   getPicklistValues(fieldName: string): string[] {
@@ -158,30 +158,30 @@ export default class WhereModifierGroup extends LightningElement {
     return this.sobjectTypeUtils ? this.sobjectTypeUtils.getPicklistValues(fieldName).map(value => `'${value}'`) : [];
   }
 
-  getCriteriaType(type: SObjectType, value: string): Soql.LiteralType {
+  getCriteriaType(type: Soql.SObjectFieldType, value: string): Soql.LiteralType {
     let criteriaType = Soql.LiteralType.String;
     if (value.toLowerCase() === 'null') {
       return Soql.LiteralType.NULL;
     } else {
       switch (type) {
-        case SObjectType.Boolean: {
+        case Soql.SObjectFieldType.Boolean: {
           criteriaType = Soql.LiteralType.Boolean;
           break;
         }
-        case SObjectType.Currency: {
+        case Soql.SObjectFieldType.Currency: {
           criteriaType = Soql.LiteralType.Currency;
           break;
         }
-        case SObjectType.DateTime:
-        case SObjectType.Date:
-        case SObjectType.Time: {
+        case Soql.SObjectFieldType.DateTime:
+        case Soql.SObjectFieldType.Date:
+        case Soql.SObjectFieldType.Time: {
           criteriaType = Soql.LiteralType.Date;
           break;
         }
-        case SObjectType.Integer:
-        case SObjectType.Long:
-        case SObjectType.Percent:
-        case SObjectType.Double: {
+        case Soql.SObjectFieldType.Integer:
+        case Soql.SObjectFieldType.Long:
+        case Soql.SObjectFieldType.Percent:
+        case Soql.SObjectFieldType.Double: {
           criteriaType = Soql.LiteralType.Number;
           break;
         }
@@ -196,7 +196,7 @@ export default class WhereModifierGroup extends LightningElement {
       const fieldName = this.selectedField = this.fieldEl.value;
       const op = this.selectedOperator = this.operatorEl.value;
 
-      const type = this.getSObjectType(fieldName);
+      const type = this.getSObjectFieldType(fieldName);
       const normalizedInput = this.normalizeInput(type, this.criteriaEl.value);
       const critType = this.getCriteriaType(type, normalizedInput);
       const picklistValues = this.getPicklistValues(fieldName);
@@ -241,7 +241,7 @@ function selectionEventHandler(e) {
         operator: this.operatorEl.value,
         criteria: {
           type: this.criteria.type,
-          value: this.normalizeInput(this.getSObjectType(this.fieldEl.value), this.criteriaEl.value)
+          value: this.normalizeInput(this.getSObjectFieldType(this.fieldEl.value), this.criteriaEl.value)
         }, // type needs to be dynamic based on field selection
         index: this.index
       }

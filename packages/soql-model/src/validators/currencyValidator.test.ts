@@ -7,12 +7,17 @@
 
 import { Messages } from '../messages/messages';
 import { SObjectFieldType } from '../model/model';
-import { CurrencyOperatorValidator, CurrencyValidator } from './currencyValidator';
+import { CurrencyValidator } from './currencyValidator';
 
-describe('CurrencyValidatort should', () => {
+describe('CurrencyValidator should', () => {
   const validator = new CurrencyValidator({ type: SObjectFieldType.Currency });
   const validResult = { isValid: true };
   const notValidResult = { isValid: false, message: Messages.error_fieldInput_currency };
+  it('return valid result for floating point literals', () => {
+    expect(validator.validate('+13.25')).toEqual(validResult);
+    expect(validator.validate('-13')).toEqual(validResult);
+    expect(validator.validate(' 134501')).toEqual(validResult);
+  });
   it('return valid result for correctly formatted currency literals', () => {
     expect(validator.validate('USD+13.25')).toEqual(validResult);
     expect(validator.validate('ABC-13')).toEqual(validResult);
@@ -21,21 +26,5 @@ describe('CurrencyValidatort should', () => {
   it('return not valid result for incorrectly formatted currency literals', () => {
     expect(validator.validate('USD 13.25')).toEqual(notValidResult);
     expect(validator.validate('not currency')).toEqual(notValidResult);
-  });
-});
-
-describe('CurrencyOperatorValidator should', () => {
-  const validator = new CurrencyOperatorValidator({ type: SObjectFieldType.Currency });
-  it('return valid result for accepted operator', () => {
-    const expected = { isValid: true };
-    expect(validator.validate('eq')).toEqual(expected);
-  });
-  it('return not valid result for not accepted operator', () => {
-    const expected = { isValid: false, message: Messages.error_operatorInput.replace('{0}', 'LIKE') };
-    expect(validator.validate('like')).toEqual(expected);
-  });
-  it('return not valid result for unrecognized operator', () => {
-    const expected = { isValid: false, message: Messages.error_operatorInput.replace('{0}', 'unrecognized') };
-    expect(validator.validate('unrecognized')).toEqual(expected);
   });
 });

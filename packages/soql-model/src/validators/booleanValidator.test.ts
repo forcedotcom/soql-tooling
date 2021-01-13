@@ -7,7 +7,7 @@
 
 import { Messages } from '../messages/messages';
 import { SObjectFieldType } from '../model/model';
-import { BooleanOperatorValidator, BooleanValidator } from './booleanValidator';
+import { BooleanValidator } from './booleanValidator';
 
 describe('BooleanValidator should', () => {
   const validator = new BooleanValidator({ type: SObjectFieldType.Boolean });
@@ -19,21 +19,5 @@ describe('BooleanValidator should', () => {
   });
   it('return not valid result for non-boolean value', () => {
     expect(validator.validate('not boolean')).toEqual(notValidResult);
-  });
-});
-
-describe('BooleanOperatorValidator should', () => {
-  const validator = new BooleanOperatorValidator({ type: SObjectFieldType.Boolean });
-  it('return valid result for accepted operator', () => {
-    const expected = { isValid: true };
-    expect(validator.validate('eq')).toEqual(expected);
-  });
-  it('return not valid result for not accepted operator', () => {
-    const expected = { isValid: false, message: Messages.error_operatorInput.replace('{0}', 'LIKE') };
-    expect(validator.validate('like')).toEqual(expected);
-  });
-  it('return not valid result for unrecognized operator', () => {
-    const expected = { isValid: false, message: Messages.error_operatorInput.replace('{0}', 'unrecognized') };
-    expect(validator.validate('unrecognized')).toEqual(expected);
   });
 });

@@ -7,7 +7,7 @@
 
 import { Messages } from '../messages/messages';
 import { SObjectFieldType } from '../model/model';
-import { FloatOperatorValidator, FloatValidator } from './floatValidator';
+import { FloatValidator } from './floatValidator';
 
 describe('FloatValidator should', () => {
   const validator = new FloatValidator({ type: SObjectFieldType.Double });
@@ -24,21 +24,5 @@ describe('FloatValidator should', () => {
   });
   it('return not valid result for non-numeric input', () => {
     expect(validator.validate('NaN')).toEqual(notValidResult);
-  });
-});
-
-describe('FloatOperatorValidator should', () => {
-  const validator = new FloatOperatorValidator({ type: SObjectFieldType.Double });
-  it('return valid result for accepted operator', () => {
-    const expected = { isValid: true };
-    expect(validator.validate('eq')).toEqual(expected);
-  });
-  it('return not valid result for not accepted operator', () => {
-    const expected = { isValid: false, message: Messages.error_operatorInput.replace('{0}', 'LIKE') };
-    expect(validator.validate('like')).toEqual(expected);
-  });
-  it('return not valid result for unrecognized operator', () => {
-    const expected = { isValid: false, message: Messages.error_operatorInput.replace('{0}', 'unrecognized') };
-    expect(validator.validate('unrecognized')).toEqual(expected);
   });
 });

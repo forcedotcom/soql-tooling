@@ -5,13 +5,13 @@
  * For full license text, see LICENSE.txt file in the repo root or https://opensource.org/licenses/BSD-3-Clause
  */
 import { SObjectFieldType } from '../model/model';
-import { BooleanValidator, BooleanOperatorValidator } from './booleanValidator';
-import { CurrencyValidator, CurrencyOperatorValidator } from './currencyValidator';
-import { DateOperatorValidator, DateValidator } from './dateValidator';
-import { FloatOperatorValidator, FloatValidator } from './floatValidator';
-import { IntegerOperatorValidator, IntegerValidator } from './integerValidator';
+import { BooleanValidator } from './booleanValidator';
+import { CurrencyValidator } from './currencyValidator';
+import { DateValidator } from './dateValidator';
+import { FloatValidator } from './floatValidator';
+import { IntegerValidator } from './integerValidator';
 import { PicklistValidator } from './picklistValidator';
-import { DefaultOperatorValidator, DefaultValidator, ValidateOptions, Validator } from './validator';
+import { DefaultValidator, OperatorValidator, ValidateOptions, Validator } from './validator';
 
 export class ValidatorFactory {
   static getFieldInputValidator(options: ValidateOptions): Validator {
@@ -42,25 +42,6 @@ export class ValidatorFactory {
   }
 
   static getOperatorValidator(options: ValidateOptions): Validator {
-    switch (options.type) {
-      case SObjectFieldType.Boolean: {
-        return new BooleanOperatorValidator(options);
-      }
-      case SObjectFieldType.Currency: {
-        return new CurrencyOperatorValidator(options);
-      }
-      case SObjectFieldType.Date:
-      case SObjectFieldType.DateTime: {
-        return new DateOperatorValidator(options);
-      }
-      case SObjectFieldType.Double: {
-        return new FloatOperatorValidator(options);
-      }
-      case SObjectFieldType.Integer:
-      case SObjectFieldType.Long: {
-        return new IntegerOperatorValidator(options);
-      }
-    }
-    return new DefaultOperatorValidator(options);
+    return new OperatorValidator(options);
   }
 }
