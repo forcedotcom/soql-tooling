@@ -12,4 +12,13 @@ export namespace Messages {
   export const error_noFrom = 'A FROM clause is required.';
   export const error_incompleteFrom = 'Incomplete FROM clause. The FROM clause requires an object.';
   export const error_incompleteLimit = 'Incomplete LIMIT clause. The LIMIT keyword must be followed by a number.';
+
+  export const error_fieldInput_boolean = 'Value must be TRUE or FALSE';
+  export const error_fieldInput_currency = 'Currency value is not valid';
+  export const error_fieldInput_date = 'Date value is not valid';
+  export const error_fieldInput_float = 'Value must be numeric';
+  export const error_fieldInput_integer = 'Value must be a whole number';
+  export const error_fieldInput_picklist = 'Value must be one of: {0}';
+
+  export const error_operatorInput = '{0} operator cannot be used for this field type';
 }

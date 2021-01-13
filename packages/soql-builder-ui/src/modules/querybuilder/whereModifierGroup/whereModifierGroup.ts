@@ -7,11 +7,11 @@
  */
 import { api, LightningElement, track } from 'lwc';
 import { debounce } from 'debounce';
-import { Soql } from '@salesforce/soql-model';
+import { Soql, ValidatorFactory } from '@salesforce/soql-model';
 import { JsonMap } from '@salesforce/types';
 import { operatorOptions } from '../services/model';
 import { SObjectType, SObjectTypeUtils } from '../services/sobjectUtils';
-import { displayValueToSoqlStringLiteral, isCurrencyLiteral, isDateLiteral, soqlStringLiteralToDisplayValue } from '../services/soqlUtils';
+import { displayValueToSoqlStringLiteral, soqlStringLiteralToDisplayValue } from '../services/soqlUtils';
 
 
 export default class WhereModifierGroup extends LightningElement {
@@ -199,6 +199,7 @@ export default class WhereModifierGroup extends LightningElement {
       const type = this.getSObjectType(fieldName);
       const normalizedInput = this.normalizeInput(type, this.criteriaEl.value);
       const critType = this.getCriteriaType(type, normalizedInput);
+      const picklistValues = this.getPicklistValues(fieldName);
 
       const crit = this.criteria = {
         type: critType,
@@ -206,79 +207,23 @@ export default class WhereModifierGroup extends LightningElement {
       };
       this.errorMessage = '';
 
-      switch (type) {
-        case SObjectType.Boolean: {
-          if (!(crit.value.toLowerCase() === 'true' || crit.value.toLowerCase() === 'false')) {
-            this.errorMessage = 'Value must be TRUE or FALSE';
-            return false;
-          } else if (!(op === 'EQ' || op === 'NOT_EQ')) {
-            this.errorMessage = 'Operator must be = or ≠';
-            return false;
-          }
-          break;
-        }
-        case SObjectType.Integer:
-        case SObjectType.Long: {
-          const intPattern = /^[+-]?[0-9]+$/;
-          if (!intPattern.test(crit.value.trim())) {
-            this.errorMessage = 'Value must be a whole number';
-            return false;
-          } else if (op === 'LIKE') {
-            this.errorMessage = 'LIKE operator cannot be used for this field type';
-            return false;
-          }
-          break;
-        }
-        case SObjectType.Double: {
-          const floatPattern = /^[+-]?[0-9]*[.]?[0-9]+$/;
-          if (!floatPattern.test(crit.value.trim())) {
-            this.errorMessage = 'Value must be numeric';
-            return false;
-          } else if (op === 'LIKE') {
-            this.errorMessage = 'LIKE operator cannot be used for this field type';
-            return false;
-          }
-          break;
-        }
-        case SObjectType.Picklist:
-        case SObjectType.MultiPicklist: {
-          if (op === 'EQ') {
-            const picklistValues = this.getPicklistValues(fieldName);
-            if (!picklistValues.includes(crit.value)) {
-              const commaSeparatedValues = picklistValues.reduce((soFar, next) => {
-                if (soFar.length > 0) {
-                  soFar += ', ';
-                }
-                soFar += next;
-                return soFar;
-              });
-              this.errorMessage = `Value must be one of: ${commaSeparatedValues}`;
-              return false;
-            }
-          }
-          break;
-        }
-        case SObjectType.Date:
-        case SObjectType.DateTime: {
-          if (!isDateLiteral(crit.value)) {
-            this.errorMessage = 'Date value is not valid';
-            return false;
-          } else if (op === 'LIKE') {
-            this.errorMessage = 'LIKE operator cannot be used for this field type';
-            return false;
-          }
-          break;
-        }
-        case SObjectType.Currency: {
-          if (!isCurrencyLiteral(crit.value)) {
-            this.errorMessage = 'Currency value is not valid';
-            return false;
-          } else if (op === 'LIKE') {
-            this.errorMessage = 'LIKE operator cannot be used for this field type';
-            return false;
-          }
-          break;
-        }
+      const validateOptions = {
+        type,
+        picklistValues
+      };
+
+      const fieldInputValidator = ValidatorFactory.getFieldInputValidator(validateOptions);
+      let result = fieldInputValidator.validate(crit.value);
+      if (!result.isValid) {
+        this.errorMessage = result.message;
+        return false;
+      }
+
+      const operatorValidator = ValidatorFactory.getOperatorValidator(validateOptions);
+      result = operatorValidator.validate(op);
+      if (!result.isValid) {
+        this.errorMessage = result.message;
+        return false;
       }
     }
 

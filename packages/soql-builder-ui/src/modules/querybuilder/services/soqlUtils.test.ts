@@ -91,47 +91,4 @@ describe('SoqlUtils', () => {
       expect(actual).toEqual(expected);
     });
   });
-  describe('isDateLiteral should', () => {
-    it('return true for date only patterns', () => {
-      expect(isDateLiteral('2020-01-01')).toBeTruthy();
-    });
-    it('return true for date and time UTC patterns', () => {
-      expect(isDateLiteral('2020-01-01T12:00:00Z')).toBeTruthy();
-    });
-    it('return true for date and time +- offset patterns', () => {
-      expect(isDateLiteral('2020-01-01T12:00:00+05:00')).toBeTruthy();
-    });
-    it('return false for incorrect or incomplete date literal patterns', () => {
-      expect(isDateLiteral('2020-01-01T12:00')).toBeFalsy();
-      expect(isDateLiteral('2020-01-01T12:00:00-5:00')).toBeFalsy();
-      expect(isDateLiteral('202020-01-01T12:00:00-05:00')).toBeFalsy();
-    });
-    it('return true for date range literals', () => {
-      expect(isDateLiteral('tomorrow')).toBeTruthy();
-      expect(isDateLiteral('last_week')).toBeTruthy();
-    });
-    it('return false for incorrect date range literals', () => {
-      expect(isDateLiteral('lastweek')).toBeFalsy();
-    });
-    it('return true for parameterized date range literals', () => {
-      expect(isDateLiteral('next_n_quarters:5')).toBeTruthy();
-      expect(isDateLiteral('last_n_weeks:35')).toBeTruthy();
-    });
-    it('return false for incorrect parameterized date range literals', () => {
-      expect(isDateLiteral('last_n_weeks: 35')).toBeFalsy();
-      expect(isDateLiteral('last_n_weeks:')).toBeFalsy();
-      expect(isDateLiteral('last_n_weeks')).toBeFalsy();
-    });
-  });
-  describe('isCurrencyLiteral should', () => {
-    it('return true for correctly formatted currency literals', () => {
-      expect(isCurrencyLiteral('USD+13.25')).toBeTruthy();
-      expect(isCurrencyLiteral('ABC-13')).toBeTruthy();
-      expect(isCurrencyLiteral('DEF134501')).toBeTruthy();
-    });
-    it('return false for incorrectly formatted currency literals', () => {
-      expect(isCurrencyLiteral('USD 13.25')).toBeFalsy();
-      expect(isCurrencyLiteral('not currency')).toBeFalsy();
-    })
-  });
 });
