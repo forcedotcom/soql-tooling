@@ -20,5 +20,5 @@ export namespace Messages {
   export const error_fieldInput_integer = 'Value must be a whole number';
   export const error_fieldInput_picklist = 'Value must be one of: {0}';
 
-  export const error_operatorInput = '{0} operator cannot be used for this field type';
+  export const error_operatorInput = '{0} operator can't be used for this field type';
 }
