@@ -19,7 +19,7 @@ export class SObjectTypeUtils {
   protected typeMap: { [key: string]: Soql.SObjectFieldType };
   constructor(protected sobjectMetadata: any) {
     this.fieldMap = {};
-    if (sobjectMetadata.fields && Array.isArray(sobjectMetadata.fields)) {
+    if (sobjectMetadata && sobjectMetadata.fields && Array.isArray(sobjectMetadata.fields)) {
       sobjectMetadata.fields.forEach(field => {
         this.fieldMap[field.name.toLowerCase()] = {
           name: field.name,

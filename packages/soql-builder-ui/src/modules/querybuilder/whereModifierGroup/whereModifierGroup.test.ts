@@ -9,7 +9,6 @@
 import { createElement } from 'lwc';
 import WhereModifierGroup from 'querybuilder/whereModifierGroup';
 import { debounce } from 'debounce';
-import { SObjectTypeUtils } from '../services/sobjectUtils';
 
 jest.mock('debounce');
 // @ts-ignore
@@ -194,11 +193,11 @@ describe('WhereModifierGroup should', () => {
     modifierGroup.selectedField = 'foo';
     modifierGroup.selectedOperator = 'EQ';
     modifierGroup.criteria = { type: 'STRING', value: "'HELLO'" };
-    modifierGroup.sobjectTypeUtils = new SObjectTypeUtils({
+    modifierGroup.sobjectMetadata = {
       fields: [
         { name: 'foo', type: 'string' }
       ]
-    });
+    };
     let resultingCriteria;
     const handler = (e => {
       resultingCriteria = e.detail.criteria;
@@ -218,11 +217,11 @@ describe('WhereModifierGroup should', () => {
     modifierGroup.selectedField = 'foo';
     modifierGroup.selectedOperator = 'EQ';
     modifierGroup.criteria = { type: 'BOOLEAN', value: "TRUE" };
-    modifierGroup.sobjectTypeUtils = new SObjectTypeUtils({
+    modifierGroup.sobjectMetadata = {
       fields: [
         { name: 'foo', type: 'boolean' }
       ]
-    });
+    };
     let resultingCriteria;
     const handler = (e => {
       resultingCriteria = e.detail.criteria;
