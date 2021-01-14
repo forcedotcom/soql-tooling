@@ -368,8 +368,7 @@ class QueryListener implements SoqlParserListener {
   }
 
   public enterSoqlWhereClauseMethod(ctx: Parser.SoqlWhereClauseMethodContext): void {
-    // this.where = new Impl.WhereImpl(this.exprsToCondition(ctx.soqlWhereExprs()));
-    this.where = this.toUnmodeledSyntax(ctx.start, ctx.stop as Token, 'unmodeled:where');
+    this.where = new Impl.WhereImpl(this.exprsToCondition(ctx.soqlWhereExprs()));
   }
 
   public enterSoqlInnerQuery(ctx: Parser.SoqlInnerQueryContext): void {

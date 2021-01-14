@@ -10,11 +10,7 @@ import { LightningElement, track } from 'lwc';
 import { ToolingSDK } from '../services/toolingSDK';
 import { MessageServiceFactory } from '../services/message/messageServiceFactory';
 
-import {
-  ToolingModelService,
-  // eslint-disable-next-line no-unused-vars
-  ToolingModelJson
-} from '../services/toolingModelService';
+import { ToolingModelService } from '../services/toolingModelService';
 // eslint-disable-next-line no-unused-vars
 import { IMessageService } from '../services/message/iMessageService';
 import {
@@ -28,6 +24,7 @@ import {
   recoverableLimitErrors
 } from '../error/errorModel';
 import { getBodyClass } from '../services/globals';
+import { ToolingModelJson } from '../services/model';
 
 export default class App extends LightningElement {
   @track
@@ -87,7 +84,7 @@ export default class App extends LightningElement {
           : [];
     });
 
-    this.toolingSDK.queryRunState.subscribe((running: boolean) => {
+    this.toolingSDK.queryRunState.subscribe(() => {
       this.isQueryRunning = false;
     });
     this.loadSObjectDefinitions();
