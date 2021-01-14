@@ -8,44 +8,48 @@
 
 import { Soql } from '@salesforce/soql-model';
 
+interface SObjectField {
+  name: string;
+  type: string;
+  picklistValues: string[];
+}
+
 export class SObjectTypeUtils {
+  protected fieldMap: { [key: string]: SObjectField };
+  protected typeMap: { [key: string]: Soql.SObjectFieldType };
   constructor(protected sobjectMetadata: any) {
+    this.fieldMap = {};
+    if (sobjectMetadata.fields && Array.isArray(sobjectMetadata.fields)) {
+      sobjectMetadata.fields.forEach(field => {
+        this.fieldMap[field.name.toLowerCase()] = {
+          name: field.name,
+          type: field.type,
+          picklistValues: (field.picklistValues && Array.isArray(field.picklistValues))
+            ? field.picklistValues.map(picklistValue => picklistValue.value)
+            : []
+        }
+      });
+    }
+    this.typeMap = {};
+    Object.keys(Soql.SObjectFieldType).forEach(key => {
+      this.typeMap[Soql.SObjectFieldType[key].toLowerCase()] = Soql.SObjectFieldType[key];
+    })
   }
 
   public getType(fieldName: string): Soql.SObjectFieldType {
     let type = Soql.SObjectFieldType.AnyType;
-
-    if (this.sobjectMetadata.fields && Array.isArray(this.sobjectMetadata.fields)) {
-      let matchedField = this.sobjectMetadata.fields.filter(field =>
-        (field.name && field.name.toLowerCase() === fieldName.toLowerCase())
-      );
-      if (matchedField.length === 1 && matchedField[0].type) {
-        for (const key of Object.keys(Soql.SObjectFieldType)) {
-          if (Soql.SObjectFieldType[key] === matchedField[0].type.toLowerCase()) {
-            type = Soql.SObjectFieldType[key];
-            break;
-          }
-        }
+    const field = this.fieldMap[fieldName.toLowerCase()];
+    if (field) {
+      const fieldType = this.typeMap[field.type.toLowerCase()];
+      if (fieldType) {
+        type = fieldType;
       }
     }
-
     return type;
   }
 
   public getPicklistValues(fieldName: string): string[] {
-    let values = [];
-
-    if (this.sobjectMetadata.fields && Array.isArray(this.sobjectMetadata.fields)) {
-      let matchedField = this.sobjectMetadata.fields.filter(field =>
-        (field.name && field.name.toLowerCase() === fieldName.toLowerCase())
-      );
-      if (matchedField.length === 1 && matchedField[0].type) {
-        const picklistEntries = matchedField[0].picklistValues;
-        if (picklistEntries && Array.isArray(picklistEntries)) {
-          values = picklistEntries.map(entry => entry.value);
-        }
-      }
-    }
-    return values;
+    const field = this.fieldMap[fieldName.toLowerCase()];
+    return field ? field.picklistValues : [];
   }
 }
