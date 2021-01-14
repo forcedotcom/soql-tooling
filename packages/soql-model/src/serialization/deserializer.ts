@@ -19,6 +19,8 @@ import {
   ParseTreeListener,
   ParseTreeWalker,
   AbstractParseTreeVisitor,
+  ParseTree,
+  TerminalNode,
 } from 'antlr4ts/tree';
 import { Interval } from 'antlr4ts/misc/Interval';
 
@@ -56,12 +58,12 @@ export class ModelDeserializer {
 }
 
 class ErrorIdentifier {
-  protected parseTree: ParserRuleContext;
-  protected nodesWithExceptions: ParserRuleContext[];
-  constructor(parseTree: ParserRuleContext) {
+  protected parseTree: ParseTree;
+  protected nodesWithExceptionsAndErrorNodes: ParseTree[];
+  constructor(parseTree: ParseTree) {
     this.parseTree = parseTree;
-    this.nodesWithExceptions = [];
-    this.findExceptions(parseTree);
+    this.nodesWithExceptionsAndErrorNodes = [];
+    this.findExceptionsAndErrorNodes(parseTree);
   }
 
   public identifyError(error: ParserError): Soql.ModelError {
@@ -113,6 +115,78 @@ class ErrorIdentifier {
         charInLine: error.getCharacterPositionInLine(),
       };
     }
+    if (this.isEmptyWhereError(error)) {
+      return {
+        type: Soql.ErrorType.EMPTYWHERE,
+        message: Messages.error_emptyWhere,
+        lineNumber: error.getLineNumber(),
+        charInLine: error.getCharacterPositionInLine()
+      };
+    }
+    if (this.isIncompleteNestedCondition(error)) {
+      return {
+        type: Soql.ErrorType.INCOMPLETENESTEDCONDITION,
+        message: Messages.error_incompleteNestedCondition,
+        lineNumber: error.getLineNumber(),
+        charInLine: error.getCharacterPositionInLine()
+      };
+    }
+    if (this.isIncompleteAndOrCondition(error)) {
+      return {
+        type: Soql.ErrorType.INCOMPLETEANDORCONDITION,
+        message: Messages.error_incompleteAndOrCondition,
+        lineNumber: error.getLineNumber(),
+        charInLine: error.getCharacterPositionInLine()
+      };
+    }
+    if (this.isIncompleteNotCondition(error)) {
+      return {
+        type: Soql.ErrorType.INCOMPLETENOTCONDITION,
+        message: Messages.error_incompleteNotCondition,
+        lineNumber: error.getLineNumber(),
+        charInLine: error.getCharacterPositionInLine()
+      };
+    }
+    if (this.isUnrecognizedCompareValue(error)) {
+      return {
+        type: Soql.ErrorType.UNRECOGNIZEDCOMPAREVALUE,
+        message: Messages.error_unrecognizedCompareValue,
+        lineNumber: error.getLineNumber(),
+        charInLine: error.getCharacterPositionInLine()
+      };
+    }
+    if (this.isUnrecognizedCompareOperator(error)) {
+      return {
+        type: Soql.ErrorType.UNRECOGNIZEDCOMPAREOPERATOR,
+        message: Messages.error_unrecognizedCompareOperator,
+        lineNumber: error.getLineNumber(),
+        charInLine: error.getCharacterPositionInLine()
+      };
+    }
+    if (this.isUnrecognizedCompareField(error)) {
+      return {
+        type: Soql.ErrorType.UNRECOGNIZEDCOMPAREFIELD,
+        message: Messages.error_unrecognizedCompareField,
+        lineNumber: error.getLineNumber(),
+        charInLine: error.getCharacterPositionInLine()
+      };
+    }
+    if (this.isNoCompareValue(error)) {
+      return {
+        type: Soql.ErrorType.NOCOMPAREVALUE,
+        message: Messages.error_noCompareValue,
+        lineNumber: error.getLineNumber(),
+        charInLine: error.getCharacterPositionInLine()
+      };
+    }
+    if (this.isNoCompareOperator(error)) {
+      return {
+        type: Soql.ErrorType.NOCOMPAREOPERATOR,
+        message: Messages.error_noCompareOperator,
+        lineNumber: error.getLineNumber(),
+        charInLine: error.getCharacterPositionInLine()
+      };
+    }
     return {
       type: Soql.ErrorType.UNKNOWN,
       message: error.getMessage(),
@@ -122,7 +196,8 @@ class ErrorIdentifier {
   }
 
   protected isEmptyError(error: ParserError): boolean {
-    return this.parseTree.start.type === Token.EOF;
+    return this.parseTree instanceof ParserRuleContext
+      && this.parseTree.start.type === Token.EOF;
   }
 
   protected isNoSelectClauseError(error: ParserError): boolean {
@@ -169,24 +244,123 @@ class ErrorIdentifier {
     );
   }
 
-  protected findExceptions(context: ParserRuleContext): void {
-    if (context.exception) {
-      this.nodesWithExceptions.push(context);
+  protected isEmptyWhereError(error: ParserError): boolean {
+    const context = this.matchErrorToContext(error);
+    return (
+      context instanceof Parser.SoqlWhereExprsContext &&
+      context.childCount === 0
+    );
+  }
+
+  protected isIncompleteNestedCondition(error: ParserError): boolean {
+    const context = this.matchErrorToContext(error);
+    return (
+      context instanceof ErrorNode &&
+      context.parent instanceof Parser.NestedWhereExprContext
+    );
+  }
+
+  protected isIncompleteAndOrCondition(error: ParserError): boolean {
+    const context = this.matchErrorToContext(error);
+    return (
+      // trailing AND/OR
+      context instanceof Parser.SoqlWhereExprContext &&
+      (context.parent instanceof Parser.SoqlAndWhereContext || context.parent instanceof Parser.SoqlOrWhereContext) &&
+      !this.hasNonErrorChildren(context)
+    ) || (
+        // leading AND/OR
+        context instanceof ErrorNode &&
+        context.parent instanceof Parser.SoqlWhereAndOrExprContext &&
+        context.parent.childCount <= 2
+      );
+  }
+
+  protected isIncompleteNotCondition(error: ParserError): boolean {
+    const context = this.matchErrorToContext(error);
+    return (
+      context instanceof Parser.SoqlWhereExprContext &&
+      context.parent instanceof Parser.SoqlWhereNotExprContext &&
+      !this.hasNonErrorChildren(context)
+    );
+  }
+
+  protected isUnrecognizedCompareValue(error: ParserError): boolean {
+    const context = this.matchErrorToContext(error);
+    return (
+      context instanceof Parser.SoqlLiteralValueContext &&
+      context.parent instanceof Parser.SimpleWhereExprContext &&
+      context.exception instanceof NoViableAltException
+    );
+  }
+
+  protected isUnrecognizedCompareOperator(error: ParserError): boolean {
+    const context = this.matchErrorToContext(error);
+    return (
+      context instanceof Parser.SoqlWhereExprContext &&
+      context.childCount >= 2 &&
+      context.getChild(1) instanceof ErrorNode &&
+      (context.getChild(1) as ErrorNode).symbol === error.getToken()
+    );
+  }
+
+  protected isUnrecognizedCompareField(error: ParserError): boolean {
+    const context = this.matchErrorToContext(error);
+    return (
+      context instanceof Parser.SoqlWhereExprsContext &&
+      context.childCount >= 1 &&
+      context.getChild(0) instanceof ErrorNode &&
+      (context.getChild(0) as ErrorNode).symbol === error.getToken()
+    );
+  }
+
+  protected isNoCompareValue(error: ParserError): boolean {
+    const context = this.matchErrorToContext(error);
+    return (
+      context instanceof Parser.SoqlLiteralValueContext &&
+      context.childCount === 0 &&
+      context.parent instanceof Parser.SimpleWhereExprContext &&
+      context.exception instanceof InputMismatchException
+    );
+  }
+
+  protected isNoCompareOperator(error: ParserError): boolean {
+    const context = this.matchErrorToContext(error);
+    return (
+      context instanceof Parser.SoqlWhereExprContext &&
+      context.childCount === 1 &&
+      context.getChild(0) instanceof ErrorNode &&
+      (context.getChild(0) as ErrorNode).symbol !== error.getToken()
+    );
+  }
+
+  protected findExceptionsAndErrorNodes(context: ParseTree): void {
+    if (context instanceof ParserRuleContext && context.exception) {
+      this.nodesWithExceptionsAndErrorNodes.push(context);
+    }
+    if (context instanceof ErrorNode) {
+      this.nodesWithExceptionsAndErrorNodes.push(context);
     }
     if (context.childCount > 0) {
       for (let i = 0; i < context.childCount; i++) {
         const child = context.getChild(i);
-        if (child instanceof ParserRuleContext) {
-          this.findExceptions(child as ParserRuleContext);
-        }
+        this.findExceptionsAndErrorNodes(child);
       }
     }
   }
 
-  protected matchErrorToContext(error: ParserError): ParserRuleContext | undefined {
-    for (let i = 0; i < this.nodesWithExceptions.length; i++) {
-      const node = this.nodesWithExceptions[i];
-      if (node.exception?.getOffendingToken() === error.getToken()) {
+  protected matchErrorToContext(error: ParserError): ParseTree | undefined {
+    for (let i = 0; i < this.nodesWithExceptionsAndErrorNodes.length; i++) {
+      const node = this.nodesWithExceptionsAndErrorNodes[i];
+      if (node instanceof ParserRuleContext &&
+        node.exception?.getOffendingToken() === error.getToken()) {
+        return node;
+      }
+      // ErrorNode matches if location matches (or if location is off by one character when the error is on <EOF>)
+      if (node instanceof ErrorNode
+        && node.symbol.line === error.getLineNumber()
+        && (node.symbol.charPositionInLine === error.getCharacterPositionInLine()
+          || (node.symbol.charPositionInLine === error.getCharacterPositionInLine() - 1
+            && error.getToken()?.type === Token.EOF))) {
         return node;
       }
     }
@@ -332,13 +506,13 @@ class QueryListener implements SoqlParserListener {
         const order = obCtx.ASC()
           ? Soql.Order.Ascending
           : obCtx.DESC()
-          ? Soql.Order.Descending
-          : undefined;
+            ? Soql.Order.Descending
+            : undefined;
         const nullsOrder = obCtx.FIRST()
           ? Soql.NullsOrder.First
           : obCtx.LAST()
-          ? Soql.NullsOrder.Last
-          : undefined;
+            ? Soql.NullsOrder.Last
+            : undefined;
         this.orderByExpressions.push(new Impl.OrderByExpressionImpl(field, order, nullsOrder));
       }
     });

@@ -662,4 +662,100 @@ describe('ModelDeserializer should', () => {
     const actual = new ModelDeserializer("SELECT field1 FROM object1 WHERE ( field = 5 )").deserialize();
     expect(actual).toEqual(expected);
   });
+
+  it('identify empty WHERE', () => {
+    const expectedType = ErrorType.EMPTYWHERE;
+    const model = new ModelDeserializer('SELECT field1 FROM object1 WHERE').deserialize();
+    if (model.errors && model.errors.length === 1) {
+      expect(model.errors[0].type).toEqual(expectedType);
+    } else {
+      fail();
+    }
+  });
+
+  it('identify incomplete nested WHERE condition', () => {
+    const expectedType = ErrorType.INCOMPLETENESTEDCONDITION;
+    const model = new ModelDeserializer('SELECT field1 FROM object1 WHERE ( field = 5').deserialize();
+    if (model.errors && model.errors.length === 1) {
+      expect(model.errors[0].type).toEqual(expectedType);
+    } else {
+      fail();
+    }
+  });
+
+  it('identify incomplete AND/OR condition', () => {
+    const expectedType = ErrorType.INCOMPLETEANDORCONDITION;
+    let model = new ModelDeserializer('SELECT field1 FROM object1 WHERE field = 5 AND').deserialize();
+    if (model.errors && model.errors.length === 1) {
+      expect(model.errors[0].type).toEqual(expectedType);
+    } else {
+      fail();
+    }
+    model = new ModelDeserializer('SELECT field1 FROM object1 WHERE OR field = 5').deserialize();
+    if (model.errors && model.errors.length === 1) {
+      expect(model.errors[0].type).toEqual(expectedType);
+    } else {
+      fail();
+    }
+  });
+
+  it('identify incomplete NOT condition', () => {
+    const expectedType = ErrorType.INCOMPLETENOTCONDITION;
+    const model = new ModelDeserializer('SELECT field1 FROM object1 WHERE NOT').deserialize();
+    if (model.errors && model.errors.length === 1) {
+      expect(model.errors[0].type).toEqual(expectedType);
+    } else {
+      fail();
+    }
+  });
+
+  it('identify unrecognized literal value in condition', () => {
+    const expectedType = ErrorType.UNRECOGNIZEDCOMPAREVALUE;
+    const model = new ModelDeserializer('SELECT field1 FROM object1 WHERE field = foo').deserialize();
+    if (model.errors && model.errors.length === 1) {
+      expect(model.errors[0].type).toEqual(expectedType);
+    } else {
+      fail();
+    }
+  });
+
+  it('identify unrecognized compare operator in condition', () => {
+    const expectedType = ErrorType.UNRECOGNIZEDCOMPAREOPERATOR;
+    const model = new ModelDeserializer('SELECT field1 FROM object1 WHERE field LIK \'foo\'').deserialize();
+    if (model.errors && model.errors.length === 1) {
+      expect(model.errors[0].type).toEqual(expectedType);
+    } else {
+      fail();
+    }
+  });
+
+  it('identify unrecognized compare field in condition', () => {
+    const expectedType = ErrorType.UNRECOGNIZEDCOMPAREFIELD;
+    const model = new ModelDeserializer('SELECT field1 FROM object1 WHERE 5 = 5').deserialize();
+    if (model.errors && model.errors.length === 1) {
+      expect(model.errors[0].type).toEqual(expectedType);
+    } else {
+      fail();
+    }
+  });
+
+  it('identify missing compare value in condition', () => {
+    const expectedType = ErrorType.NOCOMPAREVALUE;
+    const model = new ModelDeserializer('SELECT field1 FROM object1 WHERE field =').deserialize();
+    if (model.errors && model.errors.length === 1) {
+      expect(model.errors[0].type).toEqual(expectedType);
+    } else {
+      fail();
+    }
+  });
+
+  it('identify missing compare operator in condition', () => {
+    const expectedType = ErrorType.NOCOMPAREOPERATOR;
+    const model = new ModelDeserializer('SELECT field1 FROM object1 WHERE field').deserialize();
+    if (model.errors && model.errors.length === 1) {
+      expect(model.errors[0].type).toEqual(expectedType);
+    } else {
+      fail();
+    }
+  });
 });
