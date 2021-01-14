@@ -12,4 +12,13 @@ export namespace Messages {
   export const error_noFrom = 'A FROM clause is required.';
   export const error_incompleteFrom = 'Incomplete FROM clause. The FROM clause requires an object.';
   export const error_incompleteLimit = 'Incomplete LIMIT clause. The LIMIT keyword must be followed by a number.';
+  export const error_emptyWhere = 'Incomplete WHERE clause. The WHERE clause must contain a condition.';
+  export const error_incompleteNestedCondition = 'Incomplete condition. A closing parenthesis is required.';
+  export const error_incompleteAndOrCondition = 'Incomplete condition. Conditions before and after the AND or OR keyword are required.';
+  export const error_incompleteNotCondition = 'Incomplete condition. NOT must be followed by a condition.';
+  export const error_unrecognizedCompareValue = 'Unrecognized comparison value.';
+  export const error_unrecognizedCompareOperator = 'Unrecognized comparison operator.';
+  export const error_unrecognizedCompareField = 'Unrecognized comparison field.';
+  export const error_noCompareValue = 'Incomplete condition. Comparison value is required.';
+  export const error_noCompareOperator = 'Incomplete condition. Comparison operator and value is required.';
 }
