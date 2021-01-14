@@ -264,6 +264,7 @@ describe('Tooling Model Service', () => {
     });
   });
 
+  // ORDER BY
   describe('ORDER BY', () => {
     it('should add, update, remove order by fields in model', () => {
       (messageService.setState as jest.Mock).mockClear();
@@ -300,6 +301,25 @@ describe('Tooling Model Service', () => {
       expect(messageService.setState).toHaveBeenCalledTimes(4);
     });
 
+    it('should update limit in model', () => {
+      (messageService.setState as jest.Mock).mockClear();
+      expect(messageService.setState).toHaveBeenCalledTimes(0);
+      query = ToolingModelService.toolingModelTemplate;
+
+      expect(query!.limit).toEqual('');
+
+      // Add
+      modelService.changeLimit('11');
+      expect(query!.limit).toBe('11');
+
+      // Remove Limit
+      modelService.changeLimit(undefined);
+      expect(query!.limit).toBe('');
+
+      // verify saves
+      expect(messageService.setState).toHaveBeenCalledTimes(2);
+    });
+
     it('should add orderby as immutablejs', () => {
       modelService.addUpdateOrderByField(mockOrderBy);
       const orderBy = modelService.getModel().get('orderBy');
@@ -307,22 +327,25 @@ describe('Tooling Model Service', () => {
     });
   });
 
-  it('should update limit in model', () => {
-    (messageService.setState as jest.Mock).mockClear();
-    expect(messageService.setState).toHaveBeenCalledTimes(0);
-    query = ToolingModelService.toolingModelTemplate;
+  // LIMIT
+  describe('LIMIT', () => {
+    it('should update limit in model', () => {
+      (messageService.setState as jest.Mock).mockClear();
+      expect(messageService.setState).toHaveBeenCalledTimes(0);
+      query = ToolingModelService.toolingModelTemplate;
 
-    expect(query!.limit).toEqual('');
+      expect(query!.limit).toEqual('');
 
-    // Add
-    modelService.changeLimit('11');
-    expect(query!.limit).toBe('11');
+      // Add
+      modelService.changeLimit('11');
+      expect(query!.limit).toBe('11');
 
-    // Remove Limit
-    modelService.changeLimit(undefined);
-    expect(query!.limit).toBe('');
+      // Remove Limit
+      modelService.changeLimit(undefined);
+      expect(query!.limit).toBe('');
 
-    // verify saves
-    expect(messageService.setState).toHaveBeenCalledTimes(2);
+      // verify saves
+      expect(messageService.setState).toHaveBeenCalledTimes(2);
+    });
   });
 });

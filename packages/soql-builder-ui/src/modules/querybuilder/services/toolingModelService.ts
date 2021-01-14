@@ -17,6 +17,7 @@ import {
   convertSoqlToUiModel
 } from '../services/soqlUtils';
 import { IMap, ToolingModel, ToolingModelJson, ModelProps } from './model';
+import { createQueryTelemetry } from './telemetryUtils';
 export class ToolingModelService {
   private immutableModel: BehaviorSubject<ToolingModel>;
   public UIModel: Observable<ToolingModelJson>;
@@ -227,14 +228,17 @@ export class ToolingModelService {
     if (event && event.type) {
       switch (event.type) {
         case MessageType.TEXT_SOQL_CHANGED: {
-          const incomingSoqlStatement = event.payload as string;
-          if (
-            incomingSoqlStatement !==
-            this.getModel().get(ModelProps.ORIGINAL_SOQL_STATEMENT)
-          ) {
-            const soqlJSModel = convertSoqlToUiModel(incomingSoqlStatement);
-            soqlJSModel.originalSoqlStatement = incomingSoqlStatement;
-            const updatedModel = fromJS(soqlJSModel);
+          const originalSoqlStatement = event.payload as string;
+          const soqlJSModel = convertSoqlToUiModel(originalSoqlStatement);
+          soqlJSModel.originalSoqlStatement = originalSoqlStatement;
+          const updatedModel = fromJS(soqlJSModel);
+          if (!updatedModel.equals(this.immutableModel.getValue())) {
+            if (
+              originalSoqlStatement.length &&
+              (soqlJSModel.errors.length || soqlJSModel.unsupported.length)
+            ) {
+              this.sendTelemetryToBackend(soqlJSModel);
+            }
             this.immutableModel.next(updatedModel);
           }
           break;
@@ -270,6 +274,18 @@ export class ToolingModelService {
       this.messageService.sendMessage({
         type: MessageType.UI_SOQL_CHANGED,
         payload
+      });
+    } catch (e) {
+      console.error(e);
+    }
+  }
+
+  public sendTelemetryToBackend(query: ToolingModelJson) {
+    try {
+      const telemetryMetrics = createQueryTelemetry(query);
+      this.messageService.sendMessage({
+        type: MessageType.UI_TELEMETRY,
+        payload: telemetryMetrics
       });
     } catch (e) {
       console.error(e);

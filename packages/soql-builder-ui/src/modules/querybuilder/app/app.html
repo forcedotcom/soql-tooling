@@ -9,10 +9,7 @@
 <template>
   <main>
     <header class="querybuilder-header">
-      <querybuilder-header
-        class={theme}
-        onheader__run_query={handleRunQuery}
-      ></querybuilder-header>
+      <querybuilder-header class={theme} onrunquery={handleRunQuery} is-running={isQueryRunning}></querybuilder-header>
     </header>
     <article class="querybuilder-body">
       <section class="querybuilder-form">

@@ -27,9 +27,9 @@ class TestMessageService implements IMessageService {
   messagesToUI: Observable<SoqlEditorEvent> = new BehaviorSubject(
     ({} as unknown) as SoqlEditorEvent
   );
-  sendMessage() {}
-  setState() {}
-  getState() {}
+  sendMessage() { }
+  setState() { }
+  getState() { }
 }
 
 class TestApp extends App {
@@ -41,6 +41,8 @@ class TestApp extends App {
   isFromLoading = false;
   @api
   isFieldsLoading = false;
+  @api
+  isQueryRunning = false;
   @api
   hasUnrecoverableError = false;
 }
@@ -140,6 +142,14 @@ describe('App should', () => {
           type: MessageType.RUN_SOQL_QUERY
         });
       });
+    });
+
+    it('should clear isQueryRunning flag when run query returns', async () => {
+      app.isQueryRunning = true;
+      messageService.messagesToUI.next({
+        type: MessageType.RUN_SOQL_QUERY_DONE
+      });
+      expect(app.isQueryRunning).toEqual(false);
     });
 
     it('not process an incoming message if the soql statement has not changed', () => {
