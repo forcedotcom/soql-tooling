@@ -1,0 +1,98 @@
+@import 'querybuilder/cssCommon';
+
+/* ======= SELECT ======= */
+.select__wrapper {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  position: relative;
+  width: 100%;
+  height: 1.5rem;
+  border: 1px solid
+    var(--vscode-list-inactiveSelectionBackground, var(--soql-color-light-grey));
+  border-radius: 3px;
+  background-color: var(--vscode-sideBar-background, var(--soql-background));
+}
+/*
+- rotate nueter symbol to mimic search icon
+- these styles are set for vs code, alignment is off in standalone
+*/
+.select__wrapper::before {
+  position: absolute;
+  content: '⚲';
+  font-size: 1.5em;
+  left: 6px;
+  transform: rotate(45deg);
+  border-radius: 50%;
+  background-color: transparent;
+}
+
+.select__input {
+  width: 90%;
+  height: 1em;
+  padding: 4px;
+  margin-left: 24px;
+  border: none;
+}
+
+.select:focus {
+  outline: none;
+}
+
+.select__clear-search {
+  align-self: center;
+  padding-right: 5px;
+  cursor: pointer;
+}
+
+/* ======== OPTIONS ======== */
+
+.options__wrapper {
+  position: absolute;
+  top: 64px;
+  border: 1px solid
+    var(--vscode-list-inactiveSelectionBackground, var(--soql-color-light-grey));
+  border-radius: 3px;
+  width: var(--soql-input-width);
+  min-height: 10%;
+  max-height: 50%;
+  overflow-y: scroll;
+  /* hidden by default */
+  display: none;
+  opacity: 0;
+  transition: opacity 0.2s;
+  pointer-events: none;
+  z-index: 200;
+  background-color: var(--vscode-sideBar-background, var(--soql-background));
+}
+
+.options--open {
+  opacity: 1;
+  display: block;
+  pointer-events: all;
+}
+
+.option {
+  padding: 3px 0 3px 4px;
+  margin: 0;
+}
+.option:hover {
+  background-color: var(
+    --vscode-list-focusBackground,
+    var(--soql-color-medium-grey)
+  );
+}
+.option--highlight {
+  background-color: var(
+    --vscode-list-focusBackground,
+    var(--soql-color-medium-grey)
+  );
+}
+.option--placeholder {
+  color: var(
+    --vscode-list-inactiveFocusBackground,
+    var(--soql-color-medium-grey)
+  );
+  cursor: not-allowed;
+  pointer-events: none;
+}

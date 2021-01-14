@@ -20,17 +20,13 @@
       >
     </div>
     <div class="section_selection-container">
-      <select
-        name="fields-select"
-        class="select-long"
-        onclick={handleFieldSelection}
-        multiple
-      >
-        <option value="" class="placeholder" data-el-default-option>{defaultOptionText}</option>
-        <template for:each={fields} for:item="field">
-          <option key={field} value={field}>{field}</option>
-        </template>
-      </select>
+      <querybuilder-custom-select
+        is-loading={isLoading}
+        all-options={fields}
+        selected-options={selectedFields}
+        onoption__selection={handleFieldSelection}
+        placeholder-text={selectPlaceHolderText}
+      ></querybuilder-custom-select>
       <div class="selected-fields-container">
         <template for:each={selectedFields} for:item="field">
           <div class="selected-field" key={field}>

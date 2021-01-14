@@ -71,6 +71,7 @@ select {
     var(--vscode-list-inactiveSelectionBackground, var(--soql-color-light-grey));
   border-radius: 3px;
 }
+
 input,
 select {
   background-color: var(--vscode-sideBar-background, var(--soql-background));
