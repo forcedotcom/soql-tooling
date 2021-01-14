@@ -37,13 +37,11 @@ export default class CustomSelect extends LightningElement {
 
   // close the options menu when user click outside element
   connectedCallback() {
-    console.log('connected callback');
     document.addEventListener('click', this.handleCloseOptions);
   }
 
   // prevent a memory leak
   disconnectedCallback() {
-    console.log('disconnected callback');
     document.removeEventListener('click', this.handleCloseOptions);
   }
 
@@ -55,7 +53,7 @@ export default class CustomSelect extends LightningElement {
 
   /* ======= UTILITIES ======= */
 
-  getAvailableOptions() {
+  calculateAvailableOptions() {
     this.availableOptions = this.allOptions.filter(
       (baseOption) =>
         !this.selectedOptions.some(
@@ -104,8 +102,9 @@ export default class CustomSelect extends LightningElement {
 
   hasOptionsToNavigate(): boolean {
     return (
-      !!(!this.optionListIsHidden && this.optionList.length) &&
-      !this.noResultsFound
+      this.optionListIsHidden === false &&
+      this.optionList.length > 0 &&
+      this.noResultsFound === false
     );
   }
 
@@ -137,8 +136,11 @@ export default class CustomSelect extends LightningElement {
   }
 
   openOptionsMenu() {
-    this.optionsWrapper.classList.add('options--open');
-    this.optionListIsHidden = false;
+    if (this.optionListIsHidden) {
+      this.calculateAvailableOptions();
+      this.optionsWrapper.classList.add('options--open');
+      this.optionListIsHidden = false;
+    }
   }
 
   /* ======= EVENT HANDLERS ======= */
@@ -147,7 +149,7 @@ export default class CustomSelect extends LightningElement {
   handleOpenOptions(e) {
     e.preventDefault();
     e.stopPropagation();
-    this.getAvailableOptions();
+    this.calculateAvailableOptions();
     if (this.hasSearchTerm) {
       this.filterOptionsBySearchTerm();
     } else {
@@ -170,7 +172,6 @@ export default class CustomSelect extends LightningElement {
   // respond to changes in input value: typing, paste events.
   handleInputChange(e) {
     e.preventDefault();
-    this.openOptionsMenu();
     // if the user deletes the text
     if (!e.target.value) {
       this.resetSearchBar();
@@ -181,9 +182,10 @@ export default class CustomSelect extends LightningElement {
     this.originalUserInput = this.searchTerm;
 
     if (!this.availableOptions.length) {
-      this.getAvailableOptions();
+      this.calculateAvailableOptions();
     }
     this.filterOptionsBySearchTerm();
+    this.openOptionsMenu();
   }
 
   handleClearSearch(e) {
