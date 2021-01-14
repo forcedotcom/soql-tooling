@@ -39,15 +39,7 @@ export default class App extends LightningElement {
   modelService: ToolingModelService;
   messageService: IMessageService;
   theme = 'light';
-  _sobjectTypeUtils: SObjectTypeUtils;
-
-  get sobjectTypeUtils(): SObjectTypeUtils {
-    return this._sobjectTypeUtils;
-  }
-
-  set sobjectTypeUtils(utils: SObjectTypeUtils) {
-    this._sobjectTypeUtils = utils;
-  }
+  sobjectMetadata: any;
 
   get hasUnsupported() {
     return this.query && this.query.unsupported
@@ -100,7 +92,7 @@ export default class App extends LightningElement {
         sobjectMetadata && sobjectMetadata.fields
           ? sobjectMetadata.fields.map((f) => f.name)
           : [];
-      this.sobjectTypeUtils = new SObjectTypeUtils(sobjectMetadata);
+      this.sobjectMetadata = sobjectMetadata;
     });
     this.loadSObjectDefinitions();
     this.modelService.restoreViewState();

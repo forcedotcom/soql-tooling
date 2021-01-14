@@ -20,7 +20,15 @@ export default class WhereModifierGroup extends LightningElement {
   @api selectedOperator: string;
   @api isLoading = false;
   @api index;
-  @api sobjectTypeUtils: SObjectTypeUtils;
+  @api get sobjectMetadata() {
+    return this._sobjectMetadata;
+  }
+  set sobjectMetadata(sobjectMetadata: any) {
+    this._sobjectMetadata = sobjectMetadata;
+    this.sobjectTypeUtils = new SObjectTypeUtils(sobjectMetadata);
+  }
+  _sobjectMetadata: any;
+  sobjectTypeUtils: SObjectTypeUtils;
   _criteria: JsonMap = {};
   _allModifiersHaveValue: boolean = false;
   fieldEl: HTMLSelectElement;
