@@ -18,13 +18,12 @@ const INNER_SELECT_snippet = {
   insertTextFormat: InsertTextFormat.Snippet,
 };
 
-const expectedSimpleFieldCompletions: CompletionItem[] = [
-  {
-    kind: CompletionItemKind.Field,
-    label: '__SOBJECT_FIELDS_PLACEHOLDER:Object',
-  },
-  INNER_SELECT_snippet,
-]; /*.concat(expectKeywords('COUNT')) */
+const COUNT_snippet = {
+  kind: CompletionItemKind.Snippet,
+  label: 'COUNT(...)',
+  insertText: 'COUNT($1)',
+  insertTextFormat: InsertTextFormat.Snippet,
+};
 
 const expectedSObjectCompletions: CompletionItem[] = [
   {
@@ -33,15 +32,26 @@ const expectedSObjectCompletions: CompletionItem[] = [
   },
 ];
 
+describe('Code Completion on invalid cursor position', () => {
+  it('Should return empty if cursor is on non-exitent line', () => {
+    expect(completionsFor('SELECT id FROM Foo', 2, 5)).toHaveLength(0);
+  });
+});
+
 describe('Code Completion on SELECT ...', () => {
-  validateCompletionsFor('SELE|', expectKeywords('SELECT'));
-  validateCompletionsFor('SELECT|', expectKeywords('SELECT'));
-  validateCompletionsFor('SELECT |', expectedSimpleFieldCompletions);
-  validateCompletionsFor('SELECT\n|', expectedSimpleFieldCompletions);
-  validateCompletionsFor('SELECT\n |', expectedSimpleFieldCompletions);
-  validateCompletionsFor('SELECT id, |', expectedSimpleFieldCompletions);
-  validateCompletionsFor('SELECT id, boo,|', expectedSimpleFieldCompletions);
-  validateCompletionsFor('SELECT id|', expectedSimpleFieldCompletions);
+  validateCompletionsFor('|', [...expectKeywords('SELECT'), SELECT_snippet]);
+  validateCompletionsFor('SELE|', [
+    ...expectKeywords('SELECT'),
+    SELECT_snippet,
+  ]);
+  validateCompletionsFor('| FROM', expectKeywords('SELECT'));
+  validateCompletionsFor('SELECT|', []);
+  validateCompletionsFor('SELECT |', sobjectsFieldsFor('Object'));
+  validateCompletionsFor('SELECT\n|', sobjectsFieldsFor('Object'));
+  validateCompletionsFor('SELECT\n |', sobjectsFieldsFor('Object'));
+  validateCompletionsFor('SELECT id, |', sobjectsFieldsFor('Object'));
+  validateCompletionsFor('SELECT id, boo,|', sobjectsFieldsFor('Object'));
+  validateCompletionsFor('SELECT id|', sobjectsFieldsFor('Object'));
   validateCompletionsFor('SELECT id |', expectKeywords('FROM'));
 });
 
@@ -55,6 +65,7 @@ describe('Code Completion on select fields: SELECT ... FROM XYZ', () => {
   validateCompletionsFor('SELECT id,| FROM Foo', sobjectsFieldsFor('Foo'));
   validateCompletionsFor('SELECT |, id FROM Foo', sobjectsFieldsFor('Foo'));
   validateCompletionsFor('SELECT |, id, FROM Foo', sobjectsFieldsFor('Foo'));
+  validateCompletionsFor('SELECT id,| FROM', sobjectsFieldsFor('Object'));
 
   // with alias
   validateCompletionsFor('SELECT id,| FROM Foo F', sobjectsFieldsFor('Foo'));
@@ -104,6 +115,16 @@ describe('Code Completion on nested select fields: SELECT ... FROM XYZ', () => {
     sobjectsFieldsFor('Foo')
   );
 
+  validateCompletionsFor(
+    'SELECT (SELECT |) FROM Foo',
+    sobjectsFieldsFor('Object')
+  );
+
+  validateCompletionsFor(
+    'SELECT (SELECT ), | FROM Foo',
+    sobjectsFieldsFor('Foo')
+  );
+
   validateCompletionsFor('SELECT foo, ( | FROM Foo', expectKeywords('SELECT'));
   validateCompletionsFor('SELECT foo, ( |FROM Foo', expectKeywords('SELECT'));
   validateCompletionsFor('SELECT foo, (| FROM Foo', expectKeywords('SELECT'));
@@ -116,6 +137,27 @@ describe('Code Completion on nested select fields: SELECT ... FROM XYZ', () => {
     'SELECT foo, (|) FROM Foo',
     expectKeywords('SELECT').concat(SELECT_snippet)
   );
+
+  validateCompletionsFor(
+    'SELECT foo, (SELECT bar FROM Bar), (SELECT | FROM Xyz) FROM Foo',
+    sobjectsFieldsFor('Xyz')
+  );
+  validateCompletionsFor(
+    'SELECT foo, (SELECT bar FROM Bar), (SELECT xyz, | FROM Xyz) FROM Foo',
+    sobjectsFieldsFor('Xyz')
+  );
+  validateCompletionsFor(
+    'SELECT foo, | (SELECT bar FROM Bar), (SELECT xyz FROM Xyz) FROM Foo',
+    sobjectsFieldsFor('Foo')
+  );
+  validateCompletionsFor(
+    'SELECT foo, (SELECT bar FROM Bar), | (SELECT xyz FROM Xyz) FROM Foo',
+    sobjectsFieldsFor('Foo')
+  );
+  validateCompletionsFor(
+    'SELECT foo, (SELECT | FROM Bar), (SELECT xyz FROM Xyz) FROM Foo',
+    sobjectsFieldsFor('Bar')
+  );
 });
 
 describe('Code Completion on SELECT XYZ FROM...', () => {
@@ -123,7 +165,7 @@ describe('Code Completion on SELECT XYZ FROM...', () => {
   validateCompletionsFor('SELECT id\nFROM |', expectedSObjectCompletions);
 
   // cursor touching FROM should not complete with Sobject name
-  validateCompletionsFor('SELECT id\nFROM|', expectKeywords('FROM'));
+  validateCompletionsFor('SELECT id\nFROM|', []);
   validateCompletionsFor(
     'SELECT id FROM |WHERE ORDER BY',
     expectedSObjectCompletions
@@ -177,23 +219,66 @@ describe('Code Completion on SELECT FROM (no columns on SELECT)', () => {
   );
 
   describe('Cursor is still touching FROM: it should still complete with fieldnames, and not SObject names', () => {
-    validateCompletionsFor('SELECT FROM|', expectedSimpleFieldCompletions);
+    validateCompletionsFor('SELECT FROM|', sobjectsFieldsFor('Object'));
 
-    validateCompletionsFor('SELECT\nFROM|', expectedSimpleFieldCompletions);
-    validateCompletionsFor(
-      'SELECT\nFROM|\nWHERE',
-      expectedSimpleFieldCompletions
-    );
+    validateCompletionsFor('SELECT\nFROM|', sobjectsFieldsFor('Object'));
+    validateCompletionsFor('SELECT\nFROM|\nWHERE', sobjectsFieldsFor('Object'));
   });
 
   validateCompletionsFor('SELECTHHH  FROMXXX |', []);
 });
 
-describe('Some keyword candidates', () => {
+describe('Code Completion for ORDER BY', () => {
+  validateCompletionsFor('SELECT id FROM Account ORDER BY |', [
+    {
+      kind: CompletionItemKind.Field,
+      label: '__SOBJECT_FIELDS_PLACEHOLDER:Account',
+    },
+    ...expectKeywords('DISTANCE'),
+  ]);
+});
+
+describe('Some keyword candidates after FROM clause', () => {
   validateCompletionsFor(
     'SELECT id FROM Account |',
-    expectKeywords('LIMIT', 'WHERE', 'ORDER BY', 'GROUP BY')
+    expectKeywords(
+      'FOR',
+      'OFFSET',
+      'LIMIT',
+      'ORDER BY',
+      'GROUP BY',
+      'WITH',
+      'WHERE',
+      'UPDATE TRACKING',
+      'UPDATE VIEWSTAT'
+    )
   );
+  validateCompletionsFor(
+    'SELECT id FROM Account FOR |',
+    expectKeywords('VIEW', 'REFERENCE')
+  );
+
+  validateCompletionsFor(
+    'SELECT id FROM Account WITH |',
+    expectKeywords('DATA CATEGORY')
+  );
+
+  validateCompletionsFor(
+    'SELECT Account.Name, (SELECT FirstName, LastName FROM Contacts |) FROM Account',
+    expectKeywords(
+      'FOR',
+      'OFFSET',
+      'LIMIT',
+      'ORDER BY',
+      'GROUP BY',
+      'WITH',
+      'WHERE',
+      'UPDATE TRACKING',
+      'UPDATE VIEWSTAT'
+    )
+  );
+
+  validateCompletionsFor('SELECT id FROM Account LIMIT |', []);
 });
 
 function expectKeywords(...words: string[]): CompletionItem[] {
@@ -204,12 +289,24 @@ function expectKeywords(...words: string[]): CompletionItem[] {
   }));
 }
 
+function expectItems(
+  kind: CompletionItemKind,
+  ...labels: string[]
+): CompletionItem[] {
+  return labels.map((s) => ({
+    kind: kind,
+    label: s,
+  }));
+}
+
 function validateCompletionsFor(
   text: string,
   expectedItems: CompletionItem[],
-  cursorChar: string = '|'
+  options: { skip?: boolean; only?: boolean; cursorChar?: string } = {}
 ) {
-  it(text, () => {
+  const itFn = options.skip ? xit : options.only ? it.only : it;
+  const cursorChar = options.cursorChar || '|';
+  itFn(text, () => {
     if (text.indexOf(cursorChar) != text.lastIndexOf(cursorChar)) {
       throw new Error(
         `Test text must have 1 and only 1 cursor (char: ${cursorChar})`
@@ -222,7 +319,7 @@ function validateCompletionsFor(
       line,
       column
     );
-    expect(completions).toEqual(expectedItems);
+    expect(new Set(completions)).toEqual(new Set(expectedItems));
   });
 }
 
@@ -240,6 +337,8 @@ function sobjectsFieldsFor(sbojectName: string) {
       kind: CompletionItemKind.Field,
       label: '__SOBJECT_FIELDS_PLACEHOLDER:' + sbojectName,
     },
+    ...expectKeywords('TYPEOF', 'DISTANCE', 'COUNT()'),
+    COUNT_snippet,
     INNER_SELECT_snippet,
   ];
 }

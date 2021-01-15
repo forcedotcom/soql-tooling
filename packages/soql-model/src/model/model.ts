@@ -12,6 +12,7 @@ export interface ModelError {
   message: string;
   lineNumber: number;
   charInLine: number;
+  grammarRule?: string;
 }
 
 export enum ErrorType {
@@ -238,4 +239,5 @@ export interface UnmodeledSyntax
   RecordTrackingType,
   Update {
   unmodeledSyntax: string;
+  reason: string;
 }

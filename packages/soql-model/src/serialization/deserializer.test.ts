@@ -13,16 +13,16 @@ const testQueryModel = {
     selectExpressions: [
       { field: { fieldName: 'field1' } },
       { field: { fieldName: 'field2' } },
-      { field: { fieldName: 'field3' }, alias: { unmodeledSyntax: 'alias3' } },
-      { unmodeledSyntax: 'COUNT(fieldZ)' },
-      { unmodeledSyntax: '(SELECT fieldA FROM objectA)' },
-      { unmodeledSyntax: 'TYPEOF obj WHEN typeX THEN fieldX ELSE fieldY END' },
+      { field: { fieldName: 'field3' }, alias: { unmodeledSyntax: 'alias3', reason: 'unmodeled:alias' } },
+      { unmodeledSyntax: 'COUNT(fieldZ)', reason: 'unmodeled:function-reference' },
+      { unmodeledSyntax: '(SELECT fieldA FROM objectA)', reason: 'unmodeled:semi-join' },
+      { unmodeledSyntax: 'TYPEOF obj WHEN typeX THEN fieldX ELSE fieldY END', reason: 'unmodeled:type-of' },
     ],
   },
   from: { sobjectName: 'object1' },
   where: { condition: { field: { fieldName: 'field1' }, operator: '=', compareValue: { type: 'NUMBER', value: '5' } } },
-  with: { unmodeledSyntax: 'WITH DATA CATEGORY cat__c AT val__c' },
-  groupBy: { unmodeledSyntax: 'GROUP BY field1' },
+  with: { unmodeledSyntax: 'WITH DATA CATEGORY cat__c AT val__c', reason: 'unmodeled:with' },
+  groupBy: { unmodeledSyntax: 'GROUP BY field1', reason: 'unmodeled:group-by' },
   orderBy: {
     orderByExpressions: [
       { field: { fieldName: 'field2' }, order: 'DESC', nullsOrder: 'NULLS LAST' },
@@ -30,20 +30,20 @@ const testQueryModel = {
     ]
   },
   limit: { limit: 20 },
-  offset: { unmodeledSyntax: 'OFFSET 2' },
-  bind: { unmodeledSyntax: 'BIND field1 = 5' },
-  recordTrackingType: { unmodeledSyntax: 'FOR VIEW' },
-  update: { unmodeledSyntax: 'UPDATE TRACKING' },
+  offset: { unmodeledSyntax: 'OFFSET 2', reason: 'unmodeled:offset' },
+  bind: { unmodeledSyntax: 'BIND field1 = 5', reason: 'unmodeled:bind' },
+  recordTrackingType: { unmodeledSyntax: 'FOR VIEW', reason: 'unmodeled:record-tracking' },
+  update: { unmodeledSyntax: 'UPDATE TRACKING', reason: 'unmodeled:update' },
   errors: [],
 };
 
 const fromWithUnmodeledSyntax = {
   sobjectName: 'object1',
-  as: { unmodeledSyntax: 'AS objectAs' },
-  using: { unmodeledSyntax: 'USING SCOPE everything' },
+  as: { unmodeledSyntax: 'AS objectAs', reason: 'unmodeled:as' },
+  using: { unmodeledSyntax: 'USING SCOPE everything', reason: 'unmodeled:using' },
 };
 
-const selectCountUnmdeledSyntax = { unmodeledSyntax: 'SELECT COUNT()' };
+const selectCountUnmdeledSyntax = { unmodeledSyntax: 'SELECT COUNT()', reason: 'unmodeled:count' };
 
 const limitZero = { limit: 0 };
 
@@ -59,16 +59,16 @@ const field = { fieldName: 'field' };
 
 const conditionFieldCompare = { field, operator: '=', compareValue: literalNumber };
 const conditionLike = { field, compareValue: literalString };
-const conditionInList = { unmodeledSyntax: "field IN ( 'HelloWorld', 'other value' )" }
-const conditionIncludes = { unmodeledSyntax: "field INCLUDES ( 'HelloWorld', 'other value' )" }
+const conditionInList = { unmodeledSyntax: "field IN ( 'HelloWorld', 'other value' )", reason: 'unmodeled:in-list-condition' }
+const conditionIncludes = { unmodeledSyntax: "field INCLUDES ( 'HelloWorld', 'other value' )", reason: 'unmodeled:includes-condition' }
 // uncomment when in-list conditions are supported----const conditionInList = { field, operator: 'IN', values: [literalString, { ...literalString, value: "'other value'" }] };
 // uncomment when includes conditions are supported---const conditionIncludes = { field, operator: 'INCLUDES', values: [literalString, { ...literalString, value: "'other value'" }] };
 const conditionAndOr = { leftCondition: conditionFieldCompare, andOr: 'AND', rightCondition: conditionLike };
 const conditionNested = { condition: conditionFieldCompare };
 const conditionNot = { condition: conditionFieldCompare };
-const conditionCalculated = { unmodeledSyntax: 'A + B > 10' };
-const conditionDistance = { unmodeledSyntax: "DISTANCE(field,GEOLOCATION(37,122),'mi') < 100" };
-const conditionSemiJoin = { unmodeledSyntax: 'field IN (SELECT A FROM B)' };
+const conditionCalculated = { unmodeledSyntax: 'A + B > 10', reason: 'unmodeled:calculated-condition' };
+const conditionDistance = { unmodeledSyntax: "DISTANCE(field,GEOLOCATION(37,122),'mi') < 100", reason: 'unmodeled:distance-condition' };
+const conditionSemiJoin = { unmodeledSyntax: 'field IN (SELECT A FROM B)', reason: 'unmodeled:in-semi-join-condition' };
 
 describe('ModelDeserializer should', () => {
   it('model supported syntax as query objects', () => {
