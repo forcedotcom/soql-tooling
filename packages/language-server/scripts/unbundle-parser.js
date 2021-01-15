@@ -5,7 +5,7 @@ var path = require('path');
 var packagePath = '../package.json';
 var package = require(packagePath);
 var parser = '@salesforce/soql-parser';
-var tarballPath = 'file:../../Dependencies/soql-parser-0.16.0.tgz';
+var tarballPath = 'file:../../Dependencies/salesforce-soql-parser-0.19.0.tgz';
 
 delete package.bundledDependencies;
 package.dependencies[parser] = tarballPath;

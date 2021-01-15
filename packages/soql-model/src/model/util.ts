@@ -5,7 +5,14 @@
  * For full license text, see LICENSE.txt file in the repo root or https://opensource.org/licenses/BSD-3-Clause
  */
 
+import * as Impl from './impl';
+import { AndOr, Condition } from './model';
+
 export namespace SoqlModelUtils {
+  /**
+   * This method returns quickly as soon as it finds unmodeled syntax.
+   * @param model
+   */
   export function containsUnmodeledSyntax(model: object): boolean {
     if ('unmodeledSyntax' in model) {
       return true;
@@ -21,6 +28,28 @@ export namespace SoqlModelUtils {
       }
     }
     return false;
+  }
+
+  /**
+   * This method collects all the unmodelled syntax it finds into a collection and returns it.
+   * @param model
+   * @param collector
+   */
+  export function getUnmodeledSyntax(
+    model: object,
+    collector?: Impl.UnmodeledSyntaxImpl[]
+  ): Impl.UnmodeledSyntaxImpl[] {
+    collector = collector || [];
+    if ('unmodeledSyntax' in model) {
+      collector.push(model as Impl.UnmodeledSyntaxImpl);
+      return collector;
+    }
+    for (const property in model) {
+      if (typeof (model as any)[property] === 'object') {
+        getUnmodeledSyntax((model as any)[property], collector);
+      }
+    }
+    return collector;
   }
 
   export function containsError(model: object): boolean {
@@ -40,5 +69,87 @@ export namespace SoqlModelUtils {
       }
     }
     return false;
+  }
+
+  export function simpleGroupToArray(
+    condition: Condition
+  ): { conditions: Condition[]; andOr?: AndOr } {
+    if (!isSimpleGroup(condition)) {
+      throw Error('not simple group');
+    }
+    condition = stripNesting(condition);
+    let conditions: Condition[] = [];
+    let andOr: AndOr | undefined = undefined;
+    if (condition instanceof Impl.AndOrConditionImpl) {
+      conditions = conditions.concat(
+        simpleGroupToArray(condition.leftCondition).conditions
+      );
+      conditions = conditions.concat(
+        simpleGroupToArray(condition.rightCondition).conditions
+      );
+      andOr = condition.andOr;
+    } else {
+      conditions.push(condition);
+    }
+    return { conditions, andOr };
+  }
+
+  export function arrayToSimpleGroup(
+    conditions: Condition[],
+    andOr?: AndOr
+  ): Condition {
+    if (conditions.length > 1 && andOr === undefined) {
+      throw Error('no operator supplied for conditions');
+    }
+    if (conditions.length === 0) {
+      throw Error('no conditions');
+    }
+
+    if (conditions.length === 1) {
+      return conditions[0];
+    } else {
+      const [left, ...rest] = conditions;
+      return new Impl.AndOrConditionImpl(
+        left as Condition,
+        andOr as AndOr,
+        arrayToSimpleGroup(rest, andOr)
+      );
+    }
+  }
+
+  export function isSimpleGroup(condition: Condition, andOr?: AndOr): boolean {
+    // a simple group is a condition that can be expressed as an ANY or ALL group of conditions
+    // ANY: simple conditions all joined by OR
+    // ALL: simple conditions all joined by AND
+    condition = stripNesting(condition);
+    if (condition instanceof Impl.AndOrConditionImpl) {
+      if (!andOr) {
+        andOr = condition.andOr;
+      }
+      return (
+        condition.andOr === andOr &&
+        isSimpleGroup(condition.leftCondition, andOr) &&
+        isSimpleGroup(condition.rightCondition, andOr)
+      );
+    }
+    return isSimpleCondition(condition);
+  }
+
+  export function isSimpleCondition(condition: Condition): boolean {
+    condition = stripNesting(condition);
+    return (
+      condition instanceof Impl.FieldCompareConditionImpl ||
+      condition instanceof Impl.LikeConditionImpl ||
+      condition instanceof Impl.IncludesConditionImpl ||
+      condition instanceof Impl.InListConditionImpl ||
+      condition instanceof Impl.UnmodeledSyntaxImpl
+    );
+  }
+
+  function stripNesting(condition: Condition): Condition {
+    while (condition instanceof Impl.NestedConditionImpl) {
+      condition = (condition as Impl.NestedConditionImpl).condition;
+    }
+    return condition;
   }
 }
