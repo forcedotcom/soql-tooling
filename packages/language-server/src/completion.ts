@@ -1,3 +1,11 @@
+/*
+ *  Copyright (c) 2020, salesforce.com, inc.
+ *  All rights reserved.
+ *  Licensed under the BSD 3-Clause license.
+ *  For full license text, see LICENSE.txt file in the repo root or https://opensource.org/licenses/BSD-3-Clause
+ *
+ */
+
 import {
   SoqlParser,
   SoqlQueryContext,
@@ -14,11 +22,15 @@ import {
   CommonTokenStream,
   Parser,
   ParserRuleContext,
+  Token,
   TokenStream,
 } from 'antlr4ts';
 
 import * as c3 from 'antlr4-c3';
-import { format } from 'util';
+import {
+  soqlFunctionsByName,
+  soqlFunctions,
+} from './completion/soql-functions';
 import { SoqlCompletionErrorStrategy } from './completion/SoqlCompletionErrorStrategy';
 import {
   parseWHEREExprField,
@@ -32,23 +44,8 @@ const UPDATE_TRACKING = 'UPDATE TRACKING';
 const UPDATE_VIEWSTAT = 'UPDATE VIEWSTAT';
 const DEFAULT_SOBJECT = 'Object';
 
-/**
- * List of aggregate functions which can be used in SELECT fields.
- *
- * NOTE: The g4 grammar declares `COUNT()` explicitly, but not `COUNT(xyz)`.
- * We cover the `COUNT(xyz)` case here:
- */
-const aggregateFunctions = [
-  'AVG',
-  'MAX',
-  'MIN',
-  'SUM',
-  'COUNT',
-  'COUNT_DISTINCT',
-];
-
-const itemsForAggregateFunctions = aggregateFunctions.map((name) =>
-  newSnippetItem(name + '(...)', name + '($1)')
+const itemsForBuiltinFunctions = soqlFunctions.map((soqlFn) =>
+  newFunctionItem(soqlFn.name)
 );
 
 export function completionsFor(
@@ -249,6 +246,10 @@ function generateCandidatesFromTokens(
 
     let newItem = newKeywordItem(itemText);
 
+    if (itemText === 'WHERE') {
+      newItem.preselect = true;
+    }
+
     if (fieldDependentOperators.has(tokenType)) {
       const soqlField = parseWHEREExprField(parsedQuery, tokenIndex);
       if (soqlField) {
@@ -306,16 +307,37 @@ function generateCandidatesFromRules(
       case SoqlParser.RULE_soqlField:
         const fromSObject =
           parseFROMSObject(parsedQuery, tokenIndex) || DEFAULT_SOBJECT;
+        const selectedFields = [{}]; // TODO
+        const groupedByFields = [{}]; // TODO
+
+        // SELECT AVG(| FROM Xyz
+        // SELECT AVG(|) FROM Xyz
+        // NOTE: This code would be much simpler if the grammar had an explicit
+        // rule for function invocation. We should probably suggest such a change.
+        // It's also more complicated because COUNT is a keyword type in the grammar,
+        // and not an IDENTIFIER
         if (
           tokenIndex === ruleData.startTokenIndex ||
           isCursorAfter(tokenStream, tokenIndex, [
             SoqlLexer.IDENTIFIER,
             SoqlLexer.LPAREN,
+          ]) ||
+          isCursorAfter(tokenStream, tokenIndex, [
+            SoqlLexer.COUNT,
+            SoqlLexer.LPAREN,
           ])
         ) {
+          const functionNameToken = searchTokenBeforeCursor(
+            tokenStream,
+            tokenIndex,
+            [SoqlLexer.IDENTIFIER, SoqlLexer.COUNT]
+          );
+          const soqlFn = soqlFunctionsByName[functionNameToken?.text || ''];
           completionItems.push(
             withSoqlContext(newFieldItem(SOBJECT_FIELDS_LABEL_PLACEHOLDER), {
               sobjectName: fromSObject,
+              onlyAggregatable: soqlFn?.isAggregate,
+              onlyTypes: soqlFn?.types,
             })
           );
         }
@@ -326,7 +348,7 @@ function generateCandidatesFromRules(
             SoqlParser.RULE_soqlSelectExpr &&
           tokenIndex === ruleData.startTokenIndex
         ) {
-          completionItems.push(...itemsForAggregateFunctions);
+          completionItems.push(...itemsForBuiltinFunctions);
           completionItems.push(
             newSnippetItem('(SELECT ... FROM ...)', '(SELECT $2 FROM $1)')
           );
@@ -441,6 +463,21 @@ function isCursorBefore(
   return false;
 }
 
+function searchTokenBeforeCursor(
+  tokenStream: TokenStream,
+  tokenIndex: number,
+  searchForAnyTokenTypes: number[]
+): Token | undefined {
+  for (let i = tokenIndex; i >= 0; i--) {
+    const t = tokenStream.get(i);
+    if (t.channel === SoqlLexer.HIDDEN) continue;
+    if (searchForAnyTokenTypes.includes(t.type)) {
+      return t;
+    }
+  }
+  return undefined;
+}
+
 function newKeywordItem(text: string): CompletionItem {
   return {
     label: text,
@@ -448,11 +485,23 @@ function newKeywordItem(text: string): CompletionItem {
     insertText: text,
   };
 }
+function newFunctionItem(text: string): CompletionItem {
+  return {
+    label: text + '(...)',
+    kind: CompletionItemKind.Function,
+    insertText: text + '($1)',
+    insertTextFormat: InsertTextFormat.Snippet,
+  };
+}
 
-interface SoqlItemContext {
+export interface SoqlItemContext {
   sobjectName: string;
   fieldName?: string;
   notNillable?: boolean;
+  onlyTypes?: string[];
+  onlyAggregatable?: boolean;
+  onlyGroupable?: boolean;
+  onlySortable?: boolean;
 }
 
 function withSoqlContext(

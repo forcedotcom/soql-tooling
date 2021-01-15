@@ -1,4 +1,11 @@
-import { completionsFor } from './completion';
+/*
+ *  Copyright (c) 2020, salesforce.com, inc.
+ *  All rights reserved.
+ *  Licensed under the BSD 3-Clause license.
+ *  For full license text, see LICENSE.txt file in the repo root or https://opensource.org/licenses/BSD-3-Clause
+ *
+ */
+import { completionsFor, SoqlItemContext } from './completion';
 import {
   CompletionItem,
   CompletionItemKind,
@@ -18,20 +25,16 @@ const INNER_SELECT_snippet = {
   insertTextFormat: InsertTextFormat.Snippet,
 };
 
-const COUNT_snippet = {
-  kind: CompletionItemKind.Snippet,
-  label: 'COUNT(...)',
-  insertText: 'COUNT($1)',
-  insertTextFormat: InsertTextFormat.Snippet,
-};
-
-function aggregateFunctionSnippet(name: string) {
-  return {
-    kind: CompletionItemKind.Snippet,
-    label: name + '(...)',
-    insertText: name + '($1)',
-    insertTextFormat: InsertTextFormat.Snippet,
-  };
+function functionCallItem(name: string, soqlItemContext?: SoqlItemContext) {
+  return Object.assign(
+    {
+      kind: CompletionItemKind.Function,
+      label: name + '(...)',
+      insertText: name + '($1)',
+      insertTextFormat: InsertTextFormat.Snippet,
+    },
+    soqlItemContext ? { data: { soqlContext: soqlItemContext } } : {}
+  );
 }
 const expectedSObjectCompletions: CompletionItem[] = [
   {
@@ -47,7 +50,7 @@ describe('Code Completion on invalid cursor position', () => {
 });
 
 describe('Code Completion on SELECT ...', () => {
-  validateCompletionsFor('|', [...expectKeywords('SELECT'), SELECT_snippet]);
+  validateCompletionsFor('|', [expectKeyword('SELECT'), SELECT_snippet]);
   validateCompletionsFor('SELE|', [
     ...expectKeywords('SELECT'),
     SELECT_snippet,
@@ -58,65 +61,92 @@ describe('Code Completion on SELECT ...', () => {
   // "COUNT()" can only be used on its own, unlike "COUNT(fieldName)".
   // So we expect it on completions only right after "SELECT"
   validateCompletionsFor('SELECT |', [
-    ...expectKeywords('COUNT()'),
+    expectKeyword('COUNT()'),
     ...sobjectsFieldsFor('Object'),
   ]);
   validateCompletionsFor('SELECT\n|', [
-    ...expectKeywords('COUNT()'),
+    expectKeyword('COUNT()'),
     ...sobjectsFieldsFor('Object'),
   ]);
   validateCompletionsFor('SELECT\n |', [
-    ...expectKeywords('COUNT()'),
+    expectKeyword('COUNT()'),
     ...sobjectsFieldsFor('Object'),
   ]);
   validateCompletionsFor('SELECT id, |', sobjectsFieldsFor('Object'));
   validateCompletionsFor('SELECT id, boo,|', sobjectsFieldsFor('Object'));
   validateCompletionsFor('SELECT id|', [
-    ...expectKeywords('COUNT()'),
+    expectKeyword('COUNT()'),
     ...sobjectsFieldsFor('Object'),
   ]);
   validateCompletionsFor('SELECT id |', expectKeywords('FROM'));
   validateCompletionsFor('SELECT COUNT() |', expectKeywords('FROM'));
   validateCompletionsFor('SELECT COUNT(), |', []);
 
-  // Inside Functions:
-  validateCompletionsFor(
-    'SELECT OwnerId, COUNT(|) FROM Account GROUP BY OwnerId',
-    []
-  );
+  // Inside Function expression:
+  validateCompletionsFor('SELECT OwnerId, COUNT(|)', [
+    {
+      kind: CompletionItemKind.Field,
+      label: '__SOBJECT_FIELDS_PLACEHOLDER',
+      data: {
+        soqlContext: {
+          sobjectName: 'Object',
+          onlyAggregatable: true,
+          onlyTypes: [
+            'date',
+            'datetime',
+            'double',
+            'int',
+            'string',
+            'combobox',
+            'currency',
+            'DataCategoryGroupReference',
+            'email',
+            'id',
+            'masterrecord',
+            'percent',
+            'phone',
+            'picklist',
+            'reference',
+            'textarea',
+            'url',
+          ],
+        },
+      },
+    },
+  ]);
 });
 
 describe('Code Completion on select fields: SELECT ... FROM XYZ', () => {
   // "COUNT()" can only be used on its own, unlike "COUNT(fieldName)".
   // So we expect it on completions only right after "SELECT"
   validateCompletionsFor('SELECT | FROM Object', [
-    ...expectKeywords('COUNT()'),
+    expectKeyword('COUNT()'),
     ...sobjectsFieldsFor('Object'),
   ]);
   validateCompletionsFor('SELECT | FROM Foo', [
-    ...expectKeywords('COUNT()'),
+    expectKeyword('COUNT()'),
     ...sobjectsFieldsFor('Foo'),
   ]);
   validateCompletionsFor('SELECT |FROM Object', [
-    ...expectKeywords('COUNT()'),
+    expectKeyword('COUNT()'),
     ...sobjectsFieldsFor('Object'),
   ]);
   validateCompletionsFor('SELECT |FROM Foo', [
-    ...expectKeywords('COUNT()'),
+    expectKeyword('COUNT()'),
     ...sobjectsFieldsFor('Foo'),
   ]);
   validateCompletionsFor('SELECT | FROM Foo, Bar', [
-    ...expectKeywords('COUNT()'),
+    expectKeyword('COUNT()'),
     ...sobjectsFieldsFor('Foo'),
   ]);
   validateCompletionsFor('SELECT id, | FROM Foo', sobjectsFieldsFor('Foo'));
   validateCompletionsFor('SELECT id,| FROM Foo', sobjectsFieldsFor('Foo'));
   validateCompletionsFor('SELECT |, id FROM Foo', [
-    ...expectKeywords('COUNT()'),
+    expectKeyword('COUNT()'),
     ...sobjectsFieldsFor('Foo'),
   ]);
   validateCompletionsFor('SELECT |, id, FROM Foo', [
-    ...expectKeywords('COUNT()'),
+    expectKeyword('COUNT()'),
     ...sobjectsFieldsFor('Foo'),
   ]);
   validateCompletionsFor('SELECT id,| FROM', sobjectsFieldsFor('Object'));
@@ -124,11 +154,11 @@ describe('Code Completion on select fields: SELECT ... FROM XYZ', () => {
   // with alias
   validateCompletionsFor('SELECT id,| FROM Foo F', sobjectsFieldsFor('Foo'));
   validateCompletionsFor('SELECT |, id FROM Foo F', [
-    ...expectKeywords('COUNT()'),
+    expectKeyword('COUNT()'),
     ...sobjectsFieldsFor('Foo'),
   ]);
   validateCompletionsFor('SELECT |, id, FROM Foo F', [
-    ...expectKeywords('COUNT()'),
+    expectKeyword('COUNT()'),
     ...sobjectsFieldsFor('Foo'),
   ]);
 });
@@ -137,7 +167,7 @@ describe('Code Completion on nested select fields: SELECT ... FROM XYZ', () => {
   // "COUNT()" can only be used on its own, unlike "COUNT(fieldName)".
   // So we expect it on completions only right after "SELECT"
   validateCompletionsFor('SELECT | (SELECT bar FROM Bar) FROM Foo', [
-    ...expectKeywords('COUNT()'),
+    expectKeyword('COUNT()'),
     ...sobjectsFieldsFor('Foo'),
   ]);
   validateCompletionsFor(
@@ -153,11 +183,11 @@ describe('Code Completion on nested select fields: SELECT ... FROM XYZ', () => {
     sobjectsFieldsFor('Foo')
   );
   validateCompletionsFor('SELECT foo, (SELECT | FROM Bar) FROM Foo', [
-    ...expectKeywords('COUNT()'),
+    expectKeyword('COUNT()'),
     ...sobjectsFieldsFor('Bar'),
   ]);
   validateCompletionsFor('SELECT foo, (SELECT |, bar FROM Bar) FROM Foo', [
-    ...expectKeywords('COUNT()'),
+    expectKeyword('COUNT()'),
     ...sobjectsFieldsFor('Bar'),
   ]);
   validateCompletionsFor(
@@ -170,15 +200,15 @@ describe('Code Completion on nested select fields: SELECT ... FROM XYZ', () => {
   );
   validateCompletionsFor(
     'SELECT foo, (SELECT |, (SELECT xyz FROM XYZ) FROM Bar) FROM Foo',
-    [...expectKeywords('COUNT()'), ...sobjectsFieldsFor('Bar')]
+    [expectKeyword('COUNT()'), ...sobjectsFieldsFor('Bar')]
   );
   validateCompletionsFor(
     'SELECT | (SELECT bar, (SELECT xyz FROM XYZ) FROM Bar) FROM Foo',
-    [...expectKeywords('COUNT()'), ...sobjectsFieldsFor('Foo')]
+    [expectKeyword('COUNT()'), ...sobjectsFieldsFor('Foo')]
   );
 
   validateCompletionsFor('SELECT (SELECT |) FROM Foo', [
-    ...expectKeywords('COUNT()'),
+    expectKeyword('COUNT()'),
     ...sobjectsFieldsFor('Object'),
   ]);
 
@@ -206,7 +236,7 @@ describe('Code Completion on nested select fields: SELECT ... FROM XYZ', () => {
 
   validateCompletionsFor(
     'SELECT foo, (SELECT bar FROM Bar), (SELECT | FROM Xyz) FROM Foo',
-    [...expectKeywords('COUNT()'), ...sobjectsFieldsFor('Xyz')]
+    [expectKeyword('COUNT()'), ...sobjectsFieldsFor('Xyz')]
   );
   validateCompletionsFor(
     'SELECT foo, (SELECT bar FROM Bar), (SELECT xyz, | FROM Xyz) FROM Foo',
@@ -222,7 +252,7 @@ describe('Code Completion on nested select fields: SELECT ... FROM XYZ', () => {
   );
   validateCompletionsFor(
     'SELECT foo, (SELECT | FROM Bar), (SELECT xyz FROM Xyz) FROM Foo',
-    [...expectKeywords('COUNT()'), ...sobjectsFieldsFor('Bar')]
+    [expectKeyword('COUNT()'), ...sobjectsFieldsFor('Bar')]
   );
 });
 
@@ -286,16 +316,16 @@ describe('Code Completion on SELECT FROM (no columns on SELECT)', () => {
 
   describe('Cursor is still touching FROM: it should still complete with fieldnames, and not SObject names', () => {
     validateCompletionsFor('SELECT FROM|', [
-      ...expectKeywords('COUNT()'),
+      expectKeyword('COUNT()'),
       ...sobjectsFieldsFor('Object'),
     ]);
 
     validateCompletionsFor('SELECT\nFROM|', [
-      ...expectKeywords('COUNT()'),
+      expectKeyword('COUNT()'),
       ...sobjectsFieldsFor('Object'),
     ]);
     validateCompletionsFor('SELECT\nFROM|\nWHERE', [
-      ...expectKeywords('COUNT()'),
+      expectKeyword('COUNT()'),
       ...sobjectsFieldsFor('Object'),
     ]);
   });
@@ -310,7 +340,7 @@ describe('Code Completion for ORDER BY', () => {
       label: '__SOBJECT_FIELDS_PLACEHOLDER',
       data: { soqlContext: { sobjectName: 'Account' } },
     },
-    ...expectKeywords('DISTANCE('),
+    expectKeyword('DISTANCE('),
   ]);
 });
 
@@ -326,20 +356,20 @@ describe('Code Completion for GROUP BY', () => {
 });
 
 describe('Some keyword candidates after FROM clause', () => {
-  validateCompletionsFor(
-    'SELECT id FROM Account |',
-    expectKeywords(
+  validateCompletionsFor('SELECT id FROM Account |', [
+    expectKeyword('WHERE', { preselect: true }),
+    ...expectKeywords(
       'FOR',
       'OFFSET',
       'LIMIT',
       'ORDER BY',
       'GROUP BY',
       'WITH',
-      'WHERE',
       'UPDATE TRACKING',
       'UPDATE VIEWSTAT'
-    )
-  );
+    ),
+  ]);
+
   validateCompletionsFor(
     'SELECT id FROM Account FOR |',
     expectKeywords('VIEW', 'REFERENCE')
@@ -352,17 +382,20 @@ describe('Some keyword candidates after FROM clause', () => {
 
   validateCompletionsFor(
     'SELECT Account.Name, (SELECT FirstName, LastName FROM Contacts |) FROM Account',
-    expectKeywords(
-      'FOR',
-      'OFFSET',
-      'LIMIT',
-      'ORDER BY',
-      'GROUP BY',
-      'WITH',
-      'WHERE',
-      'UPDATE TRACKING',
-      'UPDATE VIEWSTAT'
-    )
+    [
+      expectKeyword('WHERE', { preselect: true }),
+      ...expectKeywords(
+        'FOR',
+        'OFFSET',
+        'LIMIT',
+        'ORDER BY',
+        'GROUP BY',
+        'WITH',
+
+        'UPDATE TRACKING',
+        'UPDATE VIEWSTAT'
+      ),
+    ]
   );
 
   validateCompletionsFor('SELECT id FROM Account LIMIT |', []);
@@ -423,7 +456,7 @@ describe('WHERE clause', () => {
   validateCompletionsFor(
     "SELECT id FROM Account WHERE Type IN (|, 'Customer')",
     [
-      ...expectKeywords('SELECT'),
+      expectKeyword('SELECT'),
       SELECT_snippet,
       {
         kind: CompletionItemKind.Constant,
@@ -578,7 +611,79 @@ describe('SELECT Function expressions', () => {
     {
       kind: CompletionItemKind.Field,
       label: '__SOBJECT_FIELDS_PLACEHOLDER',
-      data: { soqlContext: { sobjectName: 'Account' } },
+      data: {
+        soqlContext: {
+          sobjectName: 'Account',
+          onlyAggregatable: true,
+          onlyTypes: ['double', 'int', 'currency', 'percent'],
+        },
+      },
+    },
+  ]);
+
+  // COUNT is treated differently, always worth testing it separately
+  validateCompletionsFor('SELECT COUNT(|) FROM Account', [
+    {
+      kind: CompletionItemKind.Field,
+      label: '__SOBJECT_FIELDS_PLACEHOLDER',
+      data: {
+        soqlContext: {
+          sobjectName: 'Account',
+          onlyAggregatable: true,
+          onlyTypes: [
+            'date',
+            'datetime',
+            'double',
+            'int',
+            'string',
+            'combobox',
+            'currency',
+            'DataCategoryGroupReference',
+            'email',
+            'id',
+            'masterrecord',
+            'percent',
+            'phone',
+            'picklist',
+            'reference',
+            'textarea',
+            'url',
+          ],
+        },
+      },
+    },
+  ]);
+
+  validateCompletionsFor('SELECT MAX(|) FROM Account', [
+    {
+      kind: CompletionItemKind.Field,
+      label: '__SOBJECT_FIELDS_PLACEHOLDER',
+      data: {
+        soqlContext: {
+          sobjectName: 'Account',
+          onlyAggregatable: true,
+          onlyTypes: [
+            'date',
+            'datetime',
+            'double',
+            'int',
+            'string',
+            'time',
+            'combobox',
+            'currency',
+            'DataCategoryGroupReference',
+            'email',
+            'id',
+            'masterrecord',
+            'percent',
+            'phone',
+            'picklist',
+            'reference',
+            'textarea',
+            'url',
+          ],
+        },
+      },
     },
   ]);
 
@@ -586,7 +691,13 @@ describe('SELECT Function expressions', () => {
     {
       kind: CompletionItemKind.Field,
       label: '__SOBJECT_FIELDS_PLACEHOLDER',
-      data: { soqlContext: { sobjectName: 'Account' } },
+      data: {
+        soqlContext: {
+          sobjectName: 'Account',
+          onlyAggregatable: true,
+          onlyTypes: ['double', 'int', 'currency', 'percent'],
+        },
+      },
     },
   ]);
 
@@ -594,17 +705,43 @@ describe('SELECT Function expressions', () => {
     {
       kind: CompletionItemKind.Field,
       label: '__SOBJECT_FIELDS_PLACEHOLDER',
-      data: { soqlContext: { sobjectName: 'Account' } },
+      data: {
+        soqlContext: {
+          sobjectName: 'Account',
+          onlyAggregatable: true,
+          onlyTypes: ['double', 'int', 'currency', 'percent'],
+        },
+      },
     },
   ]);
   validateCompletionsFor('SELECT Id, AVG(|) FROM Account', [
     {
       kind: CompletionItemKind.Field,
       label: '__SOBJECT_FIELDS_PLACEHOLDER',
-      data: { soqlContext: { sobjectName: 'Account' } },
+      data: {
+        soqlContext: {
+          sobjectName: 'Account',
+          onlyAggregatable: true,
+          onlyTypes: ['double', 'int', 'currency', 'percent'],
+        },
+      },
     },
   ]);
 });
+
+function expectKeyword(
+  word: string,
+  extraOptions: Partial<CompletionItem> = {}
+): CompletionItem {
+  return Object.assign(
+    {
+      kind: CompletionItemKind.Keyword,
+      label: word,
+      insertText: word,
+    },
+    extraOptions
+  );
+}
 
 function expectKeywords(...words: string[]): CompletionItem[] {
   return words.map((s) => ({
@@ -681,12 +818,125 @@ function sobjectsFieldsFor(sobjectName: string) {
       data: { soqlContext: { sobjectName: sobjectName } },
     },
     ...expectKeywords('TYPEOF', 'DISTANCE('),
-    aggregateFunctionSnippet('AVG'),
-    aggregateFunctionSnippet('MIN'),
-    aggregateFunctionSnippet('MAX'),
-    aggregateFunctionSnippet('SUM'),
-    aggregateFunctionSnippet('COUNT'),
-    aggregateFunctionSnippet('COUNT_DISTINCT'),
+    functionCallItem('AVG'),
+    functionCallItem('MIN'),
+    functionCallItem('MAX'),
+    functionCallItem('SUM'),
+    functionCallItem('COUNT'),
+    functionCallItem('COUNT_DISTINCT'),
+
+    /***
+    functionSnippet('AVG', {
+      sobjectName: sobjectName,
+      // notNillable?: boolean;
+      onlyTypes: ['double', 'int', 'currency', 'percent'],
+      onlyAggregatable: true,
+    }),
+    functionSnippet('MIN', {
+      sobjectName: sobjectName,
+      // notNillable?: boolean;
+      onlyTypes: [
+        'date',
+        'datetime',
+        'double',
+        'int',
+        'string',
+        'time',
+        'combobox',
+        'currency',
+        'DataCategoryGroupReference', // ?!
+        'email',
+        'id',
+        'masterrecord',
+        'percent',
+        'phone',
+        'picklist',
+        'reference',
+        'textarea',
+        'url',
+      ],
+      onlyAggregatable: true,
+    }),
+    functionSnippet('MAX', {
+      sobjectName: sobjectName,
+      // notNillable?: boolean;
+      onlyTypes: [
+        'date',
+        'datetime',
+        'double',
+        'int',
+        'string',
+        'time',
+        'combobox',
+        'currency',
+        'DataCategoryGroupReference', // ?!
+        'email',
+        'id',
+        'masterrecord',
+        'percent',
+        'phone',
+        'picklist',
+        'reference',
+        'textarea',
+        'url',
+      ],
+      onlyAggregatable: true,
+    }),
+    functionSnippet('SUM', {
+      sobjectName: sobjectName,
+      // notNillable?: boolean;
+      onlyTypes: ['int', 'double', 'currency', 'percent'],
+      onlyAggregatable: true,
+    }),
+    functionSnippet('COUNT', {
+      sobjectName: sobjectName,
+      // notNillable?: boolean;
+      onlyTypes: [
+        'date',
+        'datetime',
+        'double',
+        'int',
+        'string',
+        'combobox',
+        'currency',
+        'DataCategoryGroupReference', // ?!
+        'email',
+        'id',
+        'masterrecord',
+        'percent',
+        'phone',
+        'picklist',
+        'reference',
+        'textarea',
+        'url',
+      ],
+      onlyAggregatable: true,
+    }),
+    functionSnippet('COUNT_DISTINCT', {
+      sobjectName: sobjectName,
+      // notNillable?: boolean;
+      onlyTypes: [
+        'date',
+        'datetime',
+        'double',
+        'int',
+        'string',
+        'combobox',
+        'currency',
+        'DataCategoryGroupReference', // ?!
+        'email',
+        'id',
+        'masterrecord',
+        'percent',
+        'phone',
+        'picklist',
+        'reference',
+        'textarea',
+        'url',
+      ],
+      onlyAggregatable: true,
+    }),
+    ****/
     INNER_SELECT_snippet,
   ];
 }
