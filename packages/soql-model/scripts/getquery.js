@@ -13,21 +13,7 @@ var selectExprs = fields.map(
 var queryModel = new model.Impl.QueryImpl(
   new model.Impl.SelectExprsImpl(selectExprs),
   new model.Impl.FromImpl(sobjectName),
-  new model.Impl.WhereImpl(
-    new model.Impl.AndOrConditionImpl(
-      new model.Impl.FieldCompareConditionImpl(
-        new model.Impl.FieldRefImpl('field1'),
-        model.Soql.CompareOperator.LT,
-        new model.Impl.LiteralImpl(model.Soql.LiteralType.Number, '5')
-      ),
-      'And',
-      new model.Impl.FieldCompareConditionImpl(
-        new model.Impl.FieldRefImpl('field2'),
-        model.Soql.CompareOperator.GT,
-        new model.Impl.LiteralImpl(model.Soql.LiteralType.Number, '5')
-      )
-    )
-  ),
+  new model.Impl.UnmodeledSyntaxImpl('WHERE field1 = 5'),
   undefined,
   undefined,
   new model.Impl.OrderByImpl([

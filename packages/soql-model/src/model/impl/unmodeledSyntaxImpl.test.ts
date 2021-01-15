@@ -9,13 +9,13 @@ import * as Impl from '.';
 
 describe('UnmodeledSyntaxImpl should', () => {
   it('store a string as unmodeledSyntax', () => {
-    const expected = { unmodeledSyntax: 'ronnie', reason: 'fake SOQL' };
-    const actual = new Impl.UnmodeledSyntaxImpl(expected.unmodeledSyntax, 'fake SOQL');
+    const expected = { unmodeledSyntax: 'ronnie' };
+    const actual = new Impl.UnmodeledSyntaxImpl(expected.unmodeledSyntax);
     expect(actual).toEqual(expected);
   });
   it('return stored syntax for toSoqlSyntax()', () => {
     const expected = 'keith';
-    const actual = new Impl.UnmodeledSyntaxImpl(expected, 'fake SOQL').toSoqlSyntax();
+    const actual = new Impl.UnmodeledSyntaxImpl(expected).toSoqlSyntax();
     expect(actual).toEqual(expected);
   });
 });

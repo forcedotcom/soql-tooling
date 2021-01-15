@@ -16,13 +16,13 @@ describe('FromImpl should', () => {
   it('store as and using clauses as unmodeled syntax', () => {
     const expected = {
       sobjectName: 'black',
-      as: { unmodeledSyntax: 'and', reason: 'unmodeled:as' },
-      using: { unmodeledSyntax: 'blue', reason: 'unmodeled:using' },
+      as: { unmodeledSyntax: 'and' },
+      using: { unmodeledSyntax: 'blue' },
     };
     const actual = new Impl.FromImpl(
       expected.sobjectName,
-      new Impl.UnmodeledSyntaxImpl(expected.as.unmodeledSyntax, 'unmodeled:as'),
-      new Impl.UnmodeledSyntaxImpl(expected.using.unmodeledSyntax, 'unmodeled:using')
+      new Impl.UnmodeledSyntaxImpl(expected.as.unmodeledSyntax),
+      new Impl.UnmodeledSyntaxImpl(expected.using.unmodeledSyntax)
     );
     expect(actual).toEqual(expected);
   });
@@ -30,8 +30,8 @@ describe('FromImpl should', () => {
     const expected = 'FROM exile on main';
     const actual = new Impl.FromImpl(
       'exile',
-      new Impl.UnmodeledSyntaxImpl('on', 'unmodeled:as'),
-      new Impl.UnmodeledSyntaxImpl('main', 'unmodeled:using')
+      new Impl.UnmodeledSyntaxImpl('on'),
+      new Impl.UnmodeledSyntaxImpl('main')
     ).toSoqlSyntax();
     expect(actual).toEqual(expected);
   });

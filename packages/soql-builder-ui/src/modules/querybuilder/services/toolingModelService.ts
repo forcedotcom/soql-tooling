@@ -16,7 +16,6 @@ import {
   convertUiModelToSoql,
   convertSoqlToUiModel
 } from '../services/soqlUtils';
-import { createQueryTelemetry } from './telemetryUtils';
 
 // This is to satisfy TS and stay dry
 type IMap = Map<string, string | List<string>>;
@@ -27,7 +26,7 @@ export interface ToolingModel extends IMap {
   orderBy: List<Map>;
   limit: string;
   errors: List<Map>;
-  unsupported: List<Map>;
+  unsupported: string[];
 }
 // Public inteface for accessing modelService.query
 export interface ToolingModelJson extends JsonMap {
@@ -36,7 +35,7 @@ export interface ToolingModelJson extends JsonMap {
   orderBy: JsonMap[];
   limit: string;
   errors: JsonMap[];
-  unsupported: JsonMap[];
+  unsupported: string[];
   originalSoqlStatement: string;
 }
 
@@ -116,7 +115,7 @@ export class ToolingModelService {
   }
 
   private hasOrderByField(field: string) {
-    return this.getOrderBy().findIndex((item) => item.get('field') === field);
+    return this.getOrderBy().findIndex( (item) => item.get('field') === field );
   }
 
   public addUpdateOrderByField(orderByObj: JsonMap) {
@@ -124,11 +123,10 @@ export class ToolingModelService {
     let updatedOrderBy;
     const existingIndex = this.hasOrderByField(orderByObj.field);
     if (existingIndex > -1) {
-      updatedOrderBy = this.getOrderBy().update(existingIndex, () => {
-        return fromJS(orderByObj);
-      });
-    } else {
-      updatedOrderBy = this.getOrderBy().push(fromJS(orderByObj));
+      updatedOrderBy = this.getOrderBy().update(existingIndex, () => { return fromJS(orderByObj)});
+    }
+    else {
+      updatedOrderBy = this.getOrderBy().push(fromJS(orderByObj))
     }
     const newModel = currentModel.set(
       'orderBy',
@@ -163,14 +161,9 @@ export class ToolingModelService {
           const originalSoqlStatement = event.payload as string;
           const soqlJSModel = convertSoqlToUiModel(originalSoqlStatement);
           soqlJSModel.originalSoqlStatement = originalSoqlStatement;
+
           const updatedModel = fromJS(soqlJSModel);
           if (!updatedModel.equals(this.model.getValue())) {
-            if (
-              originalSoqlStatement.length &&
-              (soqlJSModel.errors.length || soqlJSModel.unsupported.length)
-            ) {
-              this.sendTelemetryToBackend(soqlJSModel);
-            }
             this.model.next(updatedModel);
           }
           break;
@@ -200,18 +193,6 @@ export class ToolingModelService {
       this.messageService.sendMessage({
         type: MessageType.UI_SOQL_CHANGED,
         payload
-      });
-    } catch (e) {
-      console.error(e);
-    }
-  }
-
-  public sendTelemetryToBackend(query: ToolingModelJson) {
-    try {
-      const telemetryMetrics = createQueryTelemetry(query);
-      this.messageService.sendMessage({
-        type: MessageType.UI_TELEMETRY,
-        payload: telemetryMetrics
       });
     } catch (e) {
       console.error(e);

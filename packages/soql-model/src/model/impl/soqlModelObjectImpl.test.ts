@@ -9,7 +9,7 @@ import * as Impl from '.';
 import { SyntaxOptions } from '../model';
 
 describe('SoqlModelObjectImpl should', () => {
-  const testModelObject = new Impl.UnmodeledSyntaxImpl('mick', 'fake SOQL');
+  const testModelObject = new Impl.UnmodeledSyntaxImpl('mick');
   it('use SyntaxOptions that are passed in', () => {
     const expectedSyntaxOptions = new SyntaxOptions();
     expectedSyntaxOptions.indent = 50;

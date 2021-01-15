@@ -59,7 +59,6 @@ export default class App extends LightningElement {
   hasUnrecoverableError = true;
   isFromLoading = false;
   isFieldsLoading = false;
-  isQueryRunning = false;
 
   @track
   query: ToolingModelJson = ToolingModelService.toolingModelTemplate;
@@ -91,10 +90,6 @@ export default class App extends LightningElement {
         sobjectMetadata && sobjectMetadata.fields
           ? sobjectMetadata.fields.map((f) => f.name)
           : [];
-    });
-
-    this.toolingSDK.queryRunState.subscribe((running: boolean) => {
-      this.isQueryRunning = false;
     });
     this.loadSObjectDefinitions();
     this.modelService.restoreViewState();
@@ -196,7 +191,6 @@ export default class App extends LightningElement {
   }
 
   handleRunQuery() {
-    this.isQueryRunning = true;
     const runQueryEvent: SoqlEditorEvent = { type: MessageType.RUN_SOQL_QUERY };
     this.messageService.sendMessage(runQueryEvent);
   }
