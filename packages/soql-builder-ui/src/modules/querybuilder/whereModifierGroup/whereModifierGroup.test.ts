@@ -168,4 +168,71 @@ describe('WhereModifierGroup should', () => {
       expect(defaultOption.innerHTML.toLowerCase()).toContain('loading');
     });
   });
+
+  it('display the correct criteria value for strings', async () => {
+    modifierGroup.selectedField = 'foo';
+    modifierGroup.selectedOperator = 'EQ';
+    modifierGroup.criteria = { type: 'STRING', value: "'HELLO'" };
+    document.body.appendChild(modifierGroup);
+
+    const { criteriaInputEl } = getModifierElements();
+    expect(criteriaInputEl.value).toEqual('HELLO');
+  });
+
+  it('display the correct criteria value for non-strings', async () => {
+    modifierGroup.selectedField = 'foo';
+    modifierGroup.selectedOperator = 'EQ';
+    modifierGroup.criteria = { type: 'BOOLEAN', value: "TRUE" };
+    document.body.appendChild(modifierGroup);
+
+    const { criteriaInputEl } = getModifierElements();
+    expect(criteriaInputEl.value).toEqual('TRUE');
+  });
+
+  it('normalize criteria input for strings', async () => {
+    modifierGroup.selectedField = 'foo';
+    modifierGroup.selectedOperator = 'EQ';
+    modifierGroup.criteria = { type: 'STRING', value: "'HELLO'" };
+    modifierGroup.sobjectMetadata = {
+      fields: [
+        { name: 'foo', type: 'string' }
+      ]
+    };
+    let resultingCriteria;
+    const handler = (e => {
+      resultingCriteria = e.detail.criteria;
+    });
+    modifierGroup.addEventListener('modifiergroupselection', handler);
+
+    document.body.appendChild(modifierGroup);
+
+    const { criteriaInputEl } = getModifierElements();
+    criteriaInputEl.value = 'WORLD';
+    criteriaInputEl.dispatchEvent(new Event('input'));
+
+    expect(resultingCriteria).toEqual({ type: 'STRING', value: "'WORLD'" });
+  });
+
+  it('normalize criteria input for non-strings', async () => {
+    modifierGroup.selectedField = 'foo';
+    modifierGroup.selectedOperator = 'EQ';
+    modifierGroup.criteria = { type: 'BOOLEAN', value: "TRUE" };
+    modifierGroup.sobjectMetadata = {
+      fields: [
+        { name: 'foo', type: 'boolean' }
+      ]
+    };
+    let resultingCriteria;
+    const handler = (e => {
+      resultingCriteria = e.detail.criteria;
+    });
+    modifierGroup.addEventListener('modifiergroupselection', handler);
+    document.body.appendChild(modifierGroup);
+
+    const { criteriaInputEl } = getModifierElements();
+    criteriaInputEl.value = 'FALSE';
+    criteriaInputEl.dispatchEvent(new Event('input'));
+
+    expect(resultingCriteria).toEqual({ type: 'BOOLEAN', value: 'FALSE' });
+  });
 });

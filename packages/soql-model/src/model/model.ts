@@ -25,6 +25,34 @@ export enum ErrorType {
   INCOMPLETELIMIT = 'INCOMPLETELIMIT'
 }
 
+export enum SObjectFieldType {
+  Address = 'address',
+  AnyType = 'anytype',
+  Base64 = 'base64',
+  Boolean = 'boolean',
+  Combobox = 'combobox',
+  ComplexValue = 'complexvalue',
+  Currency = 'currency',
+  Date = 'date',
+  DateTime = 'datetime',
+  Double = 'double',
+  Email = 'email',
+  EncryptedString = 'encryptedstring',
+  Id = 'id',
+  Integer = 'int',
+  Location = 'location',
+  Long = 'long',
+  MultiPicklist = 'multipicklist',
+  Percent = 'percent',
+  Phone = 'phone',
+  Picklist = 'picklist',
+  Reference = 'reference',
+  String = 'string',
+  TextArea = 'textarea',
+  Time = 'time',
+  Url = 'url'
+}
+
 export interface SoqlModelObject {
   toSoqlSyntax(options?: SyntaxOptions): string;
   errors?: ModelError[];

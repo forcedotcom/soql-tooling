@@ -12,7 +12,7 @@ import {
   ModelSerializer,
   ModelDeserializer
 } from '@salesforce/soql-model';
-import { ToolingModelJson } from './toolingModelService';
+import { ToolingModelJson } from './model';
 
 export function convertSoqlToUiModel(soql: string): ToolingModelJson {
   const queryModel = new ModelDeserializer(soql).deserialize();
@@ -191,4 +191,38 @@ function convertSoqlModelToSoql(soqlModel: Soql.Query): string {
   const serializer = new ModelSerializer(soqlModel);
   const query = serializer.serialize();
   return query;
+}
+
+export function soqlStringLiteralToDisplayValue(soqlString: string): string {
+  let displayValue = soqlString;
+
+  // unquote
+  if (displayValue.startsWith("'")) {
+    displayValue = displayValue.substring(1);
+  }
+  if (displayValue.endsWith("'")) {
+    displayValue = displayValue.substring(0, displayValue.length - 1);
+  }
+
+  // unescape
+  displayValue = displayValue.replace(/\\"/g, '"');
+  displayValue = displayValue.replace(/\\'/g, "'");
+  displayValue = displayValue.replace(/\\\\/g, '\\');
+
+  return displayValue;
+}
+
+export function displayValueToSoqlStringLiteral(displayString: string): string {
+  // string
+  let normalized = displayString;
+
+  // escape
+  normalized = normalized.replace(/\\/g, '\\\\');
+  normalized = normalized.replace(/'/g, "\\'");
+  normalized = normalized.replace(/"/g, '\\"');
+
+  // quote
+  normalized = `'${normalized}'`;
+
+  return normalized;
 }
