@@ -16,8 +16,26 @@ describe('SoqlUtils', () => {
     errors: [],
     unsupported: []
   };
+  const uiModelErrors: ToolingModelJson = {
+    sObject: 'Account',
+    fields: ['Name'],
+    orderBy: [],
+    limit: '',
+    errors: [
+      {
+        type: 'UNKNOWN'
+      }
+    ],
+    unsupported: [
+      {
+        unmodeledSyntax: 'GROUP BY',
+        reason: 'unmodeled:group-by'
+      }
+    ]
+  };
   const soqlOne =
     'Select Name, Id from Account ORDER BY Name ASC NULLS FIRST LIMIT 11';
+  const soqlError = 'Select Name from Account GROUP BY';
   it('transform UI Model to Soql', () => {
     const transformedSoql = convertUiModelToSoql(uiModelOne);
     expect(transformedSoql).toContain(uiModelOne.fields[0]);
@@ -28,8 +46,24 @@ describe('SoqlUtils', () => {
     expect(transformedSoql).toContain(uiModelOne.orderBy[0].nulls);
     expect(transformedSoql).toContain('11');
   });
+  it('transform UI Model to Soql but leaves out errors/unsupported', () => {
+    const transformedSoql = convertUiModelToSoql(uiModelErrors);
+    expect(transformedSoql).not.toContain(
+      uiModelErrors.unsupported[0].unmodeledSyntax
+    );
+    expect(transformedSoql).not.toContain(uiModelErrors.errors[0].type);
+  });
   it('transforms Soql to UI Model', () => {
     const transformedUiModel = convertSoqlToUiModel(soqlOne);
     expect(transformedUiModel).toEqual(uiModelOne);
+  });
+  it('transforms Soql to UI Model with errors in soql syntax', () => {
+    const transformedUiModel = convertSoqlToUiModel(soqlError);
+    expect(transformedUiModel.errors[0].type).toEqual(
+      uiModelErrors.errors[0].type
+    );
+    expect(transformedUiModel.unsupported[0].reason).toEqual(
+      uiModelErrors.unsupported[0].reason
+    );
   });
 });

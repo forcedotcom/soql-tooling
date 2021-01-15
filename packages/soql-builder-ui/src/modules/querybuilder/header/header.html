@@ -8,6 +8,13 @@
 
 <template>
   <header>
-    <button class="run-button" onclick={handleRunQuery}>Run Query</button>
+    <div class="container">
+      <template if:false={isRunning}>
+        <button class="run-button" onclick={handleRunQuery}>Run Query</button>
+      </template>
+      <template if:true={isRunning}>
+        <button class="btn--disabled">Running...</button>
+      </template>
+    </div>
   </header>
 </template>

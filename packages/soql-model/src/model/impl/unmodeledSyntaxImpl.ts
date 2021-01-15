@@ -10,10 +10,8 @@ import { SoqlModelObjectImpl } from './soqlModelObjectImpl';
 
 export class UnmodeledSyntaxImpl extends SoqlModelObjectImpl
   implements Soql.UnmodeledSyntax {
-  public unmodeledSyntax: string;
-  public constructor(syntax: string) {
+  public constructor(public unmodeledSyntax: string, public reason: string) {
     super();
-    this.unmodeledSyntax = syntax;
   }
   public toSoqlSyntax(options?: Soql.SyntaxOptions): string {
     return this.unmodeledSyntax;

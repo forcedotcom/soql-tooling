@@ -144,6 +144,25 @@ describe('Tooling Model Service', () => {
     expect(query.unsupported.length).toEqual(0);
   });
 
+  it('Emit telemetry when error/unsupported in soql statement', () => {
+    (messageService.sendMessage as jest.Mock).mockClear();
+    const soqlText =
+      "Select Name1, Id1 from Account1 WHERE Name1 = 'Pickles' GROUP BY";
+    const soqlEvent = { ...soqlEditorEvent };
+    soqlEvent.payload = soqlText;
+    (messageService.messagesToUI as BehaviorSubject<SoqlEditorEvent>).next(
+      soqlEvent
+    );
+    expect(messageService.sendMessage).toHaveBeenCalled();
+    expect(
+      (messageService.sendMessage as jest.Mock).mock.calls[0][0].type
+    ).toEqual(MessageType.UI_TELEMETRY);
+    // does not expose any user data
+    expect(
+      JSON.stringify((messageService.sendMessage as jest.Mock).mock.calls[0][0])
+    ).not.toContain('Pickles');
+  });
+
   it('should add, update, remove order by fields in model', () => {
     (messageService.setState as jest.Mock).mockClear();
     expect(messageService.setState).toHaveBeenCalledTimes(0);
@@ -164,7 +183,11 @@ describe('Tooling Model Service', () => {
 
     // Yet Update Field IF Direction and/or Nulls Change
     expect(query!.orderBy[0].order).toBeDefined();
-    const updatedOrderBy = { field: 'orderBy1', order: undefined, nulls: 'NULLS LAST' };
+    const updatedOrderBy = {
+      field: 'orderBy1',
+      order: undefined,
+      nulls: 'NULLS LAST'
+    };
     modelService.addUpdateOrderByField(updatedOrderBy);
     expect(query!.orderBy[0].order).not.toBeDefined();
 

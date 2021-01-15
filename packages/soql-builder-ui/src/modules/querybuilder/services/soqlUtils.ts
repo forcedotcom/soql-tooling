@@ -62,7 +62,7 @@ export function convertSoqlModelToUiModel(
       const prop = queryModel[key];
       if (typeof prop === 'object') {
         if (SoqlModelUtils.containsUnmodeledSyntax(prop)) {
-          unsupported.push(prop.unmodeledSyntax);
+          SoqlModelUtils.getUnmodeledSyntax(prop, unsupported);
         }
       }
     }
