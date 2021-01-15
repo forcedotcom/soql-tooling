@@ -9,6 +9,10 @@ import * as Impl from './impl';
 import { AndOr, Condition } from './model';
 
 export namespace SoqlModelUtils {
+  /**
+   * This method returns quickly as soon as it finds unmodeled syntax.
+   * @param model
+   */
   export function containsUnmodeledSyntax(model: object): boolean {
     if ('unmodeledSyntax' in model) {
       return true;
@@ -24,6 +28,28 @@ export namespace SoqlModelUtils {
       }
     }
     return false;
+  }
+
+  /**
+   * This method collects all the unmodelled syntax it finds into a collection and returns it.
+   * @param model
+   * @param collector
+   */
+  export function getUnmodeledSyntax(
+    model: object,
+    collector?: Impl.UnmodeledSyntaxImpl[]
+  ): Impl.UnmodeledSyntaxImpl[] {
+    collector = collector || [];
+    if ('unmodeledSyntax' in model) {
+      collector.push(model as Impl.UnmodeledSyntaxImpl);
+      return collector;
+    }
+    for (const property in model) {
+      if (typeof (model as any)[property] === 'object') {
+        getUnmodeledSyntax((model as any)[property], collector);
+      }
+    }
+    return collector;
   }
 
   export function containsError(model: object): boolean {

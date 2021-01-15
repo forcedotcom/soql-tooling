@@ -10,11 +10,7 @@ import { LightningElement, track } from 'lwc';
 import { ToolingSDK } from '../services/toolingSDK';
 import { MessageServiceFactory } from '../services/message/messageServiceFactory';
 
-import {
-  ToolingModelService,
-  // eslint-disable-next-line no-unused-vars
-  ToolingModelJson
-} from '../services/toolingModelService';
+import { ToolingModelService } from '../services/toolingModelService';
 // eslint-disable-next-line no-unused-vars
 import { IMessageService } from '../services/message/iMessageService';
 import {
@@ -28,7 +24,7 @@ import {
   recoverableLimitErrors
 } from '../error/errorModel';
 import { getBodyClass } from '../services/globals';
-import { SObjectTypeUtils } from '../services/sobjectUtils';
+import { ToolingModelJson } from '../services/model';
 
 export default class App extends LightningElement {
   @track
@@ -61,6 +57,7 @@ export default class App extends LightningElement {
   hasUnrecoverableError = true;
   isFromLoading = false;
   isFieldsLoading = false;
+  isQueryRunning = false;
 
   @track
   query: ToolingModelJson = ToolingModelService.toolingModelTemplate;
@@ -73,13 +70,7 @@ export default class App extends LightningElement {
   }
 
   connectedCallback() {
-    this.modelService.UIModel.subscribe((newQuery: ToolingModelJson) => {
-      this.inspectErrors(newQuery.errors);
-      if (this.hasUnrecoverableError === false) {
-        this.loadSObjectMetadata(newQuery);
-      }
-      this.query = newQuery;
-    });
+    this.modelService.UIModel.subscribe(this.uiModelSubscriber.bind(this));
 
     this.toolingSDK.sobjects.subscribe((objs: string[]) => {
       this.isFromLoading = false;
@@ -94,6 +85,10 @@ export default class App extends LightningElement {
           : [];
       this.sobjectMetadata = sobjectMetadata;
     });
+
+    this.toolingSDK.queryRunState.subscribe(() => {
+      this.isQueryRunning = false;
+    });
     this.loadSObjectDefinitions();
     this.modelService.restoreViewState();
   }
@@ -104,6 +99,17 @@ export default class App extends LightningElement {
       this.theme = 'dark';
     } else if (themeClass.indexOf('vscode-high-contrast') > -1) {
       this.theme = 'contrast';
+    }
+  }
+
+  uiModelSubscriber(newQuery: ToolingModelJson) {
+    // only re-render if incoming soql statement is different
+    if (this.query.originalSoqlStatement !== newQuery.originalSoqlStatement) {
+      this.inspectErrors(newQuery.errors);
+      if (this.hasUnrecoverableError === false) {
+        this.loadSObjectMetadata(newQuery);
+      }
+      this.query = newQuery;
     }
   }
 
@@ -203,6 +209,7 @@ export default class App extends LightningElement {
   }
 
   handleRunQuery() {
+    this.isQueryRunning = true;
     const runQueryEvent: SoqlEditorEvent = { type: MessageType.RUN_SOQL_QUERY };
     this.messageService.sendMessage(runQueryEvent);
   }

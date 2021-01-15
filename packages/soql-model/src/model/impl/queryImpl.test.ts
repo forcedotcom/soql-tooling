@@ -14,14 +14,14 @@ describe('QueryImpl should', () => {
       select: { selectExpressions: [] },
       from: { sobjectName: 'songs' },
       where: { condition: { field: { fieldName: 'paint_it' }, operator: '=', compareValue: { type: 'STRING', value: "'black'" } } },
-      with: { unmodeledSyntax: 'gimme shelter' },
-      groupBy: { unmodeledSyntax: 'start me up' },
+      with: { unmodeledSyntax: 'gimme shelter', reason: 'unmodeled:with' },
+      groupBy: { unmodeledSyntax: 'start me up', reason: 'unmodeled:group-by' },
       orderBy: { orderByExpressions: [{ field: { fieldName: 'angie' } }] },
       limit: { limit: 5 },
-      offset: { unmodeledSyntax: 'wild horses' },
-      bind: { unmodeledSyntax: 'miss you' },
-      recordTrackingType: { unmodeledSyntax: 'satisfaction' },
-      update: { unmodeledSyntax: 'under my thumb' },
+      offset: { unmodeledSyntax: 'wild horses', reason: 'unmodeled:offset' },
+      bind: { unmodeledSyntax: 'miss you', reason: 'unmodeled:bind' },
+      recordTrackingType: { unmodeledSyntax: 'satisfaction', reason: 'unmodeled:record-tracking' },
+      update: { unmodeledSyntax: 'under my thumb', reason: 'unmodeled:update' },
     };
     const actual = new Impl.QueryImpl(
       new Impl.SelectExprsImpl([]),
@@ -31,14 +31,14 @@ describe('QueryImpl should', () => {
         CompareOperator.EQ,
         new Impl.LiteralImpl(LiteralType.String, expected.where.condition.compareValue.value)
       )),
-      new Impl.UnmodeledSyntaxImpl(expected.with.unmodeledSyntax),
-      new Impl.UnmodeledSyntaxImpl(expected.groupBy.unmodeledSyntax),
+      new Impl.UnmodeledSyntaxImpl(expected.with.unmodeledSyntax, 'unmodeled:with'),
+      new Impl.UnmodeledSyntaxImpl(expected.groupBy.unmodeledSyntax, 'unmodeled:group-by'),
       new Impl.OrderByImpl([new Impl.OrderByExpressionImpl(new Impl.FieldRefImpl(expected.orderBy.orderByExpressions[0].field.fieldName))]),
       new Impl.LimitImpl(expected.limit.limit),
-      new Impl.UnmodeledSyntaxImpl(expected.offset.unmodeledSyntax),
-      new Impl.UnmodeledSyntaxImpl(expected.bind.unmodeledSyntax),
-      new Impl.UnmodeledSyntaxImpl(expected.recordTrackingType.unmodeledSyntax),
-      new Impl.UnmodeledSyntaxImpl(expected.update.unmodeledSyntax)
+      new Impl.UnmodeledSyntaxImpl(expected.offset.unmodeledSyntax, 'unmodeled:offset'),
+      new Impl.UnmodeledSyntaxImpl(expected.bind.unmodeledSyntax, 'unmodeled:bind'),
+      new Impl.UnmodeledSyntaxImpl(expected.recordTrackingType.unmodeledSyntax, 'unmodeled:record-tracking'),
+      new Impl.UnmodeledSyntaxImpl(expected.update.unmodeledSyntax, 'unmodeled:update')
     );
     expect(actual).toEqual(expected);
   });
