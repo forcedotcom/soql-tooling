@@ -35,6 +35,7 @@ export default class App extends LightningElement {
   modelService: ToolingModelService;
   messageService: IMessageService;
   theme = 'light';
+  sobjectMetadata: any;
 
   get hasUnsupported() {
     return this.query && this.query.unsupported
@@ -82,6 +83,7 @@ export default class App extends LightningElement {
         sobjectMetadata && sobjectMetadata.fields
           ? sobjectMetadata.fields.map((f) => f.name).sort()
           : [];
+      this.sobjectMetadata = sobjectMetadata;
     });
 
     this.toolingSDK.queryRunState.subscribe(() => {
