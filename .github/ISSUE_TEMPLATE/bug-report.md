@@ -4,6 +4,7 @@ about: Create a report to help us improve
 title: ''
 labels: ''
 assignees: ''
+
 ---
 
 <!--
@@ -14,12 +15,13 @@ NOTICE: While GitHub is the preferred channel for reporting issues/feedback, thi
 FOR BUGS RELATED TO THE SALESFORCE CLI, please use this repository: https://github.com/forcedotcom/cli
 -->
 
+**Code Builder or Desktop**:
+
 **OS and version**:
 
 **VS Code Version**:
 
-**SFDX CLI Version**:
-
+**Browser Version (if applicable)**:
 
 ### Summary
 
@@ -41,3 +43,5 @@ _Describe what actually happened instead_.
 ### Additional information
 
 _Feel free to attach a screenshot_.
+
+**SFDX CLI Version**:

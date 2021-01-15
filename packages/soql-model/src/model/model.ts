@@ -12,7 +12,6 @@ export interface ModelError {
   message: string;
   lineNumber: number;
   charInLine: number;
-  grammarRule?: string;
 }
 
 export enum ErrorType {
@@ -109,107 +108,7 @@ export enum NullsOrder {
   Last = 'NULLS LAST'
 }
 
-export enum AndOr {
-  And = 'AND',
-  Or = 'OR'
-}
-
-export enum CompareOperator {
-  EQ = '=',
-  NOT_EQ = '!=',
-  ALT_NOT_EQ = '<>',
-  LT_EQ = '<=',
-  GT_EQ = '>=',
-  LT = '<',
-  GT = '>'
-}
-
-export enum IncludesOperator {
-  Includes = 'INCLUDES',
-  Excludes = 'EXCLUDES'
-}
-
-export enum InOperator {
-  In = 'IN',
-  NotIn = 'NOT IN'
-}
-
-
-export interface CompareValue extends SoqlModelObject {
-  // literal => Literal
-  // colon expression => UnmodeledSyntax
-}
-
-export enum LiteralType {
-  Boolean = 'BOOLEAN',
-  Currency = 'CURRENCY',
-  Date = 'DATE',
-  Null = 'NULL',
-  Number = 'NUMBER',
-  String = 'STRING'
-}
-
-export interface Literal extends CompareValue {
-  type: LiteralType;
-  value: string;
-}
-
-export interface Condition extends SoqlModelObject {
-  // ( nested-condition ) => NestedCondition
-  // NOT condition => NotCondition
-  // condition-1 AndOr condition-2 => AndOrCondition
-  // field CompareOperator value => FieldCompareCondition
-  // calculation CompareOperator value => UnmodeledSyntax
-  // distance CompareOperator value => UnmodeledSyntax
-  // field LIKE value => LikeCondition
-  // field IncludesOperator ( values ) => IncludesCondition
-  // field InOperator ( semi-join ) => UnmodeledSyntax
-  // field InOperator ( values ) => InListCondition
-}
-
-export interface NestedCondition extends Condition {
-  condition: Condition;
-}
-
-export interface NotCondition extends Condition {
-  condition: Condition;
-}
-
-export interface AndOrCondition extends Condition {
-  leftCondition: Condition;
-  andOr: AndOr;
-  rightCondition: Condition;
-}
-
-export interface FieldCompareCondition extends Condition {
-  field: Field;
-  operator: CompareOperator;
-  compareValue: CompareValue;
-}
-
-export interface LikeCondition extends Condition {
-  field: Field;
-  compareValue: CompareValue;
-}
-
-// Not in use yet
-export interface IncludesCondition extends Condition {
-  field: Field;
-  operator: IncludesOperator;
-  values: CompareValue[];
-}
-
-// Not in use yet
-export interface InListCondition extends Condition {
-  field: Field;
-  operator: InOperator;
-  values: CompareValue[];
-}
-
-export interface Where extends SoqlModelObject {
-  condition?: Condition;
-}
-
+export interface Where extends SoqlModelObject { }
 export interface With extends SoqlModelObject { }
 export interface GroupBy extends SoqlModelObject { }
 export interface Offset extends SoqlModelObject { }
@@ -222,8 +121,6 @@ export interface UnmodeledSyntax
   SelectExpression,
   Field,
   Where,
-  Condition,
-  CompareValue,
   With,
   GroupBy,
   Offset,
@@ -231,5 +128,4 @@ export interface UnmodeledSyntax
   RecordTrackingType,
   Update {
   unmodeledSyntax: string;
-  reason: string;
 }

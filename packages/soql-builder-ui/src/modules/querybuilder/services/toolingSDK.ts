@@ -9,6 +9,7 @@
 import { IMessageService } from './message/iMessageService';
 import { MessageType, SoqlEditorEvent } from './message/soqlEditorEvent';
 import { BehaviorSubject, Observable } from 'rxjs';
+import { throwStatement } from '../../../../../../../../Library/Caches/typescript/4.0/node_modules/@babel/types/lib/index';
 
 export class ToolingSDK {
   private messageService: IMessageService;
@@ -16,7 +17,6 @@ export class ToolingSDK {
 
   public sobjects: Observable = new BehaviorSubject<string[]>([]);
   public sobjectMetadata: Observable = new BehaviorSubject<any>({ fields: [] });
-  public queryRunState: Observable = new BehaviorSubject<boolean>(false);
 
   constructor(messageService: IMessageService) {
     this.messageService = messageService;
@@ -39,9 +39,7 @@ export class ToolingSDK {
           if (this.latestSObjectName) {
             this.loadSObjectMetatada(this.latestSObjectName);
           }
-        }
-        case MessageType.RUN_SOQL_QUERY_DONE: {
-          this.queryRunState.next(false);
+
         }
         default:
           break;

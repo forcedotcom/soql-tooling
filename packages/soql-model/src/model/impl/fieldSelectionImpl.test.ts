@@ -14,10 +14,10 @@ describe('FieldSelectionImpl should', () => {
     expect(actual).toEqual(expected);
   });
   it('store an unmodeled syntax object as the alias', () => {
-    const expected = { field: { fieldName: 'brian' }, alias: { unmodeledSyntax: 'bill', reason: 'unmodeled:alias' } };
+    const expected = { field: { fieldName: 'brian' }, alias: { unmodeledSyntax: 'bill' } };
     const actual = new Impl.FieldSelectionImpl(
       new Impl.FieldRefImpl(expected.field.fieldName),
-      new Impl.UnmodeledSyntaxImpl(expected.alias.unmodeledSyntax, 'unmodeled:alias')
+      new Impl.UnmodeledSyntaxImpl(expected.alias.unmodeledSyntax)
     );
     expect(actual).toEqual(expected);
   });
@@ -25,7 +25,7 @@ describe('FieldSelectionImpl should', () => {
     const expected = 'rolling stones';
     const actual = new Impl.FieldSelectionImpl(
       new Impl.FieldRefImpl('rolling'),
-      new Impl.UnmodeledSyntaxImpl('stones', 'unmodeled:alias')
+      new Impl.UnmodeledSyntaxImpl('stones')
     ).toSoqlSyntax();
     expect(actual).toEqual(expected);
   });

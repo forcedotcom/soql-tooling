@@ -3,8 +3,7 @@
   "extends": "../../tsconfig",
   "compilerOptions": {
     "rootDir": "src",
-    "outDir": "lib",
-    "declaration": true
+    "outDir": "lib"
   },
   "include": ["src"]
 }

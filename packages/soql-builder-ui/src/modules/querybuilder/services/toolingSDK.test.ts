@@ -100,13 +100,4 @@ describe('Tooling SDK Service', () => {
       fakeSObjectMetadata
     );
   });
-
-  it('Receive run_query_done message', () => {
-    const runStateObserver = jest.fn();
-    toolingSDK.queryRunState.subscribe(runStateObserver);
-    postMessageFromVSCode({
-      type: MessageType.RUN_SOQL_QUERY_DONE
-    });
-    expect(runStateObserver.mock.calls.length).toBe(2);
-  });
 });
