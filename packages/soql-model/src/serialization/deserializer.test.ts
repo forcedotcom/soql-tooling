@@ -59,10 +59,8 @@ const field = { fieldName: 'field' };
 
 const conditionFieldCompare = { field, operator: '=', compareValue: literalNumber };
 const conditionLike = { field, compareValue: literalString };
-const conditionInList = { unmodeledSyntax: "field IN ( 'HelloWorld', 'other value' )", reason: 'unmodeled:in-list-condition' }
-const conditionIncludes = { unmodeledSyntax: "field INCLUDES ( 'HelloWorld', 'other value' )", reason: 'unmodeled:includes-condition' }
-// uncomment when in-list conditions are supported----const conditionInList = { field, operator: 'IN', values: [literalString, { ...literalString, value: "'other value'" }] };
-// uncomment when includes conditions are supported---const conditionIncludes = { field, operator: 'INCLUDES', values: [literalString, { ...literalString, value: "'other value'" }] };
+const conditionInList = { field, operator: 'IN', values: [literalString, { ...literalString, value: "'other value'" }] };
+const conditionIncludes = { field, operator: 'INCLUDES', values: [literalString, { ...literalString, value: "'other value'" }] };
 const conditionAndOr = { leftCondition: conditionFieldCompare, andOr: 'AND', rightCondition: conditionLike };
 const conditionNested = { condition: conditionFieldCompare };
 const conditionNot = { condition: conditionFieldCompare };
@@ -464,69 +462,65 @@ describe('ModelDeserializer should', () => {
     expect(actual).toEqual(expected);
   });
 
-  /* UNCOMMENT WHEN INCLUDES CONDITIONS ARE SUPPORTED */
-  // it('identify INCLUDES operator in condition', () => {
-  //   const expected = {
-  //     select: {
-  //       selectExpressions: [
-  //         testQueryModel.select.selectExpressions[0]
-  //       ]
-  //     },
-  //     from: testQueryModel.from,
-  //     where: { condition: { ...conditionIncludes, operator: 'INCLUDES' } },
-  //     errors: []
-  //   };
-  //   const actual = new ModelDeserializer("SELECT field1 FROM object1 WHERE field INCLUDES ( 'HelloWorld', 'other value' )").deserialize();
-  //   expect(actual).toEqual(expected);
-  // });
+  it('identify INCLUDES operator in condition', () => {
+    const expected = {
+      select: {
+        selectExpressions: [
+          testQueryModel.select.selectExpressions[0]
+        ]
+      },
+      from: testQueryModel.from,
+      where: { condition: { ...conditionIncludes, operator: 'INCLUDES' } },
+      errors: []
+    };
+    const actual = new ModelDeserializer("SELECT field1 FROM object1 WHERE field INCLUDES ( 'HelloWorld', 'other value' )").deserialize();
+    expect(actual).toEqual(expected);
+  });
 
-  /* UNCOMMENT WHEN INCLUDES CONDITIONS ARE SUPPORTED */
-  // it('identify EXCLUDES operator in condition', () => {
-  //   const expected = {
-  //     select: {
-  //       selectExpressions: [
-  //         testQueryModel.select.selectExpressions[0]
-  //       ]
-  //     },
-  //     from: testQueryModel.from,
-  //     where: { condition: { ...conditionIncludes, operator: 'EXCLUDES' } },
-  //     errors: []
-  //   };
-  //   const actual = new ModelDeserializer("SELECT field1 FROM object1 WHERE field EXCLUDES ( 'HelloWorld', 'other value' )").deserialize();
-  //   expect(actual).toEqual(expected);
-  // });
+  it('identify EXCLUDES operator in condition', () => {
+    const expected = {
+      select: {
+        selectExpressions: [
+          testQueryModel.select.selectExpressions[0]
+        ]
+      },
+      from: testQueryModel.from,
+      where: { condition: { ...conditionIncludes, operator: 'EXCLUDES' } },
+      errors: []
+    };
+    const actual = new ModelDeserializer("SELECT field1 FROM object1 WHERE field EXCLUDES ( 'HelloWorld', 'other value' )").deserialize();
+    expect(actual).toEqual(expected);
+  });
 
-  /* UNCOMMENT WHEN IN-LIST CONDITIONS ARE SUPPORTED */
-  // it('identify IN operator in condition', () => {
-  //   const expected = {
-  //     select: {
-  //       selectExpressions: [
-  //         testQueryModel.select.selectExpressions[0]
-  //       ]
-  //     },
-  //     from: testQueryModel.from,
-  //     where: { condition: { ...conditionInList, operator: 'IN' } },
-  //     errors: []
-  //   };
-  //   const actual = new ModelDeserializer("SELECT field1 FROM object1 WHERE field IN ( 'HelloWorld', 'other value' )").deserialize();
-  //   expect(actual).toEqual(expected);
-  // });
+  it('identify IN operator in condition', () => {
+    const expected = {
+      select: {
+        selectExpressions: [
+          testQueryModel.select.selectExpressions[0]
+        ]
+      },
+      from: testQueryModel.from,
+      where: { condition: { ...conditionInList, operator: 'IN' } },
+      errors: []
+    };
+    const actual = new ModelDeserializer("SELECT field1 FROM object1 WHERE field IN ( 'HelloWorld', 'other value' )").deserialize();
+    expect(actual).toEqual(expected);
+  });
 
-  /* UNCOMMENT WHEN IN-LIST CONDITIONS ARE SUPPORTED */
-  // it('identify NOT IN operator in condition', () => {
-  //   const expected = {
-  //     select: {
-  //       selectExpressions: [
-  //         testQueryModel.select.selectExpressions[0]
-  //       ]
-  //     },
-  //     from: testQueryModel.from,
-  //     where: { condition: { ...conditionInList, operator: 'NOT IN' } },
-  //     errors: []
-  //   };
-  //   const actual = new ModelDeserializer("SELECT field1 FROM object1 WHERE field NOT IN ( 'HelloWorld', 'other value' )").deserialize();
-  //   expect(actual).toEqual(expected);
-  // });
+  it('identify NOT IN operator in condition', () => {
+    const expected = {
+      select: {
+        selectExpressions: [
+          testQueryModel.select.selectExpressions[0]
+        ]
+      },
+      from: testQueryModel.from,
+      where: { condition: { ...conditionInList, operator: 'NOT IN' } },
+      errors: []
+    };
+    const actual = new ModelDeserializer("SELECT field1 FROM object1 WHERE field NOT IN ( 'HelloWorld', 'other value' )").deserialize();
+    expect(actual).toEqual(expected);
+  });
 
   it('identify includes condition as unmodeled syntax', () => {
     const expected = {

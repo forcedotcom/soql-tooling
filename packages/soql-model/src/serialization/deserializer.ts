@@ -650,27 +650,21 @@ class QueryListener implements SoqlParserListener {
       const value = this.toCompareValue(ctx.soqlLikeValue());
       return new Impl.LikeConditionImpl(field, value);
     } else if (ctx instanceof Parser.IncludesWhereExprContext) {
-      // UNCOMMENT WHEN INCLUDES CONDITIONS ARE SUPPORTED;
-      // FOR NOW FALL THROUGH TO UnmodeledSyntax
-      // const field = this.toField(ctx.soqlField());
-      // const opCtx = ctx.soqlIncludesOperator();
-      // const operator = opCtx.EXCLUDES()
-      //   ? Soql.IncludesOperator.Excludes
-      //   : Soql.IncludesOperator.Includes;
-      // const values = this.toCompareValues(ctx.soqlLiteralValues());
-      // return new Impl.IncludesConditionImpl(field, operator, values);
-      reason = 'unmodeled:includes-condition';
+      const field = this.toField(ctx.soqlField());
+      const opCtx = ctx.soqlIncludesOperator();
+      const operator = opCtx.EXCLUDES()
+        ? Soql.IncludesOperator.Excludes
+        : Soql.IncludesOperator.Includes;
+      const values = this.toCompareValues(ctx.soqlLiteralValues());
+      return new Impl.IncludesConditionImpl(field, operator, values);
     } else if (ctx instanceof Parser.InWhereExprContext) {
-      // UNCOMMENT WHEN INCLUDES CONDITIONS ARE SUPPORTED;
-      // FOR NOW FALL THROUGH TO UnmodeledSyntax
-      // const field = this.toField(ctx.soqlField());
-      // const opCtx = ctx.soqlInOperator();
-      // const operator = opCtx.NOT()
-      //   ? Soql.InOperator.NotIn
-      //   : Soql.InOperator.In;
-      // const values = this.toCompareValues(ctx.soqlLiteralValues());
-      // return new Impl.InListConditionImpl(field, operator, values);
-      reason = 'unmodeled:in-list-condition';
+      const field = this.toField(ctx.soqlField());
+      const opCtx = ctx.soqlInOperator();
+      const operator = opCtx.NOT()
+        ? Soql.InOperator.NotIn
+        : Soql.InOperator.In;
+      const values = this.toCompareValues(ctx.soqlLiteralValues());
+      return new Impl.InListConditionImpl(field, operator, values);
     } else if (ctx instanceof Parser.CalculatedWhereExprContext) {
       reason = 'unmodeled:calculated-condition';
     } else if (ctx instanceof Parser.DistanceWhereExprContext) {
