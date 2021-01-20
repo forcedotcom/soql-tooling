@@ -15,14 +15,13 @@
 }
 /*
 - rotate nueter symbol to mimic search icon
-- these styles are set for vs code, alignment is off in standalone
 */
 .select__wrapper::before {
   position: absolute;
   content: '⚲';
   font-size: 1.5em;
   left: 6px;
-  transform: rotate(45deg);
+  transform: rotate(-45deg);
   border-radius: 50%;
   background-color: transparent;
 }
