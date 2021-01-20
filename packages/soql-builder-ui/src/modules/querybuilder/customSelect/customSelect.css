@@ -52,7 +52,7 @@
   border: 1px solid
     var(--vscode-list-inactiveSelectionBackground, var(--soql-color-light-grey));
   border-radius: 3px;
-  width: var(--soql-input-width);
+  width: var(--soql-selection-container-width);
   min-height: 10%;
   max-height: 50%;
   overflow-y: scroll;
