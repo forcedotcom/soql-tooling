@@ -11,9 +11,7 @@ import { JsonMap } from '@salesforce/ts-types';
 import { AndOr } from '../services/model';
 
 interface ConditionTemplate {
-  field: undefined;
-  operator: undefined;
-  criteria: { type: null; value: null };
+  condition: any;
   index: number;
 }
 
@@ -28,9 +26,9 @@ export default class Where extends LightningElement {
   @track _conditionsStore: JsonMap[] = [];
   _andOr = AndOr.AND;
   conditionTemplate: ConditionTemplate = {
-    field: undefined,
-    operator: undefined,
-    criteria: { type: null, value: null },
+    condition: {
+      operator: '='
+    },
     index: this.templateIndex
   };
   lastModifierGroupIsComplete = false;

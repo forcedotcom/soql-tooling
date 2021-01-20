@@ -26,15 +26,15 @@ export function convertSoqlModelToUiModel(
   const unsupported = [];
   const fields =
     queryModel.select &&
-    (queryModel.select as Soql.SelectExprs).selectExpressions
+      (queryModel.select as Soql.SelectExprs).selectExpressions
       ? (queryModel.select as Soql.SelectExprs).selectExpressions
-          .filter((expr) => !SoqlModelUtils.containsUnmodeledSyntax(expr))
-          .map((expr) => {
-            if (expr.field.fieldName) {
-              return expr.field.fieldName;
-            }
-            return undefined;
-          })
+        .filter((expr) => !SoqlModelUtils.containsUnmodeledSyntax(expr))
+        .map((expr) => {
+          if (expr.field.fieldName) {
+            return expr.field.fieldName;
+          }
+          return undefined;
+        })
       : undefined;
 
   const sObject = queryModel.from && queryModel.from.sobjectName;
@@ -44,29 +44,17 @@ export function convertSoqlModelToUiModel(
     const conditionsObj = queryModel.where.condition;
 
     if (SoqlModelUtils.isSimpleGroup(conditionsObj)) {
-      where = SoqlModelUtils.simpleGroupToArray(conditionsObj);
-      where.conditions = where.conditions
-        .filter(
-          (condition) => !SoqlModelUtils.containsUnmodeledSyntax(condition)
-        )
-        .map((expression, index) => {
-          const operator =
-            expression instanceof Impl.LikeConditionImpl
-              ? 'LIKE'
-              : SoqlModelUtils.getKeyByValue(
-                  Soql.CompareOperator,
-                  expression.operator
-                );
-
-          return {
-            field: expression.field.fieldName,
-            operator: operator,
-            criteria: expression.compareValue,
-            index
-          };
-        });
-
-      where.andOr = queryModel.where.condition.andOr;
+      const simpleGroupArray = SoqlModelUtils.simpleGroupToArray(conditionsObj);
+      where = {
+        conditions: simpleGroupArray.conditions
+          .map((condition, index) => {
+            return {
+              condition,
+              index
+            };
+          }),
+        andOr: simpleGroupArray.andOr
+      };
     } else {
       unsupported.push('where:complex-group');
     }
@@ -74,15 +62,15 @@ export function convertSoqlModelToUiModel(
 
   const orderBy = queryModel.orderBy
     ? queryModel.orderBy.orderByExpressions
-        // TODO: Deal with empty OrderBy.  returns unmodelled syntax.
-        .filter((expr) => !SoqlModelUtils.containsUnmodeledSyntax(expr))
-        .map((expression) => {
-          return {
-            field: expression.field.fieldName,
-            order: expression.order,
-            nulls: expression.nullsOrder
-          };
-        })
+      // TODO: Deal with empty OrderBy.  returns unmodelled syntax.
+      .filter((expr) => !SoqlModelUtils.containsUnmodeledSyntax(expr))
+      .map((expression) => {
+        return {
+          field: expression.field.fieldName,
+          order: expression.order,
+          nulls: expression.nullsOrder
+        };
+      })
     : [];
 
   const limit = queryModel.limit
@@ -131,31 +119,62 @@ function convertUiModelToSoqlModel(uiModel: ToolingModelJson): Soql.Query {
 
   let whereExprsImpl;
   if (uiModel.where && uiModel.where.conditions.length) {
-    const whereExprsArray = uiModel.where.conditions.map((where) => {
-      const criteriaImpl =
-        where.criteria instanceof Impl.LiteralImpl
-          ? where.criteria
-          : new Impl.LiteralImpl(
-              where.criteria.type,
-              `${where.criteria.value}`
-            );
-      // this logic is temporary until we handle starts, ends with, contains
-      if (where.operator === 'LIKE') {
-        return new Impl.LikeConditionImpl(
-          new Impl.FieldRefImpl(where.field),
-          criteriaImpl
-        );
+    const simpleGroupArray = uiModel.where.conditions.map(condition => {
+      const uiModelCondition = condition.condition;
+      let returnCondition = undefined;
+
+      const CONDITION_TYPE_NONE = -1;
+      const CONDITION_TYPE_FIELDCOMPARE = 0;
+      const CONDITION_TYPE_IN = 1;
+      const CONDITION_TYPE_INCLUDES = 2;
+      const CONDITION_TYPE_LIKE = 3;
+      let conditionType = CONDITION_TYPE_NONE;
+      if (uiModelCondition.operator) {
+        conditionType = Object.keys(Soql.CompareOperator).map(key => Soql.CompareOperator[key]).includes(uiModelCondition.operator)
+          ? CONDITION_TYPE_FIELDCOMPARE
+          : Object.keys(Soql.InOperator).map(key => Soql.InOperator[key]).includes(uiModelCondition.operator)
+            ? CONDITION_TYPE_IN
+            : Object.keys(Soql.IncludesOperator).map(key => Soql.IncludesOperator[key]).includes(uiModelCondition.operator)
+              ? CONDITION_TYPE_INCLUDES
+              : CONDITION_TYPE_NONE
+      } else {
+        conditionType = CONDITION_TYPE_LIKE;
       }
 
-      return new Impl.FieldCompareConditionImpl(
-        new Impl.FieldRefImpl(where.field),
-        Soql.CompareOperator[where.operator],
-        criteriaImpl
-      );
-    });
+      const field = uiModelCondition.field && uiModelCondition.field.fieldName
+        ? new Impl.FieldRefImpl(uiModelCondition.field.fieldName)
+        : undefined;
 
-    const andOr = uiModel.where.andOr;
-    whereExprsImpl = SoqlModelUtils.arrayToSimpleGroup(whereExprsArray, andOr);
+      const compareValue = uiModelCondition.compareValue
+        ? new Impl.LiteralImpl(uiModelCondition.compareValue.type, uiModelCondition.compareValue.value)
+        : uiModelCondition.values
+          ? uiModelCondition.values.map(value => { new Impl.LiteralImpl(value.type, value.value) })
+          : undefined;
+
+      if (conditionType >= 0 && field && compareValue) {
+        switch (conditionType) {
+          case CONDITION_TYPE_FIELDCOMPARE: {
+            returnCondition = new Impl.FieldCompareConditionImpl(field, uiModelCondition.operator, compareValue);
+            break;
+          }
+          case CONDITION_TYPE_LIKE: {
+            returnCondition = new Impl.LikeConditionImpl(field, compareValue);
+            break;
+          }
+          case CONDITION_TYPE_IN: {
+            returnCondition = new Impl.InListConditionImpl(field, uiModelCondition.operator, compareValue);
+            break;
+          }
+          case CONDITION_TYPE_INCLUDES: {
+            returnCondition = new Impl.IncludesConditionImpl(field, uiModelCondition.operator, compareValue);
+            break;
+          }
+        }
+      }
+
+      return returnCondition;
+    });
+    whereExprsImpl = SoqlModelUtils.arrayToSimpleGroup(simpleGroupArray, uiModel.where.andOr);
   }
 
   const where =

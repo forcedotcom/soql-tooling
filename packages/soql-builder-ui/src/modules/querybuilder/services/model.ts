@@ -5,6 +5,7 @@
  *  For full license text, see LICENSE.txt file in the repo root or https://opensource.org/licenses/BSD-3-Clause
  *
  */
+import { Soql } from '@salesforce/soql-model';
 import { List, Map } from 'immutable';
 import { JsonMap } from '@salesforce/ts-types';
 
@@ -54,31 +55,58 @@ export interface ToolingModelJson extends JsonMap {
 export const operatorOptions = [
   {
     value: 'EQ',
-    displayValue: '='
+    displayValue: '=',
+    modelValue: Soql.CompareOperator.EQ
   },
   {
     value: 'NOT_EQ',
-    displayValue: '≠'
+    displayValue: '≠',
+    modelValue: Soql.CompareOperator.NOT_EQ
   },
   {
     value: 'LT',
-    displayValue: '<'
+    displayValue: '<',
+    modelValue: Soql.CompareOperator.LT
   },
   {
     value: 'LT_EQ',
-    displayValue: '≤'
+    displayValue: '≤',
+    modelValue: Soql.CompareOperator.LT_EQ
   },
   {
     value: 'GT',
-    displayValue: '>'
+    displayValue: '>',
+    modelValue: Soql.CompareOperator.GT
   },
   {
     value: 'GT_EQ',
-    displayValue: '≥'
+    displayValue: '≥',
+    modelValue: Soql.CompareOperator.GT_EQ
   },
   {
     value: 'LIKE',
-    displayValue: 'like'
+    displayValue: 'like',
+    modelValue: undefined
+  },
+  {
+    value: 'IN',
+    displayValue: 'in',
+    modelValue: Soql.InOperator.In
+  },
+  {
+    value: 'NOT_IN',
+    displayValue: 'not in',
+    modelValue: Soql.InOperator.NotIn
+  },
+  {
+    value: 'INCLUDES',
+    displayValue: 'includes',
+    modelValue: Soql.IncludesOperator.Includes
+  },
+  {
+    value: 'EXCLUDES',
+    displayValue: 'excludes',
+    modelValue: Soql.IncludesOperator.Excludes
   }
   /*
     use these operators once work to handle
