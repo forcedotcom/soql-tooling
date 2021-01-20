@@ -32,10 +32,7 @@ import {
   soqlFunctions,
 } from './completion/soql-functions';
 import { SoqlCompletionErrorStrategy } from './completion/SoqlCompletionErrorStrategy';
-import {
-  parseWHEREExprField,
-  parseFROMSObject,
-} from './completion/soql-query-analysis';
+import { SoqlQueryAnalyzer } from './completion/soql-query-analysis';
 
 const SOBJECTS_ITEM_LABEL_PLACEHOLDER = '__SOBJECTS_PLACEHOLDER';
 const SOBJECT_FIELDS_LABEL_PLACEHOLDER = '__SOBJECT_FIELDS_PLACEHOLDER';
@@ -78,16 +75,18 @@ export function completionsFor(
     completionTokenIndex
   );
 
+  const soqlQueryAnalyzer = new SoqlQueryAnalyzer(parsedQuery);
+
   const itemsFromTokens: CompletionItem[] = generateCandidatesFromTokens(
     c3Candidates.tokens,
-    parsedQuery,
+    soqlQueryAnalyzer,
     lexer,
     tokenStream,
     completionTokenIndex
   );
   const itemsFromRules: CompletionItem[] = generateCandidatesFromRules(
     c3Candidates.rules,
-    parsedQuery,
+    soqlQueryAnalyzer,
     tokenStream,
     completionTokenIndex
   );
@@ -134,7 +133,12 @@ function collectC3CompletionCandidates(
   return core.collectCandidates(completionTokenIndex, parsedQuery);
 }
 
+export function last(array: any[]) {
+  return array && array.length > 0 ? array[array.length - 1] : undefined;
+}
+
 const possibleIdentifierPrefix = /[\w]$/;
+const lineSeparator = /\n|\r|\r\n/g;
 export type CursorPosition = { line: number; column: number };
 /**
  * @returns the token index for which we want to provide completion candidates,
@@ -159,15 +163,22 @@ export function findCursorTokenIndex(
   for (let i = 0; i < tokenStream.size; i++) {
     const t = tokenStream.get(i);
 
-    let tokenStartCol = t.charPositionInLine;
-    let tokenEndCol = tokenStartCol + (t.text as string).length;
+    const tokenStartCol = t.charPositionInLine;
+    const tokenEndCol = tokenStartCol + (t.text as string).length;
+    const tokenStartLine = t.line;
+    const tokenEndLine =
+      t.type !== SoqlLexer.WS || !t.text
+        ? tokenStartLine
+        : tokenStartLine + (t.text.match(lineSeparator)?.length || 0);
 
+    // NOTE: tokenEndCol makes sense only of tokenStartLine === tokenEndLine
     if (
-      t.line == cursor.line &&
-      (tokenEndCol > cursorCol || t.type === SoqlLexer.EOF)
+      tokenEndLine > cursor.line ||
+      (tokenStartLine === cursor.line && tokenEndCol > cursorCol)
     ) {
       if (
         i > 0 &&
+        tokenStartLine === cursor.line &&
         tokenStartCol === cursorCol &&
         possibleIdentifierPrefix.test(tokenStream.get(i - 1).text as string)
       ) {
@@ -191,7 +202,7 @@ function tokenTypeToCandidateString(
 }
 function generateCandidatesFromTokens(
   tokens: Map<number, c3.TokenList>,
-  parsedQuery: SoqlQueryContext,
+  soqlQueryAnalyzer: SoqlQueryAnalyzer,
   lexer: SoqlLexer,
   tokenStream: TokenStream,
   tokenIndex: number
@@ -208,8 +219,7 @@ function generateCandidatesFromTokens(
     // propose code completions like that
     if (
       tokenType === SoqlLexer.EQ &&
-      (isCursorAfter(tokenStream, tokenIndex, [SoqlLexer.LT]) ||
-        isCursorAfter(tokenStream, tokenIndex, [SoqlLexer.GT]))
+      isCursorAfter(tokenStream, tokenIndex, [[SoqlLexer.LT, SoqlLexer.GT]])
     ) {
       continue;
     }
@@ -251,9 +261,9 @@ function generateCandidatesFromTokens(
     }
 
     if (fieldDependentOperators.has(tokenType)) {
-      const soqlField = parseWHEREExprField(parsedQuery, tokenIndex);
-      if (soqlField) {
-        newItem = withSoqlContext(newItem, soqlField);
+      const soqlFieldExpr = soqlQueryAnalyzer.extractWhereField(tokenIndex);
+      if (soqlFieldExpr) {
+        newItem = withSoqlContext(newItem, soqlFieldExpr);
       }
     }
 
@@ -282,13 +292,15 @@ const nonNullableOperators: Set<string> = new Set<string>([
 ]);
 function generateCandidatesFromRules(
   c3Rules: Map<number, c3.CandidateRule>,
-  parsedQuery: SoqlQueryContext,
+  soqlQueryAnalyzer: SoqlQueryAnalyzer,
   tokenStream: TokenStream,
   tokenIndex: number
 ): CompletionItem[] {
   const completionItems: CompletionItem[] = [];
 
   for (let [ruleId, ruleData] of c3Rules) {
+    const lastRuleId = ruleData.ruleList[ruleData.ruleList.length - 1];
+
     switch (ruleId) {
       case SoqlParser.RULE_soqlUpdateStatsClause:
         // NOTE: We handle this one as a Rule instead of Tokens because
@@ -305,60 +317,94 @@ function generateCandidatesFromRules(
         break;
 
       case SoqlParser.RULE_soqlField:
-        const fromSObject =
-          parseFROMSObject(parsedQuery, tokenIndex) || DEFAULT_SOBJECT;
-        const selectedFields = [{}]; // TODO
-        const groupedByFields = [{}]; // TODO
+        const innerQueryInfo = soqlQueryAnalyzer.innerQueryInfoAt(tokenIndex);
+        const fromSObject = innerQueryInfo?.sobjectName || DEFAULT_SOBJECT;
 
-        // SELECT AVG(| FROM Xyz
-        // SELECT AVG(|) FROM Xyz
-        // NOTE: This code would be much simpler if the grammar had an explicit
-        // rule for function invocation. We should probably suggest such a change.
-        // It's also more complicated because COUNT is a keyword type in the grammar,
-        // and not an IDENTIFIER
         if (
-          tokenIndex === ruleData.startTokenIndex ||
-          isCursorAfter(tokenStream, tokenIndex, [
-            SoqlLexer.IDENTIFIER,
-            SoqlLexer.LPAREN,
-          ]) ||
-          isCursorAfter(tokenStream, tokenIndex, [
-            SoqlLexer.COUNT,
-            SoqlLexer.LPAREN,
-          ])
+          [
+            SoqlParser.RULE_soqlSelectExpr,
+            SoqlParser.RULE_soqlSemiJoin,
+          ].includes(lastRuleId)
         ) {
-          const functionNameToken = searchTokenBeforeCursor(
-            tokenStream,
-            tokenIndex,
-            [SoqlLexer.IDENTIFIER, SoqlLexer.COUNT]
+          // At the start of any "soqlField" expression (inside SELECT, ORDER BY, GROUP BY, etc.)
+          // or inside a function expression (i.e.: "AVG(|" )
+          if (
+            tokenIndex === ruleData.startTokenIndex ||
+            isCursorAfter(tokenStream, tokenIndex, [
+              [SoqlLexer.IDENTIFIER, SoqlLexer.COUNT],
+              [SoqlLexer.LPAREN],
+            ])
+          ) {
+            const soqlItemContext: SoqlItemContext = {
+              sobjectName: fromSObject,
+            };
+
+            // NOTE: This code would be simpler if the grammar had an explicit
+            // rule for function invocation. We should probably suggest such a change.
+            // It's also more complicated because COUNT is a keyword type in the grammar,
+            // and not an IDENTIFIER like all other functions
+            const functionNameToken = searchTokenBeforeCursor(
+              tokenStream,
+              tokenIndex,
+              [SoqlLexer.IDENTIFIER, SoqlLexer.COUNT]
+            );
+            if (functionNameToken) {
+              const soqlFn = soqlFunctionsByName[functionNameToken?.text || ''];
+              if (soqlFn) {
+                soqlItemContext.onlyAggregatable = soqlFn.isAggregate;
+                soqlItemContext.onlyTypes = soqlFn.types;
+              }
+            }
+            completionItems.push(
+              withSoqlContext(
+                newFieldItem(SOBJECT_FIELDS_LABEL_PLACEHOLDER),
+                soqlItemContext
+              )
+            );
+          }
+
+          // SELECT | FROM Xyz
+          if (tokenIndex === ruleData.startTokenIndex) {
+            completionItems.push(...itemsForBuiltinFunctions);
+            completionItems.push(
+              newSnippetItem('(SELECT ... FROM ...)', '(SELECT $2 FROM $1)')
+            );
+          }
+        }
+        // ... GROUP BY |
+        else if (
+          lastRuleId === SoqlParser.RULE_soqlGroupByExprs &&
+          tokenIndex === ruleData.startTokenIndex
+        ) {
+          const selectedFields = innerQueryInfo?.selectedFields || [];
+          const groupedByFields = (
+            innerQueryInfo?.groupByFields || []
+          ).map((f) => f.toLowerCase());
+          const groupFieldDifference = selectedFields.filter(
+            (f) => !groupedByFields.includes(f.toLowerCase())
           );
-          const soqlFn = soqlFunctionsByName[functionNameToken?.text || ''];
+
           completionItems.push(
             withSoqlContext(newFieldItem(SOBJECT_FIELDS_LABEL_PLACEHOLDER), {
               sobjectName: fromSObject,
-              onlyAggregatable: soqlFn?.isAggregate,
-              onlyTypes: soqlFn?.types,
+              onlyGroupable: true,
+              mostLikelyItems:
+                groupFieldDifference.length > 0
+                  ? groupFieldDifference
+                  : undefined,
             })
           );
         }
 
-        // SELECT | FROM Xyz
-        if (
-          ruleData.ruleList[ruleData.ruleList.length - 1] ===
-            SoqlParser.RULE_soqlSelectExpr &&
-          tokenIndex === ruleData.startTokenIndex
-        ) {
-          completionItems.push(...itemsForBuiltinFunctions);
+        // ... ORDER BY |
+        else if (lastRuleId === SoqlParser.RULE_soqlOrderByClauseField) {
           completionItems.push(
-            newSnippetItem('(SELECT ... FROM ...)', '(SELECT $2 FROM $1)')
+            withSoqlContext(newFieldItem(SOBJECT_FIELDS_LABEL_PLACEHOLDER), {
+              sobjectName: fromSObject,
+              onlySortable: true,
+            })
           );
         }
-        // ... GROUP BY |
-        // else if (
-        //   ruleData.ruleList[ruleData.ruleList.length - 1] ===
-        //   SoqlParser.RULE_soqlGroupByExprs
-        // ) {
-        // }
 
         break;
 
@@ -370,10 +416,12 @@ function generateCandidatesFromRules(
           [
             SoqlParser.RULE_soqlWhereExpr,
             SoqlParser.RULE_soqlDistanceExpr,
-          ].includes(ruleData.ruleList[ruleData.ruleList.length - 1])
+          ].includes(lastRuleId)
         ) {
           const fromSObject =
-            parseFROMSObject(parsedQuery, tokenIndex) || 'Object';
+            soqlQueryAnalyzer.innerQueryInfoAt(tokenIndex)?.sobjectName ||
+            DEFAULT_SOBJECT;
+
           completionItems.push(
             withSoqlContext(newFieldItem(SOBJECT_FIELDS_LABEL_PLACEHOLDER), {
               sobjectName: fromSObject,
@@ -383,7 +431,7 @@ function generateCandidatesFromRules(
         break;
       case SoqlParser.RULE_soqlLiteralValue:
       case SoqlParser.RULE_soqlLikeLiteral:
-        const soqlFieldExpr = parseWHEREExprField(parsedQuery, tokenIndex);
+        const soqlFieldExpr = soqlQueryAnalyzer.extractWhereField(tokenIndex);
         if (soqlFieldExpr) {
           completionItems.push(
             withSoqlContext(newConstantItem(LITERAL_VALUES_FOR_FIELD), {
@@ -409,7 +457,10 @@ function handleSpecialCases(
   if (completionItems.length == 0) {
     // SELECT FROM |
     if (
-      isCursorAfter(tokenStream, tokenIndex, [SoqlLexer.SELECT, SoqlLexer.FROM])
+      isCursorAfter(tokenStream, tokenIndex, [
+        [SoqlLexer.SELECT],
+        [SoqlLexer.FROM],
+      ])
     ) {
       completionItems.push(newObjectItem(SOBJECTS_ITEM_LABEL_PLACEHOLDER));
     }
@@ -417,7 +468,7 @@ function handleSpecialCases(
 
   // Provide smart snippet for `SELECT`:
   if (completionItems.some((item) => item.label === 'SELECT')) {
-    if (!isCursorBefore(tokenStream, tokenIndex, [SoqlLexer.FROM])) {
+    if (!isCursorBefore(tokenStream, tokenIndex, [[SoqlLexer.FROM]])) {
       completionItems.push(
         newSnippetItem('SELECT ... FROM ...', 'SELECT $2 FROM $1')
       );
@@ -429,7 +480,7 @@ function handleSpecialCases(
 function isCursorAfter(
   tokenStream: TokenStream,
   tokenIndex: number,
-  matchingTokens: number[]
+  matchingTokens: number[][]
 ): boolean {
   const toMatch = matchingTokens.concat().reverse();
   let matchingIndex = 0;
@@ -437,7 +488,7 @@ function isCursorAfter(
   for (let i = tokenIndex - 1; i >= 0; i--) {
     const t = tokenStream.get(i);
     if (t.channel === SoqlLexer.HIDDEN) continue;
-    if (t.type === toMatch[matchingIndex]) {
+    if (toMatch[matchingIndex].includes(t.type)) {
       matchingIndex++;
       if (matchingIndex === toMatch.length) return true;
     } else break;
@@ -447,7 +498,7 @@ function isCursorAfter(
 function isCursorBefore(
   tokenStream: TokenStream,
   tokenIndex: number,
-  matchingTokens: number[]
+  matchingTokens: number[][]
 ): boolean {
   const toMatch = matchingTokens.concat();
   let matchingIndex = 0;
@@ -455,7 +506,7 @@ function isCursorBefore(
   for (let i = tokenIndex; i < tokenStream.size; i++) {
     const t = tokenStream.get(i);
     if (t.channel === SoqlLexer.HIDDEN) continue;
-    if (t.type === toMatch[matchingIndex]) {
+    if (toMatch[matchingIndex].includes(t.type)) {
       matchingIndex++;
       if (matchingIndex === toMatch.length) return true;
     } else break;
@@ -468,7 +519,7 @@ function searchTokenBeforeCursor(
   tokenIndex: number,
   searchForAnyTokenTypes: number[]
 ): Token | undefined {
-  for (let i = tokenIndex; i >= 0; i--) {
+  for (let i = tokenIndex - 1; i >= 0; i--) {
     const t = tokenStream.get(i);
     if (t.channel === SoqlLexer.HIDDEN) continue;
     if (searchForAnyTokenTypes.includes(t.type)) {
@@ -502,6 +553,7 @@ export interface SoqlItemContext {
   onlyAggregatable?: boolean;
   onlyGroupable?: boolean;
   onlySortable?: boolean;
+  mostLikelyItems?: string[];
 }
 
 function withSoqlContext(
@@ -511,12 +563,14 @@ function withSoqlContext(
   item.data = { soqlContext: soqlItemCtx };
   return item;
 }
-function newFieldItem(text: string): CompletionItem {
-  return {
-    label: text,
-    kind: CompletionItemKind.Field,
-    // preselect: true,
-  };
+function newFieldItem(text: string, extraOptions?: {}): CompletionItem {
+  return Object.assign(
+    {
+      label: text,
+      kind: CompletionItemKind.Field,
+    },
+    extraOptions
+  );
 }
 function newConstantItem(text: string): CompletionItem {
   return {

@@ -72,6 +72,10 @@ describe('Code Completion on SELECT ...', () => {
     expectKeyword('COUNT()'),
     ...sobjectsFieldsFor('Object'),
   ]);
+  validateCompletionsFor('SELECT\n\n |\n\n', [
+    expectKeyword('COUNT()'),
+    ...sobjectsFieldsFor('Object'),
+  ]);
   validateCompletionsFor('SELECT id, |', sobjectsFieldsFor('Object'));
   validateCompletionsFor('SELECT id, boo,|', sobjectsFieldsFor('Object'));
   validateCompletionsFor('SELECT id|', [
@@ -262,24 +266,12 @@ describe('Code Completion on SELECT XYZ FROM...', () => {
 
   // cursor touching FROM should not complete with Sobject name
   validateCompletionsFor('SELECT id\nFROM|', []);
+  validateCompletionsFor('SELECT id FROM |WHERE', expectedSObjectCompletions);
+  validateCompletionsFor('SELECT id FROM | WHERE', expectedSObjectCompletions);
+  validateCompletionsFor('SELECT id FROM |  WHERE', expectedSObjectCompletions);
+  validateCompletionsFor('SELECT id FROM  | WHERE', expectedSObjectCompletions);
   validateCompletionsFor(
-    'SELECT id FROM |WHERE ORDER BY',
-    expectedSObjectCompletions
-  );
-  validateCompletionsFor(
-    'SELECT id FROM | WHERE ORDER BY',
-    expectedSObjectCompletions
-  );
-  validateCompletionsFor(
-    'SELECT id FROM |  WHERE ORDER BY',
-    expectedSObjectCompletions
-  );
-  validateCompletionsFor(
-    'SELECT id FROM  | WHERE ORDER BY',
-    expectedSObjectCompletions
-  );
-  validateCompletionsFor(
-    'SELECT id \nFROM |\nWHERE\nORDER BY',
+    'SELECT id \nFROM |\nWHERE',
     expectedSObjectCompletions
   );
 
@@ -305,10 +297,7 @@ describe('Code Completion on SELECT FROM (no columns on SELECT)', () => {
   validateCompletionsFor('SELECT FROM |', expectedSObjectCompletions, {});
   validateCompletionsFor('SELECT\nFROM |', expectedSObjectCompletions);
 
-  validateCompletionsFor(
-    'SELECT  FROM | WHERE ORDER BY',
-    expectedSObjectCompletions
-  );
+  validateCompletionsFor('SELECT  FROM | WHERE', expectedSObjectCompletions);
   validateCompletionsFor(
     'SELECT\nFROM |\nWHERE\nORDER BY',
     expectedSObjectCompletions
@@ -338,21 +327,105 @@ describe('Code Completion for ORDER BY', () => {
     {
       kind: CompletionItemKind.Field,
       label: '__SOBJECT_FIELDS_PLACEHOLDER',
-      data: { soqlContext: { sobjectName: 'Account' } },
+      data: { soqlContext: { sobjectName: 'Account', onlySortable: true } },
     },
     expectKeyword('DISTANCE('),
   ]);
 });
 
 describe('Code Completion for GROUP BY', () => {
+  validateCompletionsFor('SELECT COUNT(Id) FROM Account GROUP BY |', [
+    {
+      kind: CompletionItemKind.Field,
+      label: '__SOBJECT_FIELDS_PLACEHOLDER',
+      data: { soqlContext: { sobjectName: 'Account', onlyGroupable: true } },
+    },
+    ...expectKeywords('ROLLUP', 'CUBE'),
+  ]);
+
+  validateCompletionsFor('SELECT id FROM Account GROUP BY id |', [
+    ...expectKeywords(
+      'FOR',
+      'OFFSET',
+      'HAVING',
+      'LIMIT',
+      'ORDER BY',
+      'UPDATE TRACKING',
+      'UPDATE VIEWSTAT'
+    ),
+  ]);
+
+  // When there are aggregated fields on SELECT, the GROUP BY clause
+  // must include all non-aggregated fields... thus we want completion
+  // for those preselected
   validateCompletionsFor('SELECT id FROM Account GROUP BY |', [
     {
       kind: CompletionItemKind.Field,
       label: '__SOBJECT_FIELDS_PLACEHOLDER',
-      data: { soqlContext: { sobjectName: 'Account' } },
+      data: {
+        soqlContext: {
+          sobjectName: 'Account',
+          onlyGroupable: true,
+          mostLikelyItems: ['id'],
+        },
+      },
     },
     ...expectKeywords('ROLLUP', 'CUBE'),
   ]);
+  validateCompletionsFor(
+    'SELECT id, MAX(id2), AVG(AnnualRevenue) FROM Account GROUP BY |',
+    [
+      {
+        kind: CompletionItemKind.Field,
+        label: '__SOBJECT_FIELDS_PLACEHOLDER',
+        data: {
+          soqlContext: {
+            sobjectName: 'Account',
+            onlyGroupable: true,
+            mostLikelyItems: ['id'],
+          },
+        },
+      },
+      ...expectKeywords('ROLLUP', 'CUBE'),
+    ]
+  );
+
+  validateCompletionsFor(
+    'SELECT ID, Name, MAX(id3), AVG(AnnualRevenue) FROM Account GROUP BY id, |',
+    [
+      {
+        kind: CompletionItemKind.Field,
+        label: '__SOBJECT_FIELDS_PLACEHOLDER',
+        data: {
+          soqlContext: {
+            sobjectName: 'Account',
+            onlyGroupable: true,
+            mostLikelyItems: ['Name'],
+          },
+        },
+      },
+      // NOTE: ROLLUP and CUBE not expected unless cursor right after GROUP BY
+    ]
+  );
+
+  // Expect more than one. Also test with inner queries..
+  validateCompletionsFor(
+    'SELECT Id, Name, (SELECT Id, Id2, AboutMe FROM User), AVG(AnnualRevenue) FROM Account GROUP BY |',
+    [
+      {
+        kind: CompletionItemKind.Field,
+        label: '__SOBJECT_FIELDS_PLACEHOLDER',
+        data: {
+          soqlContext: {
+            sobjectName: 'Account',
+            onlyGroupable: true,
+            mostLikelyItems: ['Id', 'Name'],
+          },
+        },
+      },
+      ...expectKeywords('ROLLUP', 'CUBE'),
+    ]
+  );
 });
 
 describe('Some keyword candidates after FROM clause', () => {
@@ -391,7 +464,6 @@ describe('Some keyword candidates after FROM clause', () => {
         'ORDER BY',
         'GROUP BY',
         'WITH',
-
         'UPDATE TRACKING',
         'UPDATE VIEWSTAT'
       ),
@@ -727,6 +799,56 @@ describe('SELECT Function expressions', () => {
       },
     },
   ]);
+
+  // NOTE: cursor is right BEFORE the function expression:
+  validateCompletionsFor('SELECT Id, | SUM(AnnualRevenue) FROM Account', [
+    ...sobjectsFieldsFor('Account'),
+  ]);
+});
+
+describe('Code Completion on "semi-join" (SELECT)', () => {
+  validateCompletionsFor(
+    'SELECT Id FROM Account WHERE Id IN (SELECT FROM |)',
+    expectedSObjectCompletions
+  );
+  validateCompletionsFor(
+    'SELECT Id FROM Account WHERE Id IN (SELECT | FROM Foo)',
+    [
+      {
+        kind: CompletionItemKind.Field,
+        label: '__SOBJECT_FIELDS_PLACEHOLDER',
+        data: { soqlContext: { sobjectName: 'Foo' } },
+      },
+      functionCallItem('AVG'),
+      functionCallItem('MIN'),
+      functionCallItem('MAX'),
+      functionCallItem('SUM'),
+      functionCallItem('COUNT'),
+      functionCallItem('COUNT_DISTINCT'),
+      INNER_SELECT_snippet,
+    ]
+  );
+});
+
+describe('Special cases around newlines', () => {
+  validateCompletionsFor('SELECT id FROM|\n\n\n', []);
+  validateCompletionsFor('SELECT id FROM |\n\n', expectedSObjectCompletions);
+  validateCompletionsFor('SELECT id FROM\n|', expectedSObjectCompletions);
+  validateCompletionsFor('SELECT id FROM\n\n|', expectedSObjectCompletions);
+  validateCompletionsFor('SELECT id FROM\n|\n', expectedSObjectCompletions);
+  validateCompletionsFor('SELECT id FROM\n\n|\n\n', expectedSObjectCompletions);
+  validateCompletionsFor(
+    'SELECT id FROM\n\n\n\n\n\n|\n\n',
+    expectedSObjectCompletions
+  );
+  validateCompletionsFor(
+    'SELECT id FROM\n\n|\n\nWHERE',
+    expectedSObjectCompletions
+  );
+  validateCompletionsFor(
+    'SELECT id FROM\n\n|WHERE',
+    expectedSObjectCompletions
+  );
 });
 
 function expectKeyword(
@@ -824,119 +946,6 @@ function sobjectsFieldsFor(sobjectName: string) {
     functionCallItem('SUM'),
     functionCallItem('COUNT'),
     functionCallItem('COUNT_DISTINCT'),
-
-    /***
-    functionSnippet('AVG', {
-      sobjectName: sobjectName,
-      // notNillable?: boolean;
-      onlyTypes: ['double', 'int', 'currency', 'percent'],
-      onlyAggregatable: true,
-    }),
-    functionSnippet('MIN', {
-      sobjectName: sobjectName,
-      // notNillable?: boolean;
-      onlyTypes: [
-        'date',
-        'datetime',
-        'double',
-        'int',
-        'string',
-        'time',
-        'combobox',
-        'currency',
-        'DataCategoryGroupReference', // ?!
-        'email',
-        'id',
-        'masterrecord',
-        'percent',
-        'phone',
-        'picklist',
-        'reference',
-        'textarea',
-        'url',
-      ],
-      onlyAggregatable: true,
-    }),
-    functionSnippet('MAX', {
-      sobjectName: sobjectName,
-      // notNillable?: boolean;
-      onlyTypes: [
-        'date',
-        'datetime',
-        'double',
-        'int',
-        'string',
-        'time',
-        'combobox',
-        'currency',
-        'DataCategoryGroupReference', // ?!
-        'email',
-        'id',
-        'masterrecord',
-        'percent',
-        'phone',
-        'picklist',
-        'reference',
-        'textarea',
-        'url',
-      ],
-      onlyAggregatable: true,
-    }),
-    functionSnippet('SUM', {
-      sobjectName: sobjectName,
-      // notNillable?: boolean;
-      onlyTypes: ['int', 'double', 'currency', 'percent'],
-      onlyAggregatable: true,
-    }),
-    functionSnippet('COUNT', {
-      sobjectName: sobjectName,
-      // notNillable?: boolean;
-      onlyTypes: [
-        'date',
-        'datetime',
-        'double',
-        'int',
-        'string',
-        'combobox',
-        'currency',
-        'DataCategoryGroupReference', // ?!
-        'email',
-        'id',
-        'masterrecord',
-        'percent',
-        'phone',
-        'picklist',
-        'reference',
-        'textarea',
-        'url',
-      ],
-      onlyAggregatable: true,
-    }),
-    functionSnippet('COUNT_DISTINCT', {
-      sobjectName: sobjectName,
-      // notNillable?: boolean;
-      onlyTypes: [
-        'date',
-        'datetime',
-        'double',
-        'int',
-        'string',
-        'combobox',
-        'currency',
-        'DataCategoryGroupReference', // ?!
-        'email',
-        'id',
-        'masterrecord',
-        'percent',
-        'phone',
-        'picklist',
-        'reference',
-        'textarea',
-        'url',
-      ],
-      onlyAggregatable: true,
-    }),
-    ****/
     INNER_SELECT_snippet,
   ];
 }
