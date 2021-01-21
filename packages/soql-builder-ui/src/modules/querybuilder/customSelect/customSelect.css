@@ -24,6 +24,10 @@
   transform: rotate(-45deg);
   border-radius: 50%;
   background-color: transparent;
+  color: var(
+    --vscode-list-inactiveSelectionBackground,
+    var(--soql-color-medium-grey)
+  );
 }
 
 .select__input {
