@@ -26,10 +26,10 @@ describe('WhereModifierGroup should', () => {
       '[data-el-where-field]'
     );
     const selectOperatorEl: HTMLSelectElement = modifierGroup.shadowRoot.querySelector(
-      '[data-el-where-operator]'
+      '[data-el-where-operator-input]'
     );
     const criteriaInputEl: HTMLInputElement = modifierGroup.shadowRoot.querySelector(
-      '[data-el-where-criteria]'
+      '[data-el-where-criteria-input]'
     );
 
     return {
@@ -182,7 +182,7 @@ describe('WhereModifierGroup should', () => {
   it('display the correct criteria value for non-strings', async () => {
     modifierGroup.selectedField = 'foo';
     modifierGroup.selectedOperator = 'EQ';
-    modifierGroup.criteria = { type: 'BOOLEAN', value: "TRUE" };
+    modifierGroup.criteria = { type: 'BOOLEAN', value: 'TRUE' };
     document.body.appendChild(modifierGroup);
 
     const { criteriaInputEl } = getModifierElements();
@@ -194,14 +194,12 @@ describe('WhereModifierGroup should', () => {
     modifierGroup.selectedOperator = 'EQ';
     modifierGroup.criteria = { type: 'STRING', value: "'HELLO'" };
     modifierGroup.sobjectMetadata = {
-      fields: [
-        { name: 'foo', type: 'string' }
-      ]
+      fields: [{ name: 'foo', type: 'string' }]
     };
     let resultingCriteria;
-    const handler = (e => {
+    const handler = (e) => {
       resultingCriteria = e.detail.criteria;
-    });
+    };
     modifierGroup.addEventListener('modifiergroupselection', handler);
 
     document.body.appendChild(modifierGroup);
@@ -216,16 +214,14 @@ describe('WhereModifierGroup should', () => {
   it('normalize criteria input for non-strings', async () => {
     modifierGroup.selectedField = 'foo';
     modifierGroup.selectedOperator = 'EQ';
-    modifierGroup.criteria = { type: 'BOOLEAN', value: "TRUE" };
+    modifierGroup.criteria = { type: 'BOOLEAN', value: 'TRUE' };
     modifierGroup.sobjectMetadata = {
-      fields: [
-        { name: 'foo', type: 'boolean' }
-      ]
+      fields: [{ name: 'foo', type: 'boolean' }]
     };
     let resultingCriteria;
-    const handler = (e => {
+    const handler = (e) => {
       resultingCriteria = e.detail.criteria;
-    });
+    };
     modifierGroup.addEventListener('modifiergroupselection', handler);
     document.body.appendChild(modifierGroup);
 
@@ -234,5 +230,49 @@ describe('WhereModifierGroup should', () => {
     criteriaInputEl.dispatchEvent(new Event('input'));
 
     expect(resultingCriteria).toEqual({ type: 'BOOLEAN', value: 'FALSE' });
+  });
+
+  it('set error class on invalid operator input', async () => {
+    modifierGroup.selectedField = 'foo';
+    modifierGroup.selectedOperator = 'LT'; // not a valid boolean operator
+    modifierGroup.criteria = { type: 'BOOLEAN', value: 'TRUE' };
+    modifierGroup.sobjectMetadata = {
+      fields: [{ name: 'foo', type: 'boolean' }]
+    };
+    const handler = jest.fn();
+    modifierGroup.addEventListener('modifiergroupselection', handler);
+    document.body.appendChild(modifierGroup);
+    const { criteriaInputEl } = getModifierElements();
+    criteriaInputEl.value = 'true';
+    criteriaInputEl.dispatchEvent(new Event('input'));
+    expect(handler).not.toHaveBeenCalled();
+    return Promise.resolve().then(() => {
+      const operatorContainerEl = modifierGroup.shadowRoot.querySelector(
+        '[data-el-where-operator]'
+      );
+      expect(operatorContainerEl.className).toContain('error');
+    });
+  });
+
+  it('set error class of invalid criteria input', async () => {
+    modifierGroup.selectedField = 'foo';
+    modifierGroup.selectedOperator = 'EQ';
+    modifierGroup.criteria = { type: 'BOOLEAN', value: 'TRUE' };
+    modifierGroup.sobjectMetadata = {
+      fields: [{ name: 'foo', type: 'boolean' }]
+    };
+    const handler = jest.fn();
+    modifierGroup.addEventListener('modifiergroupselection', handler);
+    document.body.appendChild(modifierGroup);
+    const { criteriaInputEl } = getModifierElements();
+    criteriaInputEl.value = 'Hello'; // not a valid boolean criteria
+    criteriaInputEl.dispatchEvent(new Event('input'));
+    expect(handler).not.toHaveBeenCalled();
+    return Promise.resolve().then(() => {
+      const operatorContainerEl = modifierGroup.shadowRoot.querySelector(
+        '[data-el-where-criteria]'
+      );
+      expect(operatorContainerEl.className).toContain('error');
+    });
   });
 });
