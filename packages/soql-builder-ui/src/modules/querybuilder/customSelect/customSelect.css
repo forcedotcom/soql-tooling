@@ -1,5 +1,10 @@
 @import 'querybuilder/cssCommon';
 
+/* ======= MAIN CONTAINER ======= */
+main.custom-select {
+  position: relative;
+}
+
 /* ======= SELECT ======= */
 .select__wrapper {
   display: flex;
@@ -52,13 +57,12 @@
 
 .options__wrapper {
   position: absolute;
-  top: 64px;
   border: 1px solid
     var(--vscode-list-inactiveSelectionBackground, var(--soql-color-light-grey));
   border-radius: 3px;
   width: var(--soql-selection-container-width);
-  min-height: 10%;
-  max-height: 50%;
+  min-height: 100px;
+  max-height: 300px;
   overflow-y: scroll;
   /* hidden by default */
   display: none;

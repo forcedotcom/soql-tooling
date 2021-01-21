@@ -1,39 +1,41 @@
 <template>
-  <div class="select__wrapper">
-    <input
-      class="select__input"
-      name="search-bar"
-      placeholder={placeholderText}
-      value={searchTerm}
-      oninput={handleInputChange}
-      onclick={handleOpenOptions}
-      onkeydown={handleKeyDown}
-    />
-    <template if:true={hasSearchTerm}>
-      <div
-        role="button"
-        onclick={handleClearSearch}
-        class="select__clear-search"
-      >
-        <!-- close icon '×' -->
-        &#10005;
-      </div>
-    </template>
-  </div>
-  <div class="options__wrapper" aria-hidden={optionListIsHidden}>
-    <template for:each={_renderedOptions} for:item="optionName">
-      <p
-        onclick={handleOptionClickSelection}
-        key={optionName}
-        class="option"
-        data-option-value={optionName}
-      >
-        {optionName}
-      </p>
-    </template>
-    <template if:true={noResultsFound}>
-      <!-- i18n -->
-      <p class="option option--placeholder">No results found.</p>
-    </template>
-  </div>
+  <main class="custom-select">
+    <div class="select__wrapper">
+      <input
+        class="select__input"
+        name="search-bar"
+        placeholder={placeholderText}
+        value={searchTerm}
+        oninput={handleInputChange}
+        onclick={handleOpenOptions}
+        onkeydown={handleKeyDown}
+      />
+      <template if:true={hasSearchTerm}>
+        <div
+          role="button"
+          onclick={handleClearSearch}
+          class="select__clear-search"
+        >
+          <!-- close icon '×' -->
+          &#10005;
+        </div>
+      </template>
+    </div>
+    <div class="options__wrapper" aria-hidden={optionListIsHidden}>
+      <template for:each={_renderedOptions} for:item="optionName">
+        <p
+          onclick={handleOptionClickSelection}
+          key={optionName}
+          class="option"
+          data-option-value={optionName}
+        >
+          {optionName}
+        </p>
+      </template>
+      <template if:true={noResultsFound}>
+        <!-- i18n -->
+        <p class="option option--placeholder">No results found.</p>
+      </template>
+    </div>
+  </main>
 </template>
