@@ -19,6 +19,8 @@ export namespace Messages {
   export const error_fieldInput_float = 'Value must be numeric';
   export const error_fieldInput_integer = 'Value must be a whole number';
   export const error_fieldInput_picklist = 'Value must be one of: {0}';
+  export const error_fieldInput_string = 'Value must be enclosed in single quotes';
+  export const error_fieldInput_list = 'Input must be a comma separated list of values';
 
   export const error_operatorInput = "{0} operator can't be used for this field type";
 }

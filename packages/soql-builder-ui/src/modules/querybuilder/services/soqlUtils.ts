@@ -148,7 +148,7 @@ function convertUiModelToSoqlModel(uiModel: ToolingModelJson): Soql.Query {
       const compareValue = uiModelCondition.compareValue
         ? new Impl.LiteralImpl(uiModelCondition.compareValue.type, uiModelCondition.compareValue.value)
         : uiModelCondition.values
-          ? uiModelCondition.values.map(value => { new Impl.LiteralImpl(value.type, value.value) })
+          ? uiModelCondition.values.map(value => new Impl.LiteralImpl(value.type, value.value))
           : undefined;
 
       if (conditionType >= 0 && field && compareValue) {

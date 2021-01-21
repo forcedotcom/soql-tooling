@@ -7,7 +7,7 @@
  */
 import { api, LightningElement, track } from 'lwc';
 import { debounce } from 'debounce';
-import { Soql, ValidatorFactory } from '@salesforce/soql-model';
+import { Soql, ValidatorFactory, splitMultiInputValues } from '@salesforce/soql-model';
 import { JsonMap } from '@salesforce/types';
 import { operatorOptions } from '../services/model';
 import { SObjectTypeUtils } from '../services/sobjectUtils';
@@ -49,9 +49,9 @@ export default class WhereModifierGroup extends LightningElement {
   set condition(condition: JsonMap) {
     this._condition = condition;
     this._criteriaDisplayValue = '';
-    if (this.isMulipleValueOperator()) {
+    if (this._selectedOperator && this.isMulipleValueOperator(this._selectedOperator.value)) {
       if (Array.isArray(condition.values)) {
-        this._criteriaDisplayValue = condition.values.reduce((soFar, next) => {
+        this._criteriaDisplayValue = condition.values.map(value => value.value).reduce((soFar, next) => {
           let accumulated = soFar;
           if (accumulated.length > 0) {
             accumulated += ', ';
@@ -143,13 +143,11 @@ export default class WhereModifierGroup extends LightningElement {
     return this._criteriaDisplayValue;
   }
 
-  isMulipleValueOperator(): boolean {
-    const op = this._selectedOperator;
-    return op
-      && (op.value === 'IN'
-        || op.value === 'NOT_IN'
-        || op.value === 'INCLUDES'
-        || op.value === 'EXCLUDES');
+  isMulipleValueOperator(operatorValue: string): boolean {
+    return (operatorValue === 'IN'
+      || operatorValue === 'NOT_IN'
+      || operatorValue === 'INCLUDES'
+      || operatorValue === 'EXCLUDES');
   }
   // @api get criteria() {
   //   return this._criteria;
@@ -189,24 +187,26 @@ export default class WhereModifierGroup extends LightningElement {
 
   normalizeInput(type: Soql.SObjectFieldType, value: string): string {
     let normalized = value;
-    switch (type) {
-      case Soql.SObjectFieldType.Boolean:
-      case Soql.SObjectFieldType.Integer:
-      case Soql.SObjectFieldType.Long:
-      case Soql.SObjectFieldType.Double:
-      case Soql.SObjectFieldType.Date:
-      case Soql.SObjectFieldType.DateTime:
-      case Soql.SObjectFieldType.Time:
-      case Soql.SObjectFieldType.Currency: {
-        // do nothing
-        break;
-      }
-      default: {
-        // treat like string
-        if (value.toLowerCase().trim() !== 'null') {
-          normalized = displayValueToSoqlStringLiteral(value);
+    if (!this.isMulipleValueOperator(this._currentOperatorValue)) {
+      switch (type) {
+        case Soql.SObjectFieldType.Boolean:
+        case Soql.SObjectFieldType.Integer:
+        case Soql.SObjectFieldType.Long:
+        case Soql.SObjectFieldType.Double:
+        case Soql.SObjectFieldType.Date:
+        case Soql.SObjectFieldType.DateTime:
+        case Soql.SObjectFieldType.Time:
+        case Soql.SObjectFieldType.Currency: {
+          // do nothing
+          break;
         }
-        break;
+        default: {
+          // treat like string
+          if (value.toLowerCase().trim() !== 'null') {
+            normalized = displayValueToSoqlStringLiteral(value);
+          }
+          break;
+        }
       }
     }
     return normalized;
@@ -265,20 +265,19 @@ export default class WhereModifierGroup extends LightningElement {
       const normalizedInput = this.normalizeInput(type, this.criteriaEl.value);
       const critType = this.getCriteriaType(type, normalizedInput);
       const picklistValues = this.getPicklistValues(fieldName);
-      const compareValue = {
-        type: critType,
-        value: normalizedInput
-      };
 
       this.errorMessage = '';
-
       const validateOptions = {
         type,
         picklistValues
       };
 
-      const fieldInputValidator = ValidatorFactory.getFieldInputValidator(validateOptions);
-      let result = fieldInputValidator.validate(compareValue.value);
+      const isMultiInput = this.isMulipleValueOperator(this._currentOperatorValue);
+
+      const inputValidator = isMultiInput
+        ? ValidatorFactory.getFieldMultipleInputValidator(validateOptions)
+        : ValidatorFactory.getFieldInputValidator(validateOptions);
+      let result = inputValidator.validate(normalizedInput);
       if (!result.isValid) {
         this.errorMessage = result.message;
         return false;
@@ -291,11 +290,31 @@ export default class WhereModifierGroup extends LightningElement {
         return false;
       }
 
-      this.condition = {
+      const conditionTemplate = {
         field: { fieldName },
-        operator: opModelValue,
-        compareValue
+        operator: opModelValue
       };
+      if (isMultiInput) {
+        const rawValues = splitMultiInputValues(normalizedInput);
+        const values = rawValues.map(value => {
+          return {
+            type: critType,
+            value
+          };
+        });
+        this.condition = {
+          ...conditionTemplate,
+          values
+        };
+      } else {
+        this.condition = {
+          ...conditionTemplate,
+          compareValue: {
+            type: critType,
+            value: normalizedInput
+          }
+        };
+      }
     }
 
     return true;

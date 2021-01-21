@@ -44,28 +44,16 @@ describe('WhereModifierGroup should', () => {
 
     switch (scope) {
       case 'all':
-        modifierGroup.condition = {
-          field: { fieldName: 'foo' },
-          operator: '=',
-          compareValue: { type: 'STRING', value: "'test'" }
-        }
         selectFieldEl.value = 'foo';
         selectOperatorEl.value = 'EQ';
-        criteriaInputEl.value = 'foo';
+        criteriaInputEl.value = 'test';
         break;
       case 'some':
-        modifierGroup.condition = {
-          field: { fieldName: 'foo' },
-          operator: undefined,
-          compareValue: undefined
-        }
         selectFieldEl.value = 'foo';
         selectOperatorEl.value = undefined;
         criteriaInputEl.value = null;
         break;
       case 'none':
-        modifierGroup.condition = {
-        }
         selectFieldEl.value = undefined;
         selectOperatorEl.value = undefined;
         criteriaInputEl.value = null;
@@ -97,6 +85,8 @@ describe('WhereModifierGroup should', () => {
     expect(modifierGroup.allModifiersHaveValue).toBeFalsy();
 
     setModifiersToHaveAValue('all');
+    const { criteriaInputEl } = getModifierElements();
+    criteriaInputEl.dispatchEvent(new Event('input'));
 
     return Promise.resolve().then(() => {
       expect(modifierGroup.allModifiersHaveValue).toBeTruthy();
