@@ -5,14 +5,15 @@ import {
   SoqlParser,
   SoqlQueryContext,
   SoqlSelectColumnExprContext,
+  SoqlSemiJoinContext,
   SoqlWhereExprContext,
 } from '@salesforce/soql-parser/lib/generated/SoqlParser';
-import { ParserRuleContext, Token } from 'antlr4ts';
+import { ParserRuleContext, RuleContext, Token } from 'antlr4ts';
 import { ParseTreeWalker, RuleNode } from 'antlr4ts/tree';
 import { SoqlParserListener } from '@salesforce/soql-parser/lib/generated/SoqlParserListener';
 
 interface InnerSoqlQueryInfo {
-  soqlInnerQueryNode: SoqlInnerQueryContext;
+  soqlInnerQueryNode: ParserRuleContext;
   select: Token;
   from?: Token;
   sobjectName?: string;
@@ -95,18 +96,19 @@ class SoqlInnerQueriesListener implements SoqlParserListener {
 
   private findAncestorSoqlInnerQueryContext(
     node: RuleNode | undefined
-  ): SoqlInnerQueryContext | undefined {
+  ): ParserRuleContext | undefined {
     let soqlInnerQueryNode = node;
     while (
       soqlInnerQueryNode &&
-      soqlInnerQueryNode.ruleContext.ruleIndex !==
-        SoqlParser.RULE_soqlInnerQuery
+      ![SoqlParser.RULE_soqlInnerQuery, SoqlParser.RULE_soqlSemiJoin].includes(
+        soqlInnerQueryNode.ruleContext.ruleIndex
+      )
     ) {
       soqlInnerQueryNode = soqlInnerQueryNode.parent;
     }
 
     return soqlInnerQueryNode
-      ? (soqlInnerQueryNode as SoqlInnerQueryContext)
+      ? (soqlInnerQueryNode as ParserRuleContext)
       : undefined;
   }
 
@@ -122,6 +124,13 @@ class SoqlInnerQueriesListener implements SoqlParserListener {
   }
 
   enterSoqlInnerQuery(ctx: SoqlInnerQueryContext) {
+    this.innerSoqlQueries.set(ctx.start.tokenIndex, {
+      select: ctx.start,
+      soqlInnerQueryNode: ctx,
+    });
+  }
+
+  enterSoqlSemiJoin(ctx: SoqlSemiJoinContext) {
     this.innerSoqlQueries.set(ctx.start.tokenIndex, {
       select: ctx.start,
       soqlInnerQueryNode: ctx,

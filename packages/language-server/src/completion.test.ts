@@ -258,6 +258,18 @@ describe('Code Completion on nested select fields: SELECT ... FROM XYZ', () => {
     'SELECT foo, (SELECT | FROM Bar), (SELECT xyz FROM Xyz) FROM Foo',
     [expectKeyword('COUNT()'), ...sobjectsFieldsFor('Bar')]
   );
+
+  // With a semi-join (SELECT in WHERE clause):
+  validateCompletionsFor(
+    `SELECT Id, Name, |
+      (SELECT Id, Parent.Profile.Name
+       FROM SetupEntityAccessItems
+       WHERE Parent.ProfileId != null)
+    FROM ApexClass
+    WHERE Id IN (SELECT SetupEntityId
+                   FROM SetupEntityAccess)`,
+    sobjectsFieldsFor('ApexClass')
+  );
 });
 
 describe('Code Completion on SELECT XYZ FROM...', () => {
@@ -811,6 +823,7 @@ describe('Code Completion on "semi-join" (SELECT)', () => {
     'SELECT Id FROM Account WHERE Id IN (SELECT FROM |)',
     expectedSObjectCompletions
   );
+
   validateCompletionsFor(
     'SELECT Id FROM Account WHERE Id IN (SELECT | FROM Foo)',
     [
@@ -827,6 +840,13 @@ describe('Code Completion on "semi-join" (SELECT)', () => {
       functionCallItem('COUNT_DISTINCT'),
       INNER_SELECT_snippet,
     ]
+  );
+
+  // NOTE: The SELECT of a semi-join can only have one field, thus
+  // we expect no completions here:
+  validateCompletionsFor(
+    'SELECT Id FROM Account WHERE Id IN (SELECT Id, | FROM Foo)',
+    []
   );
 });
 
