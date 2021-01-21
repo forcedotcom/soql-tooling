@@ -64,8 +64,7 @@ export default class WhereModifierGroup extends LightningElement {
   }
 
   resetErrorFlagsAndMessages() {
-    this.errorMessage = this.operatorErrorMessage = this.criteriaErrorMessage =
-      '';
+    this.operatorErrorMessage = this.criteriaErrorMessage = '';
     this.hasOperatorError = this.hasCriteriaError = false;
   }
 
@@ -239,7 +238,6 @@ export default class WhereModifierGroup extends LightningElement {
   }
 
   validateInput(): boolean {
-    console.log('VALIDATE INPUT');
     this.resetErrorFlagsAndMessages();
     const fieldName = (this.selectedField = this.fieldEl.value);
     const op = (this.selectedOperator = this.operatorEl.value);
@@ -276,8 +274,6 @@ export default class WhereModifierGroup extends LightningElement {
     if (!result.isValid) {
       this.errorMessage = this.operatorErrorMessage = result.message;
       this.hasOperatorError = true;
-      console.log('setting operator error to true');
-
       return false;
     }
 
@@ -286,7 +282,6 @@ export default class WhereModifierGroup extends LightningElement {
 }
 
 function selectionEventHandler(e) {
-  console.log('selection event handler');
   e.preventDefault();
 
   if (this.checkAllModifiersHaveValues() && this.validateInput()) {
