@@ -7,7 +7,7 @@
  */
 
 /**
- * Metadata about SOQL built-in functions
+ * Metadata about SOQL built-in functions and operators
  *
  * Aggregate functions reference:
  * https://developer.salesforce.com/docs/atlas.en-us.soql_sosl.meta/soql_sosl/sforce_api_calls_soql_select_agg_functions_field_types.htm
@@ -133,3 +133,33 @@ export const soqlFunctionsByName = soqlFunctions.reduce((result, soqlFn) => {
   result[soqlFn.name] = soqlFn;
   return result;
 }, {} as Record<string, SOQLFunction>);
+
+const typesForLT_GT_operators = [
+  'anyType',
+  'complexvalue',
+  'currency',
+  'date',
+  'datetime',
+  'double',
+  'int',
+  'percent',
+  'string',
+  'textarea',
+  'time',
+  'url',
+];
+
+// SOQL operators semantics.
+// Operators not listed here (i.e. equality operators) are allowed on all types
+// and allow nulls
+export const soqlOperators: {
+  [key: string]: { types: string[]; notNullable: boolean };
+} = {
+  '<': { types: typesForLT_GT_operators, notNullable: true },
+  '<=': { types: typesForLT_GT_operators, notNullable: true },
+  '>': { types: typesForLT_GT_operators, notNullable: true },
+  '>=': { types: typesForLT_GT_operators, notNullable: true },
+  INCLUDES: { types: ['multipicklist'], notNullable: true },
+  EXCLUDES: { types: ['multipicklist'], notNullable: true },
+  LIKE: { types: ['string', 'textarea', 'time'], notNullable: true },
+};

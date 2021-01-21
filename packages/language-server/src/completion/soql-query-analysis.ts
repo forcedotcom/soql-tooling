@@ -21,7 +21,7 @@ interface InnerSoqlQueryInfo {
   groupByFields?: string[];
 }
 
-interface ParsedSoqlField {
+export interface ParsedSoqlField {
   sobjectName: string;
   fieldName: string;
   operator?: string;

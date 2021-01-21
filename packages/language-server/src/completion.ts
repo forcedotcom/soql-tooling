@@ -30,9 +30,13 @@ import * as c3 from 'antlr4-c3';
 import {
   soqlFunctionsByName,
   soqlFunctions,
+  soqlOperators,
 } from './completion/soql-functions';
 import { SoqlCompletionErrorStrategy } from './completion/SoqlCompletionErrorStrategy';
-import { SoqlQueryAnalyzer } from './completion/soql-query-analysis';
+import {
+  ParsedSoqlField,
+  SoqlQueryAnalyzer,
+} from './completion/soql-query-analysis';
 
 const SOBJECTS_ITEM_LABEL_PLACEHOLDER = '__SOBJECTS_PLACEHOLDER';
 const SOBJECT_FIELDS_LABEL_PLACEHOLDER = '__SOBJECT_FIELDS_PLACEHOLDER';
@@ -200,6 +204,15 @@ function tokenTypeToCandidateString(
     ?.toUpperCase()
     .replace(/^'|'$/g, '') as string;
 }
+
+const fieldDependentOperators: Set<number> = new Set<number>([
+  SoqlLexer.LT,
+  SoqlLexer.GT,
+  SoqlLexer.INCLUDES,
+  SoqlLexer.EXCLUDES,
+  SoqlLexer.LIKE,
+]);
+
 function generateCandidatesFromTokens(
   tokens: Map<number, c3.TokenList>,
   soqlQueryAnalyzer: SoqlQueryAnalyzer,
@@ -235,6 +248,21 @@ function generateCandidatesFromTokens(
         ? baseKeyword + ' ' + followingKeywords
         : baseKeyword;
 
+    let soqlItemContext: SoqlItemContext | undefined = undefined;
+
+    if (fieldDependentOperators.has(tokenType)) {
+      const soqlFieldExpr = soqlQueryAnalyzer.extractWhereField(tokenIndex);
+      if (soqlFieldExpr) {
+        soqlItemContext = {
+          sobjectName: soqlFieldExpr.sobjectName,
+          fieldName: soqlFieldExpr.fieldName,
+        };
+
+        const soqlOperator = soqlOperators[itemText];
+        soqlItemContext.onlyTypes = soqlOperator.types;
+      }
+    }
+
     // Some "manual" improvements for some keywords:
     if (['IN', 'NOT IN'].includes(itemText)) {
       itemText = itemText + ' (';
@@ -246,25 +274,12 @@ function generateCandidatesFromTokens(
       itemText = 'COUNT()';
     }
 
-    const fieldDependentOperators: Set<number> = new Set<number>([
-      SoqlLexer.LT,
-      SoqlLexer.GT,
-      SoqlLexer.INCLUDES,
-      SoqlLexer.EXCLUDES,
-      SoqlLexer.LIKE,
-    ]);
-
-    let newItem = newKeywordItem(itemText);
+    let newItem = soqlItemContext
+      ? withSoqlContext(newKeywordItem(itemText), soqlItemContext)
+      : newKeywordItem(itemText);
 
     if (itemText === 'WHERE') {
       newItem.preselect = true;
-    }
-
-    if (fieldDependentOperators.has(tokenType)) {
-      const soqlFieldExpr = soqlQueryAnalyzer.extractWhereField(tokenIndex);
-      if (soqlFieldExpr) {
-        newItem = withSoqlContext(newItem, soqlFieldExpr);
-      }
     }
 
     items.push(newItem);
@@ -281,15 +296,6 @@ function generateCandidatesFromTokens(
   return items;
 }
 
-const nonNullableOperators: Set<string> = new Set<string>([
-  '<',
-  '<=',
-  '>',
-  '>=',
-  'INCLUDES',
-  'EXCLUDES',
-  'LIKE',
-]);
 function generateCandidatesFromRules(
   c3Rules: Map<number, c3.CandidateRule>,
   soqlQueryAnalyzer: SoqlQueryAnalyzer,
@@ -433,15 +439,8 @@ function generateCandidatesFromRules(
       case SoqlParser.RULE_soqlLikeLiteral:
         const soqlFieldExpr = soqlQueryAnalyzer.extractWhereField(tokenIndex);
         if (soqlFieldExpr) {
-          completionItems.push(
-            withSoqlContext(newConstantItem(LITERAL_VALUES_FOR_FIELD), {
-              sobjectName: soqlFieldExpr.sobjectName,
-              fieldName: soqlFieldExpr.fieldName,
-              notNillable:
-                soqlFieldExpr.operator !== undefined &&
-                nonNullableOperators.has(soqlFieldExpr.operator),
-            })
-          );
+          for (let literalItem of createItemsForLiterals(soqlFieldExpr))
+            completionItems.push(literalItem);
         }
         break;
     }
@@ -533,7 +532,6 @@ function newKeywordItem(text: string): CompletionItem {
   return {
     label: text,
     kind: CompletionItemKind.Keyword,
-    insertText: text,
   };
 }
 function newFunctionItem(text: string): CompletionItem {
@@ -548,11 +546,11 @@ function newFunctionItem(text: string): CompletionItem {
 export interface SoqlItemContext {
   sobjectName: string;
   fieldName?: string;
-  notNillable?: boolean;
   onlyTypes?: string[];
   onlyAggregatable?: boolean;
   onlyGroupable?: boolean;
   onlySortable?: boolean;
+  onlyNillable?: boolean;
   mostLikelyItems?: string[];
 }
 
@@ -563,26 +561,28 @@ function withSoqlContext(
   item.data = { soqlContext: soqlItemCtx };
   return item;
 }
-function newFieldItem(text: string, extraOptions?: {}): CompletionItem {
+function newCompletionItem(
+  text: string,
+  kind: CompletionItemKind,
+  extraOptions?: {}
+): CompletionItem {
   return Object.assign(
     {
       label: text,
-      kind: CompletionItemKind.Field,
+      kind: kind,
     },
     extraOptions
   );
 }
-function newConstantItem(text: string): CompletionItem {
-  return {
-    label: text,
-    kind: CompletionItemKind.Constant,
-  };
+function newFieldItem(text: string, extraOptions?: {}): CompletionItem {
+  return newCompletionItem(text, CompletionItemKind.Field, extraOptions);
 }
+function newConstantItem(text: string): CompletionItem {
+  return newCompletionItem(text, CompletionItemKind.Constant);
+}
+
 function newObjectItem(text: string): CompletionItem {
-  return {
-    label: text,
-    kind: CompletionItemKind.Class,
-  };
+  return newCompletionItem(text, CompletionItemKind.Class);
 }
 
 function newSnippetItem(label: string, snippet: string): CompletionItem {
@@ -592,4 +592,55 @@ function newSnippetItem(label: string, snippet: string): CompletionItem {
     insertText: snippet,
     insertTextFormat: InsertTextFormat.Snippet,
   };
+}
+
+function createItemsForLiterals(
+  soqlFieldExpr: ParsedSoqlField
+): CompletionItem[] {
+  const soqlContext = {
+    sobjectName: soqlFieldExpr.sobjectName,
+    fieldName: soqlFieldExpr.fieldName,
+  };
+
+  const items: CompletionItem[] = [
+    withSoqlContext(newCompletionItem('TRUE', CompletionItemKind.Value), {
+      ...soqlContext,
+      ...{ onlyTypes: ['boolean'] },
+    }),
+    withSoqlContext(newCompletionItem('FALSE', CompletionItemKind.Value), {
+      ...soqlContext,
+      ...{ onlyTypes: ['boolean'] },
+    }),
+    withSoqlContext(
+      newSnippetItem(
+        'YYYY-MM-DD',
+        '${1:${CURRENT_YEAR}}-${2:${CURRENT_MONTH}}-${3:${CURRENT_DATE}}$0'
+      ),
+      { ...soqlContext, ...{ onlyTypes: ['date'] } }
+    ),
+    withSoqlContext(
+      newSnippetItem(
+        'YYYY-MM-DDThh:mm:ssZ',
+        '${1:${CURRENT_YEAR}}-${2:${CURRENT_MONTH}}-${3:${CURRENT_DATE}}T${4:${CURRENT_HOUR}}:${5:${CURRENT_MINUTE}}:${6:${CURRENT_SECOND}}Z$0'
+      ),
+      { ...soqlContext, ...{ onlyTypes: ['datetime'] } }
+    ),
+
+    // Give the LSP client a chance to add additional literals:
+    withSoqlContext(newConstantItem(LITERAL_VALUES_FOR_FIELD), soqlContext),
+  ];
+
+  const notNillableOperator = Boolean(
+    soqlFieldExpr.operator !== undefined &&
+      soqlOperators[soqlFieldExpr.operator]?.notNullable
+  );
+  if (!notNillableOperator) {
+    items.push(
+      withSoqlContext(newKeywordItem('NULL'), {
+        ...soqlContext,
+        ...{ onlyNillable: true },
+      })
+    );
+  }
+  return items;
 }
