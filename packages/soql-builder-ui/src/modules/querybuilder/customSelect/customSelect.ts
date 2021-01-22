@@ -1,6 +1,13 @@
 import { api, track, LightningElement } from 'lwc';
 
+interface CustomSelectEvent extends CustomEvent {
+  detail: {
+    target: HTMLInputElement;
+  };
+}
+
 export default class CustomSelect extends LightningElement {
+  @api multiple = false;
   @api isLoading = false;
   @api allOptions: string[];
   @api selectedOptions: string[] = [];
@@ -9,11 +16,14 @@ export default class CustomSelect extends LightningElement {
   _placeholderText = '';
   searchTerm = '';
   originalUserInput = '';
+  selectInputEl: HTMLInputElement;
   optionsWrapper: HTMLElement;
   optionList: HTMLCollection;
   optionListIsHidden = true;
   activeOptionIndex = -1;
   numberOfSearchResults;
+  customSelectEventName = 'customselect__optionsopened';
+  //getter setter value =
 
   get hasSearchTerm() {
     return !!this.searchTerm;
@@ -26,7 +36,11 @@ export default class CustomSelect extends LightningElement {
   @api
   get placeholderText() {
     // TODO: i18n
-    return this.isLoading ? 'Loading...' : this._placeholderText;
+    return this.isLoading
+      ? 'Loading...'
+      : !this.multiple && this.selectedOptions.length
+      ? this.selectedOptions[0]
+      : this._placeholderText;
   }
 
   set placeholderText(text: string) {
@@ -37,18 +51,28 @@ export default class CustomSelect extends LightningElement {
 
   // close the options menu when user click outside element
   connectedCallback() {
+    document.addEventListener(
+      this.customSelectEventName,
+      this.handleCloseOptions
+    );
     document.addEventListener('click', this.handleCloseOptions);
   }
 
   // prevent a memory leak
   disconnectedCallback() {
-    document.removeEventListener('click', this.handleCloseOptions);
+    document.removeEventListener(
+      this.customSelectEventName,
+      this.handleCloseOptions
+    );
+    document.addEventListener('click', this.handleCloseOptions);
   }
 
   renderedCallback() {
     this.optionsWrapper =
       this.optionsWrapper || this.template.querySelector('.options__wrapper');
     this.optionList = this.optionsWrapper.children;
+    this.selectInputEl =
+      this.selectInputEl || this.template.querySelector('.select__input');
   }
 
   /* ======= UTILITIES ======= */
@@ -128,7 +152,7 @@ export default class CustomSelect extends LightningElement {
 
   resetSearchBar() {
     this.clearActiveHighlight();
-    this.handleCloseOptions();
+    this.handleCloseOptions(null);
     this.searchTerm = '';
     this.originalUserInput = '';
     this.activeOptionIndex = -1;
@@ -145,6 +169,16 @@ export default class CustomSelect extends LightningElement {
 
   /* ======= EVENT HANDLERS ======= */
 
+  sendOptionsOpenEvent(e) {
+    const optionsOpenedEvent = new CustomEvent(this.customSelectEventName, {
+      detail: { target: e.target },
+      bubbles: true,
+      composed: true
+    }) as CustomSelectEvent;
+
+    this.dispatchEvent(optionsOpenedEvent);
+  }
+
   // called when user clicks on search bar input
   handleOpenOptions(e) {
     e.preventDefault();
@@ -155,6 +189,7 @@ export default class CustomSelect extends LightningElement {
     } else {
       this._renderedOptions = this.availableOptions;
     }
+    this.sendOptionsOpenEvent(e);
     this.openOptionsMenu();
   }
 
@@ -162,7 +197,14 @@ export default class CustomSelect extends LightningElement {
    * This syntax allow the function to retain context of this
    * while also usable with addEventListener and removeEventListener
    */
-  handleCloseOptions = () => {
+  handleCloseOptions = (e?: CustomSelectEvent) => {
+    if (e && e.type === this.customSelectEventName) {
+      const eventSource = e.detail.target;
+      if (eventSource === this.selectInputEl) {
+        return;
+      }
+    }
+
     this.clearActiveHighlight();
     this.activeOptionIndex = -1;
     this.numberOfSearchResults = undefined;
