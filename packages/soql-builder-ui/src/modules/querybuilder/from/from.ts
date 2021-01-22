@@ -12,7 +12,7 @@ export default class From extends LightningElement {
   @api sobjects: string[];
   @api hasError = false;
   @api isLoading = false;
-  selectPlaceHolderText = 'Search Object...';
+  selectPlaceHolderText = 'Search object...'; //i18n
   _selectedObject: string[] = [];
 
   @api
