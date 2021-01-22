@@ -28,6 +28,7 @@ export interface ToolingModel extends IMap {
   limit: string;
   errors: List<Map>;
   unsupported: List<Map>;
+  originalSoqlStatement: string;
 }
 // Public inteface for accessing modelService.query
 export interface ToolingModelJson extends JsonMap {
@@ -190,16 +191,20 @@ export class ToolingModelService {
   }
 
   private changeModel(newModel) {
-    this.model.next(newModel);
-    this.sendMessageToBackend(newModel);
+    const newSoqlQuery = convertUiModelToSoql((newModel as IMap).toJS());
+    const newModelWithSoqlQuery = newModel.set(
+      'originalSoqlStatement',
+      newSoqlQuery
+    );
+    this.model.next(newModelWithSoqlQuery);
+    this.sendMessageToBackend(newSoqlQuery);
   }
 
-  public sendMessageToBackend(newModel: ToolingModel) {
+  public sendMessageToBackend(newSoqlQuery: string) {
     try {
-      const payload = convertUiModelToSoql((newModel as IMap).toJS());
       this.messageService.sendMessage({
         type: MessageType.UI_SOQL_CHANGED,
-        payload
+        payload: newSoqlQuery
       });
     } catch (e) {
       console.error(e);
