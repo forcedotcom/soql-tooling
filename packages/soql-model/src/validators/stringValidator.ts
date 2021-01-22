@@ -9,8 +9,25 @@ import { ValidateResult, Validator } from './validator';
 
 export class StringValidator extends Validator {
   public validate(input: string): ValidateResult {
-    const isValid = input.length >= 2 && input.startsWith("'") && input.endsWith("'");
+    const isValid = input.length >= 2
+      && input.startsWith("'")
+      && input.endsWith("'")
+      && !this.isEscaped(input.substring(1, input.length - 1));
     const message = isValid ? undefined : Messages.error_fieldInput_string;
     return { isValid, message };
+  }
+
+  protected isEscaped(input: string): boolean {
+    // test to see whether trailing single quote is escaped
+    let isEscaped = false;
+    for (let i = 0; i < input.length; i++) {
+      const ch = input.charAt(i);
+      if (isEscaped) {
+        isEscaped = false;
+      } else if (ch === '\\') {
+        isEscaped = true;
+      }
+    }
+    return isEscaped;
   }
 }
