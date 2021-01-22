@@ -400,6 +400,10 @@ function generateCandidatesFromRules(
                 groupFieldDifference.length > 0
                   ? groupFieldDifference
                   : undefined,
+              // joinItemsAsOne:
+              //   groupFieldDifference.length > 0
+              //     ? groupFieldDifference
+              //     : undefined,
             })
           );
         }
@@ -424,7 +428,8 @@ function generateCandidatesFromRules(
           [
             SoqlParser.RULE_soqlWhereExpr,
             SoqlParser.RULE_soqlDistanceExpr,
-          ].includes(lastRuleId)
+          ].includes(lastRuleId) &&
+          !ruleData.ruleList.includes(SoqlParser.RULE_soqlHavingClause)
         ) {
           const fromSObject =
             soqlQueryAnalyzer.innerQueryInfoAt(tokenIndex)?.sobjectName ||
@@ -439,10 +444,12 @@ function generateCandidatesFromRules(
         break;
       case SoqlParser.RULE_soqlLiteralValue:
       case SoqlParser.RULE_soqlLikeLiteral:
-        const soqlFieldExpr = soqlQueryAnalyzer.extractWhereField(tokenIndex);
-        if (soqlFieldExpr) {
-          for (let literalItem of createItemsForLiterals(soqlFieldExpr))
-            completionItems.push(literalItem);
+        if (!ruleData.ruleList.includes(SoqlParser.RULE_soqlHavingClause)) {
+          const soqlFieldExpr = soqlQueryAnalyzer.extractWhereField(tokenIndex);
+          if (soqlFieldExpr) {
+            for (let literalItem of createItemsForLiterals(soqlFieldExpr))
+              completionItems.push(literalItem);
+          }
         }
         break;
     }
@@ -554,6 +561,7 @@ export interface SoqlItemContext {
   onlySortable?: boolean;
   onlyNillable?: boolean;
   mostLikelyItems?: string[];
+  // joinItemsAsOne?: string[];
 }
 
 function withSoqlContext(
