@@ -19,6 +19,8 @@ import {
   ParseTreeListener,
   ParseTreeWalker,
   AbstractParseTreeVisitor,
+  ParseTree,
+  TerminalNode,
 } from 'antlr4ts/tree';
 import { Interval } from 'antlr4ts/misc/Interval';
 
@@ -55,137 +57,196 @@ export class ModelDeserializer {
   }
 }
 
+interface KnownError {
+  type: Soql.ErrorType;
+  message: string;
+  predicate: (error: ParserError, context?: ParseTree) => boolean;
+}
+
+
 class ErrorIdentifier {
-  protected parseTree: ParserRuleContext;
-  protected nodesWithExceptions: ParserRuleContext[];
-  constructor(parseTree: ParserRuleContext) {
+  protected parseTree: ParseTree;
+  protected nodesWithExceptionsAndErrorNodes: ParseTree[];
+  protected knownErrors: KnownError[] = [
+    {
+      type: Soql.ErrorType.EMPTY,
+      message: Messages.error_empty,
+      predicate: (error) => (
+        this.parseTree instanceof ParserRuleContext
+        && this.parseTree.start.type === Token.EOF
+      )
+    },
+    {
+      type: Soql.ErrorType.NOSELECT,
+      message: Messages.error_noSelect,
+      predicate: (error, context) => (
+        context instanceof Parser.SoqlSelectClauseContext &&
+        context.exception instanceof InputMismatchException &&
+        !this.hasNonErrorChildren(context)
+      )
+    },
+    {
+      type: Soql.ErrorType.NOSELECTIONS,
+      message: Messages.error_noSelections,
+      predicate: (error, context) => (
+        context instanceof Parser.SoqlSelectClauseContext &&
+        context.exception instanceof NoViableAltException &&
+        !this.hasNonErrorChildren(context)
+      )
+    },
+    {
+      type: Soql.ErrorType.NOFROM,
+      message: Messages.error_noFrom,
+      predicate: (error, context) => (
+        context instanceof Parser.SoqlFromClauseContext &&
+        context.exception instanceof InputMismatchException &&
+        !this.hasNonErrorChildren(context)
+      )
+    },
+    {
+      type: Soql.ErrorType.INCOMPLETEFROM,
+      message: Messages.error_incompleteFrom,
+      predicate: (error, context) => (
+        context instanceof Parser.SoqlIdentifierContext &&
+        context.parent instanceof Parser.SoqlFromExprContext &&
+        context.exception instanceof InputMismatchException
+      )
+    },
+    {
+      type: Soql.ErrorType.INCOMPLETELIMIT,
+      message: Messages.error_incompleteLimit,
+      predicate: (error, context) => (
+        context instanceof Parser.SoqlIntegerValueContext &&
+        this.hasAncestorOfType(context, Parser.SoqlLimitClauseContext)
+      )
+    },
+    {
+      type: Soql.ErrorType.EMPTYWHERE,
+      message: Messages.error_emptyWhere,
+      predicate: (error, context) => (
+        context instanceof Parser.SoqlWhereExprsContext &&
+        context.childCount === 0
+      )
+    },
+    {
+      type: Soql.ErrorType.INCOMPLETENESTEDCONDITION,
+      message: Messages.error_incompleteNestedCondition,
+      predicate: (error, context) => (
+        context instanceof ErrorNode &&
+        context.parent instanceof Parser.NestedWhereExprContext
+      )
+    },
+    {
+      type: Soql.ErrorType.INCOMPLETEANDORCONDITION,
+      message: Messages.error_incompleteAndOrCondition,
+      predicate: (error, context) => (
+        // trailing AND/OR
+        context instanceof Parser.SoqlWhereExprContext &&
+        (context.parent instanceof Parser.SoqlAndWhereContext || context.parent instanceof Parser.SoqlOrWhereContext) &&
+        !this.hasNonErrorChildren(context)
+      ) || (
+          // leading AND/OR
+          context instanceof ErrorNode &&
+          context.parent instanceof Parser.SoqlWhereAndOrExprContext &&
+          context.parent.childCount <= 2
+        )
+    },
+    {
+      type: Soql.ErrorType.INCOMPLETENOTCONDITION,
+      message: Messages.error_incompleteNotCondition,
+      predicate: (error, context) => (
+        context instanceof Parser.SoqlWhereExprContext &&
+        context.parent instanceof Parser.SoqlWhereNotExprContext &&
+        !this.hasNonErrorChildren(context)
+      )
+    },
+    {
+      type: Soql.ErrorType.UNRECOGNIZEDCOMPAREVALUE,
+      message: Messages.error_unrecognizedCompareValue,
+      predicate: (error, context) => (
+        context instanceof Parser.SoqlLiteralValueContext &&
+        context.parent instanceof Parser.SimpleWhereExprContext &&
+        context.exception instanceof NoViableAltException
+      )
+    },
+    {
+      type: Soql.ErrorType.UNRECOGNIZEDCOMPAREOPERATOR,
+      message: Messages.error_unrecognizedCompareOperator,
+      predicate: (error, context) => (
+        context instanceof Parser.SoqlWhereExprContext &&
+        context.childCount >= 2 &&
+        context.getChild(1) instanceof ErrorNode &&
+        (context.getChild(1) as ErrorNode).symbol === error.getToken()
+      )
+    },
+    {
+      type: Soql.ErrorType.UNRECOGNIZEDCOMPAREFIELD,
+      message: Messages.error_unrecognizedCompareField,
+      predicate: (error, context) => (
+        context instanceof Parser.SoqlWhereExprsContext &&
+        context.childCount >= 1 &&
+        context.getChild(0) instanceof ErrorNode &&
+        (context.getChild(0) as ErrorNode).symbol === error.getToken()
+      )
+    },
+    {
+      type: Soql.ErrorType.NOCOMPAREVALUE,
+      message: Messages.error_noCompareValue,
+      predicate: (error, context) => (
+        context instanceof Parser.SoqlLiteralValueContext &&
+        context.childCount === 0 &&
+        context.parent instanceof Parser.SimpleWhereExprContext &&
+        context.exception instanceof InputMismatchException
+      )
+    },
+    {
+      type: Soql.ErrorType.NOCOMPAREOPERATOR,
+      message: Messages.error_noCompareOperator,
+      predicate: (error, context) => (
+        context instanceof Parser.SoqlWhereExprContext &&
+        context.childCount === 1 &&
+        context.getChild(0) instanceof ErrorNode &&
+        (context.getChild(0) as ErrorNode).symbol !== error.getToken()
+      )
+    }
+  ]
+
+  constructor(parseTree: ParseTree) {
     this.parseTree = parseTree;
-    this.nodesWithExceptions = [];
-    this.findExceptions(parseTree);
+    this.nodesWithExceptionsAndErrorNodes = [];
+    this.findExceptionsAndErrorNodes(parseTree);
   }
 
   public identifyError(error: ParserError): Soql.ModelError {
-    if (this.isEmptyError(error)) {
-      return {
-        type: Soql.ErrorType.EMPTY,
-        message: Messages.error_empty,
-        lineNumber: error.getLineNumber(),
-        charInLine: error.getCharacterPositionInLine(),
-        grammarRule: this.getGrammarRule(error)
-      };
-    }
-    if (this.isNoSelectClauseError(error)) {
-      return {
-        type: Soql.ErrorType.NOSELECT,
-        message: Messages.error_noSelections,
-        lineNumber: error.getLineNumber(),
-        charInLine: error.getCharacterPositionInLine(),
-        grammarRule: this.getGrammarRule(error)
-      };
-    }
-    if (this.isNoSelectionsError(error)) {
-      return {
-        type: Soql.ErrorType.NOSELECTIONS,
-        message: Messages.error_noSelections,
-        lineNumber: error.getLineNumber(),
-        charInLine: error.getCharacterPositionInLine(),
-        grammarRule: this.getGrammarRule(error)
-      };
-    }
-    if (this.isNoFromClauseError(error)) {
-      return {
-        type: Soql.ErrorType.NOFROM,
-        message: Messages.error_noFrom,
-        lineNumber: error.getLineNumber(),
-        charInLine: error.getCharacterPositionInLine(),
-        grammarRule: this.getGrammarRule(error)
-      };
-    }
-    if (this.isIncompleteFromError(error)) {
-      return {
-        type: Soql.ErrorType.INCOMPLETEFROM,
-        message: Messages.error_incompleteFrom,
-        lineNumber: error.getLineNumber(),
-        charInLine: error.getCharacterPositionInLine(),
-        grammarRule: this.getGrammarRule(error)
-      };
-    }
-    if (this.isIncompleteLimitError(error)) {
-      return {
-        type: Soql.ErrorType.INCOMPLETELIMIT,
-        message: Messages.error_incompleteLimit,
-        lineNumber: error.getLineNumber(),
-        charInLine: error.getCharacterPositionInLine(),
-        grammarRule: this.getGrammarRule(error)
-      };
-    }
-    return {
-      type: Soql.ErrorType.UNKNOWN,
-      message: error.getMessage(),
-      lineNumber: error.getLineNumber(),
-      charInLine: error.getCharacterPositionInLine(),
-      grammarRule: this.getGrammarRule(error)
-    };
-  }
-
-  protected isEmptyError(error: ParserError): boolean {
-    return this.parseTree.start.type === Token.EOF;
-  }
-
-  protected isNoSelectClauseError(error: ParserError): boolean {
     const context = this.matchErrorToContext(error);
-    return (
-      context instanceof Parser.SoqlSelectClauseContext &&
-      context.exception instanceof InputMismatchException &&
-      !this.hasNonErrorChildren(context)
-    );
+    const knownErrorMatch = this.knownErrors.find(knownError => knownError.predicate(error, context));
+
+    return knownErrorMatch
+      ? {
+        type: knownErrorMatch.type,
+        message: knownErrorMatch.message,
+        lineNumber: error.getLineNumber(),
+        charInLine: error.getCharacterPositionInLine()
+      }
+      : {
+        type: Soql.ErrorType.UNKNOWN,
+        message: error.getMessage(),
+        lineNumber: error.getLineNumber(),
+        charInLine: error.getCharacterPositionInLine()
+      };
   }
 
-  protected isNoSelectionsError(error: ParserError): boolean {
-    const context = this.matchErrorToContext(error);
-    return (
-      context instanceof Parser.SoqlSelectClauseContext &&
-      context.exception instanceof NoViableAltException &&
-      !this.hasNonErrorChildren(context)
-    );
-  }
-
-  protected isNoFromClauseError(error: ParserError): boolean {
-    const context = this.matchErrorToContext(error);
-    return (
-      context instanceof Parser.SoqlFromClauseContext &&
-      context.exception instanceof InputMismatchException &&
-      !this.hasNonErrorChildren(context)
-    );
-  }
-
-  protected isIncompleteFromError(error: ParserError): boolean {
-    const context = this.matchErrorToContext(error);
-    return (
-      context instanceof Parser.SoqlIdentifierContext &&
-      context.parent instanceof Parser.SoqlFromExprContext &&
-      context.exception instanceof InputMismatchException
-    );
-  }
-
-  protected isIncompleteLimitError(error: ParserError): boolean {
-    const context = this.matchErrorToContext(error);
-    return (
-      context instanceof Parser.SoqlIntegerValueContext &&
-      this.hasAncestorOfType(context, Parser.SoqlLimitClauseContext)
-    );
-  }
-
-  protected findExceptions(context: ParserRuleContext): void {
-    if (context.exception) {
-      this.nodesWithExceptions.push(context);
+  protected findExceptionsAndErrorNodes(context: ParseTree): void {
+    if (context instanceof ParserRuleContext && context.exception) {
+      this.nodesWithExceptionsAndErrorNodes.push(context);
+    }
+    if (context instanceof ErrorNode) {
+      this.nodesWithExceptionsAndErrorNodes.push(context);
     }
     if (context.childCount > 0) {
       for (let i = 0; i < context.childCount; i++) {
         const child = context.getChild(i);
-        if (child instanceof ParserRuleContext) {
-          this.findExceptions(child as ParserRuleContext);
-        }
+        this.findExceptionsAndErrorNodes(child);
       }
     }
   }
@@ -198,10 +259,19 @@ class ErrorIdentifier {
     return undefined;
   }
 
-  protected matchErrorToContext(error: ParserError): ParserRuleContext | undefined {
-    for (let i = 0; i < this.nodesWithExceptions.length; i++) {
-      const node = this.nodesWithExceptions[i];
-      if (node.exception?.getOffendingToken() === error.getToken()) {
+  protected matchErrorToContext(error: ParserError): ParseTree | undefined {
+    for (let i = 0; i < this.nodesWithExceptionsAndErrorNodes.length; i++) {
+      const node = this.nodesWithExceptionsAndErrorNodes[i];
+      if (node instanceof ParserRuleContext &&
+        node.exception?.getOffendingToken() === error.getToken()) {
+        return node;
+      }
+      // ErrorNode matches if location matches (or if location is off by one character when the error is on <EOF>)
+      if (node instanceof ErrorNode
+        && node.symbol.line === error.getLineNumber()
+        && (node.symbol.charPositionInLine === error.getCharacterPositionInLine()
+          || (node.symbol.charPositionInLine === error.getCharacterPositionInLine() - 1
+            && error.getToken()?.type === Token.EOF))) {
         return node;
       }
     }
