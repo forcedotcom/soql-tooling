@@ -232,9 +232,10 @@ describe('Code Completion for ORDER BY', () => {
   validateCompletionsFor('SELECT id FROM Account ORDER BY |', [
     {
       kind: CompletionItemKind.Field,
-      label: '__SOBJECT_FIELDS_PLACEHOLDER:Account',
+      label: '__SOBJECT_FIELDS_PLACEHOLDER',
+      data: { soqlContext: { sobjectName: 'Account' } },
     },
-    ...expectKeywords('DISTANCE'),
+    ...expectKeywords('DISTANCE('),
   ]);
 });
 
@@ -281,14 +282,234 @@ describe('Some keyword candidates after FROM clause', () => {
   validateCompletionsFor('SELECT id FROM Account LIMIT |', []);
 });
 
+describe('WHERE clause', () => {
+  validateCompletionsFor('SELECT id FROM Account WHERE |', [
+    ...expectKeywords('DISTANCE(', 'NOT'),
+    {
+      kind: CompletionItemKind.Field,
+      label: '__SOBJECT_FIELDS_PLACEHOLDER',
+      data: { soqlContext: { sobjectName: 'Account' } },
+    },
+  ]);
+  validateCompletionsFor('SELECT id FROM Account WHERE Name |', [
+    ...expectKeywords('IN (', 'NOT IN (', '=', '!=', '<>'),
+    ...expectKeywordsWithFieldData('Account', 'Name', [
+      'INCLUDES(',
+      'EXCLUDES(',
+      '<',
+      '<=',
+      '>',
+      '>=',
+      'LIKE',
+    ]),
+  ]);
+  validateCompletionsFor('SELECT id FROM Account WHERE Type IN (|', [
+    ...expectKeywords('SELECT'),
+    SELECT_snippet,
+    {
+      kind: CompletionItemKind.Constant,
+      label: '__LITERAL_VALUES_FOR_FIELD',
+      data: {
+        soqlContext: {
+          sobjectName: 'Account',
+          fieldName: 'Type',
+          notNillable: false,
+        },
+      },
+    },
+  ]);
+  validateCompletionsFor(
+    "SELECT id FROM Account WHERE Type IN ('Customer', |)",
+    [
+      {
+        kind: CompletionItemKind.Constant,
+        label: '__LITERAL_VALUES_FOR_FIELD',
+        data: {
+          soqlContext: {
+            sobjectName: 'Account',
+            fieldName: 'Type',
+            notNillable: false,
+          },
+        },
+      },
+    ]
+  );
+  validateCompletionsFor(
+    "SELECT id FROM Account WHERE Type IN (|, 'Customer')",
+    [
+      ...expectKeywords('SELECT'),
+      SELECT_snippet,
+      {
+        kind: CompletionItemKind.Constant,
+        label: '__LITERAL_VALUES_FOR_FIELD',
+        data: {
+          soqlContext: {
+            sobjectName: 'Account',
+            fieldName: 'Type',
+            notNillable: false,
+          },
+        },
+      },
+    ]
+  );
+
+  // NOTE: Unlike IN(), INCLUDES()/EXCLUDES() never support NULL in the list
+  validateCompletionsFor(
+    'SELECT Channel FROM QuickText WHERE Channel INCLUDES(|',
+    [
+      {
+        kind: CompletionItemKind.Constant,
+        label: '__LITERAL_VALUES_FOR_FIELD',
+        data: {
+          soqlContext: {
+            sobjectName: 'QuickText',
+            fieldName: 'Channel',
+            notNillable: true,
+          },
+        },
+      },
+    ]
+  );
+  validateCompletionsFor(
+    "SELECT Channel FROM QuickText WHERE Channel EXCLUDES('Email', |",
+    [
+      {
+        kind: CompletionItemKind.Constant,
+        label: '__LITERAL_VALUES_FOR_FIELD',
+        data: {
+          soqlContext: {
+            sobjectName: 'QuickText',
+            fieldName: 'Channel',
+            notNillable: true,
+          },
+        },
+      },
+    ]
+  );
+  validateCompletionsFor('SELECT id FROM Account WHERE Type = |', [
+    {
+      kind: CompletionItemKind.Constant,
+      label: '__LITERAL_VALUES_FOR_FIELD',
+      data: {
+        soqlContext: {
+          sobjectName: 'Account',
+          fieldName: 'Type',
+          notNillable: false,
+        },
+      },
+    },
+  ]);
+  validateCompletionsFor(
+    "SELECT id FROM Account WHERE Type = 'Boo' OR Name = |",
+    [
+      {
+        kind: CompletionItemKind.Constant,
+        label: '__LITERAL_VALUES_FOR_FIELD',
+        data: {
+          soqlContext: {
+            sobjectName: 'Account',
+            fieldName: 'Name',
+            notNillable: false,
+          },
+        },
+      },
+    ]
+  );
+  validateCompletionsFor(
+    "SELECT id FROM Account WHERE Type = 'Boo' OR Name LIKE |",
+    [
+      {
+        kind: CompletionItemKind.Constant,
+        label: '__LITERAL_VALUES_FOR_FIELD',
+        data: {
+          soqlContext: {
+            sobjectName: 'Account',
+            fieldName: 'Name',
+            notNillable: true,
+          },
+        },
+      },
+    ]
+  );
+  validateCompletionsFor('SELECT id FROM Account WHERE Account.Type = |', [
+    {
+      kind: CompletionItemKind.Constant,
+      label: '__LITERAL_VALUES_FOR_FIELD',
+      data: {
+        soqlContext: {
+          sobjectName: 'Account',
+          fieldName: 'Type',
+          notNillable: false,
+        },
+      },
+    },
+  ]);
+
+  validateCompletionsFor(
+    `SELECT Name FROM Account WHERE LastActivityDate < |`,
+    [
+      {
+        kind: CompletionItemKind.Constant,
+        label: '__LITERAL_VALUES_FOR_FIELD',
+        data: {
+          soqlContext: {
+            sobjectName: 'Account',
+            fieldName: 'LastActivityDate',
+            notNillable: true,
+          },
+        },
+      },
+    ]
+  );
+  validateCompletionsFor(
+    `SELECT Name FROM Account WHERE LastActivityDate > |`,
+    [
+      {
+        kind: CompletionItemKind.Constant,
+        label: '__LITERAL_VALUES_FOR_FIELD',
+        data: {
+          soqlContext: {
+            sobjectName: 'Account',
+            fieldName: 'LastActivityDate',
+            notNillable: true,
+          },
+        },
+      },
+    ]
+  );
+});
+
+describe('Some special functions', () => {
+  validateCompletionsFor('SELECT DISTANCE(|) FROM Account', [
+    {
+      kind: CompletionItemKind.Field,
+      label: '__SOBJECT_FIELDS_PLACEHOLDER',
+      data: { soqlContext: { sobjectName: 'Account' } },
+    },
+  ]);
+});
+
 function expectKeywords(...words: string[]): CompletionItem[] {
   return words.map((s) => ({
     kind: CompletionItemKind.Keyword,
     label: s,
-    insertText: s + ' ',
+    insertText: s,
   }));
 }
-
+function expectKeywordsWithFieldData(
+  sobjectName: string,
+  fieldName: string,
+  words: string[]
+): CompletionItem[] {
+  return words.map((s) => ({
+    kind: CompletionItemKind.Keyword,
+    label: s,
+    insertText: s,
+    data: {
+      soqlContext: { sobjectName: sobjectName, fieldName: fieldName },
+    },
+  }));
+}
 function expectItems(
   kind: CompletionItemKind,
   ...labels: string[]
@@ -319,7 +540,11 @@ function validateCompletionsFor(
       line,
       column
     );
-    expect(new Set(completions)).toEqual(new Set(expectedItems));
+
+    // NOTE: we don't use Sets here because when there are failures, the error
+    // message is not useful
+    expectedItems.forEach((item) => expect(completions).toContainEqual(item));
+    completions.forEach((item) => expect(expectedItems).toContainEqual(item));
   });
 }
 
@@ -331,13 +556,14 @@ function getCursorPosition(text: string, cursorChar: string): [number, number] {
   throw new Error(`Cursor ${cursorChar} not found in ${text} !`);
 }
 
-function sobjectsFieldsFor(sbojectName: string) {
+function sobjectsFieldsFor(sobjectName: string) {
   return [
     {
       kind: CompletionItemKind.Field,
-      label: '__SOBJECT_FIELDS_PLACEHOLDER:' + sbojectName,
+      label: '__SOBJECT_FIELDS_PLACEHOLDER',
+      data: { soqlContext: { sobjectName: sobjectName } },
     },
-    ...expectKeywords('TYPEOF', 'DISTANCE', 'COUNT()'),
+    ...expectKeywords('TYPEOF', 'DISTANCE(', 'COUNT()'),
     COUNT_snippet,
     INNER_SELECT_snippet,
   ];
