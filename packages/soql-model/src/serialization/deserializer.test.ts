@@ -153,73 +153,31 @@ describe('ModelDeserializer should', () => {
   });
 
   it('identify no selections error', () => {
-    const expectedType = ErrorType.NOSELECTIONS;
-    const model = new ModelDeserializer('SELECT FROM object1').deserialize();
-    if (model.errors && model.errors.length === 1) {
-      expect(model.errors[0].type).toEqual(expectedType);
-    } else {
-      fail();
-    }
+    expectError('SELECT FROM object1', ErrorType.NOSELECTIONS);
   });
 
   it('identify no SELECT clause error', () => {
-    const expectedType = ErrorType.NOSELECT;
-    const model = new ModelDeserializer('FROM object1').deserialize();
-    if (model.errors && model.errors.length === 1) {
-      expect(model.errors[0].type).toEqual(expectedType);
-    } else {
-      fail();
-    }
+    expectError('FROM object1', ErrorType.NOSELECT);
   });
 
   it('identify incomplete FROM clause error', () => {
-    const expectedType = ErrorType.INCOMPLETEFROM;
-    const model = new ModelDeserializer('SELECT A FROM ').deserialize();
-    if (model.errors && model.errors.length === 1) {
-      expect(model.errors[0].type).toEqual(expectedType);
-    } else {
-      fail();
-    }
+    expectError('SELECT A FROM ', ErrorType.INCOMPLETEFROM);
   });
 
   it('identify no FROM clause error', () => {
-    const expectedType = ErrorType.NOFROM;
-    const model = new ModelDeserializer('SELECT A').deserialize();
-    if (model.errors && model.errors.length === 1) {
-      expect(model.errors[0].type).toEqual(expectedType);
-    } else {
-      fail();
-    }
+    expectError('SELECT A', ErrorType.NOFROM);
   });
 
   it('identify empty statement error', () => {
-    const expectedType = ErrorType.EMPTY;
-    const model = new ModelDeserializer('').deserialize();
-    if (model.errors && model.errors.length === 1) {
-      expect(model.errors[0].type).toEqual(expectedType);
-    } else {
-      fail();
-    }
+    expectError('', ErrorType.EMPTY);
   });
 
   it('identify incomplete LIMIT clause error when number missing', () => {
-    const expectedType = ErrorType.INCOMPLETELIMIT;
-    const model = new ModelDeserializer('SELECT A FROM B LIMIT').deserialize();
-    if (model.errors && model.errors.length === 1) {
-      expect(model.errors[0].type).toEqual(expectedType);
-    } else {
-      fail();
-    }
+    expectError('SELECT A FROM B LIMIT', ErrorType.INCOMPLETELIMIT);
   });
 
   it('identify incomplete LIMIT clause error when value is not a number', () => {
-    const expectedType = ErrorType.INCOMPLETELIMIT;
-    const model = new ModelDeserializer('SELECT A FROM B LIMIT X').deserialize();
-    if (model.errors && model.errors.length === 1) {
-      expect(model.errors[0].type).toEqual(expectedType);
-    } else {
-      fail();
-    }
+    expectError('SELECT A FROM B LIMIT X', ErrorType.INCOMPLETELIMIT);
   });
 
   it('identify LIMIT 0 as valid limit clause', () => {
@@ -656,4 +614,50 @@ describe('ModelDeserializer should', () => {
     const actual = new ModelDeserializer("SELECT field1 FROM object1 WHERE ( field = 5 )").deserialize();
     expect(actual).toEqual(expected);
   });
+
+  it('identify empty WHERE', () => {
+    expectError('SELECT field1 FROM object1 WHERE', ErrorType.EMPTYWHERE);
+  });
+
+  it('identify incomplete nested WHERE condition', () => {
+    expectError('SELECT field1 FROM object1 WHERE ( field = 5', ErrorType.INCOMPLETENESTEDCONDITION);
+  });
+
+  it('identify incomplete AND/OR condition', () => {
+    expectError('SELECT field1 FROM object1 WHERE field = 5 AND', ErrorType.INCOMPLETEANDORCONDITION);
+    expectError('SELECT field1 FROM object1 WHERE OR field = 5', ErrorType.INCOMPLETEANDORCONDITION);
+  });
+
+  it('identify incomplete NOT condition', () => {
+    expectError('SELECT field1 FROM object1 WHERE NOT', ErrorType.INCOMPLETENOTCONDITION);
+  });
+
+  it('identify unrecognized literal value in condition', () => {
+    expectError('SELECT field1 FROM object1 WHERE field = foo', ErrorType.UNRECOGNIZEDCOMPAREVALUE);
+  });
+
+  it('identify unrecognized compare operator in condition', () => {
+    expectError('SELECT field1 FROM object1 WHERE field LIK \'foo\'', ErrorType.UNRECOGNIZEDCOMPAREOPERATOR);
+  });
+
+  it('identify unrecognized compare field in condition', () => {
+    expectError('SELECT field1 FROM object1 WHERE 5 = 5', ErrorType.UNRECOGNIZEDCOMPAREFIELD);
+  });
+
+  it('identify missing compare value in condition', () => {
+    expectError('SELECT field1 FROM object1 WHERE field =', ErrorType.NOCOMPAREVALUE);
+  });
+
+  it('identify missing compare operator in condition', () => {
+    expectError('SELECT field1 FROM object1 WHERE field', ErrorType.NOCOMPAREOPERATOR);
+  });
+
+  function expectError(query: string, expectedType: ErrorType): void {
+    const model = new ModelDeserializer(query).deserialize();
+    if (model.errors && model.errors.length === 1) {
+      expect(model.errors[0].type).toEqual(expectedType);
+    } else {
+      fail();
+    }
+  }
 });
