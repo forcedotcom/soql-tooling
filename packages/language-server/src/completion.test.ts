@@ -11,6 +11,10 @@ import {
   CompletionItemKind,
   InsertTextFormat,
 } from 'vscode-languageserver';
+import {
+  soqlDateRangeLiterals,
+  soqlParametricDateRangeLiterals,
+} from './completion/soql-functions';
 
 const SELECT_snippet = {
   kind: CompletionItemKind.Snippet,
@@ -70,7 +74,7 @@ function expectedItemsForLiterals(
   soqlContext: SoqlItemContext,
   nillableOperator: boolean
 ): CompletionItem[] {
-  let items: CompletionItem[] = [
+  const items: CompletionItem[] = [
     newLiteralItem(
       soqlContext,
       CompletionItemKind.Constant,
@@ -87,6 +91,36 @@ function expectedItemsForLiterals(
       'FALSE'
     ),
     newLiteralItem(
+      { ...soqlContext, ...{ onlyTypes: ['int'] } },
+      CompletionItemKind.Snippet,
+      'nnn',
+      { insertText: '${1:123}', insertTextFormat: InsertTextFormat.Snippet }
+    ),
+    newLiteralItem(
+      { ...soqlContext, ...{ onlyTypes: ['double'] } },
+      CompletionItemKind.Snippet,
+      'nnn.nnn',
+      { insertText: '${1:123.456}', insertTextFormat: InsertTextFormat.Snippet }
+    ),
+    newLiteralItem(
+      { ...soqlContext, ...{ onlyTypes: ['currency'] } },
+      CompletionItemKind.Snippet,
+      'ISOCODEnnn.nn',
+      {
+        insertText: '${1|USD,EUR,JPY,CNY,CHF|}${2:999.99}',
+        insertTextFormat: InsertTextFormat.Snippet,
+      }
+    ),
+    newLiteralItem(
+      { ...soqlContext, ...{ onlyTypes: ['string'] } },
+      CompletionItemKind.Snippet,
+      'abc123',
+      {
+        insertText: "'${1:abc123}'",
+        insertTextFormat: InsertTextFormat.Snippet,
+      }
+    ),
+    newLiteralItem(
       { ...soqlContext, ...{ onlyTypes: ['date'] } },
       CompletionItemKind.Snippet,
       'YYYY-MM-DD',
@@ -94,6 +128,8 @@ function expectedItemsForLiterals(
         insertText:
           '${1:${CURRENT_YEAR}}-${2:${CURRENT_MONTH}}-${3:${CURRENT_DATE}}$0',
         insertTextFormat: InsertTextFormat.Snippet,
+        preselect: true,
+        sortText: ' YYYY-MM-DD',
       }
     ),
     newLiteralItem(
@@ -104,7 +140,27 @@ function expectedItemsForLiterals(
         insertText:
           '${1:${CURRENT_YEAR}}-${2:${CURRENT_MONTH}}-${3:${CURRENT_DATE}}T${4:${CURRENT_HOUR}}:${5:${CURRENT_MINUTE}}:${6:${CURRENT_SECOND}}Z$0',
         insertTextFormat: InsertTextFormat.Snippet,
+        preselect: true,
+        sortText: ' YYYY-MM-DDThh:mm:ssZ',
       }
+    ),
+    ...soqlDateRangeLiterals.map((k) =>
+      newLiteralItem(
+        { ...soqlContext, ...{ onlyTypes: ['date', 'datetime'] } },
+        CompletionItemKind.Value,
+        k
+      )
+    ),
+    ...soqlParametricDateRangeLiterals.map((k) =>
+      newLiteralItem(
+        { ...soqlContext, ...{ onlyTypes: ['date', 'datetime'] } },
+        CompletionItemKind.Snippet,
+        k,
+        {
+          insertText: k.replace(':n', ':${1:nn}') + '$0',
+          insertTextFormat: InsertTextFormat.Snippet,
+        }
+      )
     ),
   ];
 

@@ -31,6 +31,8 @@ import {
   soqlFunctionsByName,
   soqlFunctions,
   soqlOperators,
+  soqlDateRangeLiterals,
+  soqlParametricDateRangeLiterals,
 } from './completion/soql-functions';
 import { SoqlCompletionErrorStrategy } from './completion/SoqlCompletionErrorStrategy';
 import {
@@ -561,38 +563,32 @@ function withSoqlContext(
   item.data = { soqlContext: soqlItemCtx };
   return item;
 }
-function newCompletionItem(
+
+const newCompletionItem = (
   text: string,
   kind: CompletionItemKind,
   extraOptions?: {}
-): CompletionItem {
-  return Object.assign(
-    {
-      label: text,
-      kind: kind,
-    },
-    extraOptions
-  );
-}
-function newFieldItem(text: string, extraOptions?: {}): CompletionItem {
-  return newCompletionItem(text, CompletionItemKind.Field, extraOptions);
-}
-function newConstantItem(text: string): CompletionItem {
-  return newCompletionItem(text, CompletionItemKind.Constant);
-}
+): CompletionItem => ({
+  label: text,
+  kind: kind,
+  ...extraOptions,
+});
 
-function newObjectItem(text: string): CompletionItem {
-  return newCompletionItem(text, CompletionItemKind.Class);
-}
+const newFieldItem = (text: string, extraOptions?: {}) =>
+  newCompletionItem(text, CompletionItemKind.Field, extraOptions);
 
-function newSnippetItem(label: string, snippet: string): CompletionItem {
-  return {
-    label: label,
-    kind: CompletionItemKind.Snippet,
+const newConstantItem = (text: string) =>
+  newCompletionItem(text, CompletionItemKind.Constant);
+
+const newObjectItem = (text: string) =>
+  newCompletionItem(text, CompletionItemKind.Class);
+
+const newSnippetItem = (label: string, snippet: string, extraOptions?: {}) =>
+  newCompletionItem(label, CompletionItemKind.Snippet, {
     insertText: snippet,
     insertTextFormat: InsertTextFormat.Snippet,
-  };
-}
+    ...extraOptions,
+  });
 
 function createItemsForLiterals(
   soqlFieldExpr: ParsedSoqlField
@@ -611,19 +607,54 @@ function createItemsForLiterals(
       ...soqlContext,
       ...{ onlyTypes: ['boolean'] },
     }),
+    withSoqlContext(newSnippetItem('nnn', '${1:123}'), {
+      ...soqlContext,
+      ...{ onlyTypes: ['int'] },
+    }),
+    withSoqlContext(newSnippetItem('nnn.nnn', '${1:123.456}'), {
+      ...soqlContext,
+      ...{ onlyTypes: ['double'] },
+    }),
+    withSoqlContext(
+      newSnippetItem('ISOCODEnnn.nn', '${1|USD,EUR,JPY,CNY,CHF|}${2:999.99}'),
+      {
+        ...soqlContext,
+        ...{ onlyTypes: ['currency'] },
+      }
+    ),
+    withSoqlContext(newSnippetItem('abc123', "'${1:abc123}'"), {
+      ...soqlContext,
+      ...{ onlyTypes: ['string'] },
+    }),
     withSoqlContext(
       newSnippetItem(
         'YYYY-MM-DD',
-        '${1:${CURRENT_YEAR}}-${2:${CURRENT_MONTH}}-${3:${CURRENT_DATE}}$0'
+        '${1:${CURRENT_YEAR}}-${2:${CURRENT_MONTH}}-${3:${CURRENT_DATE}}$0',
+        // extra space prefix on sortText to make it appear first:
+        { preselect: true, sortText: ' YYYY-MM-DD' }
       ),
       { ...soqlContext, ...{ onlyTypes: ['date'] } }
     ),
     withSoqlContext(
       newSnippetItem(
         'YYYY-MM-DDThh:mm:ssZ',
-        '${1:${CURRENT_YEAR}}-${2:${CURRENT_MONTH}}-${3:${CURRENT_DATE}}T${4:${CURRENT_HOUR}}:${5:${CURRENT_MINUTE}}:${6:${CURRENT_SECOND}}Z$0'
+        '${1:${CURRENT_YEAR}}-${2:${CURRENT_MONTH}}-${3:${CURRENT_DATE}}T${4:${CURRENT_HOUR}}:${5:${CURRENT_MINUTE}}:${6:${CURRENT_SECOND}}Z$0',
+        // extra space prefix on sortText to make it appear first:
+        { preselect: true, sortText: ' YYYY-MM-DDThh:mm:ssZ' }
       ),
       { ...soqlContext, ...{ onlyTypes: ['datetime'] } }
+    ),
+    ...soqlDateRangeLiterals.map((k) =>
+      withSoqlContext(newCompletionItem(k, CompletionItemKind.Value), {
+        ...soqlContext,
+        ...{ onlyTypes: ['date', 'datetime'] },
+      })
+    ),
+    ...soqlParametricDateRangeLiterals.map((k) =>
+      withSoqlContext(newSnippetItem(k, k.replace(':n', ':${1:nn}') + '$0'), {
+        ...soqlContext,
+        ...{ onlyTypes: ['date', 'datetime'] },
+      })
     ),
 
     // Give the LSP client a chance to add additional literals:
