@@ -152,7 +152,7 @@ export default class CustomSelect extends LightningElement {
 
   resetSearchBar() {
     this.clearActiveHighlight();
-    this.handleCloseOptions(null);
+    this.handleCloseOptions();
     this.searchTerm = '';
     this.originalUserInput = '';
     this.activeOptionIndex = -1;
@@ -169,7 +169,7 @@ export default class CustomSelect extends LightningElement {
 
   /* ======= EVENT HANDLERS ======= */
 
-  sendOptionsOpenEvent(e) {
+  sendOptionsOpenEvent(e: Event) {
     const optionsOpenedEvent = new CustomEvent(this.customSelectEventName, {
       detail: { target: e.target },
       bubbles: true,
