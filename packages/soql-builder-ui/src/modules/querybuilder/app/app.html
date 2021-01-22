@@ -13,6 +13,7 @@
         class={theme}
         onheader__run_query={handleRunQuery}
       ></querybuilder-header>
+      <div>HERE: {hasUnsupported}</div>
     </header>
     <article class="querybuilder-body">
       <section class="querybuilder-form">
@@ -63,6 +64,7 @@
           onwhere__group_selection={handleWhereSelection}
           onwhere__andor_selection={handleAndOrSelection}
           onwhere__condition_removed={handleRemoveWhereCondition}
+          has-error={hasRecoverableWhereError}
           is-loading={isFieldsLoading}
           class={theme}
           sobject-metadata={sobjectMetadata}

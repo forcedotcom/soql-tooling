@@ -21,7 +21,8 @@ import {
   recoverableErrors,
   recoverableFieldErrors,
   recoverableFromErrors,
-  recoverableLimitErrors
+  recoverableLimitErrors,
+  recoverableWhereErrors
 } from '../error/errorModel';
 import { getBodyClass } from '../services/globals';
 import { ToolingModelJson } from '../services/model';
@@ -38,9 +39,17 @@ export default class App extends LightningElement {
   sobjectMetadata: any;
 
   get hasUnsupported() {
-    return this.query && this.query.unsupported
-      ? this.query.unsupported.length
-      : 0;
+    const rtrn =
+      this.query && this.query.unsupported
+        ? this.query.unsupported.length > 0
+        : false;
+    console.log(
+      'returning hasUnsupported: ',
+      rtrn,
+      'because: ',
+      JSON.stringify(this.query.unsupported)
+    );
+    return rtrn;
   }
 
   get hasUnrecoverable() {
@@ -53,6 +62,7 @@ export default class App extends LightningElement {
   hasRecoverableFieldsError = false;
   hasRecoverableFromError = false;
   hasRecoverableLimitError = false;
+  hasRecoverableWhereError = false;
   hasRecoverableError = true;
   hasUnrecoverableError = true;
   isFromLoading = false;
@@ -145,9 +155,16 @@ export default class App extends LightningElement {
     this.hasRecoverableFromError = false;
     this.hasRecoverableLimitError = false;
     this.hasUnrecoverableError = false;
+    this.hasRecoverableWhereError = false;
+    console.log(
+      'ERRORS: ',
+      errors,
+      'unsupported',
+      JSON.stringify(this.query.unsupported)
+    );
     errors.forEach((error) => {
-      // TODO: replace with imported types after fernando's work
       if (recoverableErrors[error.type]) {
+        console.log('error is: ', error.type);
         this.hasRecoverableError = true;
         if (recoverableFieldErrors[error.type]) {
           this.hasRecoverableFieldsError = true;
@@ -158,10 +175,20 @@ export default class App extends LightningElement {
         if (recoverableFromErrors[error.type]) {
           this.hasRecoverableFromError = true;
         }
+        if (recoverableWhereErrors[error.type]) {
+          this.hasRecoverableWhereError = true;
+        }
       } else {
         this.hasUnrecoverableError = true;
       }
     });
+    console.log(
+      this.hasRecoverableError,
+      this.hasRecoverableWhereError,
+      this.hasUnrecoverableError,
+      this.hasUnrecoverable,
+      this.hasUnsupported
+    );
   }
   /* ---- SOBJECT HANDLERS ---- */
   handleObjectChange(e) {

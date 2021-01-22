@@ -9,7 +9,13 @@
   <div class="section-container">
     <div class="section_label-container">
       <!-- i18n -->
-      <label>Filter</label>
+      <label
+        >Filter<template if:true={hasError}
+          ><span class="text-color-required" data-el-has-error
+            >*</span
+          ></template
+        ></label
+      >
     </div>
     <div class="section_selection-container">
       <header class="header">

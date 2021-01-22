@@ -23,6 +23,7 @@ interface ModifierGroupNode extends Node {
 
 export default class Where extends LightningElement {
   @api isLoading = false;
+  @api hasError = false;
   @api whereFields: string[];
   @api sobjectMetadata: any;
   @track _conditionsStore: JsonMap[] = [];

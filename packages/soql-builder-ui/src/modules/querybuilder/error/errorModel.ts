@@ -38,17 +38,6 @@ recoverableFromErrors[Soql.ErrorType.EMPTY] = true;
 export const recoverableLimitErrors = {};
 recoverableLimitErrors[Soql.ErrorType.INCOMPLETELIMIT] = true;
 
-/**
- * EMPTYWHERE = 'EMPTYWHERE',
-  INCOMPLETENESTEDCONDITION = 'INCOMPLETENESTEDCONDITION',
-  INCOMPLETEANDORCONDITION = 'INCOMPLETEANDORCONDITION',
-  INCOMPLETENOTCONDITION = 'INCOMPLETENOTCONDITION',
-  UNRECOGNIZEDCOMPAREVALUE = 'UNRECOGNIZEDCOMPAREVALUE',
-  UNRECOGNIZEDCOMPAREOPERATOR = 'UNRECOGNIZEDCOMPAREOPERATOR',
-  UNRECOGNIZEDCOMPAREFIELD = 'UNRECOGNIZEDCOMPAREFIELD',
-  NOCOMPAREVALUE = 'NOCOMPAREVALUE',
-  NOCOMPAREOPERATOR = 'NOCOMPAREOPERATOR'
- */
 // recoverable where errors
 export const recoverableWhereErrors = {};
 recoverableWhereErrors[Soql.ErrorType.EMPTYWHERE] = true;
@@ -65,6 +54,7 @@ recoverableWhereErrors[Soql.ErrorType.NOCOMPAREOPERATOR] = true;
 export const recoverableErrors = {
   ...recoverableFieldErrors,
   ...recoverableFromErrors,
+  ...recoverableWhereErrors,
   ...recoverableLimitErrors
 };
 recoverableErrors[Soql.ErrorType.EMPTY] = true;
