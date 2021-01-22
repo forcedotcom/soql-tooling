@@ -634,6 +634,9 @@ describe('ModelDeserializer should', () => {
 
   it('identify unrecognized literal value in condition', () => {
     expectError('SELECT field1 FROM object1 WHERE field = foo', ErrorType.UNRECOGNIZEDCOMPAREVALUE);
+    expectError('SELECT field1 FROM object1 WHERE field LIKE foo', ErrorType.UNRECOGNIZEDCOMPAREVALUE);
+    expectError('SELECT field1 FROM object1 WHERE field IN ( foo )', ErrorType.UNRECOGNIZEDCOMPAREVALUE);
+    expectError('SELECT field1 FROM object1 WHERE field INCLUDES ( foo )', ErrorType.UNRECOGNIZEDCOMPAREVALUE);
   });
 
   it('identify unrecognized compare operator in condition', () => {
@@ -646,10 +649,24 @@ describe('ModelDeserializer should', () => {
 
   it('identify missing compare value in condition', () => {
     expectError('SELECT field1 FROM object1 WHERE field =', ErrorType.NOCOMPAREVALUE);
+    expectError('SELECT field1 FROM object1 WHERE field LIKE', ErrorType.NOCOMPAREVALUE);
+    expectError('SELECT field1 FROM object1 WHERE field IN', ErrorType.NOCOMPAREVALUE);
+    expectError('SELECT field1 FROM object1 WHERE field INCLUDES', ErrorType.NOCOMPAREVALUE);
   });
 
   it('identify missing compare operator in condition', () => {
     expectError('SELECT field1 FROM object1 WHERE field', ErrorType.NOCOMPAREOPERATOR);
+  });
+
+  it('identify incomplete multi-value list', () => {
+    expectError('SELECT field1 FROM object1 WHERE field IN (', ErrorType.INCOMPLETEMULTIVALUELIST);
+    expectError('SELECT field1 FROM object1 WHERE field IN ( \'foo\'', ErrorType.INCOMPLETEMULTIVALUELIST);
+    expectError('SELECT field1 FROM object1 WHERE field IN ( \'foo\',', ErrorType.INCOMPLETEMULTIVALUELIST);
+    expectError('SELECT field1 FROM object1 WHERE field IN ( \'foo\', )', ErrorType.INCOMPLETEMULTIVALUELIST);
+    expectError('SELECT field1 FROM object1 WHERE field INCLUDES (', ErrorType.INCOMPLETEMULTIVALUELIST);
+    expectError('SELECT field1 FROM object1 WHERE field INCLUDES ( \'foo\'', ErrorType.INCOMPLETEMULTIVALUELIST);
+    expectError('SELECT field1 FROM object1 WHERE field INCLUDES ( \'foo\',', ErrorType.INCOMPLETEMULTIVALUELIST);
+    expectError('SELECT field1 FROM object1 WHERE field INCLUDES ( \'foo\', )', ErrorType.INCOMPLETEMULTIVALUELIST);
   });
 
   function expectError(query: string, expectedType: ErrorType): void {
