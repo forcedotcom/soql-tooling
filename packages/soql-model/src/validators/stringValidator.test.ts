@@ -20,6 +20,6 @@ describe('StringValidator should', () => {
     expect(validator.validate('foo')).toEqual(notValidResult);
   });
   it('return not valid result for string ending in escaped quote', () => {
-    expect(validator.validate('foo\'')).toEqual(notValidResult);
+    expect(validator.validate("'foo\\'")).toEqual(notValidResult);
   })
 });
