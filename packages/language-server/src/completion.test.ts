@@ -50,8 +50,8 @@ const expectedSoqlContextByKeyword: {
   '<=': { onlyTypes: typesForLT_GT_operators },
   '>': { onlyTypes: typesForLT_GT_operators },
   '>=': { onlyTypes: typesForLT_GT_operators },
-  'INCLUDES(': { onlyTypes: ['multipicklist'] },
-  'EXCLUDES(': { onlyTypes: ['multipicklist'] },
+  'INCLUDES (': { onlyTypes: ['multipicklist'] },
+  'EXCLUDES (': { onlyTypes: ['multipicklist'] },
   LIKE: { onlyTypes: ['string', 'textarea', 'time'] },
 };
 
@@ -687,8 +687,8 @@ describe('WHERE clause', () => {
   validateCompletionsFor('SELECT id FROM Account WHERE Name |', [
     ...newKeywordItems('IN (', 'NOT IN (', '=', '!=', '<>'),
     ...newKeywordItemsWithContext('Account', 'Name', [
-      'INCLUDES(',
-      'EXCLUDES(',
+      'INCLUDES (',
+      'EXCLUDES (',
       '<',
       '<=',
       '>',
@@ -736,7 +736,7 @@ describe('WHERE clause', () => {
 
   // NOTE: Unlike IN(), INCLUDES()/EXCLUDES() never support NULL in the list
   validateCompletionsFor(
-    'SELECT Channel FROM QuickText WHERE Channel INCLUDES(|',
+    'SELECT Channel FROM QuickText WHERE Channel INCLUDES (|',
     expectedItemsForLiterals(
       {
         sobjectName: 'QuickText',

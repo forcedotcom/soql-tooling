@@ -266,9 +266,9 @@ function generateCandidatesFromTokens(
     }
 
     // Some "manual" improvements for some keywords:
-    if (['IN', 'NOT IN'].includes(itemText)) {
+    if (['IN', 'NOT IN', 'INCLUDES', 'EXCLUDES'].includes(itemText)) {
       itemText = itemText + ' (';
-    } else if (['INCLUDES', 'EXCLUDES', 'DISTANCE'].includes(itemText)) {
+    } else if (['DISTANCE'].includes(itemText)) {
       itemText = itemText + '(';
     } else if (itemText === 'COUNT') {
       // NOTE: The g4 grammar declares `COUNT()` explicitly, but not `COUNT(xyz)`.
