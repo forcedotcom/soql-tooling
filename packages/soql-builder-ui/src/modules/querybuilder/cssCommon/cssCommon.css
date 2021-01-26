@@ -226,7 +226,7 @@ button:hover.btn--error {
   border-color: var(--soql-red) transparent transparent transparent;
 }
 
-.tooltip--info::before {
+<<<<<<< HEAD .tooltip--info::before {
   background: var(--soql-background);
   color: var(--soql-foreground);
 }
@@ -236,7 +236,7 @@ button:hover.btn--error {
   border-color: var(--soql-background) transparent transparent transparent;
 }
 
-.tooltip:hover::before,
+=======>>>>>>>feature/where .tooltip:hover::before,
 .tooltip:hover::after {
   transform: scale(1);
   opacity: 1;
