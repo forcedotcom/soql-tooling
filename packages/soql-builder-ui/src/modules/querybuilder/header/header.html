@@ -11,7 +11,7 @@
     <template if:true={hasErrors}>
       <div class="header__content">
         <h3>Syntax Error</h3>
-        Your query contains statements that SOQL Builder cannot parse.&nbsp;
+        Your query contains errors that SOQL Builder cannot parse.
         <a class="show-more" onclick={handleShowErrors}>({triggerText})</a>
         <template if:true={showErrors}>
           <ul>

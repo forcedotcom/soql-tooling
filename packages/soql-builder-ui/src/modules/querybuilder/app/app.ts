@@ -43,10 +43,9 @@ export default class App extends LightningElement {
   dismissEditWarning = false;
 
   get hasUnsupported() {
-    const rtrn = this.unsupportedMessages
+    return this.unsupportedMessages
       ? this.unsupportedMessages.length > 0
       : false;
-    return rtrn;
   }
 
   get blockQueryBuilder() {

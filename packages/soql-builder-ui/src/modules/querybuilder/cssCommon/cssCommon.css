@@ -164,6 +164,8 @@ button:hover.btn--error {
   );
   color: var(--vscode-foreground, var(--soql-foreground));
   font-size: small;
+  border: 1px solid var(--vscode-editorWarning-foreground, var(--soql-red));
+  border-radius: 3px;
 }
 
 .warning-notification h3 {
@@ -226,7 +228,7 @@ button:hover.btn--error {
   border-color: var(--soql-red) transparent transparent transparent;
 }
 
-<<<<<<< HEAD .tooltip--info::before {
+.tooltip--info::before {
   background: var(--soql-background);
   color: var(--soql-foreground);
 }
@@ -236,7 +238,7 @@ button:hover.btn--error {
   border-color: var(--soql-background) transparent transparent transparent;
 }
 
-=======>>>>>>>feature/where .tooltip:hover::before,
+.tooltip:hover::before,
 .tooltip:hover::after {
   transform: scale(1);
   opacity: 1;
@@ -250,6 +252,7 @@ button:hover.btn--error {
 .show-more {
   cursor: pointer;
   text-decoration: underline;
+  margin-left: 0.25rem;
 }
 
 .center {
