@@ -5,10 +5,12 @@
         class="select__input"
         name="search-bar"
         placeholder={placeholderText}
-        value={searchTerm}
+        value={displayValue}
         oninput={handleInputChange}
         onclick={handleOpenOptions}
         onkeydown={handleKeyDown}
+        onfocus={handleInputFocus}
+        onblur={handleInputFocus}
       />
       <template if:true={hasSearchTerm}>
         <div
@@ -18,6 +20,17 @@
         >
           <!-- close icon '×' -->
           &#10005;
+        </div>
+      </template>
+      <template if:false={hasSearchTerm}>
+        <!-- Up Arrowhead '⌃'-->
+        <div
+          tabindex="0"
+          onkeydown={handleKeyDown}
+          onclick={toggleOpenOptions}
+          class={dropDownArrowClassList}
+        >
+          &#8963;
         </div>
       </template>
     </div>

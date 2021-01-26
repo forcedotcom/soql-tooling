@@ -10,20 +10,60 @@ export default class CustomSelect extends LightningElement {
   @api multiple = false;
   @api isLoading = false;
   @api allOptions: string[];
-  @api selectedOptions: string[] = [];
   @track _renderedOptions: string[] = [];
   availableOptions: string[] = [];
-  _placeholderText = '';
   searchTerm = '';
   originalUserInput = '';
+  dropdownArrow: HTMLElement;
   selectInputEl: HTMLInputElement;
   optionsWrapper: HTMLElement;
   optionList: HTMLCollection;
   optionListIsHidden = true;
+  selectInputIsFocused = false;
   activeOptionIndex = -1;
   numberOfSearchResults;
   customSelectEventName = 'customselect__optionsopened';
-  //getter setter value =
+  _placeholderText = '';
+  _selectedOptions: string[] = [];
+  _value: string[] = [];
+
+  @api
+  get selectedOptions() {
+    return this._selectedOptions;
+  }
+
+  set selectedOptions(selectedOptions: string[]) {
+    this._selectedOptions = selectedOptions;
+
+    if (!this.multiple) {
+      this._value = selectedOptions;
+    }
+  }
+
+  @api
+  get value(): string[] {
+    return this._value;
+  }
+
+  get displayValue(): string {
+    if (this.hasSearchTerm) {
+      return this.searchTerm;
+    }
+
+    if (!this.multiple && !this.selectInputIsFocused) {
+      return this._value[0] || '';
+    }
+
+    if (
+      !this.multiple &&
+      this.selectInputIsFocused &&
+      this.selectInputEl.value.length
+    ) {
+      return this._value[0];
+    }
+
+    return '';
+  }
 
   get hasSearchTerm() {
     return !!this.searchTerm;
@@ -33,14 +73,16 @@ export default class CustomSelect extends LightningElement {
     return this.hasSearchTerm && this.numberOfSearchResults === 0;
   }
 
+  get dropDownArrowClassList() {
+    let classList = 'select__dropdown-arrow';
+    classList += this.optionListIsHidden ? '' : ' select__dropdown-arrow--up';
+    return classList;
+  }
+
   @api
   get placeholderText() {
     // TODO: i18n
-    return this.isLoading
-      ? 'Loading...'
-      : !this.multiple && this.selectedOptions.length
-      ? this.selectedOptions[0]
-      : this._placeholderText;
+    return this.isLoading ? 'Loading...' : this._placeholderText;
   }
 
   set placeholderText(text: string) {
@@ -73,6 +115,9 @@ export default class CustomSelect extends LightningElement {
     this.optionList = this.optionsWrapper.children;
     this.selectInputEl =
       this.selectInputEl || this.template.querySelector('.select__input');
+    this.dropdownArrow =
+      this.dropdownArrow ||
+      this.template.querySelector('.select__dropdown-arrow');
   }
 
   /* ======= UTILITIES ======= */
@@ -94,6 +139,8 @@ export default class CustomSelect extends LightningElement {
       });
       this.numberOfSearchResults = filteredOptions.length;
       this._renderedOptions = filteredOptions;
+    } else {
+      this._renderedOptions = this.availableOptions;
     }
   }
 
@@ -111,7 +158,7 @@ export default class CustomSelect extends LightningElement {
         return option.toLowerCase() === optionName.toLowerCase();
       }
     );
-
+    // only allow selection of valid options
     if (validOptionMatch.length) {
       const optionValue = validOptionMatch[0];
       const optionSelectionEvent = new CustomEvent('option__selection', {
@@ -119,6 +166,11 @@ export default class CustomSelect extends LightningElement {
           value: optionValue
         }
       });
+
+      if (!this.multiple) {
+        this._value = [optionValue];
+      }
+
       this.dispatchEvent(optionSelectionEvent);
       this.resetSearchBar();
     }
@@ -167,8 +219,31 @@ export default class CustomSelect extends LightningElement {
     }
   }
 
+  handleInputFocus() {
+    this.selectInputIsFocused = !this.selectInputIsFocused;
+
+    if (this.selectInputEl) {
+      this.selectInputEl.classList.toggle('select__input-placeholder--fadeout');
+    }
+  }
+
   /* ======= EVENT HANDLERS ======= */
 
+  toggleOpenOptions(e) {
+    e.preventDefault();
+    e.stopPropagation();
+    if (this.optionListIsHidden) {
+      this.handleOpenOptions(e);
+    } else {
+      this.handleCloseOptions(e);
+    }
+  }
+  /*
+  This event is used to close any other
+  options menu that are open except the target
+  of the event. Custom event is needed due to
+  “event retargeting.” by LWC.
+  */
   sendOptionsOpenEvent(e: Event) {
     const optionsOpenedEvent = new CustomEvent(this.customSelectEventName, {
       detail: { target: e.target },
@@ -183,6 +258,11 @@ export default class CustomSelect extends LightningElement {
   handleOpenOptions(e) {
     e.preventDefault();
     e.stopPropagation();
+    // highlight the current value
+    if (!this.multiple) {
+      this.selectInputEl.select();
+    }
+
     this.calculateAvailableOptions();
     if (this.hasSearchTerm) {
       this.filterOptionsBySearchTerm();
@@ -191,6 +271,7 @@ export default class CustomSelect extends LightningElement {
     }
     this.sendOptionsOpenEvent(e);
     this.openOptionsMenu();
+    this.optionListIsHidden = false;
   }
 
   /**
@@ -215,7 +296,7 @@ export default class CustomSelect extends LightningElement {
   handleInputChange(e) {
     e.preventDefault();
     // if the user deletes the text
-    if (!e.target.value) {
+    if (this.multiple && !e.target.value) {
       this.resetSearchBar();
       return;
     }
