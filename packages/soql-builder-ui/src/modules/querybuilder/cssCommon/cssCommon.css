@@ -150,6 +150,66 @@ button:hover {
   opacity: 1;
 }
 
+/* TOOLTIPS --- */
+.tooltip {
+  position: relative;
+}
+.tooltip::before {
+  content: attr(data-text); /* grab the text */
+  position: absolute;
+  transform: scale(
+    0
+  ); /* this keeps it from being reactive to :hover when it is not visible */
+  opacity: 0;
+  transition: opacity ease-in 0.2s;
+
+  /* vertically center above element */
+  bottom: calc(100% + 10px);
+  left: calc(50% - 100px);
+
+  /* basic styles */
+  font-size: small;
+  width: 200px; /* fixed width helps calculate position */
+  padding: 0.5rem;
+  border-radius: 3px;
+  background: var(--vscode-sideBar-background, var(--soql-background));
+  color: var(--vscode-button-foreground, var(--soql-white));
+  text-align: center;
+}
+
+.tooltip::after {
+  content: '';
+  position: absolute;
+  transform: scale(0);
+  opacity: 0;
+  transition: opacity ease-in 0.2s;
+
+  /* position arrow correctly */
+  left: calc(50% - 10px);
+  bottom: calc(100% - 10px);
+
+  /* the arrow - a trick that uses the after psuedo element with thick border and makes 3 sides transparent */
+  border: 10px solid var(--vscode-sideBar-background, var(--soql-background));
+  border-color: var(--vscode-sideBar-background, var(--soql-background))
+    transparent transparent transparent;
+}
+
+.tooltip--error::before {
+  background: var(--soql-red);
+  color: var(--soql-white);
+}
+
+.tooltip--error::after {
+  border: 10px solid var(--soql-red);
+  border-color: var(--soql-red) transparent transparent transparent;
+}
+
+.tooltip:hover::before,
+.tooltip:hover::after {
+  transform: scale(1);
+  opacity: 1;
+}
+
 /* MISC ------------ */
 .pointer {
   cursor: pointer;
