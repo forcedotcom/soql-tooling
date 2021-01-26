@@ -62,9 +62,10 @@ main {
     --vscode-inputValidation-warningBackground,
     var(--soql-error-background)
   );
+  color: var(--vscode-foreground, var(--soql-foreground));
   width: calc(var(--soql-media-max-width));
   margin: 0 auto;
-  padding: 0.25rem;
+  padding: 0.25rem 0.25rem 0.5rem 0.25rem;
   border-radius: 3px;
   box-shadow: 0 2px 3px 0 rgba(0, 0, 0, 0.16);
   font-size: small;
@@ -74,11 +75,4 @@ main {
   font-size: 1rem;
   margin: 0 0 0.5rem 0;
   color: var(--vscode-editorWarning-foreground, var(--soql-red));
-}
-
-.block-message p {
-  text-align: left;
-  padding: 0 1rem 1rem 1rem;
-  font-size: small;
-  color: var(--vscode-foreground, var(--soql-forground));
 }

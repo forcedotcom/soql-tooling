@@ -9,18 +9,29 @@
 import { LightningElement, api } from 'lwc';
 export default class Header extends LightningElement {
   @api isRunning = false;
-  @api unsupportedMessages = [];
   @api errorMessages = [];
-  get hasErrorsOrUnsupported() {
-    return this.unsupportedMessages.length + this.errorMessages.length > 0;
+  get hasErrors() {
+    return this.errorMessages.length > 0;
   }
-  get getHeaderClasses() {
-    return this.hasErrorsOrUnsupported ? 'syntax-warning' : '';
+  get headerClasses() {
+    return this.hasErrors ? 'syntax-warning' : '';
   }
   get triggerText() {
     return this.showErrors ? 'Hide errors' : 'Show errors';
   }
   showErrors = false;
+
+  get isButtonDisabled() {
+    return this.hasErrors || this.isRunning;
+  }
+
+  get buttonClasses() {
+    return this.isButtonDisabled ? 'btn--disabled' : '';
+  }
+
+  get buttonText() {
+    return this.isRunning ? 'Running...' : 'Run Query';
+  }
 
   handleShowErrors(e: Event) {
     e.preventDefault();
