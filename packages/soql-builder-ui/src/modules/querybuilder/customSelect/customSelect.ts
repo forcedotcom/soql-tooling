@@ -35,7 +35,7 @@ export default class CustomSelect extends LightningElement {
   set selectedOptions(selectedOptions: string[]) {
     this._selectedOptions = selectedOptions;
 
-    if (!this.multiple) {
+    if (this.isSingleSelect) {
       this._value = selectedOptions;
     }
   }
@@ -45,21 +45,33 @@ export default class CustomSelect extends LightningElement {
     return this._value;
   }
 
+  @api
+  get placeholderText() {
+    // TODO: i18n
+    return this.isLoading ? 'Loading...' : this._placeholderText;
+  }
+
+  set placeholderText(text: string) {
+    this._placeholderText = text;
+  }
+  /*
+  1. If the user is typing, display the searchTerm
+  2. If singleSelect
+    - display the selected value (default)
+    - if there is no searchTerm
+    & the input is in focus
+    & the input is empty
+    display the placeholder
+  */
   get displayValue(): string {
     if (this.hasSearchTerm) {
       return this.searchTerm;
     }
 
-    if (!this.multiple && !this.selectInputIsFocused) {
-      return this._value[0] || '';
-    }
-
-    if (
-      !this.multiple &&
-      this.selectInputIsFocused &&
-      this.selectInputEl.value.length
-    ) {
-      return this._value[0];
+    if (this.isSingleSelect && this.selectInputEl) {
+      if (!this.selectInputIsFocused || this.selectInputEl.value.length) {
+        return this._value[0] || '';
+      }
     }
 
     return '';
@@ -79,19 +91,17 @@ export default class CustomSelect extends LightningElement {
     return classList;
   }
 
-  @api
-  get placeholderText() {
-    // TODO: i18n
-    return this.isLoading ? 'Loading...' : this._placeholderText;
+  get isSingleSelect() {
+    return !this.multiple;
   }
 
-  set placeholderText(text: string) {
-    this._placeholderText = text;
+  get isMultipleSelect() {
+    return this.multiple;
   }
 
   /* ======= LIFECYCLE HOOKS ======= */
 
-  // close the options menu when user click outside element
+  // close the options menu when user clicks outside component
   connectedCallback() {
     document.addEventListener(
       this.customSelectEventName,
@@ -151,14 +161,20 @@ export default class CustomSelect extends LightningElement {
         )
       : '';
   }
-
+  /*
+  The component will fire a selection event
+  - if the selection is a valid option
+  - it will be up to the parent to handle/ignore
+  - the state of _value will be updated either way
+  & can be queried independantly of the model.
+ */
   addSelectedOption(optionName: string = this.searchTerm) {
     const validOptionMatch: string[] = this.availableOptions.filter(
       (option) => {
         return option.toLowerCase() === optionName.toLowerCase();
       }
     );
-    // only allow selection of valid options
+
     if (validOptionMatch.length) {
       const optionValue = validOptionMatch[0];
       const optionSelectionEvent = new CustomEvent('option__selection', {
@@ -167,7 +183,7 @@ export default class CustomSelect extends LightningElement {
         }
       });
 
-      if (!this.multiple) {
+      if (this.isSingleSelect) {
         this._value = [optionValue];
       }
 
@@ -229,6 +245,7 @@ export default class CustomSelect extends LightningElement {
 
   /* ======= EVENT HANDLERS ======= */
 
+  // this is used for the dropdown Arrow button
   toggleOpenOptions(e) {
     e.preventDefault();
     e.stopPropagation();
@@ -259,7 +276,7 @@ export default class CustomSelect extends LightningElement {
     e.preventDefault();
     e.stopPropagation();
     // only highlight current value if user clicks on input
-    if (!this.multiple && e.target === this.selectInputEl) {
+    if (this.isSingleSelect && e.target === this.selectInputEl) {
       this.selectInputEl.select();
     }
 
@@ -293,7 +310,7 @@ export default class CustomSelect extends LightningElement {
     this.optionListIsHidden = true;
   };
   /*
-  InputChange will fire with typing && paste events.
+  InputChange will fire with typing && paste events
   Where key down/up will not pick up paste events
   */
   handleInputChange(e) {
@@ -329,7 +346,10 @@ export default class CustomSelect extends LightningElement {
       this.resetSearchBar();
     }
   }
-  // will fire with both character and non-character keys
+  /*
+    will fire with both character and non-character keys
+    this handler is used for keyboard events and navigation
+  */
   handleKeyDown(e) {
     const key: string = e.key;
     const activeOption: Element = this.optionList[this.activeOptionIndex];
