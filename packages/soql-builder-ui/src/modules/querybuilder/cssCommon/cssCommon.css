@@ -157,6 +157,21 @@ button:hover.btn--error {
   opacity: 1;
 }
 
+.warning-notification {
+  background-color: var(
+    --vscode-inputValidation-warningBackground,
+    var(--soql-error-background)
+  );
+  color: var(--vscode-foreground, var(--soql-foreground));
+  font-size: small;
+}
+
+.warning-notification h3 {
+  font-size: 1rem;
+  margin: 0 0 0.5rem 0;
+  color: var(--vscode-editorWarning-foreground, var(--soql-red));
+}
+
 /* TOOLTIPS --- */
 .tooltip {
   position: relative;

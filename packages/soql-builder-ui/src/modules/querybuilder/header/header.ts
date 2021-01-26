@@ -14,7 +14,7 @@ export default class Header extends LightningElement {
     return this.errorMessages.length > 0;
   }
   get headerClasses() {
-    return this.hasErrors ? 'syntax-warning' : '';
+    return this.hasErrors ? 'warning-notification' : '';
   }
   get triggerText() {
     return this.showErrors ? 'Hide errors' : 'Show errors';

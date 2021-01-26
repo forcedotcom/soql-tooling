@@ -5,23 +5,6 @@
 
 import { Soql } from '@salesforce/soql-model';
 
-// export enum ErrorType {
-//   // eslint-disable-next-line no-unused-vars
-//   UNKNOWN = 'UNKNOWN',
-//   // eslint-disable-next-line no-unused-vars
-//   EMPTY = 'EMPTY',
-//   // eslint-disable-next-line no-unused-vars
-//   NOSELECT = 'NOSELECT',
-//   // eslint-disable-next-line no-unused-vars
-//   NOSELECTIONS = 'NOSELECTIONS',
-//   // eslint-disable-next-line no-unused-vars
-//   NOFROM = 'NOFROM',
-//   // eslint-disable-next-line no-unused-vars
-//   INCOMPLETEFROM = 'INCOMPLETEFROM',
-//   // eslint-disable-next-line no-unused-vars
-//   INCOMPLETELIMIT = 'INCOMPLETELIMIT'
-// }
-
 // recoverable field errors
 export const recoverableFieldErrors = {};
 recoverableFieldErrors[Soql.ErrorType.NOSELECT] = true;

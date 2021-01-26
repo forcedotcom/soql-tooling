@@ -14,11 +14,7 @@ header {
   padding: 0.25rem;
 }
 
-header.syntax-warning {
-  background-color: var(
-    --vscode-inputValidation-warningBackground,
-    var(--soql-error-background)
-  );
+header.warning-notification {
   margin-bottom: 1rem;
 }
 
@@ -33,12 +29,6 @@ header.syntax-warning {
   margin-bottom: 0.25rem;
   font-size: small;
   color: var(--vscode-foreground, var(--soql-foreground));
-}
-
-.header__content h3 {
-  font-size: 1rem;
-  margin: 0 0 0.5rem 0;
-  color: var(--vscode-editorWarning-foreground, var(--soql-red));
 }
 
 .header__actions button {

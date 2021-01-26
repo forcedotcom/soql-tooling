@@ -145,7 +145,14 @@ export default class App extends LightningElement {
   inspectUnsupported(unsupported) {
     this.unsupportedMessages = unsupported
       .filter((unsup) => unsup.reason !== 'unmodeled:empty-condition')
-      .map((unsup) => unsup.reason);
+      .map((unsup, index) => {
+        // sometimes these unsupported syntax issues come in as a string and not an object.
+        // see W-8793884
+        const newunsup = typeof unsup === 'string' ? { reason: unsup } : unsup;
+        newunsup.reason = newunsup.reason || 'unknown';
+        newunsup.index = index; // necessary for LWC
+        return newunsup;
+      });
   }
 
   inspectErrors(errors) {
@@ -157,7 +164,6 @@ export default class App extends LightningElement {
     let messages = [];
     errors.forEach((error) => {
       if (recoverableErrors[error.type]) {
-        console.log('error is: ', error.type);
         this.hasRecoverableError = true;
         if (recoverableFieldErrors[error.type]) {
           this.hasRecoverableFieldsError = true;
