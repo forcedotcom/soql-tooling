@@ -64,16 +64,16 @@ main {
   );
   width: calc(var(--soql-media-max-width));
   margin: 0 auto;
-  text-align: center;
+  padding: 0.25rem;
   border-radius: 3px;
   box-shadow: 0 2px 3px 0 rgba(0, 0, 0, 0.16);
+  font-size: small;
 }
 
 .block-message h3 {
-  font-weight: bolder;
-  font-size: large;
+  font-size: 1rem;
+  margin: 0 0 0.5rem 0;
   color: var(--vscode-editorWarning-foreground, var(--soql-red));
-  text-shadow: 0 2px 3px rgba(0, 0, 0, 0.16);
 }
 
 .block-message p {

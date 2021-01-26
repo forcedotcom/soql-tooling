@@ -11,9 +11,36 @@
 header {
   display: flex;
   justify-content: flex-end;
+  padding: 0.25rem;
 }
 
-button {
+header.syntax-warning {
+  background-color: var(--soql-error-background);
+  margin-bottom: 1rem;
+}
+
+.actions {
+  width: auto;
+}
+
+.header__content {
+  flex: 1;
+  padding: 0.25rem;
+  margin-right: 1rem;
+  margin-bottom: 0.25rem;
+  font-size: small;
+}
+
+.header__content h3 {
+  font-size: 1rem;
+  margin: 0 0 0.5rem 0;
+  color: var(--vscode-editorWarning-foreground, var(--soql-red));
+}
+
+.header__content p {
+}
+
+.header__actions button {
   margin: auto 0 10px 0;
 }
 

@@ -139,6 +139,13 @@ button:active {
   pointer-events: none;
 }
 
+.btn--error {
+  background-color: var(--soql-red);
+}
+button:hover.btn--error {
+  background-color: var(--soql-red);
+}
+
 .select-long {
   min-width: var(--soql-input-width);
   max-width: var(--soql-input-width);
@@ -204,6 +211,16 @@ button:active {
   border-color: var(--soql-red) transparent transparent transparent;
 }
 
+.tooltip--info::before {
+  background: var(--soql-background);
+  color: var(--soql-foreground);
+}
+
+.tooltip--info::after {
+  border: 10px solid var(--soql-background);
+  border-color: var(--soql-background) transparent transparent transparent;
+}
+
 .tooltip:hover::before,
 .tooltip:hover::after {
   transform: scale(1);
@@ -213,4 +230,13 @@ button:active {
 /* MISC ------------ */
 .pointer {
   cursor: pointer;
+}
+
+.show-more {
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+.center {
+  text-align: center;
 }

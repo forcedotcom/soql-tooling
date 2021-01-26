@@ -7,8 +7,24 @@
  -->
 
 <template>
-  <header>
-    <div class="container">
+  <header class={getHeaderClasses}>
+    <template if:true={hasErrorsOrUnsupported}>
+      <div class="header__content">
+        <h3>Syntax Error</h3>
+        Your query contains statements that SOQL Builder cannot parse. You can
+        still run the query. However, editing the query below will rewrite your
+        query.
+        <a class="show-more" onclick={handleShowErrors}>({triggerText})</a>
+        <template if:true={showErrors}>
+          <ul>
+            <template for:each={errorMessages} for:item="error"
+              ><li key={error}>{error}</li></template
+            >
+          </ul>
+        </template>
+      </div>
+    </template>
+    <div class="header__actions">
       <template if:false={isRunning}>
         <button class="run-button" onclick={handleRunQuery}>Run Query</button>
       </template>

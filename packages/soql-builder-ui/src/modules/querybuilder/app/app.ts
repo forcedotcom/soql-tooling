@@ -38,33 +38,26 @@ export default class App extends LightningElement {
   theme = 'light';
   sobjectMetadata: any;
 
+  errorMessages: string[] = [];
+  unsupportedMessages: string[] = [];
+  dismissEditWarning = false;
+
   get hasUnsupported() {
-    const rtrn =
-      this.query && this.query.unsupported
-        ? this.query.unsupported.length > 0
-        : false;
-    console.log(
-      'returning hasUnsupported: ',
-      rtrn,
-      'because: ',
-      JSON.stringify(this.query.unsupported)
-    );
+    const rtrn = this.unsupportedMessages
+      ? this.unsupportedMessages.length > 0
+      : false;
     return rtrn;
   }
 
-  get hasUnrecoverable() {
-    return !this.hasUnsupported && this.hasUnrecoverableError;
-  }
-
   get blockQueryBuilder() {
-    return this.hasUnrecoverableError || this.hasUnsupported;
+    return this.hasUnsupported === true && this.dismissEditWarning === false;
   }
   hasRecoverableFieldsError = false;
   hasRecoverableFromError = false;
   hasRecoverableLimitError = false;
   hasRecoverableWhereError = false;
   hasRecoverableError = true;
-  hasUnrecoverableError = true;
+  hasUnrecoverableError = false;
   isFromLoading = false;
   isFieldsLoading = false;
   isQueryRunning = false;
@@ -116,9 +109,8 @@ export default class App extends LightningElement {
     // only re-render if incoming soql statement is different
     if (this.query.originalSoqlStatement !== newQuery.originalSoqlStatement) {
       this.inspectErrors(newQuery.errors);
-      if (this.hasUnrecoverableError === false) {
-        this.loadSObjectMetadata(newQuery);
-      }
+      this.inspectUnsupported(newQuery.unsupported);
+      this.loadSObjectMetadata(newQuery);
       this.query = newQuery;
     }
   }
@@ -150,18 +142,19 @@ export default class App extends LightningElement {
     }
   }
 
+  inspectUnsupported(unsupported) {
+    this.unsupportedMessages = unsupported
+      .filter((unsup) => unsup.reason !== 'unmodeled:empty-condition')
+      .map((unsup) => unsup.reason);
+  }
+
   inspectErrors(errors) {
     this.hasRecoverableFieldsError = false;
     this.hasRecoverableFromError = false;
     this.hasRecoverableLimitError = false;
     this.hasUnrecoverableError = false;
     this.hasRecoverableWhereError = false;
-    console.log(
-      'ERRORS: ',
-      errors,
-      'unsupported',
-      JSON.stringify(this.query.unsupported)
-    );
+    let messages = [];
     errors.forEach((error) => {
       if (recoverableErrors[error.type]) {
         console.log('error is: ', error.type);
@@ -181,14 +174,9 @@ export default class App extends LightningElement {
       } else {
         this.hasUnrecoverableError = true;
       }
+      messages.push(error.message);
     });
-    console.log(
-      this.hasRecoverableError,
-      this.hasRecoverableWhereError,
-      this.hasUnrecoverableError,
-      this.hasUnrecoverable,
-      this.hasUnsupported
-    );
+    this.errorMessages = messages;
   }
   /* ---- SOBJECT HANDLERS ---- */
   handleObjectChange(e) {
@@ -233,6 +221,12 @@ export default class App extends LightningElement {
   }
   handleRemoveWhereCondition(e) {
     this.modelService.removeWhereFieldCondition(e.detail);
+  }
+
+  /* MISC HANDLERS */
+
+  handleDismissEditWarning() {
+    this.dismissEditWarning = true;
   }
 
   handleRunQuery() {

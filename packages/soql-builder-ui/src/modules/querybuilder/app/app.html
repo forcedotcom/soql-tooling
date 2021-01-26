@@ -12,8 +12,8 @@
       <querybuilder-header
         class={theme}
         onheader__run_query={handleRunQuery}
+        error-messages={errorMessages}
       ></querybuilder-header>
-      <div>HERE: {hasUnsupported}</div>
     </header>
     <article class="querybuilder-body">
       <section class="querybuilder-form">
@@ -22,22 +22,22 @@
           <template if:true={hasUnsupported}>
             <!-- TODO: i18n -->
             <div class="block-message">
-              <h3>Syntax Not Yet Supported</h3>
-              <p>
-                Your query contains statements that SOQL Builder doesn't
-                currently support. You can still run the query but must use a
-                text editor to change it.
-              </p>
-            </div>
-          </template>
-          <template if:true={hasUnrecoverable}>
-            <!-- TODO: i18n -->
-            <div class="block-message">
-              <h3>Syntax Error</h3>
-              <p>
-                Your SOQL statement contains syntax errors. Use a text editor to
-                edit the query, and try again.
-              </p>
+              <h3>Unsupported Syntax</h3>
+              Your query contains statements that SOQL Builder doesn't currently
+              support.
+              <ul>
+                <template for:each={unsupportedMessages} for:item="unsupported"
+                  ><li key={unsupported}>{unsupported}</li></template
+                >
+              </ul>
+              <div class="center">
+                <button
+                  class="btn--error center"
+                  onclick={handleDismissEditWarning}
+                >
+                  Edit query anyway
+                </button>
+              </div>
             </div>
           </template>
         </template>

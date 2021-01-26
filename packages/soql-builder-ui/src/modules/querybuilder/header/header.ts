@@ -9,6 +9,23 @@
 import { LightningElement, api } from 'lwc';
 export default class Header extends LightningElement {
   @api isRunning = false;
+  @api unsupportedMessages = [];
+  @api errorMessages = [];
+  get hasErrorsOrUnsupported() {
+    return this.unsupportedMessages.length + this.errorMessages.length > 0;
+  }
+  get getHeaderClasses() {
+    return this.hasErrorsOrUnsupported ? 'syntax-warning' : '';
+  }
+  get triggerText() {
+    return this.showErrors ? 'Hide errors' : 'Show errors';
+  }
+  showErrors = false;
+
+  handleShowErrors(e: Event) {
+    e.preventDefault();
+    this.showErrors = !this.showErrors;
+  }
 
   handleRunQuery(e: Event) {
     e.preventDefault();
