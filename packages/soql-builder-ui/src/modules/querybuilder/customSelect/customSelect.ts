@@ -254,12 +254,12 @@ export default class CustomSelect extends LightningElement {
     this.dispatchEvent(optionsOpenedEvent);
   }
 
-  // called when user clicks on search bar input
+  // called only when user clicks on search bar input
   handleOpenOptions(e) {
     e.preventDefault();
     e.stopPropagation();
-    // highlight the current value
-    if (!this.multiple) {
+    // only highlight current value if user clicks on input
+    if (!this.multiple && e.target === this.selectInputEl) {
       this.selectInputEl.select();
     }
 
@@ -275,7 +275,7 @@ export default class CustomSelect extends LightningElement {
   }
 
   /**
-   * This syntax allow the function to retain context of this
+   * This syntax allows the function to retain context of this
    * while also usable with addEventListener and removeEventListener
    */
   handleCloseOptions = (e?: CustomSelectEvent) => {
@@ -292,7 +292,10 @@ export default class CustomSelect extends LightningElement {
     this.optionsWrapper.classList.remove('options--open');
     this.optionListIsHidden = true;
   };
-  // respond to changes in input value: typing, paste events.
+  /*
+  InputChange will fire with typing && paste events.
+  Where key down/up will not pick up paste events
+  */
   handleInputChange(e) {
     e.preventDefault();
     // if the user deletes the text
