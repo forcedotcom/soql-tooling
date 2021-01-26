@@ -59,14 +59,13 @@ main.custom-select {
 }
 
 .select__dropdown-arrow {
-  align-self: center;
-  padding-right: 5px;
+  transform: rotate(180deg);
+  margin-right: 2px;
   cursor: pointer;
 }
 
 .select__dropdown-arrow--up {
-  transform: rotate(180deg);
-  margin-right: 5px;
+  transform: rotate(0deg);
 }
 
 div.select__dropdown-arrow:focus {
