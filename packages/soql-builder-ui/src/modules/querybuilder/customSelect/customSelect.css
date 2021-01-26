@@ -3,6 +3,7 @@
 /* ======= MAIN CONTAINER ======= */
 main.custom-select {
   position: relative;
+  max-width: var(--soql-selection-container-width);
 }
 
 /* ======= SELECT ======= */
@@ -43,6 +44,10 @@ main.custom-select {
   border: none;
 }
 
+.select__input.select__input-placeholder--fadeout::placeholder {
+  opacity: 0.5;
+}
+
 .select:focus {
   outline: none;
 }
@@ -51,6 +56,21 @@ main.custom-select {
   align-self: center;
   padding-right: 5px;
   cursor: pointer;
+}
+
+.select__dropdown-arrow {
+  align-self: center;
+  padding-right: 5px;
+  cursor: pointer;
+}
+
+.select__dropdown-arrow--up {
+  transform: rotate(180deg);
+  margin-right: 5px;
+}
+
+div.select__dropdown-arrow:focus {
+  outline: none;
 }
 
 /* ======== OPTIONS ======== */
