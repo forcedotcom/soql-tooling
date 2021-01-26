@@ -11,8 +11,10 @@ import { Soql, ValidatorFactory } from '@salesforce/soql-model';
 import { JsonMap } from '@salesforce/types';
 import { operatorOptions } from '../services/model';
 import { SObjectTypeUtils } from '../services/sobjectUtils';
-import { displayValueToSoqlStringLiteral, soqlStringLiteralToDisplayValue } from '../services/soqlUtils';
-
+import {
+  displayValueToSoqlStringLiteral,
+  soqlStringLiteralToDisplayValue
+} from '../services/soqlUtils';
 
 export default class WhereModifierGroup extends LightningElement {
   @api allFields: string[];
@@ -34,8 +36,10 @@ export default class WhereModifierGroup extends LightningElement {
   fieldEl: HTMLSelectElement;
   operatorEl: HTMLSelectElement;
   criteriaEl: HTMLInputElement;
-  @track
-  errorMessage = '';
+  operatorErrorMessage = '';
+  criteriaErrorMessage = '';
+  hasOperatorError = false;
+  hasCriteriaError = false;
 
   handleSelectionEvent: () => void;
   // this need to be public so parent can read value
@@ -50,10 +54,18 @@ export default class WhereModifierGroup extends LightningElement {
 
   renderedCallback() {
     this.fieldEl = this.template.querySelector('[data-el-where-field]');
-    this.operatorEl = this.template.querySelector('[data-el-where-operator]');
-    this.criteriaEl = this.template.querySelector('[data-el-where-criteria]');
-
+    this.operatorEl = this.template.querySelector(
+      '[data-el-where-operator-input]'
+    );
+    this.criteriaEl = this.template.querySelector(
+      '[data-el-where-criteria-input]'
+    );
     this.checkAllModifiersHaveValues();
+  }
+
+  resetErrorFlagsAndMessages() {
+    this.operatorErrorMessage = this.criteriaErrorMessage = '';
+    this.hasOperatorError = this.hasCriteriaError = false;
   }
 
   checkAllModifiersHaveValues(): Boolean {
@@ -108,6 +120,24 @@ export default class WhereModifierGroup extends LightningElement {
     }
   }
 
+  /** css class methods */
+  get operatorClasses() {
+    let classes = 'modifier__item modifier__operator';
+    classes = this.hasOperatorError
+      ? classes + ' tooltip tooltip--error'
+      : classes;
+    return classes;
+  }
+
+  get criteriaClasses() {
+    let classes = 'modifier__item modifier__criteria';
+    classes = this.hasCriteriaError
+      ? classes + ' tooltip tooltip--error'
+      : classes;
+    return classes;
+  }
+  /** end css class methods */
+
   handleConditionRemoved(e) {
     e.preventDefault();
     const conditionRemovedEvent = new CustomEvent('where__condition_removed', {
@@ -158,15 +188,24 @@ export default class WhereModifierGroup extends LightningElement {
   }
 
   getSObjectFieldType(fieldName: string): Soql.SObjectFieldType {
-    return this.sobjectTypeUtils ? this.sobjectTypeUtils.getType(fieldName) : Soql.SObjectFieldType.AnyType;
+    return this.sobjectTypeUtils
+      ? this.sobjectTypeUtils.getType(fieldName)
+      : Soql.SObjectFieldType.AnyType;
   }
 
   getPicklistValues(fieldName: string): string[] {
     // values need to be quoted
-    return this.sobjectTypeUtils ? this.sobjectTypeUtils.getPicklistValues(fieldName).map(value => `'${value}'`) : [];
+    return this.sobjectTypeUtils
+      ? this.sobjectTypeUtils
+          .getPicklistValues(fieldName)
+          .map((value) => `'${value}'`)
+      : [];
   }
 
-  getCriteriaType(type: Soql.SObjectFieldType, value: string): Soql.LiteralType {
+  getCriteriaType(
+    type: Soql.SObjectFieldType,
+    value: string
+  ): Soql.LiteralType {
     let criteriaType = Soql.LiteralType.String;
     if (value.toLowerCase() === 'null') {
       return Soql.LiteralType.NULL;
@@ -199,40 +238,43 @@ export default class WhereModifierGroup extends LightningElement {
   }
 
   validateInput(): boolean {
-    if (this.checkAllModifiersHaveValues()) {
+    this.resetErrorFlagsAndMessages();
+    const fieldName = (this.selectedField = this.fieldEl.value);
+    const op = (this.selectedOperator = this.operatorEl.value);
 
-      const fieldName = this.selectedField = this.fieldEl.value;
-      const op = this.selectedOperator = this.operatorEl.value;
+    const type = this.getSObjectFieldType(fieldName);
+    const normalizedInput = this.normalizeInput(type, this.criteriaEl.value);
+    const critType = this.getCriteriaType(type, normalizedInput);
+    const picklistValues = this.getPicklistValues(fieldName);
 
-      const type = this.getSObjectFieldType(fieldName);
-      const normalizedInput = this.normalizeInput(type, this.criteriaEl.value);
-      const critType = this.getCriteriaType(type, normalizedInput);
-      const picklistValues = this.getPicklistValues(fieldName);
+    const crit = (this.criteria = {
+      type: critType,
+      value: normalizedInput
+    });
 
-      const crit = this.criteria = {
-        type: critType,
-        value: normalizedInput
-      };
-      this.errorMessage = '';
+    const validateOptions = {
+      type,
+      picklistValues
+    };
 
-      const validateOptions = {
-        type,
-        picklistValues
-      };
+    const fieldInputValidator = ValidatorFactory.getFieldInputValidator(
+      validateOptions
+    );
+    let result = fieldInputValidator.validate(crit.value);
+    if (!result.isValid) {
+      this.errorMessage = this.criteriaErrorMessage = result.message;
+      this.hasCriteriaError = true;
+      return false;
+    }
 
-      const fieldInputValidator = ValidatorFactory.getFieldInputValidator(validateOptions);
-      let result = fieldInputValidator.validate(crit.value);
-      if (!result.isValid) {
-        this.errorMessage = result.message;
-        return false;
-      }
-
-      const operatorValidator = ValidatorFactory.getOperatorValidator(validateOptions);
-      result = operatorValidator.validate(op);
-      if (!result.isValid) {
-        this.errorMessage = result.message;
-        return false;
-      }
+    const operatorValidator = ValidatorFactory.getOperatorValidator(
+      validateOptions
+    );
+    result = operatorValidator.validate(op);
+    if (!result.isValid) {
+      this.errorMessage = this.operatorErrorMessage = result.message;
+      this.hasOperatorError = true;
+      return false;
     }
 
     return true;
@@ -249,7 +291,10 @@ function selectionEventHandler(e) {
         operator: this.operatorEl.value,
         criteria: {
           type: this.criteria.type,
-          value: this.normalizeInput(this.getSObjectFieldType(this.fieldEl.value), this.criteriaEl.value)
+          value: this.normalizeInput(
+            this.getSObjectFieldType(this.fieldEl.value),
+            this.criteriaEl.value
+          )
         }, // type needs to be dynamic based on field selection
         index: this.index
       }
