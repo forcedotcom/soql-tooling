@@ -80,6 +80,20 @@ describe('Custom Select', () => {
       customSelect.placeholderText = exampleText;
       return Promise.resolve().then(() => {
         expect(searchBar.getAttribute(PLACEHOLDER)).toBe(exampleText);
+        const classList = Array.from(searchBar.classList);
+
+        expect(classList).not.toContain('select__input-placeholder--fadeout');
+      });
+    });
+
+    it('should style the placeholder text when input has focus', () => {
+      document.body.appendChild(customSelect);
+      customSelect.placeholderText = 'hold my beer';
+      let searchBar = getInputSearchBar();
+      searchBar.focus();
+      return Promise.resolve().then(() => {
+        const classList = Array.from(searchBar.classList);
+        expect(classList).toContain('select__input-placeholder--fadeout');
       });
     });
 
@@ -98,6 +112,12 @@ describe('Custom Select', () => {
         const optionsList = getOptionsWrapper();
         expect(optionsList.getAttribute(ARIA_HIDDEN)).toBe('false');
       });
+    });
+
+    it('** should fire a custom event when the options are opened', () => {});
+
+    it('** should only allow one options menu to be open at a time', () => {
+      // add the cmp twice?
     });
 
     it('should close the list of options with document click event', () => {
@@ -148,6 +168,20 @@ describe('Custom Select', () => {
           expect(searchBar.value).toBe('');
           expect(clearSearchBtn).toBeNull();
         });
+    });
+
+    describe('Single Select Mode', () => {
+      it('** should display the selected option as the value', () => {});
+
+      it('** should select the text in the input when clicked', () => {});
+
+      it('** should display the placeholder if the user deletes all characters in input', () => {});
+    });
+
+    describe('Dropdown Arrow', () => {
+      it('** should open the options menu when clicked', () => {});
+      it('** should close the options menu when clicked again', () => {});
+      it('** should be pointing down when menu is closed & up when open', () => {});
     });
   });
 
@@ -259,7 +293,7 @@ describe('Custom Select', () => {
         });
     });
 
-    it('should fire a selection event when clicked', () => {
+    it(' ** should fire a selection event & set value when selection is made', () => {
       const handler = jest.fn();
       customSelect.addEventListener(EVENT_OPTION_SELECTION, handler);
 
@@ -272,6 +306,8 @@ describe('Custom Select', () => {
 
         expect(handler).toHaveBeenCalled();
         expect(handler.mock.calls[0][0].detail.value).toEqual(optionValue);
+
+        // then look for value that is set
       });
     });
   });
