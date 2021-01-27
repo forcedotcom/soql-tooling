@@ -11,6 +11,7 @@ import { Diagnostic, DiagnosticSeverity, Range } from 'vscode-languageserver';
 import { TextDocument } from 'vscode-languageserver-textdocument';
 import { RequestTypes, RunQueryResponse } from './index';
 import { Connection } from 'vscode-languageserver';
+import { parseHeaderComments, SoqlWithComments } from './soqlComments';
 
 const findLimitRegex = new RegExp(/LIMIT\s+\d+\s*$/, 'i');
 const findPositionRegex = new RegExp(
@@ -37,7 +38,9 @@ export class Validator {
       isMultiCurrencyEnabled: true,
       apiVersion: 50.0,
     });
-    const result = parser.parseQuery(textDocument.getText());
+    const result = parser.parseQuery(
+      parseHeaderComments(textDocument.getText()).headerPaddedSoqlText
+    );
     if (!result.getSuccess()) {
       result.getParserErrors().forEach((error) => {
         diagnostics.push({
@@ -61,15 +64,17 @@ export class Validator {
     connection: Connection
   ) {
     const diagnostics: Diagnostic[] = [];
+    const soqlWithHeaderComments = parseHeaderComments(textDocument.getText());
+
     const response = (await connection.sendRequest(
       RequestTypes.RunQuery,
-      appendLimit0(textDocument.getText())
+      appendLimit0(soqlWithHeaderComments.soqlText)
     )) as RunQueryResponse;
     if (response.error) {
       diagnostics.push({
         severity: DiagnosticSeverity.Error,
         range:
-          extractErrorRange(response.error.message) ||
+          extractErrorRange(soqlWithHeaderComments, response.error.message) ||
           documentRange(textDocument),
         message: response.error.message,
         source: 'soql',
@@ -88,10 +93,14 @@ function appendLimit0(query: string): string {
   return query;
 }
 
-function extractErrorRange(errorMessage: string): Range | null {
+function extractErrorRange(
+  soqlWithComments: SoqlWithComments,
+  errorMessage: string
+): Range | null {
   const posMatch = errorMessage.match(findPositionRegex);
   if (posMatch && posMatch.groups) {
-    const line = Number(posMatch.groups.row) - 1;
+    const line =
+      Number(posMatch.groups.row) - 1 + soqlWithComments.commentLineCount;
     const character = Number(posMatch.groups.column) - 1;
     const causeMatch = errorMessage.match(findCauseRegex);
     const cause =

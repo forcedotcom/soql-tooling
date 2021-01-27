@@ -23,7 +23,12 @@ export function convertSoqlToUiModel(soql: string): ToolingModelJson {
 export function convertSoqlModelToUiModel(
   queryModel: Soql.Query
 ): ToolingModelJson {
-  const fields =
+
+  const headerComments = queryModel.headerComments
+    ? queryModel.headerComments.text
+    : undefined;
+
+    const fields =
     queryModel.select &&
     (queryModel.select as Soql.SelectExprs).selectExpressions
       ? (queryModel.select as Soql.SelectExprs).selectExpressions
@@ -69,6 +74,7 @@ export function convertSoqlModelToUiModel(
   }
 
   const toolingModelTemplate: ToolingModelJson = {
+    headerComments: headerComments,
     sObject: sObject || '',
     fields: fields || [],
     orderBy: orderBy || [],
@@ -112,6 +118,9 @@ function convertUiModelToSoqlModel(uiModel: ToolingModelJson): Soql.Query {
     undefined,
     orderBy,
     limit
+  );
+  queryModel.headerComments = new Impl.HeaderCommentsImpl(
+    uiModel.headerComments
   );
   return queryModel;
 }
