@@ -24,6 +24,7 @@ describe('Custom Select', () => {
   const EVENT_OPTION_SELECTION = 'option__selection';
   const EVENT_KEYDOWN = 'keydown';
   const EVENT_INPUT = 'input';
+  const CUSTOM_SELECT_EVENT_NAME = 'customselect__optionsopened';
 
   // Query Helpers
   const getInputSearchBar = () => {
@@ -42,6 +43,7 @@ describe('Custom Select', () => {
     });
     customSelect.allOptions = [OPTION_FOO, OPTION_BAR, OPTION_BAZ];
     customSelect.selectedOptions = [];
+    customSelect.multiple = true;
   });
 
   afterEach(() => {
@@ -114,10 +116,56 @@ describe('Custom Select', () => {
       });
     });
 
-    it('** should fire a custom event when the options are opened', () => {});
+    it('should fire a custom event when the options are opened', () => {
+      document.body.appendChild(customSelect);
+      const handler = jest.fn();
+      document.addEventListener(CUSTOM_SELECT_EVENT_NAME, handler);
+      const searchBar = getInputSearchBar();
+      searchBar.click();
+      return Promise.resolve().then(() => {
+        expect(handler).toBeCalled();
+        expect(handler.mock.calls[0][0].detail.target).toEqual(searchBar);
+      });
+    });
 
-    it('** should only allow one options menu to be open at a time', () => {
-      // add the cmp twice?
+    it('should only allow ONE options menu to be open at a time', () => {
+      document.body.appendChild(customSelect);
+      const searchBar = getInputSearchBar();
+      const optionsWrapper = getOptionsWrapper();
+      let optionsWrapperClassList;
+      let optionsOpenEvent;
+      searchBar.click();
+      return Promise.resolve()
+        .then(() => {
+          optionsWrapperClassList = Array.from(optionsWrapper.classList);
+          expect(optionsWrapperClassList).toContain('options--open');
+          optionsOpenEvent = new CustomEvent(CUSTOM_SELECT_EVENT_NAME, {
+            detail: {
+              target: searchBar
+            },
+            bubbles: true,
+            composed: true
+          });
+          customSelect.dispatchEvent(optionsOpenEvent);
+        })
+        .then(() => {
+          optionsWrapperClassList = Array.from(optionsWrapper.classList);
+          expect(optionsWrapperClassList).toContain('options--open');
+
+          const newInput = document.createElement('input');
+          optionsOpenEvent = new CustomEvent(CUSTOM_SELECT_EVENT_NAME, {
+            detail: {
+              target: newInput
+            },
+            bubbles: true,
+            composed: true
+          });
+          customSelect.dispatchEvent(optionsOpenEvent);
+        })
+        .then(() => {
+          optionsWrapperClassList = Array.from(optionsWrapper.classList);
+          expect(optionsWrapperClassList).not.toContain('options--open');
+        });
     });
 
     it('should close the list of options with document click event', () => {
@@ -171,20 +219,98 @@ describe('Custom Select', () => {
     });
 
     describe('Single Select Mode', () => {
-      it('** should display the selected option as the value', () => {});
+      beforeEach(() => {
+        customSelect.multiple = false;
+      });
+      /*
+      During testing the getter for the displayValue() is called once
+      & before the renderedCallback that caches the inputSelectEl.
+      The only way I have been able to trigger another render of the component
+      is to click the search bar.
+       */
+      it('should display the selected option as the value', () => {
+        customSelect.selectedOptions = [OPTION_FOO];
+        document.body.appendChild(customSelect);
+        expect(customSelect.multiple).toBe(false);
+        const searchBar = getInputSearchBar();
+        searchBar.click();
+        return Promise.resolve().then(() => {
+          expect(searchBar.value).toBe(OPTION_FOO);
+          expect(customSelect.value[0]).toBe(OPTION_FOO);
+        });
+      });
 
-      it('** should select the text in the input when clicked', () => {});
+      it('should display only ONE selected option as the value', () => {
+        customSelect.selectedOptions = [OPTION_FOO, OPTION_BAZ];
+        document.body.appendChild(customSelect);
+        expect(customSelect.multiple).toBe(false);
+        const searchBar = getInputSearchBar();
+        searchBar.click();
+        return Promise.resolve().then(() => {
+          expect(searchBar.value).toBe(OPTION_FOO);
+        });
+      });
 
-      it('** should display the placeholder if the user deletes all characters in input', () => {});
+      it('should select the text in the input when clicked', () => {
+        customSelect.selectedOptions = [OPTION_FOO];
+        document.body.appendChild(customSelect);
+        expect(customSelect.multiple).toBe(false);
+        const searchBar = getInputSearchBar();
+        const selectSpy = jest.spyOn(searchBar, 'select');
+        searchBar.click();
+        return Promise.resolve().then(() => {
+          expect(selectSpy).toHaveBeenCalled();
+        });
+      });
+    });
+    describe('Multiple Selection Mode', () => {
+      it('should NOT display the selected options as input value', () => {
+        customSelect.selectedOptions = [OPTION_FOO];
+        document.body.appendChild(customSelect);
+        expect(customSelect.multiple).toBe(true);
+        const searchBar = getInputSearchBar();
+        expect(searchBar.value).toBe('');
+        expect(customSelect.value[0]).toBe(OPTION_FOO);
+      });
+      it('should set the value to match multiple selections from the model', () => {
+        customSelect.selectedOptions = [OPTION_FOO, OPTION_BAR, OPTION_BAZ];
+        document.body.appendChild(customSelect);
+        expect(customSelect.multiple).toBe(true);
+        const searchBar = getInputSearchBar();
+        expect(searchBar.value).toBe('');
+        expect(customSelect.value).toBe(customSelect.selectedOptions);
+      });
     });
 
     describe('Dropdown Arrow', () => {
-      it('** should open the options menu when clicked', () => {});
-      it('** should close the options menu when clicked again', () => {});
-      it('** should be pointing down when menu is closed & up when open', () => {});
+      it('should toggle the options menu when clicked, with directional arrow', () => {
+        document.body.appendChild(customSelect);
+        const dropDownArrow = customSelect.shadowRoot.querySelector(
+          'div.select__dropdown-arrow'
+        );
+        const optionsList = getOptionsWrapper();
+        let classList;
+        expect(optionsList.getAttribute(ARIA_HIDDEN)).toBe('true');
+
+        classList = Array.from(dropDownArrow.classList);
+        expect(classList).not.toContain('select__dropdown-arrow--up');
+
+        dropDownArrow.click();
+        return Promise.resolve()
+          .then(() => {
+            classList = Array.from(dropDownArrow.classList);
+            expect(optionsList.getAttribute(ARIA_HIDDEN)).toBe('false');
+            expect(classList).toContain('select__dropdown-arrow--up');
+            dropDownArrow.click();
+          })
+          .then(() => {
+            classList = Array.from(dropDownArrow.classList);
+            expect(optionsList.getAttribute(ARIA_HIDDEN)).toBe('true');
+            expect(classList).not.toContain('select__dropdown-arrow--up');
+          });
+      });
     });
   });
-
   describe('OPTIONS', () => {
     let searchBar;
 
@@ -293,7 +419,7 @@ describe('Custom Select', () => {
         });
     });
 
-    it(' ** should fire a selection event & set value when selection is made', () => {
+    it('should fire a selection event & set value when selection is made', () => {
       const handler = jest.fn();
       customSelect.addEventListener(EVENT_OPTION_SELECTION, handler);
 
@@ -302,12 +428,12 @@ describe('Custom Select', () => {
         const optionsList = getOptionsWrapper();
         const firstOption = optionsList.firstChild;
         const optionValue = firstOption.getAttribute(DATA_OPTION_VALUE);
+        expect(customSelect.value[0]).toBe(undefined);
         firstOption.click();
 
         expect(handler).toHaveBeenCalled();
         expect(handler.mock.calls[0][0].detail.value).toEqual(optionValue);
-
-        // then look for value that is set
+        expect(customSelect.value[0]).toBe(optionValue);
       });
     });
   });
