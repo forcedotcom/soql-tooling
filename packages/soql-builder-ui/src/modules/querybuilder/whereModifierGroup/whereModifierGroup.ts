@@ -11,8 +11,10 @@ import { Soql, ValidatorFactory, splitMultiInputValues } from '@salesforce/soql-
 import { JsonMap } from '@salesforce/types';
 import { operatorOptions } from '../services/model';
 import { SObjectTypeUtils } from '../services/sobjectUtils';
-import { displayValueToSoqlStringLiteral, soqlStringLiteralToDisplayValue } from '../services/soqlUtils';
-
+import {
+  displayValueToSoqlStringLiteral,
+  soqlStringLiteralToDisplayValue
+} from '../services/soqlUtils';
 
 export default class WhereModifierGroup extends LightningElement {
   @api allFields: string[];
@@ -34,8 +36,10 @@ export default class WhereModifierGroup extends LightningElement {
   fieldEl: HTMLSelectElement;
   operatorEl: HTMLSelectElement;
   criteriaEl: HTMLInputElement;
-  @track
-  errorMessage = '';
+  operatorErrorMessage = '';
+  criteriaErrorMessage = '';
+  hasOperatorError = false;
+  hasCriteriaError = false;
 
   handleSelectionEvent: () => void;
   // this need to be public so parent can read value
@@ -79,10 +83,18 @@ export default class WhereModifierGroup extends LightningElement {
 
   renderedCallback() {
     this.fieldEl = this.template.querySelector('[data-el-where-field]');
-    this.operatorEl = this.template.querySelector('[data-el-where-operator]');
-    this.criteriaEl = this.template.querySelector('[data-el-where-criteria]');
-
+    this.operatorEl = this.template.querySelector(
+      '[data-el-where-operator-input]'
+    );
+    this.criteriaEl = this.template.querySelector(
+      '[data-el-where-criteria-input]'
+    );
     this.checkAllModifiersHaveValues();
+  }
+
+  resetErrorFlagsAndMessages() {
+    this.operatorErrorMessage = this.criteriaErrorMessage = '';
+    this.hasOperatorError = this.hasCriteriaError = false;
   }
 
   checkAllModifiersHaveValues(): Boolean {
@@ -161,6 +173,24 @@ export default class WhereModifierGroup extends LightningElement {
   //   }
   // }
 
+  /** css class methods */
+  get operatorClasses() {
+    let classes = 'modifier__item modifier__operator';
+    classes = this.hasOperatorError
+      ? classes + ' tooltip tooltip--error'
+      : classes;
+    return classes;
+  }
+
+  get criteriaClasses() {
+    let classes = 'modifier__item modifier__criteria';
+    classes = this.hasCriteriaError
+      ? classes + ' tooltip tooltip--error'
+      : classes;
+    return classes;
+  }
+  /** end css class methods */
+
   handleConditionRemoved(e) {
     e.preventDefault();
     const conditionRemovedEvent = new CustomEvent('where__condition_removed', {
@@ -213,15 +243,24 @@ export default class WhereModifierGroup extends LightningElement {
   }
 
   getSObjectFieldType(fieldName: string): Soql.SObjectFieldType {
-    return this.sobjectTypeUtils ? this.sobjectTypeUtils.getType(fieldName) : Soql.SObjectFieldType.AnyType;
+    return this.sobjectTypeUtils
+      ? this.sobjectTypeUtils.getType(fieldName)
+      : Soql.SObjectFieldType.AnyType;
   }
 
   getPicklistValues(fieldName: string): string[] {
     // values need to be quoted
-    return this.sobjectTypeUtils ? this.sobjectTypeUtils.getPicklistValues(fieldName).map(value => `'${value}'`) : [];
+    return this.sobjectTypeUtils
+      ? this.sobjectTypeUtils
+          .getPicklistValues(fieldName)
+          .map((value) => `'${value}'`)
+      : [];
   }
 
-  getCriteriaType(type: Soql.SObjectFieldType, value: string): Soql.LiteralType {
+  getCriteriaType(
+    type: Soql.SObjectFieldType,
+    value: string
+  ): Soql.LiteralType {
     let criteriaType = Soql.LiteralType.String;
     if (value.toLowerCase() === 'null') {
       return Soql.LiteralType.NULL;
@@ -255,6 +294,7 @@ export default class WhereModifierGroup extends LightningElement {
 
   validateInput(): boolean {
     if (this.checkAllModifiersHaveValues()) {
+      this.resetErrorFlagsAndMessages();
 
       const fieldName = this.fieldEl.value;
       const op = this._currentOperatorValue = this.operatorEl.value;
@@ -266,7 +306,6 @@ export default class WhereModifierGroup extends LightningElement {
       const critType = this.getCriteriaType(type, normalizedInput);
       const picklistValues = this.getPicklistValues(fieldName);
 
-      this.errorMessage = '';
       const validateOptions = {
         type,
         picklistValues
@@ -279,14 +318,16 @@ export default class WhereModifierGroup extends LightningElement {
         : ValidatorFactory.getFieldInputValidator(validateOptions);
       let result = inputValidator.validate(normalizedInput);
       if (!result.isValid) {
-        this.errorMessage = result.message;
+        this.errorMessage = this.criteriaErrorMessage = result.message;
+        this.hasCriteriaError = true;
         return false;
       }
 
       const operatorValidator = ValidatorFactory.getOperatorValidator(validateOptions);
       result = operatorValidator.validate(op);
       if (!result.isValid) {
-        this.errorMessage = result.message;
+        this.errorMessage = this.operatorErrorMessage = result.message;
+        this.hasOperatorError = true;
         return false;
       }
 

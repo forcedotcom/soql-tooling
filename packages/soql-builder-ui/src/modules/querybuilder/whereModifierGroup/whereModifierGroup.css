@@ -38,6 +38,11 @@ expanding to fit content
   flex-grow: 1;
 }
 
+.modifier__operator.tooltip--error select,
+.modifier__criteria.tooltip--error input {
+  border: 1px solid var(--soql-red);
+}
+
 .button__close {
   color: var(--vscode-button-foreground, var(--soql-white));
   font-weight: bold;

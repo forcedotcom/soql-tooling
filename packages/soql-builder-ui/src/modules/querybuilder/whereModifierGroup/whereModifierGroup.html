@@ -20,32 +20,41 @@
       </template>
     </select>
     <!-- OPERATORS -->
-    <select
-      class="modifier__item modifier__operator"
-      name="operator"
-      onchange={handleSelectionEvent}
+    <span
+      data-text={operatorErrorMessage}
+      class={operatorClasses}
       data-el-where-operator
-    >
-      <template if:true={hasSelectedOperator}>
-        <option value={_selectedOperator.value}>
-          {_selectedOperator.displayValue}
-        </option>
-      </template>
-      <template for:each={filteredOperators} for:item="operator">
-        <option key={operator.value} value={operator.value}>
-          {operator.displayValue}
-        </option>
-      </template>
-    </select>
+      ><select
+        name="operator"
+        data-el-where-operator-input
+        onchange={handleSelectionEvent}
+      >
+        <template if:true={hasSelectedOperator}>
+          <option value={_selectedOperator.value}>
+            {_selectedOperator.displayValue}
+          </option>
+        </template>
+        <template for:each={filteredOperators} for:item="operator">
+          <option key={operator.value} value={operator.value}>
+            {operator.displayValue}
+          </option>
+        </template>
+      </select>
+    </span>
     <!-- CRITERIA -->
-    <input
-      class="modifier__item modifier__criteria"
-      name="criteria"
-      type="text"
+    <span
+      data-text={criteriaErrorMessage}
+      class={criteriaClasses}
       data-el-where-criteria
-      oninput={handleSelectionEvent}
-      value={criteriaDisplayValue}
-    />
+    >
+      <input
+        name="criteria"
+        type="text"
+        oninput={handleSelectionEvent}
+        value={criteriaDisplayValue}
+        data-el-where-criteria-input
+      />
+    </span>
     <span
       role="button"
       class="modifier__item button__close pointer"
@@ -54,6 +63,5 @@
     >
       X
     </span>
-    <span>{errorMessage}</span>
   </div>
 </template>
