@@ -182,6 +182,8 @@ export default class CustomSelect extends LightningElement {
 
       if (this.isSingleSelect) {
         this._value = [optionValue];
+      } else {
+        this._value = [...this._value, optionValue];
       }
 
       this.dispatchEvent(optionSelectionEvent);
@@ -293,6 +295,11 @@ export default class CustomSelect extends LightningElement {
    * while also usable with addEventListener and removeEventListener
    */
   handleCloseOptions = (e?: CustomSelectEvent) => {
+    /*
+    Anytime a OptionsOpenEvent is fired this will get called
+    so that any other optionsMenu that is open will close
+    except the one that is clicked.
+    */
     if (e && e.type === this.customSelectEventName) {
       const eventSource = e.detail.target;
       if (eventSource === this.selectInputEl) {
