@@ -26,7 +26,7 @@
 }
 
 .section_selection-container {
-  width: 100%;
+  width: var(--soql-selection-container-width);
 }
 
 .section_label-container label {
