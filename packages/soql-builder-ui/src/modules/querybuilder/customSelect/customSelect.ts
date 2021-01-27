@@ -320,7 +320,7 @@ export default class CustomSelect extends LightningElement {
   handleInputChange(e) {
     e.preventDefault();
     // if the user deletes the text
-    if (this.multiple && !e.target.value) {
+    if (!e.target.value) {
       this.resetSearchBar();
       return;
     }
