@@ -245,9 +245,11 @@ describe('WhereModifierGroup should', () => {
   });
 
   it('set error class on invalid operator input', async () => {
-    modifierGroup.selectedField = 'foo';
-    modifierGroup.selectedOperator = 'LT'; // not a valid boolean operator
-    modifierGroup.criteria = { type: 'BOOLEAN', value: 'TRUE' };
+    modifierGroup.condition = {
+      field: { fieldName: 'foo' },
+      operator: '<',
+      compareValue: { type: 'BOOLEAN', value: "TRUE" }
+    };
     modifierGroup.sobjectMetadata = {
       fields: [{ name: 'foo', type: 'boolean' }]
     };
@@ -267,9 +269,11 @@ describe('WhereModifierGroup should', () => {
   });
 
   it('set error class of invalid criteria input', async () => {
-    modifierGroup.selectedField = 'foo';
-    modifierGroup.selectedOperator = 'EQ';
-    modifierGroup.criteria = { type: 'BOOLEAN', value: 'TRUE' };
+    modifierGroup.condition = {
+      field: { fieldName: 'foo' },
+      operator: '=',
+      compareValue: { type: 'BOOLEAN', value: "TRUE" }
+    };
     modifierGroup.sobjectMetadata = {
       fields: [{ name: 'foo', type: 'boolean' }]
     };
