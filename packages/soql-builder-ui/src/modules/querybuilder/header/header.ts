@@ -40,6 +40,9 @@ export default class Header extends LightningElement {
 
   handleRunQuery(e: Event) {
     e.preventDefault();
+    if (this.isButtonDisabled) {
+      return;
+    }
     const runEvent = new CustomEvent('header__run_query');
     this.dispatchEvent(runEvent);
   }

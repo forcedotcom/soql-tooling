@@ -27,9 +27,9 @@ class TestMessageService implements IMessageService {
   messagesToUI: Observable<SoqlEditorEvent> = new BehaviorSubject(
     ({} as unknown) as SoqlEditorEvent
   );
-  sendMessage() { }
-  setState() { }
-  getState() { }
+  sendMessage() {}
+  setState() {}
+  getState() {}
 }
 
 class TestApp extends App {
@@ -215,52 +215,46 @@ describe('App should', () => {
     });
   });
 
-  describe('HANDLE ERRORS', () => {
-    it('block the query builder ui on unrecoverable error', async () => {
+  describe('HANDLE UNSUPPORTED', () => {
+    const unsupportedSoqlQuery = 'SELECT Id FROM Account GROUP BY';
+    const unsupportedOverlaySelector = '.unsupported-syntax-overlay';
+    it('block the query builder on unsupported syntax and list syntax', async () => {
       let blockingElement = app.shadowRoot.querySelectorAll(
-        '.unsupported-syntax'
-      );
-      expect(blockingElement.length).toBeFalsy();
-      app.hasUnrecoverableError = true;
-      return Promise.resolve().then(() => {
-        blockingElement = app.shadowRoot.querySelectorAll(
-          '.unsupported-syntax'
-        );
-        expect(blockingElement.length).toBeTruthy();
-      });
-    });
-
-    it('not block the query builder ui on recoverable error', async () => {
-      document.body.appendChild(app);
-      let blockingElement = app.shadowRoot.querySelectorAll(
-        '.unsupported-syntax'
+        unsupportedOverlaySelector
       );
       expect(blockingElement.length).toBeFalsy();
       messageService.messagesToUI.next(
-        createSoqlEditorEvent('SELECT FROM Account')
+        createSoqlEditorEvent(unsupportedSoqlQuery)
       );
       return Promise.resolve().then(() => {
         blockingElement = app.shadowRoot.querySelectorAll(
-          '.unsupported-syntax'
+          unsupportedOverlaySelector
         );
-        expect(blockingElement.length).toBeFalsy();
+        expect(blockingElement.length).toBeTruthy();
+        const listElements = app.shadowRoot.querySelectorAll(
+          '.warning-notification ul li'
+        );
+        expect(listElements.length).toBeTruthy();
       });
     });
 
-    it('block the query builder on unsupported syntax', async () => {
-      let blockingElement = app.shadowRoot.querySelectorAll(
-        '.unsupported-syntax'
-      );
-      expect(blockingElement.length).toBeFalsy();
+    it('allows the user to dismiss blocking message', () => {
       messageService.messagesToUI.next(
-        createSoqlEditorEvent('SELECT Id FROM Account WHERE')
+        createSoqlEditorEvent(unsupportedSoqlQuery)
       );
-      return Promise.resolve().then(() => {
-        blockingElement = app.shadowRoot.querySelectorAll(
-          '.unsupported-syntax'
-        );
-        expect(blockingElement.length).toBeTruthy();
-      });
+      return Promise.resolve()
+        .then(() => {
+          const buttonElement = app.shadowRoot.querySelector(
+            '.warning-notification button'
+          );
+          buttonElement.click();
+        })
+        .then(() => {
+          const blockingElement = app.shadowRoot.querySelectorAll(
+            unsupportedOverlaySelector
+          );
+          expect(blockingElement.length).toBeFalsy();
+        });
     });
   });
 
