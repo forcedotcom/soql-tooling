@@ -25,6 +25,7 @@ describe('Custom Select', () => {
   const EVENT_KEYDOWN = 'keydown';
   const EVENT_INPUT = 'input';
   const CUSTOM_SELECT_EVENT_NAME = 'customselect__optionsopened';
+  const OPTIONS_OPEN_CLASS = 'options--open';
 
   // Query Helpers
   const getInputSearchBar = () => {
@@ -138,7 +139,7 @@ describe('Custom Select', () => {
       return Promise.resolve()
         .then(() => {
           optionsWrapperClassList = Array.from(optionsWrapper.classList);
-          expect(optionsWrapperClassList).toContain('options--open');
+          expect(optionsWrapperClassList).toContain(OPTIONS_OPEN_CLASS);
           optionsOpenEvent = new CustomEvent(CUSTOM_SELECT_EVENT_NAME, {
             detail: {
               target: searchBar
@@ -150,7 +151,7 @@ describe('Custom Select', () => {
         })
         .then(() => {
           optionsWrapperClassList = Array.from(optionsWrapper.classList);
-          expect(optionsWrapperClassList).toContain('options--open');
+          expect(optionsWrapperClassList).toContain(OPTIONS_OPEN_CLASS);
 
           const newInput = document.createElement('input');
           optionsOpenEvent = new CustomEvent(CUSTOM_SELECT_EVENT_NAME, {
@@ -164,7 +165,7 @@ describe('Custom Select', () => {
         })
         .then(() => {
           optionsWrapperClassList = Array.from(optionsWrapper.classList);
-          expect(optionsWrapperClassList).not.toContain('options--open');
+          expect(optionsWrapperClassList).not.toContain(OPTIONS_OPEN_CLASS);
         });
     });
 

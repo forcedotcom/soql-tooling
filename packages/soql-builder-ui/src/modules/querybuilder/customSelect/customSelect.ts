@@ -105,7 +105,7 @@ export default class CustomSelect extends LightningElement {
   }
 
   get isSingleSelect() {
-    return this.multiple;
+    return !this.multiple;
   }
 
   get isMultipleSelect() {
