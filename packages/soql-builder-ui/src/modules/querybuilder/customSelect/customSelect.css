@@ -114,7 +114,7 @@ div.select__dropdown-arrow:focus {
     var(--soql-color-medium-grey)
   );
 }
-.option--placeholder {
+.option--disabled {
   color: var(
     --vscode-list-inactiveFocusBackground,
     var(--soql-color-medium-grey)

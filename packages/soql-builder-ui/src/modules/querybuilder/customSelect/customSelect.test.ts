@@ -414,7 +414,7 @@ describe('Custom Select', () => {
         .then(() => {
           expect(optionsList.children.length).toBe(1);
           expect(optionsList.firstChild.classList).toContain(
-            'option--placeholder'
+            'option--disabled'
           );
           expect(optionsList.firstChild.innerHTML).toContain('No results');
         });
