@@ -244,6 +244,34 @@ describe('WhereModifierGroup should', () => {
     expect(resultingCriteria).toEqual({ type: 'BOOLEAN', value: 'FALSE' });
   });
 
+  it('normalize criteria input for multi-value operators', async () => {
+    modifierGroup.condition = {
+      field: { fieldName: 'foo' },
+      operator: 'IN',
+      values: [
+        { type: 'BOOLEAN', value: "TRUE" }
+      ]
+    };
+    modifierGroup.sobjectMetadata = {
+      fields: [{ name: 'foo', type: 'boolean' }]
+    };
+    let resultingCriteria;
+    const handler = (e => {
+      resultingCriteria = e.detail.condition.values;
+    });
+    modifierGroup.addEventListener('modifiergroupselection', handler);
+    document.body.appendChild(modifierGroup);
+
+    const { criteriaInputEl } = getModifierElements();
+    criteriaInputEl.value = 'TRUE, FALSE';
+    criteriaInputEl.dispatchEvent(new Event('input'));
+
+    expect(resultingCriteria).toEqual([
+      { type: 'BOOLEAN', value: 'TRUE' },
+      { type: 'BOOLEAN', value: 'FALSE' }
+    ]);
+  });
+
   it('set error class on invalid operator input', async () => {
     modifierGroup.condition = {
       field: { fieldName: 'foo' },
