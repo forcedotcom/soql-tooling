@@ -55,14 +55,7 @@ export default class WhereModifierGroup extends LightningElement {
     this._criteriaDisplayValue = '';
     if (this._selectedOperator && this.isMulipleValueOperator(this._selectedOperator.value)) {
       if (Array.isArray(condition.values)) {
-        this._criteriaDisplayValue = condition.values.map(value => value.value).reduce((soFar, next) => {
-          let accumulated = soFar;
-          if (accumulated.length > 0) {
-            accumulated += ', ';
-          }
-          accumulated += next;
-          return accumulated;
-        });
+        this._criteriaDisplayValue = condition.values.map(value => value.value).join(', ');
       }
     } else {
       if (condition.compareValue
