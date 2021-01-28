@@ -21,7 +21,7 @@ export namespace Messages {
   export const error_unrecognizedCompareField = 'Unrecognized comparison field.';
   export const error_noCompareValue = 'Incomplete condition. Comparison value is required.';
   export const error_noCompareOperator = 'Incomplete condition. Comparison operator and value is required.';
-  export const error_incompleteMultiValueList = 'Incomplete values list. Values must be in parentheses and separated by commas.'
+  export const error_incompleteMultiValueList = 'Incomplete values list. Place values in parentheses, separated by commas.'
 
   export const error_fieldInput_boolean = 'Value must be TRUE or FALSE';
   export const error_fieldInput_currency = 'Currency value is not valid';
