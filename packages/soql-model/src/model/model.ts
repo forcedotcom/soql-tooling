@@ -31,7 +31,8 @@ export enum ErrorType {
   UNRECOGNIZEDCOMPAREOPERATOR = 'UNRECOGNIZEDCOMPAREOPERATOR',
   UNRECOGNIZEDCOMPAREFIELD = 'UNRECOGNIZEDCOMPAREFIELD',
   NOCOMPAREVALUE = 'NOCOMPAREVALUE',
-  NOCOMPAREOPERATOR = 'NOCOMPAREOPERATOR'
+  NOCOMPAREOPERATOR = 'NOCOMPAREOPERATOR',
+  INCOMPLETEMULTIVALUELIST = 'INCOMPLETEMULTIVALUELIST'
 }
 
 export enum SObjectFieldType {
@@ -151,26 +152,20 @@ export enum AndOr {
   Or = 'OR'
 }
 
-export enum CompareOperator {
-  EQ = '=',
-  NOT_EQ = '!=',
-  ALT_NOT_EQ = '<>',
-  LT_EQ = '<=',
-  GT_EQ = '>=',
-  LT = '<',
-  GT = '>'
-}
-
-export enum IncludesOperator {
+export enum ConditionOperator {
+  Equals = '=',
+  NotEquals = '!=',
+  AlternateNotEquals = '<>',
+  LessThanOrEqual = '<=',
+  GreaterThanOrEqual = '>=',
+  LessThan = '<',
+  GreaterThan = '>',
+  Like = 'LIKE',
+  In = 'IN',
+  NotIn = 'NOT IN',
   Includes = 'INCLUDES',
   Excludes = 'EXCLUDES'
 }
-
-export enum InOperator {
-  In = 'IN',
-  NotIn = 'NOT IN'
-}
-
 
 export interface CompareValue extends SoqlModelObject {
   // literal => Literal
@@ -195,13 +190,12 @@ export interface Condition extends SoqlModelObject {
   // ( nested-condition ) => NestedCondition
   // NOT condition => NotCondition
   // condition-1 AndOr condition-2 => AndOrCondition
-  // field CompareOperator value => FieldCompareCondition
-  // calculation CompareOperator value => UnmodeledSyntax
-  // distance CompareOperator value => UnmodeledSyntax
-  // field LIKE value => LikeCondition
-  // field IncludesOperator ( values ) => IncludesCondition
-  // field InOperator ( semi-join ) => UnmodeledSyntax
-  // field InOperator ( values ) => InListCondition
+  // field ConditionOperator value => FieldCompareCondition
+  // calculation ConditionOperator value => UnmodeledSyntax
+  // distance ConditionOperator value => UnmodeledSyntax
+  // field [Includes|Excludes] ( values ) => IncludesCondition
+  // field [In|NotIn] ( semi-join ) => UnmodeledSyntax
+  // field [In|NotIn] ( values ) => InListCondition
 }
 
 export interface NestedCondition extends Condition {
@@ -220,26 +214,19 @@ export interface AndOrCondition extends Condition {
 
 export interface FieldCompareCondition extends Condition {
   field: Field;
-  operator: CompareOperator;
+  operator: ConditionOperator;
   compareValue: CompareValue;
 }
 
-export interface LikeCondition extends Condition {
-  field: Field;
-  compareValue: CompareValue;
-}
-
-// Not in use yet
 export interface IncludesCondition extends Condition {
   field: Field;
-  operator: IncludesOperator;
+  operator: ConditionOperator;
   values: CompareValue[];
 }
 
-// Not in use yet
 export interface InListCondition extends Condition {
   field: Field;
-  operator: InOperator;
+  operator: ConditionOperator;
   values: CompareValue[];
 }
 

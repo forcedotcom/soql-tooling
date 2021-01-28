@@ -253,7 +253,7 @@ describe('App should', () => {
       );
       expect(blockingElement.length).toBeFalsy();
       messageService.messagesToUI.next(
-        createSoqlEditorEvent('SELECT Id FROM Account WHERE')
+        createSoqlEditorEvent('SELECT Id FROM Account GROUP BY')
       );
       return Promise.resolve().then(() => {
         blockingElement = app.shadowRoot.querySelectorAll(
@@ -271,9 +271,11 @@ describe('App should', () => {
       const eventPayload = {
         detail: {
           fieldCompareExpr: {
-            field: 'test',
-            operator: 'EQ',
-            criteria: { value: "'pass'" },
+            condition: {
+              field: { fieldName: 'test' },
+              operator: '=',
+              compareValue: { type: 'STRING', value: "'pass'" }
+            },
             index: 0
           },
           andOr: 'AND'
@@ -289,7 +291,7 @@ describe('App should', () => {
       );
       expect(
         (postMessageSpy.mock.calls[0][0] as SoqlEditorEvent).payload
-      ).toContain(eventPayload.detail.fieldCompareExpr.field);
+      ).toContain(eventPayload.detail.fieldCompareExpr.condition.field.fieldName);
     });
 
     it('should send message to vs code with REMOVE CONDITION event', () => {

@@ -164,8 +164,15 @@ class ErrorIdentifier {
       type: Soql.ErrorType.UNRECOGNIZEDCOMPAREVALUE,
       message: Messages.error_unrecognizedCompareValue,
       predicate: (error, context) => (
-        context instanceof Parser.SoqlLiteralValueContext &&
-        context.parent instanceof Parser.SimpleWhereExprContext &&
+        (
+          (
+            context instanceof Parser.SoqlLiteralValueContext &&
+            (context.parent instanceof Parser.SimpleWhereExprContext ||
+              context.parent instanceof Parser.SoqlLiteralValuesContext)
+          ) ||
+          (context instanceof Parser.SoqlLikeValueContext &&
+            context.parent instanceof Parser.LikeWhereExprContext)
+        ) &&
         context.exception instanceof NoViableAltException
       )
     },
@@ -193,10 +200,25 @@ class ErrorIdentifier {
       type: Soql.ErrorType.NOCOMPAREVALUE,
       message: Messages.error_noCompareValue,
       predicate: (error, context) => (
-        context instanceof Parser.SoqlLiteralValueContext &&
-        context.childCount === 0 &&
-        context.parent instanceof Parser.SimpleWhereExprContext &&
-        context.exception instanceof InputMismatchException
+        (
+          (
+            (context instanceof Parser.SoqlLiteralValueContext &&
+              context.parent instanceof Parser.SimpleWhereExprContext) ||
+            (context instanceof Parser.SoqlLikeValueContext &&
+              context.parent instanceof Parser.LikeWhereExprContext)
+          ) &&
+          context.childCount === 0 &&
+          context.exception instanceof InputMismatchException
+        ) || (
+          context instanceof Parser.SoqlWhereExprContext &&
+          context.childCount === 2 &&
+          context.getChild(1).text.toLowerCase() === 'in' &&
+          context.exception instanceof NoViableAltException
+        ) || (
+          context instanceof Parser.IncludesWhereExprContext &&
+          context.childCount === 2 &&
+          context.exception instanceof InputMismatchException
+        )
       )
     },
     {
@@ -207,6 +229,28 @@ class ErrorIdentifier {
         context.childCount === 1 &&
         context.getChild(0) instanceof ErrorNode &&
         (context.getChild(0) as ErrorNode).symbol !== error.getToken()
+      )
+    },
+    {
+      type: Soql.ErrorType.INCOMPLETEMULTIVALUELIST,
+      message: Messages.error_incompleteMultiValueList,
+      predicate: (error, context) => (
+        (
+          context instanceof Parser.SoqlWhereExprContext &&
+          context.childCount === 3 &&
+          context.getChild(2).text === '(' &&
+          context.exception instanceof NoViableAltException
+        ) || (
+          context instanceof ErrorNode &&
+          (
+            context.parent instanceof Parser.InWhereExprContext ||
+            context.parent instanceof Parser.IncludesWhereExprContext
+          )
+        ) || (
+          context instanceof Parser.SoqlLiteralValueContext &&
+          context.parent instanceof Parser.SoqlLiteralValuesContext &&
+          context.exception instanceof InputMismatchException
+        )
       )
     }
   ]
@@ -226,13 +270,15 @@ class ErrorIdentifier {
         type: knownErrorMatch.type,
         message: knownErrorMatch.message,
         lineNumber: error.getLineNumber(),
-        charInLine: error.getCharacterPositionInLine()
+        charInLine: error.getCharacterPositionInLine(),
+        grammarRule: this.getGrammarRule(error)
       }
       : {
         type: Soql.ErrorType.UNKNOWN,
         message: error.getMessage(),
         lineNumber: error.getLineNumber(),
-        charInLine: error.getCharacterPositionInLine()
+        charInLine: error.getCharacterPositionInLine(),
+        grammarRule: this.getGrammarRule(error)
       };
   }
 
@@ -568,42 +614,45 @@ class QueryListener implements SoqlParserListener {
 
   protected toCompareOperator(
     ctx: Parser.SoqlComparisonOperatorContext
-  ): Soql.CompareOperator {
-    let operator = Soql.CompareOperator.EQ;
+  ): Soql.ConditionOperator {
+    let operator = Soql.ConditionOperator.Equals;
     switch (ctx.text) {
       case '=': {
-        operator = Soql.CompareOperator.EQ;
+        operator = Soql.ConditionOperator.Equals;
         break;
       }
       case '!=': {
-        operator = Soql.CompareOperator.NOT_EQ;
+        operator = Soql.ConditionOperator.NotEquals;
         break;
       }
       case '<>': {
-        operator = Soql.CompareOperator.ALT_NOT_EQ;
+        operator = Soql.ConditionOperator.AlternateNotEquals;
         break;
       }
       case '>': {
-        operator = Soql.CompareOperator.GT;
+        operator = Soql.ConditionOperator.GreaterThan;
         break;
       }
       case '<': {
-        operator = Soql.CompareOperator.LT;
+        operator = Soql.ConditionOperator.LessThan;
         break;
       }
       case '>=': {
-        operator = Soql.CompareOperator.GT_EQ;
+        operator = Soql.ConditionOperator.GreaterThanOrEqual;
         break;
       }
       case '<=': {
-        operator = Soql.CompareOperator.LT_EQ;
+        operator = Soql.ConditionOperator.LessThanOrEqual;
         break;
       }
     }
     return operator;
   }
 
-  protected toCompareValues(ctx: ParserRuleContext): Soql.CompareValue[] {
+  protected toCompareValues(ctx: ParserRuleContext | undefined): Soql.CompareValue[] {
+    if (!ctx) {
+      return [];
+    }
     const literalCtxs = ctx.getRuleContexts(Parser.SoqlLiteralValueContext);
     return literalCtxs.map((literalCtx) => this.toCompareValue(literalCtx));
   }
@@ -717,30 +766,25 @@ class QueryListener implements SoqlParserListener {
       return new Impl.FieldCompareConditionImpl(field, operator, value);
     } else if (ctx instanceof Parser.LikeWhereExprContext) {
       const field = this.toField(ctx.soqlField());
+      const operator = Soql.ConditionOperator.Like;
       const value = this.toCompareValue(ctx.soqlLikeValue());
-      return new Impl.LikeConditionImpl(field, value);
+      return new Impl.FieldCompareConditionImpl(field, operator, value);
     } else if (ctx instanceof Parser.IncludesWhereExprContext) {
-      // UNCOMMENT WHEN INCLUDES CONDITIONS ARE SUPPORTED;
-      // FOR NOW FALL THROUGH TO UnmodeledSyntax
-      // const field = this.toField(ctx.soqlField());
-      // const opCtx = ctx.soqlIncludesOperator();
-      // const operator = opCtx.EXCLUDES()
-      //   ? Soql.IncludesOperator.Excludes
-      //   : Soql.IncludesOperator.Includes;
-      // const values = this.toCompareValues(ctx.soqlLiteralValues());
-      // return new Impl.IncludesConditionImpl(field, operator, values);
-      reason = 'unmodeled:includes-condition';
+      const field = this.toField(ctx.soqlField());
+      const opCtx = ctx.soqlIncludesOperator();
+      const operator = opCtx.EXCLUDES()
+        ? Soql.ConditionOperator.Excludes
+        : Soql.ConditionOperator.Includes;
+      const values = this.toCompareValues(ctx.tryGetRuleContext(0, Parser.SoqlLiteralValuesContext));
+      return new Impl.IncludesConditionImpl(field, operator, values);
     } else if (ctx instanceof Parser.InWhereExprContext) {
-      // UNCOMMENT WHEN INCLUDES CONDITIONS ARE SUPPORTED;
-      // FOR NOW FALL THROUGH TO UnmodeledSyntax
-      // const field = this.toField(ctx.soqlField());
-      // const opCtx = ctx.soqlInOperator();
-      // const operator = opCtx.NOT()
-      //   ? Soql.InOperator.NotIn
-      //   : Soql.InOperator.In;
-      // const values = this.toCompareValues(ctx.soqlLiteralValues());
-      // return new Impl.InListConditionImpl(field, operator, values);
-      reason = 'unmodeled:in-list-condition';
+      const field = this.toField(ctx.soqlField());
+      const opCtx = ctx.soqlInOperator();
+      const operator = opCtx.NOT()
+        ? Soql.ConditionOperator.NotIn
+        : Soql.ConditionOperator.In;
+      const values = this.toCompareValues(ctx.tryGetRuleContext(0, Parser.SoqlLiteralValuesContext));
+      return new Impl.InListConditionImpl(field, operator, values);
     } else if (ctx instanceof Parser.CalculatedWhereExprContext) {
       reason = 'unmodeled:calculated-condition';
     } else if (ctx instanceof Parser.DistanceWhereExprContext) {

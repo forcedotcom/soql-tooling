@@ -19,15 +19,25 @@ describe('SoqlUtils', () => {
     where: {
       conditions: [
         {
-          field: 'Name',
-          operator: 'EQ',
-          criteria: { type: 'STRING', value: "'pwt'" },
+          condition: {
+            field: { fieldName: 'Name' },
+            operator: '=',
+            compareValue: {
+              type: 'STRING',
+              value: "'pwt'"
+            }
+          },
           index: 0
         },
         {
-          field: 'Id',
-          operator: 'EQ',
-          criteria: { type: 'NUMBER', value: '123456' },
+          condition: {
+            field: { fieldName: 'Id' },
+            operator: '=',
+            compareValue: {
+              type: 'NUMBER',
+              value: "123456"
+            }
+          },
           index: 1
         }
       ],
@@ -69,10 +79,10 @@ describe('SoqlUtils', () => {
     expect(transformedSoql).toContain(uiModelOne.fields[1]);
     expect(transformedSoql).toContain(uiModelOne.sObject);
     expect(transformedSoql).toContain(
-      uiModelOne.where.conditions[0].criteria.value
+      uiModelOne.where.conditions[0].condition.compareValue.value
     );
     expect(transformedSoql).toContain(
-      uiModelOne.where.conditions[1].criteria.value
+      uiModelOne.where.conditions[1].condition.compareValue.value
     );
     expect(transformedSoql).toContain(uiModelOne.where.andOr);
     expect(transformedSoql).toContain('=');

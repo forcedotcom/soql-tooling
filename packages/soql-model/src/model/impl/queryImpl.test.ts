@@ -6,7 +6,7 @@
  */
 
 import * as Impl from '.';
-import { CompareOperator, LiteralType } from '../model';
+import { ConditionOperator, LiteralType } from '../model';
 
 describe('QueryImpl should', () => {
   it('store query components as appropriate model objects', () => {
@@ -28,7 +28,7 @@ describe('QueryImpl should', () => {
       new Impl.FromImpl(expected.from.sobjectName),
       new Impl.WhereImpl(new Impl.FieldCompareConditionImpl(
         new Impl.FieldRefImpl(expected.where.condition.field.fieldName),
-        CompareOperator.EQ,
+        ConditionOperator.Equals,
         new Impl.LiteralImpl(LiteralType.String, expected.where.condition.compareValue.value)
       )),
       new Impl.UnmodeledSyntaxImpl(expected.with.unmodeledSyntax, 'unmodeled:with'),
@@ -49,7 +49,7 @@ describe('QueryImpl should', () => {
       new Impl.FromImpl('songs'),
       new Impl.WhereImpl(new Impl.FieldCompareConditionImpl(
         new Impl.FieldRefImpl('paint_it'),
-        CompareOperator.EQ,
+        ConditionOperator.Equals,
         new Impl.LiteralImpl(LiteralType.String, "'black'")
       ))
     ).toSoqlSyntax();
