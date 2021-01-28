@@ -33,8 +33,10 @@ export default class CustomSelect extends LightningElement {
   }
 
   set selectedOptions(selectedOptions: string[]) {
-    this._selectedOptions = selectedOptions;
-    this._value = selectedOptions;
+    this._selectedOptions = selectedOptions || [];
+    if (selectedOptions && selectedOptions.length) {
+      this._value = selectedOptions;
+    }
   }
 
   @api
