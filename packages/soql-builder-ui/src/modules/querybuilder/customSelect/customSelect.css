@@ -1,5 +1,11 @@
 @import 'querybuilder/cssCommon';
 
+/* ======= MAIN CONTAINER ======= */
+main.custom-select {
+  position: relative;
+  max-width: var(--soql-selection-container-width);
+}
+
 /* ======= SELECT ======= */
 .select__wrapper {
   display: flex;
@@ -15,16 +21,19 @@
 }
 /*
 - rotate nueter symbol to mimic search icon
-- these styles are set for vs code, alignment is off in standalone
 */
 .select__wrapper::before {
   position: absolute;
   content: '⚲';
   font-size: 1.5em;
   left: 6px;
-  transform: rotate(45deg);
+  transform: rotate(-45deg);
   border-radius: 50%;
   background-color: transparent;
+  color: var(
+    --vscode-list-inactiveSelectionBackground,
+    var(--soql-color-medium-grey)
+  );
 }
 
 .select__input {
@@ -33,6 +42,10 @@
   padding: 4px;
   margin-left: 24px;
   border: none;
+}
+
+.select__input.select__input-placeholder--fadeout::placeholder {
+  opacity: 0.5;
 }
 
 .select:focus {
@@ -45,17 +58,30 @@
   cursor: pointer;
 }
 
+.select__dropdown-arrow {
+  transform: rotate(180deg);
+  margin-right: 2px;
+  cursor: pointer;
+}
+
+.select__dropdown-arrow--up {
+  transform: rotate(0deg);
+}
+
+div.select__dropdown-arrow:focus {
+  outline: none;
+}
+
 /* ======== OPTIONS ======== */
 
 .options__wrapper {
   position: absolute;
-  top: 64px;
   border: 1px solid
     var(--vscode-list-inactiveSelectionBackground, var(--soql-color-light-grey));
   border-radius: 3px;
-  width: var(--soql-input-width);
-  min-height: 10%;
-  max-height: 50%;
+  width: var(--soql-selection-container-width);
+  min-height: 100px;
+  max-height: 300px;
   overflow-y: scroll;
   /* hidden by default */
   display: none;
@@ -88,7 +114,7 @@
     var(--soql-color-medium-grey)
   );
 }
-.option--placeholder {
+.option--disabled {
   color: var(
     --vscode-list-inactiveFocusBackground,
     var(--soql-color-medium-grey)
