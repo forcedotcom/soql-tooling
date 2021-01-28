@@ -614,35 +614,35 @@ class QueryListener implements SoqlParserListener {
 
   protected toCompareOperator(
     ctx: Parser.SoqlComparisonOperatorContext
-  ): Soql.CompareOperator {
-    let operator = Soql.CompareOperator.EQ;
+  ): Soql.ConditionOperator {
+    let operator = Soql.ConditionOperator.Equals;
     switch (ctx.text) {
       case '=': {
-        operator = Soql.CompareOperator.EQ;
+        operator = Soql.ConditionOperator.Equals;
         break;
       }
       case '!=': {
-        operator = Soql.CompareOperator.NOT_EQ;
+        operator = Soql.ConditionOperator.NotEquals;
         break;
       }
       case '<>': {
-        operator = Soql.CompareOperator.ALT_NOT_EQ;
+        operator = Soql.ConditionOperator.AlternateNotEquals;
         break;
       }
       case '>': {
-        operator = Soql.CompareOperator.GT;
+        operator = Soql.ConditionOperator.GreaterThan;
         break;
       }
       case '<': {
-        operator = Soql.CompareOperator.LT;
+        operator = Soql.ConditionOperator.LessThan;
         break;
       }
       case '>=': {
-        operator = Soql.CompareOperator.GT_EQ;
+        operator = Soql.ConditionOperator.GreaterThanOrEqual;
         break;
       }
       case '<=': {
-        operator = Soql.CompareOperator.LT_EQ;
+        operator = Soql.ConditionOperator.LessThanOrEqual;
         break;
       }
     }
@@ -766,22 +766,23 @@ class QueryListener implements SoqlParserListener {
       return new Impl.FieldCompareConditionImpl(field, operator, value);
     } else if (ctx instanceof Parser.LikeWhereExprContext) {
       const field = this.toField(ctx.soqlField());
+      const operator = Soql.ConditionOperator.Like;
       const value = this.toCompareValue(ctx.soqlLikeValue());
-      return new Impl.LikeConditionImpl(field, value);
+      return new Impl.FieldCompareConditionImpl(field, operator, value);
     } else if (ctx instanceof Parser.IncludesWhereExprContext) {
       const field = this.toField(ctx.soqlField());
       const opCtx = ctx.soqlIncludesOperator();
       const operator = opCtx.EXCLUDES()
-        ? Soql.IncludesOperator.Excludes
-        : Soql.IncludesOperator.Includes;
+        ? Soql.ConditionOperator.Excludes
+        : Soql.ConditionOperator.Includes;
       const values = this.toCompareValues(ctx.tryGetRuleContext(0, Parser.SoqlLiteralValuesContext));
       return new Impl.IncludesConditionImpl(field, operator, values);
     } else if (ctx instanceof Parser.InWhereExprContext) {
       const field = this.toField(ctx.soqlField());
       const opCtx = ctx.soqlInOperator();
       const operator = opCtx.NOT()
-        ? Soql.InOperator.NotIn
-        : Soql.InOperator.In;
+        ? Soql.ConditionOperator.NotIn
+        : Soql.ConditionOperator.In;
       const values = this.toCompareValues(ctx.tryGetRuleContext(0, Parser.SoqlLiteralValuesContext));
       return new Impl.InListConditionImpl(field, operator, values);
     } else if (ctx instanceof Parser.CalculatedWhereExprContext) {

@@ -123,27 +123,29 @@ function convertUiModelToSoqlModel(uiModel: ToolingModelJson): Soql.Query {
       const uiModelCondition = condition.condition;
       let returnCondition = undefined;
 
-      const CONDITION_TYPE_NONE = -1;
-      const CONDITION_TYPE_FIELDCOMPARE = 0;
-      const CONDITION_TYPE_IN = 1;
-      const CONDITION_TYPE_INCLUDES = 2;
-      const CONDITION_TYPE_LIKE = 3;
-      let conditionType = CONDITION_TYPE_NONE;
-      if (uiModelCondition.operator) {
-        conditionType = Object.keys(Soql.CompareOperator).map(key => Soql.CompareOperator[key]).includes(uiModelCondition.operator)
-          ? CONDITION_TYPE_FIELDCOMPARE
-          : Object.keys(Soql.InOperator).map(key => Soql.InOperator[key]).includes(uiModelCondition.operator)
-            ? CONDITION_TYPE_IN
-            : Object.keys(Soql.IncludesOperator).map(key => Soql.IncludesOperator[key]).includes(uiModelCondition.operator)
-              ? CONDITION_TYPE_INCLUDES
-              : CONDITION_TYPE_NONE
-      } else {
-        conditionType = CONDITION_TYPE_LIKE;
-      }
 
       const field = uiModelCondition.field && uiModelCondition.field.fieldName
         ? new Impl.FieldRefImpl(uiModelCondition.field.fieldName)
         : undefined;
+
+      enum ConditionType {
+        FieldCompare = 0,
+        In = 1,
+        Includes = 2
+      }
+      let conditionType = ConditionType.FieldCompare;
+      switch (uiModelCondition.operator) {
+        case Soql.ConditionOperator.In:
+        case Soql.ConditionOperator.NotIn: {
+          conditionType = ConditionType.In;
+          break;
+        }
+        case Soql.ConditionOperator.Includes:
+        case Soql.ConditionOperator.Excludes: {
+          conditionType = ConditionType.Includes;
+          break;
+        }
+      }
 
       const compareValue = uiModelCondition.compareValue
         ? new Impl.LiteralImpl(uiModelCondition.compareValue.type, uiModelCondition.compareValue.value)
@@ -151,21 +153,17 @@ function convertUiModelToSoqlModel(uiModel: ToolingModelJson): Soql.Query {
           ? uiModelCondition.values.map(value => new Impl.LiteralImpl(value.type, value.value))
           : undefined;
 
-      if (conditionType >= 0 && field && compareValue) {
+      if (field && compareValue) {
         switch (conditionType) {
-          case CONDITION_TYPE_FIELDCOMPARE: {
+          case ConditionType.FieldCompare: {
             returnCondition = new Impl.FieldCompareConditionImpl(field, uiModelCondition.operator, compareValue);
             break;
           }
-          case CONDITION_TYPE_LIKE: {
-            returnCondition = new Impl.LikeConditionImpl(field, compareValue);
-            break;
-          }
-          case CONDITION_TYPE_IN: {
+          case ConditionType.In: {
             returnCondition = new Impl.InListConditionImpl(field, uiModelCondition.operator, compareValue);
             break;
           }
-          case CONDITION_TYPE_INCLUDES: {
+          case ConditionType.Includes: {
             returnCondition = new Impl.IncludesConditionImpl(field, uiModelCondition.operator, compareValue);
             break;
           }

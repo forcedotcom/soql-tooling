@@ -139,7 +139,6 @@ export namespace SoqlModelUtils {
     condition = stripNesting(condition);
     return (
       condition instanceof Impl.FieldCompareConditionImpl ||
-      condition instanceof Impl.LikeConditionImpl ||
       condition instanceof Impl.IncludesConditionImpl ||
       condition instanceof Impl.InListConditionImpl ||
       condition instanceof Impl.UnmodeledSyntaxImpl

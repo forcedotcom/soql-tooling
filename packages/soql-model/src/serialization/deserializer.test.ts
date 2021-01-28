@@ -58,7 +58,7 @@ const literalString = { type: 'STRING', value: "'HelloWorld'" };
 const field = { fieldName: 'field' };
 
 const conditionFieldCompare = { field, operator: '=', compareValue: literalNumber };
-const conditionLike = { field, compareValue: literalString };
+const conditionLike = { field, operator: 'LIKE', compareValue: literalString };
 const conditionInList = { field, operator: 'IN', values: [literalString, { ...literalString, value: "'other value'" }] };
 const conditionIncludes = { field, operator: 'INCLUDES', values: [literalString, { ...literalString, value: "'other value'" }] };
 const conditionAndOr = { leftCondition: conditionFieldCompare, andOr: 'AND', rightCondition: conditionLike };

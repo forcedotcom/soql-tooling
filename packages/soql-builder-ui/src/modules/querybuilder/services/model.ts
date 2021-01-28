@@ -56,57 +56,57 @@ export const operatorOptions = [
   {
     value: 'EQ',
     displayValue: '=',
-    modelValue: Soql.CompareOperator.EQ
+    modelValue: Soql.ConditionOperator.Equals
   },
   {
     value: 'NOT_EQ',
     displayValue: '≠',
-    modelValue: Soql.CompareOperator.NOT_EQ
+    modelValue: Soql.ConditionOperator.NotEquals
   },
   {
     value: 'LT',
     displayValue: '<',
-    modelValue: Soql.CompareOperator.LT
+    modelValue: Soql.ConditionOperator.LessThan
   },
   {
     value: 'LT_EQ',
     displayValue: '≤',
-    modelValue: Soql.CompareOperator.LT_EQ
+    modelValue: Soql.ConditionOperator.LessThanOrEqual
   },
   {
     value: 'GT',
     displayValue: '>',
-    modelValue: Soql.CompareOperator.GT
+    modelValue: Soql.ConditionOperator.GreaterThan
   },
   {
     value: 'GT_EQ',
     displayValue: '≥',
-    modelValue: Soql.CompareOperator.GT_EQ
+    modelValue: Soql.ConditionOperator.GreaterThanOrEqual
   },
   {
     value: 'LIKE',
     displayValue: 'like',
-    modelValue: undefined
+    modelValue: Soql.ConditionOperator.Like
   },
   {
     value: 'IN',
     displayValue: 'in',
-    modelValue: Soql.InOperator.In
+    modelValue: Soql.ConditionOperator.In
   },
   {
     value: 'NOT_IN',
     displayValue: 'not in',
-    modelValue: Soql.InOperator.NotIn
+    modelValue: Soql.ConditionOperator.NotIn
   },
   {
     value: 'INCLUDES',
     displayValue: 'includes',
-    modelValue: Soql.IncludesOperator.Includes
+    modelValue: Soql.ConditionOperator.Includes
   },
   {
     value: 'EXCLUDES',
     displayValue: 'excludes',
-    modelValue: Soql.IncludesOperator.Excludes
+    modelValue: Soql.ConditionOperator.Excludes
   }
   /*
     use these operators once work to handle

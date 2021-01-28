@@ -161,17 +161,6 @@ export default class WhereModifierGroup extends LightningElement {
       || operatorValue === 'INCLUDES'
       || operatorValue === 'EXCLUDES');
   }
-  // @api get criteria() {
-  //   return this._criteria;
-  // }
-  // set criteria(criteria) {
-  //   if (criteria && criteria.type && criteria.value) {
-  //     const cleanedValue = this.displayValue(criteria.type, criteria.value);
-  //     this._criteria = { ...criteria, value: cleanedValue };
-  //   } else {
-  //     this._criteria = criteria;
-  //   }
-  // }
 
   /** css class methods */
   get operatorClasses() {
@@ -252,8 +241,8 @@ export default class WhereModifierGroup extends LightningElement {
     // values need to be quoted
     return this.sobjectTypeUtils
       ? this.sobjectTypeUtils
-          .getPicklistValues(fieldName)
-          .map((value) => `'${value}'`)
+        .getPicklistValues(fieldName)
+        .map((value) => `'${value}'`)
       : [];
   }
 

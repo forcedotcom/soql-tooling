@@ -6,7 +6,7 @@
  */
 
 import * as Impl from '.';
-import { AndOr, CompareOperator, LiteralType } from '../model';
+import { AndOr, ConditionOperator, LiteralType } from '../model';
 
 describe('AndOrConditionImpl should', () => {
   it('store left and right conditions and the AndOr operator', () => {
@@ -16,18 +16,18 @@ describe('AndOrConditionImpl should', () => {
       rightCondition: { field: { fieldName: 'field' }, operator: '<', compareValue: { type: 'NUMBER', value: '5' } }
     };
     const actual = new Impl.AndOrConditionImpl(
-      new Impl.FieldCompareConditionImpl(new Impl.FieldRefImpl('field'), CompareOperator.GT, new Impl.LiteralImpl(LiteralType.Number, '1')),
+      new Impl.FieldCompareConditionImpl(new Impl.FieldRefImpl('field'), ConditionOperator.GreaterThan, new Impl.LiteralImpl(LiteralType.Number, '1')),
       AndOr.Or,
-      new Impl.FieldCompareConditionImpl(new Impl.FieldRefImpl('field'), CompareOperator.LT, new Impl.LiteralImpl(LiteralType.Number, '5'))
+      new Impl.FieldCompareConditionImpl(new Impl.FieldRefImpl('field'), ConditionOperator.LessThan, new Impl.LiteralImpl(LiteralType.Number, '5'))
     );
     expect(actual).toEqual(expected);
   });
   it('return left condition followed by AndOr operator followed by right condition for toSoqlSyntax()', () => {
     const expected = 'field > 1 OR field < 5';
     const actual = new Impl.AndOrConditionImpl(
-      new Impl.FieldCompareConditionImpl(new Impl.FieldRefImpl('field'), CompareOperator.GT, new Impl.LiteralImpl(LiteralType.Number, '1')),
+      new Impl.FieldCompareConditionImpl(new Impl.FieldRefImpl('field'), ConditionOperator.GreaterThan, new Impl.LiteralImpl(LiteralType.Number, '1')),
       AndOr.Or,
-      new Impl.FieldCompareConditionImpl(new Impl.FieldRefImpl('field'), CompareOperator.LT, new Impl.LiteralImpl(LiteralType.Number, '5'))
+      new Impl.FieldCompareConditionImpl(new Impl.FieldRefImpl('field'), ConditionOperator.LessThan, new Impl.LiteralImpl(LiteralType.Number, '5'))
     ).toSoqlSyntax();
     expect(actual).toEqual(expected);
   });
