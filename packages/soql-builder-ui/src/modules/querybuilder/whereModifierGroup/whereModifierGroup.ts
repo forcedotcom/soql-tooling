@@ -53,6 +53,10 @@ export default class WhereModifierGroup extends LightningElement {
   set condition(condition: JsonMap) {
     this._condition = condition;
     this._criteriaDisplayValue = '';
+
+    const matchingOption = condition ? operatorOptions.find(option => option.modelValue === condition.operator) : undefined;
+    this._currentOperatorValue = matchingOption ? matchingOption.value : undefined;
+
     if (this._selectedOperator && this.isMulipleValueOperator(this._selectedOperator.value)) {
       if (Array.isArray(condition.values)) {
         this._criteriaDisplayValue = condition.values.map(value => value.value).join(', ');
@@ -64,9 +68,6 @@ export default class WhereModifierGroup extends LightningElement {
         this._criteriaDisplayValue = this.displayValue(condition.compareValue.type, condition.compareValue.value);
       }
     }
-
-    const matchingOption = condition ? operatorOptions.find(option => option.modelValue === condition.operator) : undefined;
-    this._currentOperatorValue = matchingOption ? matchingOption.value : undefined;
   }
 
   constructor() {
