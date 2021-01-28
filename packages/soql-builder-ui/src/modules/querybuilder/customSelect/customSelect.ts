@@ -1,5 +1,19 @@
 import { api, track, LightningElement } from 'lwc';
 
+/** CUSTOM SELECT API
+ *  @attr multiple: string - Toggle single-select or multi-select behavior.
+ *                  NOTE --> Will be interpreted as true if there is any string value passed in.
+ *  @attr is-loading: boolean - Will display 'Loading...' when true.
+ *  @attr all-options: string[] - This the list of all possible options
+ *                                the user can select from.
+ *  @attr selected-options: string[] - If present in single-select, the selectedOption
+ *                                     will be displayed as the value of the input.
+ *                                     The list of options rendered will be all-options - selected-options
+ *  @attr placeholder-text: string - This is the value to be displayed as a placeholder for the input.
+ *  @property value: string[] - Will return the currently selected value(s).
+ *  @event option__selection - This is emitted everytime a valid option is selected.
+ *                             detail { value: optionValue }
+ * **/
 interface CustomSelectEvent extends CustomEvent {
   detail: {
     target: HTMLInputElement;
@@ -33,8 +47,8 @@ export default class CustomSelect extends LightningElement {
   }
 
   set selectedOptions(selectedOptions: string[]) {
+    this._selectedOptions = selectedOptions || [];
     if (selectedOptions && selectedOptions.length) {
-      this._selectedOptions = selectedOptions;
       this._value = selectedOptions;
     }
   }
@@ -314,6 +328,9 @@ export default class CustomSelect extends LightningElement {
     this.numberOfSearchResults = undefined;
     this.optionsWrapper.classList.remove('options--open');
     this.optionListIsHidden = true;
+    if (this.isSingleSelect) {
+      this.searchTerm = '';
+    }
   };
   /*
   InputChange will fire with typing && paste events
