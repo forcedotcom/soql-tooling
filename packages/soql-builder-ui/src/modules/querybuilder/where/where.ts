@@ -11,7 +11,7 @@ import { JsonMap } from '@salesforce/ts-types';
 import { AndOr } from '../services/model';
 
 interface ConditionTemplate {
-  condition: any;
+  condition: JsonMap;
   index: number;
 }
 
