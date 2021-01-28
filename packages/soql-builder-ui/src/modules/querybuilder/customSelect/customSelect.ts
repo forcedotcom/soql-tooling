@@ -328,6 +328,9 @@ export default class CustomSelect extends LightningElement {
     this.numberOfSearchResults = undefined;
     this.optionsWrapper.classList.remove('options--open');
     this.optionListIsHidden = true;
+    if (this.isSingleSelect) {
+      this.searchTerm = '';
+    }
   };
   /*
   InputChange will fire with typing && paste events
