@@ -23,23 +23,29 @@ class WhereExpressionManager {
   }
 
   public condition1 = {
-    field: 'Name',
-    operator: 'LT',
-    criteria: { type: 'STRING', value: "'pwt'" },
+    condition: {
+      field: { fieldName: 'Name' },
+      operator: '<',
+      compareValue: { type: 'STRING', value: "'pwt'" }
+    },
     index: 0
   };
 
   public condition2 = {
-    field: 'Id',
-    operator: 'GT',
-    criteria: { type: 'NUMBER', value: '123456' },
+    condition: {
+      field: { fieldName: 'Id' },
+      operator: '>',
+      compareValue: { type: 'NUMBER', value: "123456" }
+    },
     index: 1
   };
 
   public incompleteCondition = {
-    field: undefined,
-    operator: undefined,
-    criteria: { type: 'NUMBER', value: '123456' },
+    condition: {
+      field: undefined,
+      operator: undefined,
+      compareValue: { type: 'NUMBER', value: "123456" }
+    },
     index: 2
   };
 
@@ -114,8 +120,7 @@ describe('Where', () => {
 
       const conditionStore = whereCmp.whereExpr.conditions;
       expect(conditionStore.length).toBe(1);
-      expect(conditionStore[0].field).toBeUndefined();
-      expect(conditionStore[0].operator).toBeUndefined();
+      expect(conditionStore[0].condition.field).toBeUndefined();
       expect(conditionStore[0].index).toBe(0);
     });
 
@@ -131,8 +136,7 @@ describe('Where', () => {
 
       const conditionStore = whereCmp.whereExpr.conditions;
       expect(conditionStore.length).toBe(1);
-      expect(conditionStore[0].field).toBe(modelManager.condition1.field);
-      expect(conditionStore[0].operator).toBe(modelManager.condition1.operator);
+      expect(conditionStore[0].condition).toEqual(modelManager.condition1.condition);
       expect(conditionStore[0].index).toBe(modelManager.condition1.index);
     });
 
@@ -148,11 +152,9 @@ describe('Where', () => {
 
       const conditionStore = whereCmp.whereExpr.conditions;
       expect(conditionStore.length).toBe(2);
-      expect(conditionStore[0].field).toBe(modelManager.condition1.field);
-      expect(conditionStore[0].operator).toBe(modelManager.condition1.operator);
+      expect(conditionStore[0].condition).toEqual(modelManager.condition1.condition);
       expect(conditionStore[0].index).toBe(modelManager.condition1.index);
-      expect(conditionStore[1].field).toBe(modelManager.condition2.field);
-      expect(conditionStore[1].operator).toBe(modelManager.condition2.operator);
+      expect(conditionStore[1].condition).toEqual(modelManager.condition2.condition);
       expect(conditionStore[1].index).toBe(modelManager.condition2.index);
     });
 
@@ -329,10 +331,7 @@ describe('Where', () => {
         );
         expect(conditionsStore.length).toBe(2);
         expect(modfierGroups.length).toBe(2);
-        expect(conditionsStore[1].field).toBeUndefined();
-        expect(conditionsStore[1].operator).toBeUndefined();
-        expect(conditionsStore[1].criteria.type).toBeNull();
-        expect(conditionsStore[1].criteria.value).toBeNull();
+        expect(conditionsStore[1].condition.field).toBeUndefined();
         expect(conditionsStore[1].index).toBe(1);
       });
     });

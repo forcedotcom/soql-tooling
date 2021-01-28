@@ -5,7 +5,6 @@ import { FieldSelectionImpl } from './fieldSelectionImpl';
 import { FromImpl } from './fromImpl';
 import { IncludesConditionImpl } from './includesConditionImpl';
 import { InListConditionImpl } from './inListConditionImpl';
-import { LikeConditionImpl } from './likeConditionImpl';
 import { LimitImpl } from './limitImpl';
 import { LiteralImpl } from './literalImpl';
 import { NestedConditionImpl } from './nestedConditionImpl';
@@ -25,7 +24,6 @@ export {
   FromImpl,
   IncludesConditionImpl,
   InListConditionImpl,
-  LikeConditionImpl,
   LimitImpl,
   LiteralImpl,
   NestedConditionImpl,

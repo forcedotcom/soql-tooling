@@ -5,6 +5,7 @@
  *  For full license text, see LICENSE.txt file in the repo root or https://opensource.org/licenses/BSD-3-Clause
  *
  */
+import { Soql } from '@salesforce/soql-model';
 import { List, Map } from 'immutable';
 import { JsonMap } from '@salesforce/ts-types';
 
@@ -54,31 +55,58 @@ export interface ToolingModelJson extends JsonMap {
 export const operatorOptions = [
   {
     value: 'EQ',
-    displayValue: '='
+    displayValue: '=',
+    modelValue: Soql.ConditionOperator.Equals
   },
   {
     value: 'NOT_EQ',
-    displayValue: '≠'
+    displayValue: '≠',
+    modelValue: Soql.ConditionOperator.NotEquals
   },
   {
     value: 'LT',
-    displayValue: '<'
+    displayValue: '<',
+    modelValue: Soql.ConditionOperator.LessThan
   },
   {
     value: 'LT_EQ',
-    displayValue: '≤'
+    displayValue: '≤',
+    modelValue: Soql.ConditionOperator.LessThanOrEqual
   },
   {
     value: 'GT',
-    displayValue: '>'
+    displayValue: '>',
+    modelValue: Soql.ConditionOperator.GreaterThan
   },
   {
     value: 'GT_EQ',
-    displayValue: '≥'
+    displayValue: '≥',
+    modelValue: Soql.ConditionOperator.GreaterThanOrEqual
   },
   {
     value: 'LIKE',
-    displayValue: 'like'
+    displayValue: 'like',
+    modelValue: Soql.ConditionOperator.Like
+  },
+  {
+    value: 'IN',
+    displayValue: 'in',
+    modelValue: Soql.ConditionOperator.In
+  },
+  {
+    value: 'NOT_IN',
+    displayValue: 'not in',
+    modelValue: Soql.ConditionOperator.NotIn
+  },
+  {
+    value: 'INCLUDES',
+    displayValue: 'includes',
+    modelValue: Soql.ConditionOperator.Includes
+  },
+  {
+    value: 'EXCLUDES',
+    displayValue: 'excludes',
+    modelValue: Soql.ConditionOperator.Excludes
   }
   /*
     use these operators once work to handle

@@ -23,9 +23,11 @@ describe('Tooling Model Service', () => {
   const getMockWhereObj = () => {
     return {
       fieldCompareExpr: {
-        field: 'Name',
-        operator: 'EQ',
-        criteria: { type: 'STRING', value: "'pwt'" },
+        condition: {
+          field: { fieldName: 'Name' },
+          operator: '=',
+          compareValue: { type: 'STRING', value: "'pwt'" }
+        },
         index: 0
       },
       andOr: 'AND'
@@ -189,14 +191,8 @@ describe('Tooling Model Service', () => {
       modelService.upsertWhereFieldExpr(mockWhereObj);
 
       expect(query!.where.conditions.length).toBe(1);
-      expect(query!.where.conditions[0].field).toContain(
-        mockWhereObj.fieldCompareExpr.field
-      );
-      expect(query!.where.conditions[0].operator).toContain(
-        mockWhereObj.fieldCompareExpr.operator
-      );
-      expect(query!.where.conditions[0].criteria).toEqual(
-        mockWhereObj.fieldCompareExpr.criteria
+      expect(query!.where.conditions[0].condition).toEqual(
+        mockWhereObj.fieldCompareExpr.condition
       );
       expect(query!.where.conditions[0].index).toEqual(
         mockWhereObj.fieldCompareExpr.index
@@ -222,16 +218,16 @@ describe('Tooling Model Service', () => {
       modelService.upsertWhereFieldExpr(mockWhereObj);
 
       expect(query!.where.conditions.length).toBe(1);
-      expect(query!.where.conditions[0].field).toContain(
-        mockWhereObj.fieldCompareExpr.field
+      expect(query!.where.conditions[0].condition).toEqual(
+        mockWhereObj.fieldCompareExpr.condition
       );
       // update field on condition with same index
       const newField = 'marcs_bank_account';
       let newMock = getMockWhereObj();
-      newMock.fieldCompareExpr.field = newField;
+      newMock.fieldCompareExpr.condition.field.fieldName = newField;
       modelService.upsertWhereFieldExpr(newMock);
       expect(query!.where.conditions.length).toBe(1);
-      expect(query!.where.conditions[0].field).toContain(newField);
+      expect(query!.where.conditions[0].condition.field.fieldName).toContain(newField);
     });
 
     it('should DELETE condition by index', () => {

@@ -11,7 +11,8 @@ import { DateValidator } from './dateValidator';
 import { FloatValidator } from './floatValidator';
 import { IntegerValidator } from './integerValidator';
 import { PicklistValidator } from './picklistValidator';
-import { DefaultValidator, OperatorValidator, ValidateOptions, Validator } from './validator';
+import { StringValidator } from './stringValidator';
+import { DefaultValidator, MultipleInputValidator, OperatorValidator, ValidateOptions, Validator } from './validator';
 
 export class ValidatorFactory {
   static getFieldInputValidator(options: ValidateOptions): Validator {
@@ -37,11 +38,19 @@ export class ValidatorFactory {
       case SObjectFieldType.MultiPicklist: {
         return new PicklistValidator(options);
       }
+      case SObjectFieldType.String:
+      case SObjectFieldType.Id: {
+        return new StringValidator(options);
+      }
     }
     return new DefaultValidator(options);
   }
 
   static getOperatorValidator(options: ValidateOptions): Validator {
     return new OperatorValidator(options);
+  }
+
+  static getFieldMultipleInputValidator(options: ValidateOptions): MultipleInputValidator {
+    return new MultipleInputValidator(options, this.getFieldInputValidator(options));
   }
 }

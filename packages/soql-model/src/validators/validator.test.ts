@@ -7,7 +7,8 @@
 
 import { Messages } from '../messages/messages';
 import { SObjectFieldType } from '../model/model';
-import { DefaultValidator, OperatorValidator } from './validator';
+import { StringValidator } from './stringValidator';
+import { DefaultValidator, MultipleInputValidator, OperatorValidator } from './validator';
 
 describe('DefaultValidator should', () => {
   it('return valid result', () => {
@@ -47,3 +48,22 @@ describe('OperatorValidator should', () => {
     expect(stringOperatorValidator.validate('unrecognized')).toEqual(expected);
   });
 });
+
+describe('MultipleInputValidator should', () => {
+  const stringOptions = { type: SObjectFieldType.String };
+  const validator = new MultipleInputValidator(stringOptions, new StringValidator(stringOptions));
+  it('return not valid result for empty input', () => {
+    const notValidResult = { isValid: false, message: Messages.error_fieldInput_list };
+    expect(validator.validate('')).toEqual(notValidResult);
+    expect(validator.validate('  ')).toEqual(notValidResult);
+    expect(validator.validate(' , ,, ')).toEqual(notValidResult);
+  });
+  it('return not valid result for invalid input for type', () => {
+    const notValidResult = { isValid: false, message: Messages.error_fieldInput_string };
+    expect(validator.validate("'good', bad")).toEqual(notValidResult);
+  });
+  it('return valid result for input that is valid as determined by delegate validator', () => {
+    const validResult = { isValid: true };
+    expect(validator.validate("'good', 'also good'")).toEqual(validResult);
+  });
+})

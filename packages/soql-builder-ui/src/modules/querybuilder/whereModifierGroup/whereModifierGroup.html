@@ -8,7 +8,7 @@
       data-el-where-field
     >
       <template if:true={hasSelectedField}>
-        <option value={selectedField}>{selectedField}</option>
+        <option value={_selectedField}>{_selectedField}</option>
       </template>
       <template if:false={hasSelectedField}>
         <option value="" class="placeholder" data-el-default-option>
@@ -51,7 +51,7 @@
         name="criteria"
         type="text"
         oninput={handleSelectionEvent}
-        value={_criteria.value}
+        value={criteriaDisplayValue}
         data-el-where-criteria-input
       />
     </span>

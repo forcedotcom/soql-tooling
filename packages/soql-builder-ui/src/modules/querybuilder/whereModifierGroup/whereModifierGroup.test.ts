@@ -40,23 +40,23 @@ describe('WhereModifierGroup should', () => {
   }
 
   function setModifiersToHaveAValue(scope: string) {
-    const { selectFieldEl, selectOperatorEl } = getModifierElements();
+    const { selectFieldEl, selectOperatorEl, criteriaInputEl } = getModifierElements();
 
     switch (scope) {
       case 'all':
         selectFieldEl.value = 'foo';
         selectOperatorEl.value = 'EQ';
-        modifierGroup.criteria = { value: 'test' };
+        criteriaInputEl.value = 'test';
         break;
       case 'some':
         selectFieldEl.value = 'foo';
         selectOperatorEl.value = undefined;
-        modifierGroup.criteria = { value: null };
+        criteriaInputEl.value = null;
         break;
       case 'none':
         selectFieldEl.value = undefined;
         selectOperatorEl.value = undefined;
-        modifierGroup.criteria = { value: null };
+        criteriaInputEl.value = null;
         break;
       default:
         console.log('Unkown Case to Set Values');
@@ -85,6 +85,8 @@ describe('WhereModifierGroup should', () => {
     expect(modifierGroup.allModifiersHaveValue).toBeFalsy();
 
     setModifiersToHaveAValue('all');
+    const { criteriaInputEl } = getModifierElements();
+    criteriaInputEl.dispatchEvent(new Event('input'));
 
     return Promise.resolve().then(() => {
       expect(modifierGroup.allModifiersHaveValue).toBeTruthy();
@@ -141,7 +143,9 @@ describe('WhereModifierGroup should', () => {
   });
 
   it('display the correct operator', () => {
-    modifierGroup.selectedOperator = 'LT';
+    modifierGroup.condition = {
+      operator: '<'
+    };
     document.body.appendChild(modifierGroup);
 
     const { selectOperatorEl } = getModifierElements();
@@ -170,9 +174,11 @@ describe('WhereModifierGroup should', () => {
   });
 
   it('display the correct criteria value for strings', async () => {
-    modifierGroup.selectedField = 'foo';
-    modifierGroup.selectedOperator = 'EQ';
-    modifierGroup.criteria = { type: 'STRING', value: "'HELLO'" };
+    modifierGroup.condition = {
+      field: { fieldName: 'foo' },
+      operator: '=',
+      compareValue: { type: 'STRING', value: "'HELLO'" }
+    };
     document.body.appendChild(modifierGroup);
 
     const { criteriaInputEl } = getModifierElements();
@@ -180,9 +186,11 @@ describe('WhereModifierGroup should', () => {
   });
 
   it('display the correct criteria value for non-strings', async () => {
-    modifierGroup.selectedField = 'foo';
-    modifierGroup.selectedOperator = 'EQ';
-    modifierGroup.criteria = { type: 'BOOLEAN', value: 'TRUE' };
+    modifierGroup.condition = {
+      field: { fieldName: 'foo' },
+      operator: '=',
+      compareValue: { type: 'BOOLEAN', value: "TRUE" }
+    };
     document.body.appendChild(modifierGroup);
 
     const { criteriaInputEl } = getModifierElements();
@@ -190,16 +198,18 @@ describe('WhereModifierGroup should', () => {
   });
 
   it('normalize criteria input for strings', async () => {
-    modifierGroup.selectedField = 'foo';
-    modifierGroup.selectedOperator = 'EQ';
-    modifierGroup.criteria = { type: 'STRING', value: "'HELLO'" };
+    modifierGroup.condition = {
+      field: { fieldName: 'foo' },
+      operator: '=',
+      compareValue: { type: 'STRING', value: "'HELLO'" }
+    };
     modifierGroup.sobjectMetadata = {
       fields: [{ name: 'foo', type: 'string' }]
     };
     let resultingCriteria;
-    const handler = (e) => {
-      resultingCriteria = e.detail.criteria;
-    };
+    const handler = (e => {
+      resultingCriteria = e.detail.condition.compareValue;
+    });
     modifierGroup.addEventListener('modifiergroupselection', handler);
 
     document.body.appendChild(modifierGroup);
@@ -212,16 +222,18 @@ describe('WhereModifierGroup should', () => {
   });
 
   it('normalize criteria input for non-strings', async () => {
-    modifierGroup.selectedField = 'foo';
-    modifierGroup.selectedOperator = 'EQ';
-    modifierGroup.criteria = { type: 'BOOLEAN', value: 'TRUE' };
+    modifierGroup.condition = {
+      field: { fieldName: 'foo' },
+      operator: '=',
+      compareValue: { type: 'BOOLEAN', value: "TRUE" }
+    };
     modifierGroup.sobjectMetadata = {
       fields: [{ name: 'foo', type: 'boolean' }]
     };
     let resultingCriteria;
-    const handler = (e) => {
-      resultingCriteria = e.detail.criteria;
-    };
+    const handler = (e => {
+      resultingCriteria = e.detail.condition.compareValue;
+    });
     modifierGroup.addEventListener('modifiergroupselection', handler);
     document.body.appendChild(modifierGroup);
 
@@ -232,10 +244,40 @@ describe('WhereModifierGroup should', () => {
     expect(resultingCriteria).toEqual({ type: 'BOOLEAN', value: 'FALSE' });
   });
 
+  it('normalize criteria input for multi-value operators', async () => {
+    modifierGroup.condition = {
+      field: { fieldName: 'foo' },
+      operator: 'IN',
+      values: [
+        { type: 'BOOLEAN', value: "TRUE" }
+      ]
+    };
+    modifierGroup.sobjectMetadata = {
+      fields: [{ name: 'foo', type: 'boolean' }]
+    };
+    let resultingCriteria;
+    const handler = (e => {
+      resultingCriteria = e.detail.condition.values;
+    });
+    modifierGroup.addEventListener('modifiergroupselection', handler);
+    document.body.appendChild(modifierGroup);
+
+    const { criteriaInputEl } = getModifierElements();
+    criteriaInputEl.value = 'TRUE, FALSE';
+    criteriaInputEl.dispatchEvent(new Event('input'));
+
+    expect(resultingCriteria).toEqual([
+      { type: 'BOOLEAN', value: 'TRUE' },
+      { type: 'BOOLEAN', value: 'FALSE' }
+    ]);
+  });
+
   it('set error class on invalid operator input', async () => {
-    modifierGroup.selectedField = 'foo';
-    modifierGroup.selectedOperator = 'LT'; // not a valid boolean operator
-    modifierGroup.criteria = { type: 'BOOLEAN', value: 'TRUE' };
+    modifierGroup.condition = {
+      field: { fieldName: 'foo' },
+      operator: '<',
+      compareValue: { type: 'BOOLEAN', value: "TRUE" }
+    };
     modifierGroup.sobjectMetadata = {
       fields: [{ name: 'foo', type: 'boolean' }]
     };
@@ -255,9 +297,11 @@ describe('WhereModifierGroup should', () => {
   });
 
   it('set error class of invalid criteria input', async () => {
-    modifierGroup.selectedField = 'foo';
-    modifierGroup.selectedOperator = 'EQ';
-    modifierGroup.criteria = { type: 'BOOLEAN', value: 'TRUE' };
+    modifierGroup.condition = {
+      field: { fieldName: 'foo' },
+      operator: '=',
+      compareValue: { type: 'BOOLEAN', value: "TRUE" }
+    };
     modifierGroup.sobjectMetadata = {
       fields: [{ name: 'foo', type: 'boolean' }]
     };

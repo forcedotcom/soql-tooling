@@ -13,18 +13,22 @@ const field = new Impl.FieldRefImpl('field');
 const literal = new Impl.LiteralImpl(Soql.LiteralType.String, "'Hello'");
 const conditionFieldCompare = new Impl.FieldCompareConditionImpl(
   field,
-  Soql.CompareOperator.EQ,
+  Soql.ConditionOperator.Equals,
   literal
 );
-const conditionLike = new Impl.LikeConditionImpl(field, literal);
+const conditionLike = new Impl.FieldCompareConditionImpl(
+  field,
+  Soql.ConditionOperator.Like,
+  literal
+);
 const conditionInList = new Impl.InListConditionImpl(
   field,
-  Soql.InOperator.In,
+  Soql.ConditionOperator.In,
   [literal]
 );
 const conditionIncludes = new Impl.IncludesConditionImpl(
   field,
-  Soql.IncludesOperator.Includes,
+  Soql.ConditionOperator.Includes,
   [literal]
 );
 const conditionUnmodeled = new Impl.UnmodeledSyntaxImpl(
