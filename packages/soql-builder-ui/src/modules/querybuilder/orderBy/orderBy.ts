@@ -32,7 +32,7 @@ export default class OrderBy extends LightningElement {
       orderbyFieldEl.value[0] &&
       orderbyFieldEl.value.length
     ) {
-      const orderBySelectedEvent = new CustomEvent('orderbyselected', {
+      const orderBySelectedEvent = new CustomEvent('orderby__selected', {
         detail: {
           field: orderbyFieldEl.value[0],
           order: orderEl.value,

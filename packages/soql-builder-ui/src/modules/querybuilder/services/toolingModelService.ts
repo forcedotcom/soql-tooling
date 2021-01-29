@@ -265,7 +265,7 @@ export class ToolingModelService {
       'originalSoqlStatement',
       newSoqlQuery
     );
-    this.model.next(newModelWithSoqlQuery);
+    this.immutableModel.next(newModelWithSoqlQuery);
     this.sendMessageToBackend(newSoqlQuery);
   }
 
