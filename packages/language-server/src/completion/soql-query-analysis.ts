@@ -1,41 +1,72 @@
 import {
   SoqlFromExprsContext,
+  SoqlGroupByExprsContext,
   SoqlInnerQueryContext,
   SoqlParser,
   SoqlQueryContext,
+  SoqlSelectColumnExprContext,
+  SoqlSemiJoinContext,
   SoqlWhereExprContext,
 } from '@salesforce/soql-parser/lib/generated/SoqlParser';
-import { ParserRuleContext, Token } from 'antlr4ts';
+import { ParserRuleContext, RuleContext, Token } from 'antlr4ts';
 import { ParseTreeWalker, RuleNode } from 'antlr4ts/tree';
 import { SoqlParserListener } from '@salesforce/soql-parser/lib/generated/SoqlParserListener';
 
-export function parseFROMSObject(
-  parsedQueryTree: SoqlQueryContext,
-  cursorTokenIndex: number
-): string | undefined {
-  const listener = new SoqlFROMAnalyzer(cursorTokenIndex);
-  ParseTreeWalker.DEFAULT.walk<SoqlParserListener>(listener, parsedQueryTree);
-  return listener.findInnerQuery(cursorTokenIndex)?.sobjectName;
-}
-interface InnerSoqlQuery {
-  soqlInnerQueryNode: SoqlInnerQueryContext;
+interface InnerSoqlQueryInfo {
+  soqlInnerQueryNode: ParserRuleContext;
   select: Token;
   from?: Token;
   sobjectName?: string;
+  selectedFields?: string[];
+  groupByFields?: string[];
 }
 
-class SoqlFROMAnalyzer implements SoqlParserListener {
+export interface ParsedSoqlField {
+  sobjectName: string;
+  fieldName: string;
+  operator?: string;
+}
+export class SoqlQueryAnalyzer {
+  private innerQueriesListener = new SoqlInnerQueriesListener();
+  constructor(protected parsedQueryTree: SoqlQueryContext) {
+    ParseTreeWalker.DEFAULT.walk<SoqlParserListener>(
+      this.innerQueriesListener,
+      parsedQueryTree
+    );
+  }
+
+  innerQueryInfoAt(cursorTokenIndex: number): InnerSoqlQueryInfo | undefined {
+    return this.innerQueriesListener.findInnerQuery(cursorTokenIndex);
+  }
+
+  extractWhereField(cursorTokenIndex: number): ParsedSoqlField | undefined {
+    const sobject = this.innerQueryInfoAt(cursorTokenIndex)?.sobjectName;
+
+    if (sobject) {
+      const whereFieldListener = new SoqlWhereFieldListener(
+        cursorTokenIndex,
+        sobject
+      );
+      ParseTreeWalker.DEFAULT.walk<SoqlParserListener>(
+        whereFieldListener,
+        this.parsedQueryTree
+      );
+      return whereFieldListener.result;
+    } else {
+      return undefined;
+    }
+  }
+}
+
+class SoqlInnerQueriesListener implements SoqlParserListener {
   selectsStack: Token[] = [];
   fromsStack: Array<[Token, string]> = [];
 
-  matchedSelectFroms: Array<InnerSoqlQuery> = [];
-
-  innerSoqlQueries = new Map<number, InnerSoqlQuery>();
-
-  constructor(private cursorTokenIndex: number) {}
+  matchedSelectFroms: Array<InnerSoqlQueryInfo> = [];
+  innerSoqlQueries = new Map<number, InnerSoqlQueryInfo>();
 
   private queryContainsTokenIndex(
-    innerQuery: InnerSoqlQuery,
+    innerQuery: InnerSoqlQueryInfo,
     atTokenIndex: number
   ): boolean {
     // NOTE: We use the parent node to take into account the enclosing
@@ -53,8 +84,8 @@ class SoqlFROMAnalyzer implements SoqlParserListener {
     );
   }
 
-  public findInnerQuery(atIndex: number): InnerSoqlQuery | undefined {
-    let closestQuery: InnerSoqlQuery | undefined;
+  public findInnerQuery(atIndex: number): InnerSoqlQueryInfo | undefined {
+    let closestQuery: InnerSoqlQueryInfo | undefined;
     for (let query of this.innerSoqlQueries.values()) {
       if (this.queryContainsTokenIndex(query, atIndex)) {
         closestQuery = query;
@@ -63,21 +94,33 @@ class SoqlFROMAnalyzer implements SoqlParserListener {
     return closestQuery;
   }
 
-  private findSoqlInnerQueryAncestor(
+  private findAncestorSoqlInnerQueryContext(
     node: RuleNode | undefined
-  ): SoqlInnerQueryContext | undefined {
+  ): ParserRuleContext | undefined {
     let soqlInnerQueryNode = node;
     while (
       soqlInnerQueryNode &&
-      soqlInnerQueryNode.ruleContext.ruleIndex !==
-        SoqlParser.RULE_soqlInnerQuery
+      ![SoqlParser.RULE_soqlInnerQuery, SoqlParser.RULE_soqlSemiJoin].includes(
+        soqlInnerQueryNode.ruleContext.ruleIndex
+      )
     ) {
       soqlInnerQueryNode = soqlInnerQueryNode.parent;
     }
 
     return soqlInnerQueryNode
-      ? (soqlInnerQueryNode as SoqlInnerQueryContext)
+      ? (soqlInnerQueryNode as ParserRuleContext)
       : undefined;
+  }
+
+  private innerQueryForContext(ctx: RuleNode): InnerSoqlQueryInfo | undefined {
+    const soqlInnerQueryNode = this.findAncestorSoqlInnerQueryContext(ctx);
+    if (soqlInnerQueryNode) {
+      const selectFromPair = this.innerSoqlQueries.get(
+        soqlInnerQueryNode.start.tokenIndex
+      );
+      return selectFromPair;
+    }
+    return undefined;
   }
 
   enterSoqlInnerQuery(ctx: SoqlInnerQueryContext) {
@@ -87,45 +130,61 @@ class SoqlFROMAnalyzer implements SoqlParserListener {
     });
   }
 
-  exitSoqlFromExprs(ctx: SoqlFromExprsContext) {
-    const soqlInnerQueryNode = this.findSoqlInnerQueryAncestor(ctx);
+  enterSoqlSemiJoin(ctx: SoqlSemiJoinContext) {
+    this.innerSoqlQueries.set(ctx.start.tokenIndex, {
+      select: ctx.start,
+      soqlInnerQueryNode: ctx,
+    });
+  }
 
-    if (ctx.children && ctx.children.length > 0 && soqlInnerQueryNode) {
+  exitSoqlFromExprs(ctx: SoqlFromExprsContext) {
+    const selectFromPair = this.innerQueryForContext(ctx);
+
+    if (ctx.children && ctx.children.length > 0 && selectFromPair) {
       const fromToken = ctx.parent?.start as Token;
       const sobjectName = ctx.getChild(0).getChild(0).text;
-      const selectFromPair = this.innerSoqlQueries.get(
-        soqlInnerQueryNode.start.tokenIndex
-      );
+      selectFromPair.from = fromToken;
+      selectFromPair.sobjectName = sobjectName;
+    }
+  }
+
+  enterSoqlSelectColumnExpr(ctx: SoqlSelectColumnExprContext) {
+    if (ctx.soqlField().childCount === 1) {
+      const soqlField = ctx.soqlField();
+      const soqlIdentifiers = soqlField.soqlIdentifier();
+      if (soqlIdentifiers.length === 1) {
+        const selectFromPair = this.innerQueryForContext(ctx);
+        if (selectFromPair) {
+          if (!selectFromPair.selectedFields) {
+            selectFromPair.selectedFields = [];
+          }
+          selectFromPair.selectedFields.push(soqlIdentifiers[0].text);
+        }
+      }
+    }
+  }
+
+  enterSoqlGroupByExprs(ctx: SoqlGroupByExprsContext) {
+    const groupByFields: string[] = [];
+
+    ctx.soqlField().forEach((soqlField) => {
+      const soqlIdentifiers = soqlField.soqlIdentifier();
+      if (soqlIdentifiers.length === 1) {
+        groupByFields.push(soqlIdentifiers[0].text);
+      }
+    });
+
+    if (groupByFields.length > 0) {
+      const selectFromPair = this.innerQueryForContext(ctx);
+
       if (selectFromPair) {
-        selectFromPair.from = fromToken;
-        selectFromPair.sobjectName = sobjectName;
+        selectFromPair.groupByFields = groupByFields;
       }
     }
   }
 }
 
-interface ParsedSoqlField {
-  sobjectName: string;
-  fieldName: string;
-  operator?: string;
-}
-
-export function parseWHEREExprField(
-  parsedQueryTree: SoqlQueryContext,
-  cursorTokenIndex: number
-): ParsedSoqlField | undefined {
-  const sobject = parseFROMSObject(parsedQueryTree, cursorTokenIndex);
-
-  if (sobject) {
-    const analyzer = new SoqlFieldAnalyzer(cursorTokenIndex, sobject);
-    ParseTreeWalker.DEFAULT.walk<SoqlParserListener>(analyzer, parsedQueryTree);
-    return analyzer.result;
-  } else {
-    return undefined;
-  }
-}
-
-class SoqlFieldAnalyzer implements SoqlParserListener {
+class SoqlWhereFieldListener implements SoqlParserListener {
   result?: ParsedSoqlField;
   resultDistance = Number.MAX_VALUE;
 
