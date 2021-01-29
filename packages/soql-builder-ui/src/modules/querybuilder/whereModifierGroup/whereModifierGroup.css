@@ -25,7 +25,6 @@ prevent select el from
 expanding to fit content
  */
 .modifier__fields {
-  width: 100%;
   flex-grow: 2;
 }
 
