@@ -16,10 +16,10 @@ export default class Fields extends LightningElement {
 
   handleFieldSelection(e) {
     e.preventDefault();
-    const value = e.target.value;
+    const value = e.detail.value;
     if (value && value.length) {
       const fieldSelectedEvent = new CustomEvent('fields__selected', {
-        detail: { field: e.target.value }
+        detail: { field: e.detail.value }
       });
       this.dispatchEvent(fieldSelectedEvent);
     }
