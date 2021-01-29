@@ -1,24 +1,14 @@
 <template>
   <div class="modifier__group">
     <!-- FIELDS -->
-    <select
-      class="modifier__item modifier__fields"
-      name="fields"
-      onchange={handleSelectionEvent}
-      data-el-where-field
-    >
-      <template if:true={hasSelectedField}>
-        <option value={_selectedField}>{_selectedField}</option>
-      </template>
-      <template if:false={hasSelectedField}>
-        <option value="" class="placeholder" data-el-default-option>
-          {defaultFieldOptionText}
-        </option>
-      </template>
-      <template for:each={filteredFields} for:item="field">
-        <option key={field} value={field}>{field}</option>
-      </template>
-    </select>
+    <div class="modifier__item modifier__fields">
+      <querybuilder-custom-select
+        is-loading={isLoading}
+        all-options={allFields}
+        selected-options={_selectedField}
+        placeholder-text={selectPlaceHolderText}
+      ></querybuilder-custom-select>
+    </div>
     <!-- OPERATORS -->
     <span
       data-text={operatorErrorMessage}
