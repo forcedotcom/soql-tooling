@@ -32,16 +32,16 @@ describe('OrderBy should', () => {
     const handler = jest.fn();
     orderBy.addEventListener('orderby__selected', handler);
     const selectField = orderBy.shadowRoot.querySelector(
-      '[data-el-orderby-field]'
+      'querybuilder-custom-select'
     );
-    selectField.value = 'foo';
+    selectField.selectedOptions = ['foo'];
     const button = orderBy.shadowRoot.querySelector('[data-el-add-button]');
 
     // make the magic happen
     button.click();
 
     expect(handler).toHaveBeenCalled();
-    expect(handler.mock.calls[0][0].detail.field).toEqual(selectField.value);
+    expect(handler.mock.calls[0][0].detail.field).toEqual(selectField.value[0]);
     expect(handler.mock.calls[0][0].detail.order).toEqual('');
     expect(handler.mock.calls[0][0].detail.nulls).toEqual('');
   });
@@ -52,9 +52,9 @@ describe('OrderBy should', () => {
     const handler = jest.fn();
     orderBy.addEventListener('orderby__selected', handler);
     const selectField = orderBy.shadowRoot.querySelector(
-      '[data-el-orderby-field]'
+      'querybuilder-custom-select'
     );
-    selectField.value = 'foo';
+    selectField.selectedOptions = ['foo'];
     const selectOrder = orderBy.shadowRoot.querySelector(
       '[data-el-orderby-order]'
     );
@@ -69,7 +69,7 @@ describe('OrderBy should', () => {
     button.click();
 
     expect(handler).toHaveBeenCalled();
-    expect(handler.mock.calls[0][0].detail.field).toEqual(selectField.value);
+    expect(handler.mock.calls[0][0].detail.field).toEqual(selectField.value[0]);
     expect(handler.mock.calls[0][0].detail.order).toEqual(selectOrder.value);
     expect(handler.mock.calls[0][0].detail.nulls).toEqual(selectNulls.value);
   });
@@ -80,9 +80,9 @@ describe('OrderBy should', () => {
     const handler = jest.fn();
     orderBy.addEventListener('orderby__selected', handler);
     const selectField = orderBy.shadowRoot.querySelector(
-      '[data-el-orderby-field]'
+      'querybuilder-custom-select'
     );
-    selectField.value = '';
+    selectField.selectedOptions = [''];
     const button = orderBy.shadowRoot.querySelector('[data-el-add-button]');
 
     // make the magic happen
@@ -119,24 +119,6 @@ describe('OrderBy should', () => {
     return Promise.resolve().then(() => {
       selectedFieldEl = orderBy.shadowRoot.querySelectorAll('.selected-field');
       expect(selectedFieldEl.length).toBe(1);
-    });
-  });
-
-  it('alert user when loading', async () => {
-    orderBy.selectedFields = [];
-    orderBy.fields = [];
-    document.body.appendChild(orderBy);
-    expect(orderBy.isLoading).toEqual(false);
-    let defaultOption = orderBy.shadowRoot.querySelector(
-      '[data-el-default-option]'
-    );
-    expect(defaultOption.innerHTML).toContain('Select');
-    orderBy.isLoading = true;
-    return Promise.resolve().then(() => {
-      defaultOption = orderBy.shadowRoot.querySelector(
-        '[data-el-default-option]'
-      );
-      expect(defaultOption.innerHTML.toLowerCase()).toContain('loading');
     });
   });
 

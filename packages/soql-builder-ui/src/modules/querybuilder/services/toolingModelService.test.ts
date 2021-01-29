@@ -343,5 +343,20 @@ describe('Tooling Model Service', () => {
       // verify saves
       expect(messageService.setState).toHaveBeenCalledTimes(2);
     });
+  it('should include originalSoqlStatement property in model', () => {
+    expect(query.originalSoqlStatement).toBe('');
+    modelService.setSObject('Account');
+    modelService.addField('Id');
+
+    // The formatting of the soql statement is hard to match exactly
+    // because the formatter inserts returns and spaces.
+    expect(query.originalSoqlStatement).toContain('SELECT Id');
+    expect(query.originalSoqlStatement).toContain('FROM Account');
+  });
+
+  it('should add orderby as immutablejs', () => {
+    modelService.addUpdateOrderByField(mockOrderBy);
+    const orderBy = modelService.getModel().get('orderBy');
+    expect(typeof orderBy.toJS).toEqual('function');
   });
 });

@@ -12,11 +12,7 @@ export default class Fields extends LightningElement {
   @api selectedFields: string[] = [];
   @api hasError = false;
   @api isLoading = false;
-
-  get defaultOptionText() {
-    // TODO: i18n
-    return this.isLoading ? 'Loading...' : 'Select fields...';
-  }
+  selectPlaceHolderText = 'Search fields...'; // TODO: i18n
 
   handleFieldSelection(e) {
     e.preventDefault();

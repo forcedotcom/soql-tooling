@@ -6,15 +6,19 @@
  *
  */
 
-import { createElement } from 'lwc';
+import { createElement, api } from 'lwc';
 import From from 'querybuilder/from';
+// eslint-disable-next-line @lwc/lwc/no-leading-uppercase-api-name
+class TestFrom extends From {
+  @api _selectedObject: string[] = [];
+}
 
 describe('From', () => {
   let from;
 
   beforeEach(() => {
     from = createElement('querybuilder-from', {
-      is: From
+      is: TestFrom
     });
     from.selected = 'Account';
     from.sobjects = ['foo', 'bar', 'baz'];
@@ -27,58 +31,26 @@ describe('From', () => {
     }
   });
 
-  it('displays sObject from tooling model as selected', () => {
+  it('should store selected object as array for customSelect', () => {
     document.body.appendChild(from);
-
-    const selectedSobject = from.selected;
-    const allOptions = from.shadowRoot.querySelectorAll('option');
-    expect(allOptions.length).toBe(4);
-
-    // check if the correct element is 'selected'
-    const firstOptionEl = from.shadowRoot.querySelector('option');
-    expect(firstOptionEl.textContent).toBe(selectedSobject);
-    expect(firstOptionEl.selected).toBeTruthy();
-  });
-
-  it('does not display the selected element twice', () => {
-    document.body.appendChild(from);
-
-    const allOptions = Array.from(from.shadowRoot.querySelectorAll('option'));
-    const optionValues = allOptions.map(
-      (option: HTMLOptionElement) => option.value
-    );
-    const areOptionsUnique = (options) =>
-      Array.isArray(options) && new Set(options).size === options.length;
-
-    expect(areOptionsUnique(optionValues)).toBeTruthy();
+    expect(Array.isArray(from._selectedObject)).toBeTruthy();
+    expect(from._selectedObject[0]).toBe(from.selected);
   });
 
   it('emits an event when object is selected', () => {
     document.body.appendChild(from);
 
     const handler = jest.fn();
-    from.addEventListener('from__object_selected', handler);
-    const selectEl = from.shadowRoot.querySelector('select');
-    selectEl.dispatchEvent(new Event('change'));
+    from.addEventListener('objectselected', handler);
+    const customSelect = from.shadowRoot.querySelector(
+      'querybuilder-custom-select'
+    );
+    customSelect.dispatchEvent(
+      new CustomEvent('option__selection', { detail: { value: 'foo' } })
+    );
 
     return Promise.resolve().then(() => {
       expect(handler).toHaveBeenCalled();
-    });
-  });
-
-  it('should alert user when loading', async () => {
-    from.selected = undefined;
-    from.sobjects = [];
-    document.body.appendChild(from);
-    expect(from.isLoading).toEqual(false);
-    let defaultOption = from.shadowRoot.querySelector(
-      '[data-el-default-option]'
-    );
-    expect(defaultOption.innerHTML).toContain('Select');
-    from.isLoading = true;
-    return Promise.resolve().then(() => {
-      defaultOption = from.shadowRoot.querySelector('[data-el-default-option]');
-      expect(defaultOption.innerHTML.toLowerCase()).toContain('loading');
     });
   });
 

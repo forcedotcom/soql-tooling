@@ -10,27 +10,23 @@ import { LightningElement, api } from 'lwc';
 
 export default class From extends LightningElement {
   @api sobjects: string[];
-  @api selected: string;
   @api hasError = false;
   @api isLoading = false;
-  get filteredSObjects() {
-    return this.sobjects.filter((sobject) => {
-      return sobject !== this.selected;
-    });
+  selectPlaceHolderText = 'Search object...'; //i18n
+  _selectedObject: string[] = [];
+
+  @api
+  get selected() {
+    return this._selectedObject[0];
   }
 
-  get hasSelected() {
-    return !!this.selected;
-  }
-
-  get defaultOptionText() {
-    // TODO: i18n
-    return this.isLoading ? 'Loading...' : 'Select object...';
+  set selected(objectName: string) {
+    this._selectedObject = objectName ? [objectName] : [];
   }
 
   handleSobjectSelection(e) {
     e.preventDefault();
-    const selectedSobject = e.target.value;
+    const selectedSobject = e.detail.value;
     if (selectedSobject && selectedSobject.length) {
       const sObjectSelected = new CustomEvent('from__object_selected', {
         detail: { selectedSobject }
