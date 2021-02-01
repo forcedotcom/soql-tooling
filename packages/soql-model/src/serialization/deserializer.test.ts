@@ -669,6 +669,11 @@ describe('ModelDeserializer should', () => {
     expectError('SELECT field1 FROM object1 WHERE field INCLUDES ( \'foo\', )', ErrorType.INCOMPLETEMULTIVALUELIST);
   });
 
+  it('identify unexpected end of file', () => {
+    expectError('SELECT field1 FROM obejct1 WHERE field = \'', ErrorType.UNEXPECTEDEOF);
+    expectError('SELECT field1 FROM object1 GROUP BY', ErrorType.UNEXPECTEDEOF);
+  });
+
   function expectError(query: string, expectedType: ErrorType): void {
     const model = new ModelDeserializer(query).deserialize();
     if (model.errors && model.errors.length === 1) {
