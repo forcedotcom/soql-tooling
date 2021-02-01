@@ -52,6 +52,7 @@ main {
   opacity: 0.5;
   background-color: rgba(0, 0, 0, 0.6);
   border-radius: 3px;
+  z-index: 2; /* one above the custom select options pane */
 }
 
 .block-message {
