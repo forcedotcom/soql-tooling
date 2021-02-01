@@ -58,7 +58,7 @@ main {
   position: absolute;
   top: 0;
   left: 0;
-  z-index: 201; /* one above the custom select options pane */
+  z-index: 2; /* one above the custom select options pane */
   background-color: var(
     --vscode-inputValidation-warningBackground,
     var(--soql-error-background)
