@@ -20,12 +20,11 @@
       >
     </div>
     <div class="section_selection-container">
-      <select name="orderby-select" class="select-long" data-el-orderby-field>
-        <option value="" class="placeholder" data-el-default-option>{defaultOptionText}</option>
-        <template for:each={orderByFields} for:item="field">
-          <option key={field} value={field}>{field}</option>
-        </template>
-      </select>
+      <querybuilder-custom-select
+        is-loading={isLoading}
+        all-options={orderByFields}
+        placeholder-text={selectPlaceHolderText}
+      ></querybuilder-custom-select>
       <div class="group-orderby-modifiers">
         <span class="group-orderby-order">
           <select id="orderby-order" name="orderby-order" data-el-orderby-order>

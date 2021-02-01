@@ -21,8 +21,12 @@
 }
 
 .section_label-container {
-  width: var(--soql-label-width);
-  min-width: var(--soql-label-width);
+  width: var(--soql-label-container-width);
+  min-width: var(--soql-label-container-width);
+}
+
+.section_selection-container {
+  width: var(--soql-selection-container-width);
 }
 
 .section_label-container label {
@@ -35,7 +39,7 @@
 .selected-fields-container {
   display: flex;
   flex-wrap: wrap;
-  max-width: var(--soql-input-width);
+  max-width: var(--soql-selection-container-width);
 }
 
 .selected-field {
@@ -71,6 +75,7 @@ select {
     var(--vscode-list-inactiveSelectionBackground, var(--soql-color-light-grey));
   border-radius: 3px;
 }
+
 input,
 select {
   background-color: var(--vscode-sideBar-background, var(--soql-background));
@@ -118,8 +123,8 @@ button:hover {
   pointer-events: none;
 }
 .select-long {
-  min-width: var(--soql-input-width);
-  max-width: var(--soql-input-width);
+  min-width: var(--soql-selection-container-width);
+  max-width: var(--soql-selection-container-width);
 }
 
 /* ERROR / DISABLED ------------ */
