@@ -336,7 +336,6 @@ describe('Tooling Model Service', () => {
     });
   });
 
-
   it('Receive SOQL Text from editor (with comments)', () => {
     const soqlText =
       '// This is a comment\n\n\n// Another comment\n\nSELECT Id FROM Foo';
@@ -370,5 +369,4 @@ describe('Tooling Model Service', () => {
       '// This is a comment\n\n\n// Another comment\n\n'
     );
   });
-
 });
