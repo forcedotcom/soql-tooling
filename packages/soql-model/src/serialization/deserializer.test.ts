@@ -63,7 +63,8 @@ const conditionInList = { field, operator: 'IN', values: [literalString, { ...li
 const conditionIncludes = { field, operator: 'INCLUDES', values: [literalString, { ...literalString, value: "'other value'" }] };
 const conditionAndOr = { leftCondition: conditionFieldCompare, andOr: 'AND', rightCondition: conditionLike };
 const conditionNested = { condition: conditionFieldCompare };
-const conditionNot = { condition: conditionFieldCompare };
+const conditionNot = { unmodeledSyntax: 'NOT field = 5', reason: 'unmodeled:complex-group' };
+const conditionComplex = { unmodeledSyntax: 'field = 5 AND (field like \'A%\' OR field like \'B%\')', reason: 'unmodeled:complex-group' };
 const conditionCalculated = { unmodeledSyntax: 'A + B > 10', reason: 'unmodeled:calculated-condition' };
 const conditionDistance = { unmodeledSyntax: "DISTANCE(field,GEOLOCATION(37,122),'mi') < 100", reason: 'unmodeled:distance-condition' };
 const conditionSemiJoin = { unmodeledSyntax: 'field IN (SELECT A FROM B)', reason: 'unmodeled:in-semi-join-condition' };
@@ -555,7 +556,7 @@ describe('ModelDeserializer should', () => {
     expect(actual).toEqual(expected);
   });
 
-  it('identify NOT operator in condition', () => {
+  it('identify NOT condition as unmodeled', () => {
     const expected = {
       select: {
         selectExpressions: [
@@ -567,6 +568,21 @@ describe('ModelDeserializer should', () => {
       errors: []
     };
     const actual = new ModelDeserializer("SELECT field1 FROM object1 WHERE NOT field = 5").deserialize();
+    expect(actual).toEqual(expected);
+  });
+
+  it('identify complex condition as unmodeled', () => {
+    const expected = {
+      select: {
+        selectExpressions: [
+          testQueryModel.select.selectExpressions[0]
+        ]
+      },
+      from: testQueryModel.from,
+      where: { condition: conditionComplex },
+      errors: []
+    };
+    const actual = new ModelDeserializer("SELECT field1 FROM object1 WHERE field = 5 AND (field like 'A%' OR field like 'B%')").deserialize();
     expect(actual).toEqual(expected);
   });
 

@@ -111,7 +111,7 @@ describe('SoqlUtils', () => {
     const transformedUiModel = convertSoqlToUiModel(unsupportedWhereExpr);
     expect(transformedUiModel.where.conditions.length).toBe(0);
     expect(transformedUiModel.unsupported.length).toBe(1);
-    expect(transformedUiModel.unsupported[0]).toContain('where:');
+    expect(transformedUiModel.unsupported[0].reason).toEqual('unmodeled:complex-group');
   });
 
   it('transforms Soql to UI Model with errors in soql syntax', () => {

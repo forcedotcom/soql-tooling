@@ -44,6 +44,26 @@ const conditionNested = new Impl.NestedConditionImpl(conditionFieldCompare);
 const conditionNot = new Impl.NotConditionImpl(conditionFieldCompare);
 
 describe('SoqlModelUtils should', () => {
+  it('isUnmodeledSyntax should return true if the model object is unmodeled syntax', () => {
+    const actual = SoqlModelUtils.isUnmodeledSyntax(
+      new Impl.UnmodeledSyntaxImpl('foo', 'unmodeled:foo')
+    );
+    expect(actual).toBeTruthy();
+  });
+  it('isUnmodeledSyntax should return false if the model object is not unmodeled syntax, even if child objects are unmodeled', () => {
+    const actual = SoqlModelUtils.isUnmodeledSyntax(
+      new Impl.QueryImpl(
+        new Impl.SelectExprsImpl([
+          new Impl.FieldSelectionImpl(
+            new Impl.FieldRefImpl('field1'),
+            new Impl.UnmodeledSyntaxImpl('alias1', 'unmodeled:alias')
+          ),
+        ]),
+        new Impl.FromImpl('object1')
+      )
+    );
+    expect(actual).toBeFalsy();
+  });
   it('return true if SOQL query model contains unmodeled syntax', () => {
     const actual = SoqlModelUtils.containsUnmodeledSyntax(
       new Impl.QueryImpl(

@@ -12,6 +12,7 @@ import * as Parser from '@salesforce/soql-parser/lib/generated/SoqlParser';
 import { Messages } from '../messages/messages';
 import * as Soql from '../model/model';
 import * as Impl from '../model/impl';
+import { SoqlModelUtils } from '../model/util';
 import { CharStream, ParserRuleContext, Token } from 'antlr4ts';
 import { NoViableAltException, InputMismatchException } from 'antlr4ts';
 import {
@@ -484,7 +485,11 @@ class QueryListener implements SoqlParserListener {
   }
 
   public enterSoqlWhereClauseMethod(ctx: Parser.SoqlWhereClauseMethodContext): void {
-    this.where = new Impl.WhereImpl(this.exprsToCondition(ctx.soqlWhereExprs()));
+    let condition = this.exprsToCondition(ctx.soqlWhereExprs());
+    if (!SoqlModelUtils.isSimpleGroup(condition)) {
+      condition = this.toUnmodeledSyntax(ctx.soqlWhereExprs().start, ctx.soqlWhereExprs().stop as Token, 'unmodeled:complex-group');
+    }
+    this.where = new Impl.WhereImpl(condition);
   }
 
   public enterSoqlInnerQuery(ctx: Parser.SoqlInnerQueryContext): void {
