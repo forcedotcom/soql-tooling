@@ -252,15 +252,17 @@ class ErrorIdentifier {
           context.exception instanceof InputMismatchException
         )
       )
+    },
+    // NOTE: new known errors should go above;
+    // unexpectedEOF is an EOF catch-all, make sure it is tested last
+    {
+      type: Soql.ErrorType.UNEXPECTEDEOF,
+      message: Messages.error_unexpectedEOF,
+      predicate: (error, context) => (
+        error.getToken()?.type === Token.EOF
+      )
     }
   ];
-  protected unexpectedEOF: KnownError = {
-    type: Soql.ErrorType.UNEXPECTEDEOF,
-    message: Messages.error_unexpectedEOF,
-    predicate: (error, context) => (
-      error.getToken()?.type === Token.EOF
-    )
-  }
 
   constructor(parseTree: ParseTree) {
     this.parseTree = parseTree;
@@ -270,13 +272,7 @@ class ErrorIdentifier {
 
   public identifyError(error: ParserError): Soql.ModelError {
     const context = this.matchErrorToContext(error);
-    let knownErrorMatch = this.knownErrors.find(knownError => knownError.predicate(error, context));
-
-    // unexpectedEOF is an EOF catch-all, make sure it is tested last
-    if (!knownErrorMatch && this.unexpectedEOF.predicate(error, context)) {
-      knownErrorMatch = this.unexpectedEOF;
-    }
-
+    const knownErrorMatch = this.knownErrors.find(knownError => knownError.predicate(error, context));
     return knownErrorMatch
       ? {
         type: knownErrorMatch.type,
