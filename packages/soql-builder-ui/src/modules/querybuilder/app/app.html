@@ -13,37 +13,24 @@
         class={theme}
         onheader__run_query={handleRunQuery}
         error-messages={errorMessages}
+        unsupported-messages={unsupportedMessages}
       ></querybuilder-header>
     </header>
     <article class="querybuilder-body">
       <section class="querybuilder-form">
         <template if:true={blockQueryBuilder}>
           <div class="unsupported-syntax-overlay"></div>
-          <template if:true={hasUnsupported}>
-            <!-- TODO: i18n -->
-            <div class="block-message warning-notification">
-              <h3>Unsupported Syntax</h3>
-              Your query contains statements that SOQL Builder doesn't currently
-              support. You should use a text editor to edit your query. If you
-              edit the query using SOQL Builder, any unsupported syntax will be
-              overwritten.
-              <ul>
-                <template for:each={unsupportedMessages} for:item="unsupported"
-                  ><li key={unsupported.index}>
-                    {unsupported.reason}
-                  </li></template
-                >
-              </ul>
-              <div class="center">
-                <button
-                  class="btn--error center"
-                  onclick={handleDismissEditWarning}
-                >
-                  Edit Query Anyway
-                </button>
-              </div>
+          <!-- TODO: i18n -->
+          <div class="block-message">
+            <div class="center">
+              <button
+                class="btn--error center"
+                onclick={handleDismissEditWarning}
+              >
+                Edit Query Anyway
+              </button>
             </div>
-          </template>
+          </div>
         </template>
         <querybuilder-from
           onfrom__object_selected={handleObjectChange}

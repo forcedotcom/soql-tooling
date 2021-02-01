@@ -10,24 +10,20 @@ import { LightningElement, api } from 'lwc';
 export default class Header extends LightningElement {
   @api isRunning = false;
   @api errorMessages = [];
+  @api unsupportedMessages = [];
+  get hasUnsupported() {
+    return this.hasErrors === false && this.unsupportedMessages.length > 0;
+  }
   get hasErrors() {
     return this.errorMessages.length > 0;
   }
   get headerClasses() {
-    return this.hasErrors ? 'warning-notification' : '';
+    return this.hasErrors || this.hasUnsupported ? 'warning-notification' : '';
   }
   get triggerText() {
     return this.showErrors ? 'Hide errors' : 'Show errors';
   }
   showErrors = false;
-
-  get isButtonDisabled() {
-    return this.hasErrors || this.isRunning;
-  }
-
-  get buttonClasses() {
-    return this.isButtonDisabled ? 'btn--disabled' : '';
-  }
 
   get buttonText() {
     return this.isRunning ? 'Running...' : 'Run Query';

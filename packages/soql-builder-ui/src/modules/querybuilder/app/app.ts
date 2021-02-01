@@ -42,14 +42,11 @@ export default class App extends LightningElement {
   unsupportedMessages: string[] = [];
   dismissEditWarning = false;
 
-  get hasUnsupported() {
-    return this.unsupportedMessages
-      ? this.unsupportedMessages.length > 0
-      : false;
-  }
-
   get blockQueryBuilder() {
-    return this.hasUnsupported === true && this.dismissEditWarning === false;
+    return (
+      (this.unsupportedMessages.length || this.errorMessages.length) &&
+      this.dismissEditWarning === false
+    );
   }
   hasRecoverableFieldsError = false;
   hasRecoverableFromError = false;
