@@ -51,7 +51,7 @@ describe('SoqlUtils', () => {
     limit: '',
     errors: [
       {
-        type: 'UNKNOWN'
+        type: 'UNEXPECTEDEOF'
       }
     ],
     unsupported: [
