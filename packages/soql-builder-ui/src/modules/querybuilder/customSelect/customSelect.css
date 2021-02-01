@@ -88,7 +88,7 @@ div.select__dropdown-arrow:focus {
   opacity: 0;
   transition: opacity 0.2s;
   pointer-events: none;
-  z-index: 200;
+  z-index: 1;
   background-color: var(--vscode-sideBar-background, var(--soql-background));
 }
 

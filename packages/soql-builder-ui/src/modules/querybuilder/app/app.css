@@ -52,13 +52,14 @@ main {
   opacity: 0.5;
   background-color: rgba(0, 0, 0, 0.6);
   border-radius: 3px;
+  z-index: 2; /* one above the custom select options pane */
 }
 
 .block-message {
   position: absolute;
   top: 0;
   left: 0;
-  z-index: 201; /* one above the custom select options pane */
+  z-index: 2; /* one above the custom select options pane */
   background-color: var(
     --vscode-inputValidation-warningBackground,
     var(--soql-error-background)
