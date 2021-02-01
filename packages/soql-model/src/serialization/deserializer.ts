@@ -253,7 +253,14 @@ class ErrorIdentifier {
         )
       )
     }
-  ]
+  ];
+  protected unexpectedEOF: KnownError = {
+    type: Soql.ErrorType.UNEXPECTEDEOF,
+    message: Messages.error_unexpectedEOF,
+    predicate: (error, context) => (
+      error.getToken()?.type === Token.EOF
+    )
+  }
 
   constructor(parseTree: ParseTree) {
     this.parseTree = parseTree;
@@ -263,7 +270,12 @@ class ErrorIdentifier {
 
   public identifyError(error: ParserError): Soql.ModelError {
     const context = this.matchErrorToContext(error);
-    const knownErrorMatch = this.knownErrors.find(knownError => knownError.predicate(error, context));
+    let knownErrorMatch = this.knownErrors.find(knownError => knownError.predicate(error, context));
+
+    // unexpectedEOF is an EOF catch-all, make sure it is tested last
+    if (!knownErrorMatch && this.unexpectedEOF.predicate(error, context)) {
+      knownErrorMatch = this.unexpectedEOF;
+    }
 
     return knownErrorMatch
       ? {
