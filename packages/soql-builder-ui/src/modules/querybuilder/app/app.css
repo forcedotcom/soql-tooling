@@ -55,7 +55,7 @@ main {
   backdrop-filter: blur(3px);
 }
 
-.block-message {
+.block-builder {
   position: absolute;
   top: 0;
   left: 0;

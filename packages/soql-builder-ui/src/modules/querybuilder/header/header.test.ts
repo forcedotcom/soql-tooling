@@ -31,7 +31,7 @@ describe('Header', () => {
     }
   });
 
-  it('emits a run event', async () => {
+  it('emits a run event', () => {
     document.body.appendChild(header);
 
     const handler = jest.fn();
@@ -52,15 +52,8 @@ describe('Header', () => {
     expect(warning.length).toBeTruthy();
   });
 
-  it('disables run button if error', () => {
-    header.errorMessages = ERROR_MESSAGES;
-    document.body.appendChild(header);
-    const button = header.shadowRoot.querySelector(RUN_BUTTON_SELECTOR);
-    expect(button.classList).toContain(DISABLED_BUTTON_CLASS);
-  });
-
-  it('does not emit run event if disabled', async () => {
-    header.errorMessages = ERROR_MESSAGES;
+  it('does not emit run event if running', () => {
+    header.isRunning = true;
     document.body.appendChild(header);
 
     const handler = jest.fn();
@@ -74,13 +67,6 @@ describe('Header', () => {
     });
   });
 
-  it('disables run button if running', () => {
-    header.isRunning = true;
-    document.body.appendChild(header);
-    const button = header.shadowRoot.querySelector(RUN_BUTTON_SELECTOR);
-    expect(button.classList).toContain(DISABLED_BUTTON_CLASS);
-  });
-
   it('shows notification if errors', () => {
     header.errorMessages = ERROR_MESSAGES;
     document.body.appendChild(header);
@@ -88,22 +74,5 @@ describe('Header', () => {
       HEADER_CONTENT_SELECTOR
     );
     expect(headerContent.length).toBeTruthy();
-  });
-
-  it('shows/hides errors', async () => {
-    header.errorMessages = ERROR_MESSAGES;
-    document.body.appendChild(header);
-    let listElements = header.shadowRoot.querySelectorAll(
-      ERROR_MESSAGES_SELECTOR
-    );
-    expect(listElements.length).toBeFalsy();
-    const showMoreEl = header.shadowRoot.querySelector('.show-more');
-    showMoreEl.click();
-    return Promise.resolve().then(() => {
-      listElements = header.shadowRoot.querySelectorAll(
-        ERROR_MESSAGES_SELECTOR
-      );
-      expect(listElements.length).toEqual(header.errorMessages.length);
-    });
   });
 });

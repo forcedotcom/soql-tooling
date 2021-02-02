@@ -218,7 +218,7 @@ describe('App should', () => {
   describe('HANDLE UNSUPPORTED', () => {
     const unsupportedSoqlQuery = 'SELECT Id FROM Account GROUP BY';
     const unsupportedOverlaySelector = '.unsupported-syntax-overlay';
-    it('block the query builder on unsupported syntax and list syntax', async () => {
+    it('block the query builder on unsupported syntax', async () => {
       let blockingElement = app.shadowRoot.querySelectorAll(
         unsupportedOverlaySelector
       );
@@ -231,10 +231,6 @@ describe('App should', () => {
           unsupportedOverlaySelector
         );
         expect(blockingElement.length).toBeTruthy();
-        const listElements = app.shadowRoot.querySelectorAll(
-          '.warning-notification ul li'
-        );
-        expect(listElements.length).toBeTruthy();
       });
     });
 
@@ -245,7 +241,7 @@ describe('App should', () => {
       return Promise.resolve()
         .then(() => {
           const buttonElement = app.shadowRoot.querySelector(
-            '.warning-notification button'
+            '.block-builder button'
           );
           buttonElement.click();
         })
