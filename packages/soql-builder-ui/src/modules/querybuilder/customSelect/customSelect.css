@@ -1,0 +1,124 @@
+@import 'querybuilder/cssCommon';
+
+/* ======= MAIN CONTAINER ======= */
+main.custom-select {
+  position: relative;
+  max-width: var(--soql-selection-container-width);
+}
+
+/* ======= SELECT ======= */
+.select__wrapper {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  position: relative;
+  width: 100%;
+  height: 1.5rem;
+  border: 1px solid
+    var(--vscode-list-inactiveSelectionBackground, var(--soql-color-light-grey));
+  border-radius: 3px;
+  background-color: var(--vscode-sideBar-background, var(--soql-background));
+}
+/*
+- rotate nueter symbol to mimic search icon
+*/
+.select__wrapper::before {
+  position: absolute;
+  content: '⚲';
+  font-size: 1.5em;
+  left: 6px;
+  transform: rotate(-45deg);
+  border-radius: 50%;
+  background-color: transparent;
+  color: var(
+    --vscode-list-inactiveSelectionBackground,
+    var(--soql-color-medium-grey)
+  );
+}
+
+.select__input {
+  width: 90%;
+  height: 1em;
+  padding: 4px;
+  margin-left: 24px;
+  border: none;
+}
+
+.select__input.select__input-placeholder--fadeout::placeholder {
+  opacity: 0.5;
+}
+
+.select:focus {
+  outline: none;
+}
+
+.select__clear-search {
+  align-self: center;
+  padding-right: 5px;
+  cursor: pointer;
+}
+
+.select__dropdown-arrow {
+  transform: rotate(180deg);
+  margin-right: 2px;
+  cursor: pointer;
+}
+
+.select__dropdown-arrow--up {
+  transform: rotate(0deg);
+}
+
+div.select__dropdown-arrow:focus {
+  outline: none;
+}
+
+/* ======== OPTIONS ======== */
+
+.options__wrapper {
+  position: absolute;
+  border: 1px solid
+    var(--vscode-list-inactiveSelectionBackground, var(--soql-color-light-grey));
+  border-radius: 3px;
+  width: var(--soql-selection-container-width);
+  min-height: 100px;
+  max-height: 300px;
+  overflow-y: scroll;
+  /* hidden by default */
+  display: none;
+  opacity: 0;
+  transition: opacity 0.2s;
+  pointer-events: none;
+  z-index: 1;
+  background-color: var(--vscode-sideBar-background, var(--soql-background));
+}
+
+.options--open {
+  opacity: 1;
+  display: block;
+  pointer-events: all;
+}
+
+.option {
+  padding: 3px 0 3px 4px;
+  margin: 0;
+}
+.option:hover {
+  background-color: var(
+    --vscode-list-focusBackground,
+    var(--soql-color-medium-grey)
+  );
+}
+.option--highlight {
+  background-color: var(
+    --vscode-list-focusBackground,
+    var(--soql-color-medium-grey)
+  );
+}
+.option--disabled {
+  color: var(
+    --vscode-list-inactiveFocusBackground,
+    var(--soql-color-medium-grey)
+  );
+  cursor: not-allowed;
+  pointer-events: none;
+}
