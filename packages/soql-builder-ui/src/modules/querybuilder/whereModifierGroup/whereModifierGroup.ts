@@ -44,7 +44,7 @@ export default class WhereModifierGroup extends LightningElement {
   criteriaErrorMessage = '';
   hasOperatorError = false;
   hasCriteriaError = false;
-  selectPlaceHolderText = 'Search Fields...';
+  selectPlaceHolderText = 'Search Fields...'; //i18n
 
   handleSelectionEvent: () => void;
   // this need to be public so parent can read value
