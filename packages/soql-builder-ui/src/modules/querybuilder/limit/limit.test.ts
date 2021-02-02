@@ -45,7 +45,7 @@ describe('Limit', () => {
     document.body.appendChild(limitCmp);
 
     const handler = jest.fn();
-    limitCmp.addEventListener('limit__changed', handler);
+    limitCmp.addEventListener('limitchanged', handler);
     const limitInput = limitCmp.shadowRoot.querySelector('[data-el-limit]');
     limitInput.value = 11;
     limitInput.dispatchEvent(new Event('change'));
@@ -68,7 +68,7 @@ describe('Limit', () => {
     document.body.appendChild(limitCmp);
 
     const handler = jest.fn();
-    limitCmp.addEventListener('limit__changed', handler);
+    limitCmp.addEventListener('limitchanged', handler);
     const limitInput = limitCmp.shadowRoot.querySelector('[data-el-limit]');
     limitInput.value = 11;
     limitInput.dispatchEvent(new Event('keyup'));

@@ -1,4 +1,4 @@
-import { ToolingModelJson } from './model';
+import { ToolingModelJson, ToolingModelService } from './toolingModelService';
 import { JsonMap } from '@salesforce/ts-types';
 
 export interface TelemetryModelJson extends JsonMap {

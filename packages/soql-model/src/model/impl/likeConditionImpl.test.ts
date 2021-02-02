@@ -6,23 +6,21 @@
  */
 
 import * as Impl from '.';
-import { CompareOperator, LiteralType } from '../model';
+import { LiteralType } from '../model';
 
-describe('FieldCompareConditionImpl should', () => {
-  it('store field, operator, and value', () => {
-    const expected = { field: { fieldName: 'field' }, operator: '=', compareValue: { type: 'STRING', value: "'abc'" } };
-    const actual = new Impl.FieldCompareConditionImpl(
+describe('LikeConditionImpl should', () => {
+  it('store field and value', () => {
+    const expected = { field: { fieldName: 'field' }, compareValue: { type: 'STRING', value: "'abc'" } };
+    const actual = new Impl.LikeConditionImpl(
       new Impl.FieldRefImpl('field'),
-      CompareOperator.EQ,
       new Impl.LiteralImpl(LiteralType.String, "'abc'")
     );
     expect(actual).toEqual(expected);
   });
-  it('return field, operator, and value separated by spaces for toSoqlSyntax()', () => {
-    const expected = `field = 'abc'`;
-    const actual = new Impl.FieldCompareConditionImpl(
+  it('return field, LIKE keyword, and value separated by spaces for toSoqlSyntax()', () => {
+    const expected = `field LIKE 'abc'`;
+    const actual = new Impl.LikeConditionImpl(
       new Impl.FieldRefImpl('field'),
-      CompareOperator.EQ,
       new Impl.LiteralImpl(LiteralType.String, "'abc'")
     ).toSoqlSyntax();
     expect(actual).toEqual(expected);

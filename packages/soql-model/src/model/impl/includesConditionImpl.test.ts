@@ -6,14 +6,14 @@
  */
 
 import * as Impl from '.';
-import { ConditionOperator, LiteralType } from '../model';
+import { IncludesOperator, LiteralType } from '../model';
 
 describe('IncludesConditionImpl should', () => {
   it('store field, operator, and values', () => {
     const expected = { field: { fieldName: 'field' }, operator: 'INCLUDES', values: [{ type: 'STRING', value: "'abc'" }, { type: 'STRING', value: "'def'" }] };
     const actual = new Impl.IncludesConditionImpl(
       new Impl.FieldRefImpl('field'),
-      ConditionOperator.Includes,
+      IncludesOperator.Includes,
       [new Impl.LiteralImpl(LiteralType.String, "'abc'"), new Impl.LiteralImpl(LiteralType.String, "'def'")]
     );
     expect(actual).toEqual(expected);
@@ -22,7 +22,7 @@ describe('IncludesConditionImpl should', () => {
     const expected = "field INCLUDES ( 'abc', 'def' )";
     const actual = new Impl.IncludesConditionImpl(
       new Impl.FieldRefImpl('field'),
-      ConditionOperator.Includes,
+      IncludesOperator.Includes,
       [new Impl.LiteralImpl(LiteralType.String, "'abc'"), new Impl.LiteralImpl(LiteralType.String, "'def'")]
     ).toSoqlSyntax();
     expect(actual).toEqual(expected);

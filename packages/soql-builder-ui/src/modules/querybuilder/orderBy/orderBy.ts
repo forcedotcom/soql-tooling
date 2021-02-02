@@ -32,7 +32,7 @@ export default class OrderBy extends LightningElement {
       orderbyFieldEl.value[0] &&
       orderbyFieldEl.value.length
     ) {
-      const orderBySelectedEvent = new CustomEvent('orderby__selected', {
+      const orderBySelectedEvent = new CustomEvent('orderbyselected', {
         detail: {
           field: orderbyFieldEl.value[0],
           order: orderEl.value,
@@ -45,7 +45,7 @@ export default class OrderBy extends LightningElement {
 
   handleOrderByRemoved(e) {
     e.preventDefault();
-    const orderByRemovedEvent = new CustomEvent('orderby__removed', {
+    const orderByRemovedEvent = new CustomEvent('orderbyremoved', {
       detail: { field: e.target.dataset.field }
     });
     this.dispatchEvent(orderByRemovedEvent);

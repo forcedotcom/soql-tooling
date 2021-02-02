@@ -6,7 +6,7 @@
  */
 
 import * as Impl from '.';
-import { ConditionOperator, LiteralType } from '../model';
+import { CompareOperator, LiteralType } from '../model';
 
 describe('WhereImpl should', () => {
   it('store condition', () => {
@@ -14,7 +14,7 @@ describe('WhereImpl should', () => {
     const actual = new Impl.WhereImpl(
       new Impl.FieldCompareConditionImpl(
         new Impl.FieldRefImpl('field'),
-        ConditionOperator.Equals,
+        CompareOperator.EQ,
         new Impl.LiteralImpl(LiteralType.String, "'abc'")
       )
     );
@@ -25,7 +25,7 @@ describe('WhereImpl should', () => {
     const actual = new Impl.WhereImpl(
       new Impl.FieldCompareConditionImpl(
         new Impl.FieldRefImpl('field'),
-        ConditionOperator.Equals,
+        CompareOperator.EQ,
         new Impl.LiteralImpl(LiteralType.String, "'abc'")
       )
     ).toSoqlSyntax();

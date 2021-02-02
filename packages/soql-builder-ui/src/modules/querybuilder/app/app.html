@@ -11,14 +11,14 @@
     <header class="querybuilder-header">
       <querybuilder-header
         class={theme}
-        onheader__run_query={handleRunQuery}
+        onrunquery={handleRunQuery}
         is-running={isQueryRunning}
       ></querybuilder-header>
     </header>
     <article class="querybuilder-body">
       <section class="querybuilder-form">
         <querybuilder-from
-          onfrom__object_selected={handleObjectChange}
+          onobjectselected={handleObjectChange}
           sobjects={sObjects}
           selected={query.sObject}
           has-error={hasRecoverableFromError}
@@ -28,27 +28,17 @@
         <querybuilder-fields
           selected-fields={query.fields}
           fields={fields}
-          onfields__selected={handleFieldSelected}
-          onfields__removed={handleFieldRemoved}
+          onfieldselected={handleFieldSelected}
+          onfieldremoved={handleFieldRemoved}
           has-error={hasRecoverableFieldsError}
           is-loading={isFieldsLoading}
           class={theme}
         ></querybuilder-fields>
-        <querybuilder-where
-          where-expr={query.where}
-          where-fields={fields}
-          onwhere__group_selection={handleWhereSelection}
-          onwhere__andor_selection={handleAndOrSelection}
-          onwhere__condition_removed={handleRemoveWhereCondition}
-          is-loading={isFieldsLoading}
-          class={theme}
-          sobject-metadata={sobjectMetadata}
-        ></querybuilder-where>
         <querybuilder-order-by
           selected-order-by-fields={query.orderBy}
           order-by-fields={fields}
-          onorderby__selected={handleOrderBySelected}
-          onorderby__removed={handleOrderByRemoved}
+          onorderbyselected={handleOrderBySelected}
+          onorderbyremoved={handleOrderByRemoved}
           has-error={hasRecoverableOrderByError}
           is-loading={isFieldsLoading}
           class={theme}
@@ -56,7 +46,7 @@
         <querybuilder-limit
           limit={query.limit}
           has-error={hasRecoverableLimitError}
-          onlimit__changed={handleLimitChanged}
+          onlimitchanged={handleLimitChanged}
           class={theme}
         ></querybuilder-limit>
         <!-- div.unsupported-syntax should always be
