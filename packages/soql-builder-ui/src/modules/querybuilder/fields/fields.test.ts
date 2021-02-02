@@ -26,18 +26,6 @@ describe('Fields', () => {
     }
   });
 
-  // it('emits event when field is selected', () => {
-  //   document.body.appendChild(fields);
-
-  //   const handler = jest.fn();
-  //   fields.addEventListener('fields__selected', handler);
-
-  //   const fieldOption = fields.shadowRoot.querySelector("option[value='foo']");
-  //   fieldOption.click();
-
-  //   expect(handler).toHaveBeenCalled();
-  // });
-
   it('emits event when field is selected', () => {
     document.body.appendChild(fields);
 
