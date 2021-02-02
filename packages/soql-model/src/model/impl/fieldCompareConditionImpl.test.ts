@@ -6,14 +6,14 @@
  */
 
 import * as Impl from '.';
-import { CompareOperator, LiteralType } from '../model';
+import { ConditionOperator, LiteralType } from '../model';
 
 describe('FieldCompareConditionImpl should', () => {
   it('store field, operator, and value', () => {
     const expected = { field: { fieldName: 'field' }, operator: '=', compareValue: { type: 'STRING', value: "'abc'" } };
     const actual = new Impl.FieldCompareConditionImpl(
       new Impl.FieldRefImpl('field'),
-      CompareOperator.EQ,
+      ConditionOperator.Equals,
       new Impl.LiteralImpl(LiteralType.String, "'abc'")
     );
     expect(actual).toEqual(expected);
@@ -22,7 +22,7 @@ describe('FieldCompareConditionImpl should', () => {
     const expected = `field = 'abc'`;
     const actual = new Impl.FieldCompareConditionImpl(
       new Impl.FieldRefImpl('field'),
-      CompareOperator.EQ,
+      ConditionOperator.Equals,
       new Impl.LiteralImpl(LiteralType.String, "'abc'")
     ).toSoqlSyntax();
     expect(actual).toEqual(expected);
