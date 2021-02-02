@@ -22,6 +22,7 @@ import { createQueryTelemetry } from './telemetryUtils';
 type IMap = Map<string, string | List<string>>;
 // Private immutable interface
 export interface ToolingModel extends IMap {
+  headerComments?: string;
   sObject: string;
   fields: List<string>;
   orderBy: List<Map>;
@@ -32,6 +33,7 @@ export interface ToolingModel extends IMap {
 }
 // Public inteface for accessing modelService.query
 export interface ToolingModelJson extends JsonMap {
+  headerComments?: string;
   sObject: string;
   fields: string[];
   orderBy: JsonMap[];
@@ -86,12 +88,17 @@ export class ToolingModelService {
   private getOrderBy() {
     return this.getModel().get('orderBy') as List<JsonMap>;
   }
-  // This method is destructive, will clear any selections except sObject.
+  // This method is destructive, will override any selections with the
+  // template and then set the sObject
   public setSObject(sObject: string) {
-    const emptyModel = fromJS(ToolingModelService.toolingModelTemplate);
-    const newModelWithSelection = emptyModel.set('sObject', sObject);
-
-    this.changeModel(newModelWithSelection);
+    const newModelJS = Object.assign(
+      this.getModel().toJS(),
+      ToolingModelService.toolingModelTemplate,
+      {
+        sObject: sObject
+      }
+    );
+    this.changeModel(fromJS(newModelJS));
   }
 
   public addField(field: string) {

@@ -10,6 +10,7 @@ import * as Soql from '../model';
 import { SoqlModelObjectImpl } from './soqlModelObjectImpl';
 
 export class QueryImpl extends SoqlModelObjectImpl implements Soql.Query {
+  headerComments?: Soql.HeaderComments;
   public select?: Soql.Select;
   public from?: Soql.From;
   public where?: Soql.Where;
@@ -50,6 +51,9 @@ export class QueryImpl extends SoqlModelObjectImpl implements Soql.Query {
   public toSoqlSyntax(options?: Soql.SyntaxOptions): string {
     const _options = this.getSyntaxOptions(options);
     let syntax = '';
+    if (this.headerComments) {
+      syntax += `${this.headerComments.toSoqlSyntax(options)}`;
+    }
     if (this.select) {
       syntax += `${this.select.toSoqlSyntax(_options)}${os.EOL}`;
     }

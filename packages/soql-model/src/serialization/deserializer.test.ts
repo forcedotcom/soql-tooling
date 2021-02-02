@@ -240,6 +240,43 @@ describe('ModelDeserializer should', () => {
     expect(actual).toEqual(expected);
   });
 
+  it('Identify comments at the top of the file', () => {
+    const expected = {
+      headerComments: {
+        text:
+          '// This is a comment on line 1\n// This is a comment on line 2\n',
+      },
+      select: {
+        selectExpressions: [testQueryModel.select.selectExpressions[0]],
+      },
+      from: testQueryModel.from,
+      errors: [],
+    };
+    const actual = new ModelDeserializer(
+      `// This is a comment on line 1\n// This is a comment on line 2\nSELECT field1 FROM object1`
+    ).deserialize();
+    expect(actual).toEqual(expected);
+  });
+
+  it('Identify comments at the top of the file, with parse errors', () => {
+    const expected = {
+      headerComments: {
+        text:
+          '// This is a comment on line 1\n// This is a comment on line 2\n',
+      },
+    };
+    const actual = new ModelDeserializer(
+      `// This is a comment on line 1\n// This is a comment on line 2\nSELECT FROM object1`
+    ).deserialize();
+
+    expect(actual.errors).toBeDefined();
+    expect(actual.errors?.length).toEqual(1);
+    expect(actual.errors && actual.errors[0].lineNumber).toEqual(3);
+    expect(actual.headerComments).toEqual(expected.headerComments);
+  });
+
+
+
   // it('identify string literals in condition', () => {
   //   const expected = {
   //     select: {
