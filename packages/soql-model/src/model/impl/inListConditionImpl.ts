@@ -9,7 +9,7 @@ import * as Soql from '../model';
 import { SoqlModelObjectImpl } from './soqlModelObjectImpl';
 
 export class InListConditionImpl extends SoqlModelObjectImpl implements Soql.InListCondition {
-  public constructor(public field: Soql.Field, public operator: Soql.ConditionOperator, public values: Soql.CompareValue[]) {
+  public constructor(public field: Soql.Field, public operator: Soql.InOperator, public values: Soql.CompareValue[]) {
     super();
   }
   public toSoqlSyntax(options?: Soql.SyntaxOptions): string {

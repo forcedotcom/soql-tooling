@@ -6,14 +6,14 @@
  */
 
 import * as Impl from '.';
-import { ConditionOperator, LiteralType } from '../model';
+import { InOperator, LiteralType } from '../model';
 
 describe('InListConditionImpl should', () => {
   it('store field, operator, and values', () => {
     const expected = { field: { fieldName: 'field' }, operator: 'NOT IN', values: [{ type: 'STRING', value: "'abc'" }, { type: 'STRING', value: "'def'" }] };
     const actual = new Impl.InListConditionImpl(
       new Impl.FieldRefImpl('field'),
-      ConditionOperator.NotIn,
+      InOperator.NotIn,
       [new Impl.LiteralImpl(LiteralType.String, "'abc'"), new Impl.LiteralImpl(LiteralType.String, "'def'")]
     );
     expect(actual).toEqual(expected);
@@ -22,7 +22,7 @@ describe('InListConditionImpl should', () => {
     const expected = "field NOT IN ( 'abc', 'def' )";
     const actual = new Impl.InListConditionImpl(
       new Impl.FieldRefImpl('field'),
-      ConditionOperator.NotIn,
+      InOperator.NotIn,
       [new Impl.LiteralImpl(LiteralType.String, "'abc'"), new Impl.LiteralImpl(LiteralType.String, "'def'")]
     ).toSoqlSyntax();
     expect(actual).toEqual(expected);

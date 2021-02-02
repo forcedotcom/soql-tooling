@@ -139,17 +139,11 @@ export namespace SoqlModelUtils {
     condition = stripNesting(condition);
     return (
       condition instanceof Impl.FieldCompareConditionImpl ||
+      condition instanceof Impl.LikeConditionImpl ||
       condition instanceof Impl.IncludesConditionImpl ||
       condition instanceof Impl.InListConditionImpl ||
       condition instanceof Impl.UnmodeledSyntaxImpl
     );
-  }
-
-  export function getKeyByValue(
-    object: { [key: string]: string },
-    value: string
-  ): string | undefined {
-    return Object.keys(object).find((key: string) => object[key] === value);
   }
 
   function stripNesting(condition: Condition): Condition {

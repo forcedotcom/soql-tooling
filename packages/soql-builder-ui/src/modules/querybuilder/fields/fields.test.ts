@@ -30,7 +30,7 @@ describe('Fields', () => {
     document.body.appendChild(fields);
 
     const handler = jest.fn();
-    fields.addEventListener('fields__selected', handler);
+    fields.addEventListener('fieldselected', handler);
 
     const customSelect = fields.shadowRoot.querySelector(
       'querybuilder-custom-select'
@@ -47,8 +47,7 @@ describe('Fields', () => {
     document.body.appendChild(fields);
 
     const handler = jest.fn();
-    fields.addEventListener('fields__removed', handler);
-
+    fields.addEventListener('fieldremoved', handler);
     const selectedFieldCloseEl = fields.shadowRoot.querySelector(
       "[data-field='foo']"
     );

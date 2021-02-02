@@ -10,7 +10,11 @@ import { LightningElement, track } from 'lwc';
 import { ToolingSDK } from '../services/toolingSDK';
 import { MessageServiceFactory } from '../services/message/messageServiceFactory';
 
-import { ToolingModelService } from '../services/toolingModelService';
+import {
+  ToolingModelService,
+  // eslint-disable-next-line no-unused-vars
+  ToolingModelJson
+} from '../services/toolingModelService';
 // eslint-disable-next-line no-unused-vars
 import { IMessageService } from '../services/message/iMessageService';
 import {
@@ -24,7 +28,6 @@ import {
   recoverableLimitErrors
 } from '../error/errorModel';
 import { getBodyClass } from '../services/globals';
-import { ToolingModelJson } from '../services/model';
 
 export default class App extends LightningElement {
   @track
@@ -35,7 +38,6 @@ export default class App extends LightningElement {
   modelService: ToolingModelService;
   messageService: IMessageService;
   theme = 'light';
-  sobjectMetadata: any;
 
   get hasUnsupported() {
     return this.query && this.query.unsupported
@@ -70,7 +72,13 @@ export default class App extends LightningElement {
   }
 
   connectedCallback() {
-    this.modelService.UIModel.subscribe(this.uiModelSubscriber.bind(this));
+    this.modelService.query.subscribe((newQuery: ToolingModelJson) => {
+      this.inspectErrors(newQuery.errors);
+      if (this.hasUnrecoverableError === false) {
+        this.loadSObjectMetadata(newQuery);
+      }
+      this.query = newQuery;
+    });
 
     this.toolingSDK.sobjects.subscribe((objs: string[]) => {
       this.isFromLoading = false;
@@ -83,10 +91,9 @@ export default class App extends LightningElement {
         sobjectMetadata && sobjectMetadata.fields
           ? sobjectMetadata.fields.map((f) => f.name).sort()
           : [];
-      this.sobjectMetadata = sobjectMetadata;
     });
 
-    this.toolingSDK.queryRunState.subscribe(() => {
+    this.toolingSDK.queryRunState.subscribe((running: boolean) => {
       this.isQueryRunning = false;
     });
     this.loadSObjectDefinitions();
@@ -99,17 +106,6 @@ export default class App extends LightningElement {
       this.theme = 'dark';
     } else if (themeClass.indexOf('vscode-high-contrast') > -1) {
       this.theme = 'contrast';
-    }
-  }
-
-  uiModelSubscriber(newQuery: ToolingModelJson) {
-    // only re-render if incoming soql statement is different
-    if (this.query.originalSoqlStatement !== newQuery.originalSoqlStatement) {
-      this.inspectErrors(newQuery.errors);
-      if (this.hasUnrecoverableError === false) {
-        this.loadSObjectMetadata(newQuery);
-      }
-      this.query = newQuery;
     }
   }
 
@@ -163,7 +159,7 @@ export default class App extends LightningElement {
       }
     });
   }
-  /* ---- SOBJECT HANDLERS ---- */
+
   handleObjectChange(e) {
     const selectedSObjectName = e.detail.selectedSobject;
     this.onSObjectChanged(selectedSObjectName);
@@ -178,7 +174,7 @@ export default class App extends LightningElement {
       this.toolingSDK.loadSObjectMetatada(sobjectName);
     }
   }
-  /* ---- FIELD HANDLERS ---- */
+
   handleFieldSelected(e) {
     this.modelService.addField(e.detail.field);
   }
@@ -186,26 +182,17 @@ export default class App extends LightningElement {
   handleFieldRemoved(e) {
     this.modelService.removeField(e.detail.field);
   }
-  /* ---- ORDER BY HANDLERS ---- */
+
   handleOrderBySelected(e) {
     this.modelService.addUpdateOrderByField(e.detail);
   }
+
   handleOrderByRemoved(e) {
     this.modelService.removeOrderByField(e.detail.field);
   }
-  /* ---- LIMIT HANDLERS ---- */
+
   handleLimitChanged(e) {
     this.modelService.changeLimit(e.detail.limit);
-  }
-  /* ---- WHERE HANDLERS ---- */
-  handleWhereSelection(e) {
-    this.modelService.upsertWhereFieldExpr(e.detail);
-  }
-  handleAndOrSelection(e) {
-    this.modelService.setAndOr(e.detail);
-  }
-  handleRemoveWhereCondition(e) {
-    this.modelService.removeWhereFieldCondition(e.detail);
   }
 
   handleRunQuery() {

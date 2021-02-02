@@ -17,7 +17,7 @@ export default class Fields extends LightningElement {
   handleFieldSelection(e) {
     e.preventDefault();
     if (e.detail && e.detail.value) {
-      const fieldSelectedEvent = new CustomEvent('fields__selected', {
+      const fieldSelectedEvent = new CustomEvent('fieldselected', {
         detail: { field: e.detail.value }
       });
       this.dispatchEvent(fieldSelectedEvent);
@@ -26,7 +26,7 @@ export default class Fields extends LightningElement {
 
   handleFieldRemoved(e) {
     e.preventDefault();
-    const fieldRemovedEvent = new CustomEvent('fields__removed', {
+    const fieldRemovedEvent = new CustomEvent('fieldremoved', {
       detail: { field: e.target.dataset.field }
     });
     this.dispatchEvent(fieldRemovedEvent);
