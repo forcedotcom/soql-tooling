@@ -1,0 +1,67 @@
+<template>
+  <div class="modifier__group">
+    <!-- FIELDS -->
+    <select
+      class="modifier__item modifier__fields"
+      name="fields"
+      onchange={handleSelectionEvent}
+      data-el-where-field
+    >
+      <template if:true={hasSelectedField}>
+        <option value={_selectedField}>{_selectedField}</option>
+      </template>
+      <template if:false={hasSelectedField}>
+        <option value="" class="placeholder" data-el-default-option>
+          {defaultFieldOptionText}
+        </option>
+      </template>
+      <template for:each={filteredFields} for:item="field">
+        <option key={field} value={field}>{field}</option>
+      </template>
+    </select>
+    <!-- OPERATORS -->
+    <span
+      data-text={operatorErrorMessage}
+      class={operatorClasses}
+      data-el-where-operator
+      ><select
+        name="operator"
+        data-el-where-operator-input
+        onchange={handleSelectionEvent}
+      >
+        <template if:true={hasSelectedOperator}>
+          <option value={_selectedOperator.value}>
+            {_selectedOperator.displayValue}
+          </option>
+        </template>
+        <template for:each={filteredOperators} for:item="operator">
+          <option key={operator.value} value={operator.value}>
+            {operator.displayValue}
+          </option>
+        </template>
+      </select>
+    </span>
+    <!-- CRITERIA -->
+    <span
+      data-text={criteriaErrorMessage}
+      class={criteriaClasses}
+      data-el-where-criteria
+    >
+      <input
+        name="criteria"
+        type="text"
+        oninput={handleSelectionEvent}
+        value={criteriaDisplayValue}
+        data-el-where-criteria-input
+      />
+    </span>
+    <span
+      role="button"
+      class="modifier__item button__close pointer"
+      onclick={handleConditionRemoved}
+      data-el-where-delete
+    >
+      X
+    </span>
+  </div>
+</template>

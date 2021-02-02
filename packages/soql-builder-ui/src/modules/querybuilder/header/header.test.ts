@@ -25,7 +25,7 @@ describe('Header', () => {
     document.body.appendChild(header);
 
     const handler = jest.fn();
-    header.addEventListener('runquery', handler);
+    header.addEventListener('header__run_query', handler);
 
     const runQueryBtn = header.shadowRoot.querySelector('.run-button');
     runQueryBtn.click();
