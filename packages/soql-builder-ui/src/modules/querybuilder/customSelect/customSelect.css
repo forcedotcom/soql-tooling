@@ -38,7 +38,7 @@ main.custom-select {
 
 .select__input {
   width: 90%;
-  padding: 4px;
+  height: 1.25em;
   margin-left: 24px;
   border: none;
 }
