@@ -6,11 +6,12 @@
  */
 
 import * as Soql from '../model';
+import { UnmodeledSyntaxReason } from '../unmodeled';
 import { SoqlModelObjectImpl } from './soqlModelObjectImpl';
 
 export class UnmodeledSyntaxImpl extends SoqlModelObjectImpl
   implements Soql.UnmodeledSyntax {
-  public constructor(public unmodeledSyntax: string, public reason: string) {
+  public constructor(public unmodeledSyntax: string, public reason: UnmodeledSyntaxReason) {
     super();
   }
   public toSoqlSyntax(options?: Soql.SyntaxOptions): string {

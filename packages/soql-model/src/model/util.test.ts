@@ -33,7 +33,7 @@ const conditionIncludes = new Impl.IncludesConditionImpl(
 );
 const conditionUnmodeled = new Impl.UnmodeledSyntaxImpl(
   'A + B > 10',
-  'unmodeled:calculated-condition'
+  Soql.REASON_UNMODELED_CALCULATEDCONDITION
 );
 const conditionAndOr = new Impl.AndOrConditionImpl(
   conditionFieldCompare,
@@ -46,7 +46,7 @@ const conditionNot = new Impl.NotConditionImpl(conditionFieldCompare);
 describe('SoqlModelUtils should', () => {
   it('isUnmodeledSyntax should return true if the model object is unmodeled syntax', () => {
     const actual = SoqlModelUtils.isUnmodeledSyntax(
-      new Impl.UnmodeledSyntaxImpl('foo', 'unmodeled:foo')
+      new Impl.UnmodeledSyntaxImpl('foo', { reasonCode: 'unmodeled:foo', message: 'foo' })
     );
     expect(actual).toBeTruthy();
   });
@@ -56,7 +56,7 @@ describe('SoqlModelUtils should', () => {
         new Impl.SelectExprsImpl([
           new Impl.FieldSelectionImpl(
             new Impl.FieldRefImpl('field1'),
-            new Impl.UnmodeledSyntaxImpl('alias1', 'unmodeled:alias')
+            new Impl.UnmodeledSyntaxImpl('alias1', Soql.REASON_UNMODELED_ALIAS)
           ),
         ]),
         new Impl.FromImpl('object1')
@@ -70,7 +70,7 @@ describe('SoqlModelUtils should', () => {
         new Impl.SelectExprsImpl([
           new Impl.FieldSelectionImpl(
             new Impl.FieldRefImpl('field1'),
-            new Impl.UnmodeledSyntaxImpl('alias1', 'unmodeled:alias')
+            new Impl.UnmodeledSyntaxImpl('alias1', Soql.REASON_UNMODELED_ALIAS)
           ),
         ]),
         new Impl.FromImpl('object1')
@@ -81,11 +81,11 @@ describe('SoqlModelUtils should', () => {
   it('returns an array explaining what is unsupported', () => {
     const unmodeled1 = {
       syntax: 'alias',
-      reason: 'unmodeled:alias',
+      reason: Soql.REASON_UNMODELED_ALIAS,
     };
     const unmodeled2 = {
       syntax: 'COUNT(Id) recordCount',
-      reason: 'unmodeled:function-reference',
+      reason: Soql.REASON_UNMODELED_FUNCTIONREFERENCE
     };
     const actual = SoqlModelUtils.getUnmodeledSyntax(
       new Impl.QueryImpl(
