@@ -39,7 +39,8 @@ export function parseHeaderComments(
   const commentLineCount = (headerComments.match(/(\n|\r|\r\n)/g) || []).length;
   const headerPaddedSoqlText = originalSoqlText.replace(
     HEADER_COMMENT_EXTRACTION_REGEX,
-    (m, p1, p2) => p1.replace(/[^\n\r]/gm, ' ') + p2
+    (wholeMatch, headerText, soqlText) =>
+      headerText.replace(/[^\n\r]/gm, ' ') + soqlText
   );
 
   const result = {
