@@ -16,7 +16,9 @@ export default class Header extends LightningElement {
   get headerClasses() {
     return this.hasErrors ? 'warning-notification' : '';
   }
+
   get triggerText() {
+    // i18n
     return this.showErrors ? 'Hide errors' : 'Show errors';
   }
   showErrors = false;
@@ -30,6 +32,7 @@ export default class Header extends LightningElement {
   }
 
   get buttonText() {
+    // i18n
     return this.isRunning ? 'Running...' : 'Run Query';
   }
 

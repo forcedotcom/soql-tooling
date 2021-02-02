@@ -31,7 +31,7 @@ describe('Header', () => {
     }
   });
 
-  it('emits a run event', async () => {
+  it('emits a run event', () => {
     document.body.appendChild(header);
 
     const handler = jest.fn();
@@ -59,7 +59,7 @@ describe('Header', () => {
     expect(button.classList).toContain(DISABLED_BUTTON_CLASS);
   });
 
-  it('does not emit run event if disabled', async () => {
+  it('does not emit run event if disabled', () => {
     header.errorMessages = ERROR_MESSAGES;
     document.body.appendChild(header);
 
@@ -90,7 +90,7 @@ describe('Header', () => {
     expect(headerContent.length).toBeTruthy();
   });
 
-  it('shows/hides errors', async () => {
+  it('shows/hides errors', () => {
     header.errorMessages = ERROR_MESSAGES;
     document.body.appendChild(header);
     let listElements = header.shadowRoot.querySelectorAll(
