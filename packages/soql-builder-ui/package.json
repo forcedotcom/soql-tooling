@@ -8,11 +8,10 @@
     "registry": "http://registry.npmjs.org/"
   },
   "dependencies": {
-    "@salesforce/soql-model": "0.1.19",
+    "@salesforce/soql-model": "0.1.20",
     "debounce": "^1.2.0",
     "immutable": "3.8.2",
-    "rxjs": "^6.6.2",
-    "@salesforce/soql-model": "0.1.20"
+    "rxjs": "^6.6.2"
   },
   "devDependencies": {
     "@lwc/jest-preset": "^7.0.0",
