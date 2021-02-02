@@ -1,3 +1,4 @@
+import { Soql } from '@salesforce/soql-model';
 import { createQueryTelemetry } from './telemetryUtils';
 import { ToolingModelJson } from './toolingModelService';
 
@@ -20,11 +21,11 @@ describe('Telemetry Utils', () => {
   };
   const unsupported1 = {
     unmodeledSyntax: 'GROUP BY\n  ORDER',
-    reason: 'unmodeled:group-by'
+    reason: Soql.REASON_UNMODELED_GROUPBY
   };
   const unsupported2 = {
     unmodeledSyntax: 'COUNT(Id) recordCount',
-    reason: 'unmodeled:function-reference'
+    reason: Soql.REASON_UNMODELED_FUNCTIONREFERENCE
   };
 
   const query = ({
@@ -43,7 +44,7 @@ describe('Telemetry Utils', () => {
     expect(telemetry.errors.length).toEqual(query.errors.length);
     expect(telemetry.errors[0]).toContain(error1.grammarRule);
     expect(telemetry.unsupported.length).toEqual(query.unsupported.length);
-    expect(telemetry.unsupported[0]).toEqual(unsupported1.reason);
+    expect(telemetry.unsupported[0]).toEqual(unsupported1.reason.reasonCode);
     expect(JSON.stringify(telemetry)).not.toContain(query.fields[0]);
   });
 });

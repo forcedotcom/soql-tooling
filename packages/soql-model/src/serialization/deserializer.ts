@@ -382,13 +382,13 @@ class QueryListener implements SoqlParserListener {
       const safeAS = ctx.AS();
       as =
         safeAS !== undefined
-          ? this.toUnmodeledSyntax(safeAS.symbol, idContexts[1].stop as Token, 'unmodeled:as')
-          : this.toUnmodeledSyntax(idContexts[1].start, idContexts[1].stop as Token, 'unmodeled:as');
+          ? this.toUnmodeledSyntax(safeAS.symbol, idContexts[1].stop as Token, Soql.REASON_UNMODELED_AS)
+          : this.toUnmodeledSyntax(idContexts[1].start, idContexts[1].stop as Token, Soql.REASON_UNMODELED_AS);
     }
 
     const safeUSING = ctx.soqlUsingClause();
     const using = safeUSING
-      ? this.toUnmodeledSyntax(safeUSING.start as Token, safeUSING.stop as Token, 'unmodeled:using')
+      ? this.toUnmodeledSyntax(safeUSING.start as Token, safeUSING.stop as Token, Soql.REASON_UNMODELED_USING)
       : undefined;
     this.from = new Impl.FromImpl(sobjectName, as, using);
   }
@@ -425,7 +425,7 @@ class QueryListener implements SoqlParserListener {
           let alias: Soql.UnmodeledSyntax | undefined;
           const aliasCtx = (exprContext as Parser.SoqlSelectColumnExprContext).soqlAlias();
           if (aliasCtx) {
-            alias = this.toUnmodeledSyntax(aliasCtx.start, aliasCtx.stop as Token, 'unmodeled:alias');
+            alias = this.toUnmodeledSyntax(aliasCtx.start, aliasCtx.stop as Token, Soql.REASON_UNMODELED_ALIAS);
           }
           this.selectExpressions.push(new Impl.FieldSelectionImpl(field, alias));
         }
@@ -433,12 +433,12 @@ class QueryListener implements SoqlParserListener {
         // not a modeled case
         const reason =
           exprContext instanceof Parser.SoqlSelectInnerQueryExprContext
-            ? 'unmodeled:semi-join'
+            ? Soql.REASON_UNMODELED_SEMIJOIN
             : exprContext instanceof Parser.SoqlSelectTypeofExprContext
-              ? 'unmodeled:type-of'
+              ? Soql.REASON_UNMODELED_TYPEOF
               : exprContext instanceof Parser.SoqlSelectDistanceExprContext
-                ? 'unmodeled:distance'
-                : 'unmodeled:select';
+                ? Soql.REASON_UNMODELED_DISTANCE
+                : Soql.REASON_UNMODELED_SELECT;
         this.selectExpressions.push(
           this.toUnmodeledSyntax(exprContext.start, exprContext.stop as Token, reason)
         );
@@ -487,7 +487,7 @@ class QueryListener implements SoqlParserListener {
   public enterSoqlWhereClauseMethod(ctx: Parser.SoqlWhereClauseMethodContext): void {
     let condition = this.exprsToCondition(ctx.soqlWhereExprs());
     if (!SoqlModelUtils.isSimpleGroup(condition)) {
-      condition = this.toUnmodeledSyntax(ctx.soqlWhereExprs().start, ctx.soqlWhereExprs().stop as Token, 'unmodeled:complex-group');
+      condition = this.toUnmodeledSyntax(ctx.soqlWhereExprs().start, ctx.soqlWhereExprs().stop as Token, Soql.REASON_UNMODELED_COMPLEXGROUP);
     }
     this.where = new Impl.WhereImpl(condition);
   }
@@ -503,7 +503,7 @@ class QueryListener implements SoqlParserListener {
         this.select = new Impl.SelectExprsImpl(this.selectExpressions);
       } else if (selectCtx instanceof Parser.SoqlSelectCountClauseContext) {
         // not a modeled case
-        this.select = this.toUnmodeledSyntax(selectCtx.start, selectCtx.stop as Token, 'unmodeled:count');
+        this.select = this.toUnmodeledSyntax(selectCtx.start, selectCtx.stop as Token, Soql.REASON_UNMODELED_COUNT);
       } else {
         // no selections
         this.select = new Impl.SelectExprsImpl([]);
@@ -520,11 +520,11 @@ class QueryListener implements SoqlParserListener {
     }
     const withCtx = ctx.soqlWithClause();
     if (withCtx) {
-      this.with = this.toUnmodeledSyntax(withCtx.start, withCtx.stop as Token, 'unmodeled:with');
+      this.with = this.toUnmodeledSyntax(withCtx.start, withCtx.stop as Token, Soql.REASON_UNMODELED_WITH);
     }
     const groupByCtx = ctx.soqlGroupByClause();
     if (groupByCtx) {
-      this.groupBy = this.toUnmodeledSyntax(groupByCtx.start, groupByCtx.stop as Token, 'unmodeled:group-by');
+      this.groupBy = this.toUnmodeledSyntax(groupByCtx.start, groupByCtx.stop as Token, Soql.REASON_UNMODELED_GROUPBY);
     }
     const orderByCtx = ctx.soqlOrderByClause();
     if (orderByCtx) {
@@ -536,23 +536,23 @@ class QueryListener implements SoqlParserListener {
     }
     const offsetCtx = ctx.soqlOffsetClause();
     if (offsetCtx) {
-      this.offset = this.toUnmodeledSyntax(offsetCtx.start, offsetCtx.stop as Token, 'unmodeled:offset');
+      this.offset = this.toUnmodeledSyntax(offsetCtx.start, offsetCtx.stop as Token, Soql.REASON_UNMODELED_OFFSET);
     }
     const bindCtx = ctx.soqlBindClause();
     if (bindCtx) {
-      this.bind = this.toUnmodeledSyntax(bindCtx.start, bindCtx.stop as Token, 'unmodeled:bind');
+      this.bind = this.toUnmodeledSyntax(bindCtx.start, bindCtx.stop as Token, Soql.REASON_UNMODELED_BIND);
     }
     const recordTrackingTypeCtx = ctx.soqlRecordTrackingType();
     if (recordTrackingTypeCtx) {
       this.recordTrackingType = this.toUnmodeledSyntax(
         recordTrackingTypeCtx.start,
         recordTrackingTypeCtx.stop as Token,
-        'unmodeled:record-tracking'
+        Soql.REASON_UNMODELED_RECORDTRACKING
       );
     }
     const updateCtx = ctx.soqlUpdateStatsClause();
     if (updateCtx) {
-      this.update = this.toUnmodeledSyntax(updateCtx.start, updateCtx.stop as Token, 'unmodeled:update');
+      this.update = this.toUnmodeledSyntax(updateCtx.start, updateCtx.stop as Token, Soql.REASON_UNMODELED_UPDATE);
     }
   }
 
@@ -578,7 +578,7 @@ class QueryListener implements SoqlParserListener {
     return this.query;
   }
 
-  public toUnmodeledSyntax(start: Token, stop: Token, reason: string): Soql.UnmodeledSyntax {
+  public toUnmodeledSyntax(start: Token, stop: Token, reason: Soql.UnmodeledSyntaxReason): Soql.UnmodeledSyntax {
     if (!stop && start) {
       // some error states can cause this situation
       stop = start;
@@ -600,7 +600,7 @@ class QueryListener implements SoqlParserListener {
       const fieldCtx = (ctx as Parser.SoqlOrderByColumnExprContext).soqlField();
       result = this.toField(fieldCtx);
     } else {
-      result = this.toUnmodeledSyntax(ctx.start, ctx.stop as Token, 'unmodeled:distance');
+      result = this.toUnmodeledSyntax(ctx.start, ctx.stop as Token, Soql.REASON_UNMODELED_DISTANCE);
     }
 
     return result;
@@ -610,7 +610,7 @@ class QueryListener implements SoqlParserListener {
     let result: Soql.Field;
     const isFunctionRef = ctx.text.includes('(');
     if (isFunctionRef) {
-      result = this.toUnmodeledSyntax(ctx.start, ctx.stop as Token, 'unmodeled:function-reference');
+      result = this.toUnmodeledSyntax(ctx.start, ctx.stop as Token, Soql.REASON_UNMODELED_FUNCTIONREFERENCE);
     } else {
       result = new Impl.FieldRefImpl(ctx.text);
     }
@@ -664,9 +664,9 @@ class QueryListener implements SoqlParserListener {
 
   protected toCompareValue(ctx: ParserRuleContext): Soql.CompareValue {
     if (ctx instanceof Parser.SoqlColonExprLiteralValueContext) {
-      return this.toUnmodeledSyntax(ctx.start, ctx.stop as Token, 'unmodeled:colon-expression');
+      return this.toUnmodeledSyntax(ctx.start, ctx.stop as Token, Soql.REASON_UNMODELED_COLONEXPRESSION);
     } else if (ctx instanceof Parser.SoqlColonLikeValueContext) {
-      return this.toUnmodeledSyntax(ctx.start, ctx.stop as Token, 'unmodeled:colon-expression');
+      return this.toUnmodeledSyntax(ctx.start, ctx.stop as Token, Soql.REASON_UNMODELED_COLONEXPRESSION);
     }
     return this.toLiteral(ctx);
   }
@@ -754,13 +754,13 @@ class QueryListener implements SoqlParserListener {
       );
     } else {
       // empty clause
-      condition = new Impl.UnmodeledSyntaxImpl('', 'unmodeled:empty-condition');
+      condition = new Impl.UnmodeledSyntaxImpl('', Soql.REASON_UNMODELED_EMPTYCONDITION);
     }
     return condition;
   }
 
   protected exprToCondition(ctx: Parser.SoqlWhereExprContext): Soql.Condition {
-    let reason = 'unmodeled:empty-condition';
+    let reason = Soql.REASON_UNMODELED_EMPTYCONDITION;
     if (ctx instanceof Parser.NestedWhereExprContext) {
       const nested = this.exprsToCondition(ctx.soqlWhereExprs());
       return new Impl.NestedConditionImpl(nested);
@@ -791,13 +791,13 @@ class QueryListener implements SoqlParserListener {
       const values = this.toCompareValues(ctx.tryGetRuleContext(0, Parser.SoqlLiteralValuesContext));
       return new Impl.InListConditionImpl(field, operator, values);
     } else if (ctx instanceof Parser.CalculatedWhereExprContext) {
-      reason = 'unmodeled:calculated-condition';
+      reason = Soql.REASON_UNMODELED_CALCULATEDCONDITION;
     } else if (ctx instanceof Parser.DistanceWhereExprContext) {
-      reason = 'unmodeled:distance-condition';
+      reason = Soql.REASON_UNMODELED_DISTANCECONDITION;
     } else if (ctx instanceof Parser.InWhereExprForColonExprContext) {
-      reason = 'unmodeled:in-colon-expression-condition';
+      reason = Soql.REASON_UNMODELED_INCOLONEXPRESSIONCONDITION;
     } else if (ctx instanceof Parser.InWhereExprWithSemiJoinContext) {
-      reason = 'unmodeled:in-semi-join-condition';
+      reason = Soql.REASON_UNMODELED_INSEMIJOINCONDITION;
     }
     return this.toUnmodeledSyntax(ctx.start, ctx.stop as Token, reason);
   }
