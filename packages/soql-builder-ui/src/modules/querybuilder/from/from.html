@@ -19,22 +19,13 @@
       >
     </div>
     <div class="section_selection-container">
-      <select
-        name="sobject-select"
-        class="select-long"
-        onchange={handleSobjectSelection}
-      >
-        <!-- this is an unfortunate limitation of lwc.  probably need to implement lightning-combobox here -->
-        <template if:true={hasSelected}>
-          <option key={selected} value={selected}>{selected}</option>
-        </template>
-        <template if:false={hasSelected}>
-          <option value="" class="placeholder" data-el-default-option>{defaultOptionText}</option>
-        </template>
-        <template for:each={filteredSObjects} for:item="sObject">
-          <option key={sObject} value={sObject}>{sObject}</option>
-        </template>
-      </select>
+      <querybuilder-custom-select
+        is-loading={isLoading}
+        all-options={sobjects}
+        selected-options={_selectedObject}
+        onoption__selection={handleSobjectSelection}
+        placeholder-text={selectPlaceHolderText}
+      ></querybuilder-custom-select>
     </div>
   </div>
 </template>
