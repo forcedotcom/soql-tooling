@@ -63,19 +63,20 @@ describe('Validator', () => {
     });
 
     it('creates diagnostic with range when location and cause are returned from API', async () => {
-      const expectedError = `Oh Snap!\nERROR at Row:1:Column:8\nBlame 'Ids' not 'Me'`;
+      const serverError = `Oh Snap!\nERROR at Row:1:Column:8\nBlame 'Ids' not 'Me'`;
+      const expectedErrorWithoutLineColumn = `Oh Snap!\nError:\nBlame 'Ids' not 'Me'`;
       const diagnostics = await Validator.validateLimit0Query(
         mockSOQLDoc('SELECT Ids FROM Account'),
         createMockClientConnection({
           error: {
             name: 'INVALID_FIELD',
             errorCode: 'INVALID_FIELD',
-            message: expectedError,
+            message: serverError,
           },
         })
       );
       expect(diagnostics).toHaveLength(1);
-      expect(diagnostics[0].message).toEqual(expectedError);
+      expect(diagnostics[0].message).toEqual(expectedErrorWithoutLineColumn);
       expect(diagnostics[0].range.start.line).toEqual(0);
       expect(diagnostics[0].range.start.character).toEqual(7);
       expect(diagnostics[0].range.end.line).toEqual(0);
@@ -88,14 +89,15 @@ describe('Validator', () => {
       async () => {
         // The Query API seems to be "ignoring" the initial empty lines, so
         // it reports the error lines as starting from the first non-empty line
-        const expectedError = `Oh Snap!\nERROR at Row:1:Column:8\nBlame 'Ids' not 'Me'`;
+        const serverError = `Oh Snap!\nERROR at Row:1:Column:8\nBlame 'Ids' not 'Me'`;
+        const expectedErrorWithoutLineColumn = `Oh Snap!\nError:\nBlame 'Ids' not 'Me'`;
         const diagnostics = await Validator.validateLimit0Query(
           mockSOQLDoc('\n\n// Comment here\n\nSELECT Ids FROM Account'),
           createMockClientConnection({
             error: {
               name: 'INVALID_FIELD',
               errorCode: 'INVALID_FIELD',
-              message: expectedError,
+              message: serverError,
             },
           })
         );
@@ -105,7 +107,7 @@ describe('Validator', () => {
         const errorLine = 4;
 
         expect(diagnostics).toHaveLength(1);
-        expect(diagnostics[0].message).toEqual(expectedError);
+        expect(diagnostics[0].message).toEqual(expectedErrorWithoutLineColumn);
         expect(diagnostics[0].range.start.line).toEqual(errorLine);
         expect(diagnostics[0].range.start.character).toEqual(7);
         expect(diagnostics[0].range.end.line).toEqual(errorLine);

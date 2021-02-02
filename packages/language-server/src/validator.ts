@@ -71,12 +71,13 @@ export class Validator {
       appendLimit0(soqlWithHeaderComments.soqlText)
     )) as RunQueryResponse;
     if (response.error) {
+      const {errorMessage, errorRange } = extractErrorRange(soqlWithHeaderComments, response.error.message);
       diagnostics.push({
         severity: DiagnosticSeverity.Error,
         range:
-          extractErrorRange(soqlWithHeaderComments, response.error.message) ||
+          errorRange ||
           documentRange(textDocument),
-        message: response.error.message,
+        message: errorMessage,
         source: 'soql',
       });
     }
@@ -96,7 +97,7 @@ function appendLimit0(query: string): string {
 function extractErrorRange(
   soqlWithComments: SoqlWithComments,
   errorMessage: string
-): Range | null {
+): { errorRange: Range | undefined; errorMessage: string } {
   const posMatch = errorMessage.match(findPositionRegex);
   if (posMatch && posMatch.groups) {
     const line =
@@ -106,11 +107,15 @@ function extractErrorRange(
     const cause =
       (causeMatch && causeMatch.groups && causeMatch.groups.cause) || ' ';
     return {
-      start: { line, character },
-      end: { line, character: character + cause.length },
+      // Strip out the line and column information from the error message
+      errorMessage: errorMessage.replace(findPositionRegex, 'Error:'),
+      errorRange: {
+            start: { line, character },
+            end: { line, character: character + cause.length },
+          },
     };
   } else {
-    return null;
+    return { errorMessage: errorMessage, errorRange: undefined };
   }
 }
 
