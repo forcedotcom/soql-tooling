@@ -31,6 +31,7 @@ export enum AndOr {
 export type IMap = Map<string, string | List<string>>;
 // Private immutable interface
 export interface ToolingModel extends IMap {
+  headerComments?: string;
   sObject: string;
   fields: List<string>;
   orderBy: List<Map>;
@@ -42,6 +43,7 @@ export interface ToolingModel extends IMap {
 }
 // Public inteface for accessing modelService.query
 export interface ToolingModelJson extends JsonMap {
+  headerComments?: string;
   sObject: string;
   fields: string[];
   orderBy: JsonMap[];

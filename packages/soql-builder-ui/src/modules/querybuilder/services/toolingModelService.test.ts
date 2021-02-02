@@ -335,4 +335,40 @@ describe('Tooling Model Service', () => {
       expect(typeof orderBy.toJS).toEqual('function');
     });
   });
+
+
+  it('Receive SOQL Text from editor (with comments)', () => {
+    const soqlText =
+      '// This is a comment\n\n\n// Another comment\n\nSELECT Id FROM Foo';
+    const soqlEvent = { ...soqlEditorEvent };
+    soqlEvent.payload = soqlText;
+    (messageService.messagesToUI as BehaviorSubject<SoqlEditorEvent>).next(
+      soqlEvent
+    );
+
+    expect(query.sObject).toEqual('Foo');
+    expect(query.fields[0]).toEqual('Id');
+    expect(query.errors.length).toEqual(0);
+    expect(query.unsupported.length).toEqual(0);
+    expect(query.headerComments).toEqual(
+      '// This is a comment\n\n\n// Another comment\n\n'
+    );
+
+    // Now modify the query. The resulting text must retain the comments
+    modelService.setSObject('Bar');
+    modelService.addField('Name');
+
+    expect(query.sObject).toEqual('Bar');
+    expect(query.fields[0]).toEqual('Name');
+
+    expect(query.originalSoqlStatement).toContain(
+      '// This is a comment\n\n\n// Another comment\n\n'
+    );
+    expect(query.originalSoqlStatement).toContain('SELECT Name');
+    expect(query.originalSoqlStatement).toContain('FROM Bar');
+    expect(query.headerComments).toEqual(
+      '// This is a comment\n\n\n// Another comment\n\n'
+    );
+  });
+
 });

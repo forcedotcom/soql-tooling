@@ -39,6 +39,7 @@ import {
   ParsedSoqlField,
   SoqlQueryAnalyzer,
 } from './completion/soql-query-analysis';
+import { parseHeaderComments } from './soqlComments';
 
 const SOBJECTS_ITEM_LABEL_PLACEHOLDER = '__SOBJECTS_PLACEHOLDER';
 const SOBJECT_FIELDS_LABEL_PLACEHOLDER = '__SOBJECT_FIELDS_PLACEHOLDER';
@@ -56,7 +57,11 @@ export function completionsFor(
   line: number,
   column: number
 ): CompletionItem[] {
-  const lexer = new SoqlLexer(new LowerCasingCharStream(text));
+
+
+  const lexer = new SoqlLexer(
+    new LowerCasingCharStream(parseHeaderComments(text).headerPaddedSoqlText)
+  );
   const tokenStream = new CommonTokenStream(lexer);
   const parser = new SoqlParser(tokenStream);
   parser.removeErrorListeners();

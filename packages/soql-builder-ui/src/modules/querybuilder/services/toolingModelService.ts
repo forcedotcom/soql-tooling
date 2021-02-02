@@ -63,10 +63,14 @@ export class ToolingModelService {
 
   // This method is destructive, will clear any selections except sObject.
   public setSObject(sObject: string) {
-    const emptyModel = fromJS(ToolingModelService.toolingModelTemplate);
-    const newModelWithSelection = emptyModel.set(ModelProps.SOBJECT, sObject);
-
-    this.changeModel(newModelWithSelection);
+    const newModelJS = Object.assign(
+      this.getModel().toJS(),
+      ToolingModelService.toolingModelTemplate,
+      {
+        sObject: sObject
+      }
+    );
+    this.changeModel(fromJS(newModelJS));
   }
 
   /* ---- FIELDS ---- */
