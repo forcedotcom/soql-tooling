@@ -260,20 +260,20 @@ export class ToolingModelService {
   }
 
   private changeModel(newModel) {
-    const newSoqlStatement = convertUiModelToSoql((newModel as IMap).toJS());
-    this.sendMessageToBackend(newSoqlStatement);
-    const newModelWithSoqlStatement = newModel.set(
+    const newSoqlQuery = convertUiModelToSoql((newModel as IMap).toJS());
+    const newModelWithSoqlQuery = newModel.set(
       'originalSoqlStatement',
-      newSoqlStatement
+      newSoqlQuery
     );
-    this.immutableModel.next(newModelWithSoqlStatement);
+    this.immutableModel.next(newModelWithSoqlQuery);
+    this.sendMessageToBackend(newSoqlQuery);
   }
 
-  public sendMessageToBackend(payload: string) {
+  public sendMessageToBackend(newSoqlQuery: string) {
     try {
       this.messageService.sendMessage({
         type: MessageType.UI_SOQL_CHANGED,
-        payload
+        payload: newSoqlQuery
       });
     } catch (e) {
       console.error(e);

@@ -26,14 +26,30 @@ describe('Fields', () => {
     }
   });
 
+  // it('emits event when field is selected', () => {
+  //   document.body.appendChild(fields);
+
+  //   const handler = jest.fn();
+  //   fields.addEventListener('fields__selected', handler);
+
+  //   const fieldOption = fields.shadowRoot.querySelector("option[value='foo']");
+  //   fieldOption.click();
+
+  //   expect(handler).toHaveBeenCalled();
+  // });
+
   it('emits event when field is selected', () => {
     document.body.appendChild(fields);
 
     const handler = jest.fn();
     fields.addEventListener('fields__selected', handler);
 
-    const fieldOption = fields.shadowRoot.querySelector("option[value='foo']");
-    fieldOption.click();
+    const customSelect = fields.shadowRoot.querySelector(
+      'querybuilder-custom-select'
+    );
+    customSelect.dispatchEvent(
+      new CustomEvent('option__selection', { detail: { value: 'foo' } })
+    );
 
     expect(handler).toHaveBeenCalled();
   });
@@ -68,30 +84,15 @@ describe('Fields', () => {
     });
   });
 
-  it('should alert user when loading', async () => {
-    fields.selectedFields = [];
-    fields.fields = [];
-    document.body.appendChild(fields);
-    expect(fields.isLoading).toEqual(false);
-    let defaultOption = fields.shadowRoot.querySelector(
-      '[data-el-default-option]'
-    );
-    expect(defaultOption.innerHTML).toContain('Select');
-    fields.isLoading = true;
-    return Promise.resolve().then(() => {
-      defaultOption = fields.shadowRoot.querySelector(
-        '[data-el-default-option]'
-      );
-      expect(defaultOption.innerHTML.toLowerCase()).toContain('loading');
-    });
-  });
-
   it('should alert user when error', async () => {
     document.body.appendChild(fields);
     expect(fields.hasError).toEqual(false);
+
     let hasError = fields.shadowRoot.querySelectorAll('[data-el-has-error]');
+
     expect(hasError.length).toEqual(0);
     fields.hasError = true;
+
     return Promise.resolve().then(() => {
       hasError = fields.shadowRoot.querySelectorAll('[data-el-has-error]');
       expect(hasError.length).toEqual(1);

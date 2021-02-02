@@ -12,34 +12,11 @@
       <querybuilder-header
         class={theme}
         onheader__run_query={handleRunQuery}
+        is-running={isQueryRunning}
       ></querybuilder-header>
     </header>
     <article class="querybuilder-body">
       <section class="querybuilder-form">
-        <template if:true={blockQueryBuilder}>
-          <div class="unsupported-syntax"></div>
-          <template if:true={hasUnsupported}>
-            <!-- TODO: i18n -->
-            <div class="block-message">
-              <h3>Syntax Not Yet Supported</h3>
-              <p>
-                Your query contains statements that SOQL Builder doesn't
-                currently support. You can still run the query but must use a
-                text editor to change it.
-              </p>
-            </div>
-          </template>
-          <template if:true={hasUnrecoverable}>
-            <!-- TODO: i18n -->
-            <div class="block-message">
-              <h3>Syntax Error</h3>
-              <p>
-                Your SOQL statement contains syntax errors. Use a text editor to
-                edit the query, and try again.
-              </p>
-            </div>
-          </template>
-        </template>
         <querybuilder-from
           onfrom__object_selected={handleObjectChange}
           sobjects={sObjects}
@@ -82,6 +59,33 @@
           onlimit__changed={handleLimitChanged}
           class={theme}
         ></querybuilder-limit>
+        <!-- div.unsupported-syntax should always be
+        last in the <section class="querybuilder-form">
+        So it stays on top of form elements -->
+        <template if:true={blockQueryBuilder}>
+          <div class="unsupported-syntax"></div>
+          <template if:true={hasUnsupported}>
+            <!-- TODO: i18n -->
+            <div class="block-message">
+              <h3>Syntax Not Yet Supported</h3>
+              <p>
+                Your query contains statements that SOQL Builder doesn't
+                currently support. You can still run the query but must use a
+                text editor to change it.
+              </p>
+            </div>
+          </template>
+          <template if:true={hasUnrecoverable}>
+            <!-- TODO: i18n -->
+            <div class="block-message">
+              <h3>Syntax Error</h3>
+              <p>
+                Your SOQL statement contains syntax errors. Use a text editor to
+                edit the query, and try again.
+              </p>
+            </div>
+          </template>
+        </template>
       </section>
       <section class="query-preview">
         <querybuilder-query-preview

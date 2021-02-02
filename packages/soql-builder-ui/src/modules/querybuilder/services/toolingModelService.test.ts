@@ -76,6 +76,17 @@ describe('Tooling Model Service', () => {
 
       expect(query!.sObject).toBe(mockSobject);
     });
+
+    it('should include originalSoqlStatement property in model', () => {
+      expect(query.originalSoqlStatement).toBe('');
+      modelService.setSObject('Account');
+      modelService.addField('Id');
+
+      // The formatting of the soql statement is hard to match exactly
+      // because the formatter inserts returns and spaces.
+      expect(query.originalSoqlStatement).toContain('SELECT Id');
+      expect(query.originalSoqlStatement).toContain('FROM Account');
+    });
   });
 
   describe('FIELDS', () => {
@@ -227,7 +238,9 @@ describe('Tooling Model Service', () => {
       newMock.fieldCompareExpr.condition.field.fieldName = newField;
       modelService.upsertWhereFieldExpr(newMock);
       expect(query!.where.conditions.length).toBe(1);
-      expect(query!.where.conditions[0].condition.field.fieldName).toContain(newField);
+      expect(query!.where.conditions[0].condition.field.fieldName).toContain(
+        newField
+      );
     });
 
     it('should DELETE condition by index', () => {
@@ -320,28 +333,6 @@ describe('Tooling Model Service', () => {
       modelService.addUpdateOrderByField(mockOrderBy);
       const orderBy = modelService.getModel().get('orderBy');
       expect(typeof orderBy.toJS).toEqual('function');
-    });
-  });
-
-  // LIMIT
-  describe('LIMIT', () => {
-    it('should update limit in model', () => {
-      (messageService.setState as jest.Mock).mockClear();
-      expect(messageService.setState).toHaveBeenCalledTimes(0);
-      query = ToolingModelService.toolingModelTemplate;
-
-      expect(query!.limit).toEqual('');
-
-      // Add
-      modelService.changeLimit('11');
-      expect(query!.limit).toBe('11');
-
-      // Remove Limit
-      modelService.changeLimit(undefined);
-      expect(query!.limit).toBe('');
-
-      // verify saves
-      expect(messageService.setState).toHaveBeenCalledTimes(2);
     });
   });
 });
