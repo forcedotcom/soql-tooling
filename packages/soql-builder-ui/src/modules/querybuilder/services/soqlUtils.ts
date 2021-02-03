@@ -225,9 +225,11 @@ function convertUiModelToSoqlModel(uiModel: ToolingModelJson): Soql.Query {
     orderBy,
     limit
   );
-  queryModel.headerComments = new Impl.HeaderCommentsImpl(
-    uiModel.headerComments
-  );
+  if (uiModel.headerComments) {
+    queryModel.headerComments = new Impl.HeaderCommentsImpl(
+      uiModel.headerComments
+    );
+  }
   return queryModel;
 }
 

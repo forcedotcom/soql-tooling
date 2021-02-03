@@ -16,6 +16,6 @@ export class HeaderCommentsImpl
   }
 
   public toSoqlSyntax(options?: Soql.SyntaxOptions): string {
-    return this.text;
+    return this.text || '';
   }
 }

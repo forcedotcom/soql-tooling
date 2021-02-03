@@ -35,7 +35,7 @@ describe('SoqlUtils', () => {
             operator: '=',
             compareValue: {
               type: 'NUMBER',
-              value: "123456"
+              value: '123456'
             }
           },
           index: 1
@@ -75,6 +75,7 @@ describe('SoqlUtils', () => {
   const soqlError = 'Select Name from Account GROUP BY';
   it('transform UI Model to Soql', () => {
     const transformedSoql = convertUiModelToSoql(uiModelOne);
+    expect(transformedSoql).toMatch(/^SELECT/);
     expect(transformedSoql).toContain(uiModelOne.fields[0]);
     expect(transformedSoql).toContain(uiModelOne.fields[1]);
     expect(transformedSoql).toContain(uiModelOne.sObject);
@@ -91,6 +92,7 @@ describe('SoqlUtils', () => {
     expect(transformedSoql).toContain(uiModelOne.orderBy[0].nulls);
     expect(transformedSoql).toContain('11');
   });
+
   it('transform UI Model to Soql but leaves out errors/unsupported', () => {
     const transformedSoql = convertUiModelToSoql(uiModelErrors);
     expect(transformedSoql).not.toContain(
@@ -98,6 +100,26 @@ describe('SoqlUtils', () => {
     );
     expect(transformedSoql).not.toContain(uiModelErrors.errors[0].type);
   });
+
+  it('transform UI Model with comments to Soql Model', () => {
+    const modelWithComments: ToolingModelJson = {
+      headerComments: '// Comments here\n',
+      sObject: 'Foo',
+      fields: ['Id'],
+      where: { andOr: undefined, conditions: [] },
+      orderBy: [],
+      limit: '',
+      errors: [],
+      unsupported: [],
+      originalSoqlStatement: '// Comments here\nSELECT Id FROM Foo'
+    };
+    const transformedSoql = convertUiModelToSoql(modelWithComments);
+    const transformedSoqlNormalized = transformedSoql.replace(/\n\s+/g, '\n');
+    expect(transformedSoqlNormalized).toEqual(
+      '// Comments here\nSELECT Id\nFROM Foo\n'
+    );
+  });
+
   it('transforms Soql to UI Model', () => {
     const transformedUiModel = convertSoqlToUiModel(soqlOne);
     let expectedUiModel = { ...uiModelOne } as any;
@@ -107,7 +129,30 @@ describe('SoqlUtils', () => {
     );
   });
 
-  it('catches unsupported syntyax in where', () => {
+  it('transforms Soql with comments to UI', () => {
+    const transformedUiModel = convertSoqlToUiModel(
+      '// Comments here\nSELECT Id FROM Foo'
+    );
+    const expectedUiModel: ToolingModelJson = {
+      headerComments: '// Comments here\n',
+      sObject: 'Foo',
+      fields: ['Id'],
+      where: { andOr: undefined, conditions: [] },
+      orderBy: [],
+      limit: '',
+      errors: [],
+      unsupported: [],
+      originalSoqlStatement: '// Comments here\nSELECT Id FROM Foo'
+    };
+    delete expectedUiModel.originalSoqlStatement;
+    expect(transformedUiModel).toEqual(expectedUiModel);
+
+    expect(JSON.stringify(transformedUiModel)).toEqual(
+      JSON.stringify(expectedUiModel)
+    );
+  });
+
+  it('catches unsupported syntax in where', () => {
     const transformedUiModel = convertSoqlToUiModel(unsupportedWhereExpr);
     expect(transformedUiModel.where.conditions.length).toBe(0);
     expect(transformedUiModel.unsupported.length).toBe(1);
