@@ -60,5 +60,7 @@
     "activityBar.background": "#523d89",
     "titleBar.activeBackground": "#523d89",
     "titleBar.activeForeground": "#f3f1ef"
-  }
+  },
+  "prettier.configPath": "../.prettierrc",
+  "editor.defaultFormatter": "esbenp.prettier-vscode"
 }
