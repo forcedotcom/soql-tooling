@@ -394,3 +394,4 @@ describe('App should', () => {
       });
     });
   });
+});
