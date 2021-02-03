@@ -283,7 +283,7 @@ describe('WhereModifierGroup should', () => {
     });
   });
 
-  it('set error class of invalid criteria input', async () => {
+  it('set error class of invalid criteria input and clear when sobject changes', async () => {
     modifierGroup.condition = {
       field: { fieldName: 'foo' },
       operator: '=',
@@ -299,11 +299,21 @@ describe('WhereModifierGroup should', () => {
     criteriaInputEl.value = 'Hello'; // not a valid boolean criteria
     criteriaInputEl.dispatchEvent(new Event('input'));
     expect(handler).not.toHaveBeenCalled();
-    return Promise.resolve().then(() => {
-      const operatorContainerEl = modifierGroup.shadowRoot.querySelector(
-        '[data-el-where-criteria]'
-      );
-      expect(operatorContainerEl.className).toContain('error');
-    });
+    return Promise.resolve()
+      .then(() => {
+        const operatorContainerEl = modifierGroup.shadowRoot.querySelector(
+          '[data-el-where-criteria]'
+        );
+        expect(operatorContainerEl.className).toContain('error');
+      })
+      .then(() => {
+        modifierGroup.sobjectMetadata = { fields: [] };
+      })
+      .then(() => {
+        const operatorContainerEl = modifierGroup.shadowRoot.querySelector(
+          '[data-el-where-criteria]'
+        );
+        expect(operatorContainerEl.className).not.toContain('error');
+      });
   });
 });
