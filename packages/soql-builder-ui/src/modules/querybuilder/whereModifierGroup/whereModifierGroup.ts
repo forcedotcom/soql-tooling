@@ -10,14 +10,14 @@ import { debounce } from 'debounce';
 import {
   Soql,
   ValidatorFactory,
-  splitMultiInputValues
+  splitMultiInputValues,
 } from '@salesforce/soql-model';
 import { JsonMap } from '@salesforce/types';
 import { operatorOptions } from '../services/model';
 import { SObjectTypeUtils } from '../services/sobjectUtils';
 import {
   displayValueToSoqlStringLiteral,
-  soqlStringLiteralToDisplayValue
+  soqlStringLiteralToDisplayValue,
 } from '../services/soqlUtils';
 
 export default class WhereModifierGroup extends LightningElement {
@@ -130,12 +130,6 @@ export default class WhereModifierGroup extends LightningElement {
     return this.getFieldName() ? [this.getFieldName()] : [];
   }
 
-  get filteredFields() {
-    return this.allFields.filter((field) => {
-      return field !== this.getFieldName();
-    });
-  }
-
   getFieldName(): string | undefined {
     return this.condition &&
       this.condition.field &&
@@ -208,10 +202,10 @@ export default class WhereModifierGroup extends LightningElement {
     e.preventDefault();
     const conditionRemovedEvent = new CustomEvent('where__condition_removed', {
       detail: {
-        index: this.index
+        index: this.index,
       },
       bubbles: true,
-      composed: true
+      composed: true,
     });
 
     this.dispatchEvent(conditionRemovedEvent);
@@ -321,7 +315,7 @@ export default class WhereModifierGroup extends LightningElement {
 
       const validateOptions = {
         type,
-        picklistValues
+        picklistValues,
       };
 
       const isMultiInput = this.isMulipleValueOperator(
@@ -350,27 +344,27 @@ export default class WhereModifierGroup extends LightningElement {
 
       const conditionTemplate = {
         field: { fieldName },
-        operator: opModelValue
+        operator: opModelValue,
       };
       if (isMultiInput) {
         const rawValues = splitMultiInputValues(normalizedInput);
         const values = rawValues.map((value) => {
           return {
             type: critType,
-            value
+            value,
           };
         });
         this.condition = {
           ...conditionTemplate,
-          values
+          values,
         };
       } else {
         this.condition = {
           ...conditionTemplate,
           compareValue: {
             type: critType,
-            value: normalizedInput
-          }
+            value: normalizedInput,
+          },
         };
       }
     }
@@ -386,8 +380,8 @@ function selectionEventHandler(e) {
     const modGroupSelectionEvent = new CustomEvent('modifiergroupselection', {
       detail: {
         condition: this.condition,
-        index: this.index
-      }
+        index: this.index,
+      },
     });
     this.dispatchEvent(modGroupSelectionEvent);
   }
