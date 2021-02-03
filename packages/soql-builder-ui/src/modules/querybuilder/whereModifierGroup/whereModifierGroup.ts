@@ -30,6 +30,7 @@ export default class WhereModifierGroup extends LightningElement {
   set sobjectMetadata(sobjectMetadata: any) {
     this._sobjectMetadata = sobjectMetadata;
     this.sobjectTypeUtils = new SObjectTypeUtils(sobjectMetadata);
+    this.resetErrorFlagsAndMessages();
   }
   _condition: JsonMap;
   _currentOperatorValue;

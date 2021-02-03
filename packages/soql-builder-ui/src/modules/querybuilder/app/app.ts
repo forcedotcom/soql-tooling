@@ -54,7 +54,7 @@ export default class App extends LightningElement {
   hasRecoverableFromError = false;
   hasRecoverableLimitError = false;
   hasRecoverableError = true;
-  hasUnrecoverableError = true;
+  hasUnrecoverableError = false;
   isFromLoading = false;
   isFieldsLoading = false;
   isQueryRunning = false;
@@ -146,7 +146,6 @@ export default class App extends LightningElement {
     this.hasRecoverableLimitError = false;
     this.hasUnrecoverableError = false;
     errors.forEach((error) => {
-      // TODO: replace with imported types after fernando's work
       if (recoverableErrors[error.type]) {
         this.hasRecoverableError = true;
         if (recoverableFieldErrors[error.type]) {
