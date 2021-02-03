@@ -75,6 +75,7 @@ export class SyntaxOptions {
 }
 
 export interface Query extends SoqlModelObject {
+  headerComments?: HeaderComments;
   select?: Select;
   from?: From;
   where?: Where;
@@ -233,6 +234,9 @@ export interface InListCondition extends Condition {
 
 export interface Where extends SoqlModelObject {
   condition: Condition;
+}
+export interface HeaderComments extends SoqlModelObject {
+  text: string;
 }
 
 export interface With extends SoqlModelObject { }

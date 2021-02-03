@@ -31,24 +31,26 @@ export enum AndOr {
 export type IMap = Map<string, string | List<string>>;
 // Private immutable interface
 export interface ToolingModel extends IMap {
+  headerComments?: string;
   sObject: string;
   fields: List<string>;
   orderBy: List<Map>;
   limit: string;
   where: List<Map>;
   errors: List<Map>;
-  unsupported: List<string>;
+  unsupported: List<Map>;
   originalSoqlStatement: string;
 }
 // Public inteface for accessing modelService.query
 export interface ToolingModelJson extends JsonMap {
+  headerComments?: string;
   sObject: string;
   fields: string[];
   orderBy: JsonMap[];
   limit: string;
   where: { conditions: JsonMap; andOr: string };
   errors: JsonMap[];
-  unsupported: string[];
+  unsupported: JsonMap[];
   originalSoqlStatement: string;
 }
 

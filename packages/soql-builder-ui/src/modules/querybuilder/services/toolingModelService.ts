@@ -18,30 +18,6 @@ import {
 } from '../services/soqlUtils';
 import { IMap, ToolingModel, ToolingModelJson, ModelProps } from './model';
 import { createQueryTelemetry } from './telemetryUtils';
-
-// This is to satisfy TS and stay dry
-type IMap = Map<string, string | List<string>>;
-// Private immutable interface
-export interface ToolingModel extends IMap {
-  sObject: string;
-  fields: List<string>;
-  orderBy: List<Map>;
-  limit: string;
-  errors: List<Map>;
-  unsupported: List<Map>;
-  originalSoqlStatement: string;
-}
-// Public inteface for accessing modelService.query
-export interface ToolingModelJson extends JsonMap {
-  sObject: string;
-  fields: string[];
-  orderBy: JsonMap[];
-  limit: string;
-  errors: JsonMap[];
-  unsupported: JsonMap[];
-  originalSoqlStatement: string;
-}
-
 export class ToolingModelService {
   private immutableModel: BehaviorSubject<ToolingModel>;
   public UIModel: Observable<ToolingModelJson>;
@@ -87,10 +63,19 @@ export class ToolingModelService {
 
   // This method is destructive, will clear any selections except sObject.
   public setSObject(sObject: string) {
-    const emptyModel = fromJS(ToolingModelService.toolingModelTemplate);
-    const newModelWithSelection = emptyModel.set(ModelProps.SOBJECT, sObject);
+    const newModelJS = Object.assign(
+      this.getModel().toJS(),
+      ToolingModelService.toolingModelTemplate,
+      {
+        sObject: sObject
+      }
+    );
+    this.changeModel(fromJS(newModelJS));
+  }
 
-    this.changeModel(newModelWithSelection);
+  /* ---- FIELDS ---- */
+  private getFields() {
+    return this.getModel().get(ModelProps.FIELDS) as List<string>;
   }
 
   /* ---- FIELDS ---- */
@@ -289,7 +274,7 @@ export class ToolingModelService {
       'originalSoqlStatement',
       newSoqlQuery
     );
-    this.model.next(newModelWithSoqlQuery);
+    this.immutableModel.next(newModelWithSoqlQuery);
     this.sendMessageToBackend(newSoqlQuery);
   }
 

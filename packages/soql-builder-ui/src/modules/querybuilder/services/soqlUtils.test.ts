@@ -107,6 +107,13 @@ describe('SoqlUtils', () => {
     );
   });
 
+  it('catches unsupported syntyax in where', () => {
+    const transformedUiModel = convertSoqlToUiModel(unsupportedWhereExpr);
+    expect(transformedUiModel.where.conditions.length).toBe(0);
+    expect(transformedUiModel.unsupported.length).toBe(1);
+    expect(transformedUiModel.unsupported[0]).toContain('where:');
+  });
+
   it('transforms Soql to UI Model with errors in soql syntax', () => {
     const transformedUiModel = convertSoqlToUiModel(soqlError);
     expect(transformedUiModel.errors[0].type).toEqual(
