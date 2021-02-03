@@ -47,7 +47,8 @@ describe('Fields', () => {
     document.body.appendChild(fields);
 
     const handler = jest.fn();
-    fields.addEventListener('fieldremoved', handler);
+    fields.addEventListener('fields__removed', handler);
+
     const selectedFieldCloseEl = fields.shadowRoot.querySelector(
       "[data-field='foo']"
     );

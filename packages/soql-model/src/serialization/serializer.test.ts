@@ -7,6 +7,7 @@
 
 import { ModelSerializer } from './serializer';
 import * as Impl from '../model/impl';
+import { HeaderCommentsImpl } from '../model/impl/headerCommentsImpl';
 
 describe('ModelSerializer should', () => {
   it('transform model to SOQL syntax', () => {
@@ -17,6 +18,21 @@ describe('ModelSerializer should', () => {
         new Impl.FromImpl('object')
       )
     ).serialize();
+    expect(actual).toEqual(expected);
+  });
+
+  it('transform model with comments to SOQL syntax', () => {
+    const expected =
+      '// Comment 1\n// Comment 2\nSELECT field\n  FROM object\n';
+
+    const query = new Impl.QueryImpl(
+      new Impl.SelectExprsImpl([new Impl.FieldRefImpl('field')]),
+      new Impl.FromImpl('object')
+    );
+    query.headerComments = new HeaderCommentsImpl(
+      '// Comment 1\n// Comment 2\n'
+    );
+    const actual = new ModelSerializer(query).serialize();
     expect(actual).toEqual(expected);
   });
 });
