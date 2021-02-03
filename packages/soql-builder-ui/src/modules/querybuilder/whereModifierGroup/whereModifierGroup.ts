@@ -7,7 +7,11 @@
  */
 import { api, LightningElement, track } from 'lwc';
 import { debounce } from 'debounce';
-import { Soql, ValidatorFactory, splitMultiInputValues } from '@salesforce/soql-model';
+import {
+  Soql,
+  ValidatorFactory,
+  splitMultiInputValues
+} from '@salesforce/soql-model';
 import { JsonMap } from '@salesforce/types';
 import { operatorOptions } from '../services/model';
 import { SObjectTypeUtils } from '../services/sobjectUtils';
@@ -40,6 +44,7 @@ export default class WhereModifierGroup extends LightningElement {
   criteriaErrorMessage = '';
   hasOperatorError = false;
   hasCriteriaError = false;
+  selectPlaceHolderText = 'Search Fields...'; //i18n
 
   handleSelectionEvent: () => void;
   // this need to be public so parent can read value
@@ -54,18 +59,34 @@ export default class WhereModifierGroup extends LightningElement {
     this._condition = condition;
     this._criteriaDisplayValue = '';
 
-    const matchingOption = condition ? operatorOptions.find(option => option.modelValue === condition.operator) : undefined;
-    this._currentOperatorValue = matchingOption ? matchingOption.value : undefined;
+    const matchingOption = condition
+      ? operatorOptions.find(
+          (option) => option.modelValue === condition.operator
+        )
+      : undefined;
+    this._currentOperatorValue = matchingOption
+      ? matchingOption.value
+      : undefined;
 
-    if (this._selectedOperator && this.isMulipleValueOperator(this._selectedOperator.value)) {
+    if (
+      this._selectedOperator &&
+      this.isMulipleValueOperator(this._selectedOperator.value)
+    ) {
       if (Array.isArray(condition.values)) {
-        this._criteriaDisplayValue = condition.values.map(value => value.value).join(', ');
+        this._criteriaDisplayValue = condition.values
+          .map((value) => value.value)
+          .join(', ');
       }
     } else {
-      if (condition.compareValue
-        && condition.compareValue.type
-        && condition.compareValue.value) {
-        this._criteriaDisplayValue = this.displayValue(condition.compareValue.type, condition.compareValue.value);
+      if (
+        condition.compareValue &&
+        condition.compareValue.type &&
+        condition.compareValue.value
+      ) {
+        this._criteriaDisplayValue = this.displayValue(
+          condition.compareValue.type,
+          condition.compareValue.value
+        );
       }
     }
   }
@@ -76,7 +97,7 @@ export default class WhereModifierGroup extends LightningElement {
   }
 
   renderedCallback() {
-    this.fieldEl = this.template.querySelector('[data-el-where-field]');
+    this.fieldEl = this.template.querySelector('querybuilder-custom-select');
     this.operatorEl = this.template.querySelector(
       '[data-el-where-operator-input]'
     );
@@ -93,7 +114,7 @@ export default class WhereModifierGroup extends LightningElement {
 
   checkAllModifiersHaveValues(): Boolean {
     const allHaveValues = Boolean(
-      this.fieldEl.value && this.operatorEl.value && this.criteriaEl.value
+      this.fieldEl.value[0] && this.operatorEl.value && this.criteriaEl.value
     );
     this._allModifiersHaveValue = allHaveValues;
     return allHaveValues;
@@ -105,7 +126,7 @@ export default class WhereModifierGroup extends LightningElement {
   }
 
   get _selectedField() {
-    return this.getFieldName();
+    return this.getFieldName() ? [this.getFieldName()] : [];
   }
 
   get filteredFields() {
@@ -115,7 +136,11 @@ export default class WhereModifierGroup extends LightningElement {
   }
 
   getFieldName(): string | undefined {
-    return this.condition && this.condition.field && this.condition.field.fieldName ? this.condition.field.fieldName : undefined;
+    return this.condition &&
+      this.condition.field &&
+      this.condition.field.fieldName
+      ? this.condition.field.fieldName
+      : undefined;
   }
 
   get defaultFieldOptionText() {
@@ -134,13 +159,15 @@ export default class WhereModifierGroup extends LightningElement {
   }
 
   toOperatorModelValue(value: string): string | undefined {
-    const matchingOption = operatorOptions.find(option => option.value === value);
+    const matchingOption = operatorOptions.find(
+      (option) => option.value === value
+    );
     return matchingOption ? matchingOption.modelValue : undefined;
   }
 
   get filteredOperators() {
     return operatorOptions.filter((option) => {
-      return option.value !== this._currentOperatorValue
+      return option.value !== this._currentOperatorValue;
     });
   }
 
@@ -150,10 +177,12 @@ export default class WhereModifierGroup extends LightningElement {
   }
 
   isMulipleValueOperator(operatorValue: string): boolean {
-    return (operatorValue === 'IN'
-      || operatorValue === 'NOT_IN'
-      || operatorValue === 'INCLUDES'
-      || operatorValue === 'EXCLUDES');
+    return (
+      operatorValue === 'IN' ||
+      operatorValue === 'NOT_IN' ||
+      operatorValue === 'INCLUDES' ||
+      operatorValue === 'EXCLUDES'
+    );
   }
 
   /** css class methods */
@@ -235,8 +264,8 @@ export default class WhereModifierGroup extends LightningElement {
     // values need to be quoted
     return this.sobjectTypeUtils
       ? this.sobjectTypeUtils
-        .getPicklistValues(fieldName)
-        .map((value) => `'${value}'`)
+          .getPicklistValues(fieldName)
+          .map((value) => `'${value}'`)
       : [];
   }
 
@@ -279,8 +308,8 @@ export default class WhereModifierGroup extends LightningElement {
     if (this.checkAllModifiersHaveValues()) {
       this.resetErrorFlagsAndMessages();
 
-      const fieldName = this.fieldEl.value;
-      const op = this._currentOperatorValue = this.operatorEl.value;
+      const fieldName = this.fieldEl.value[0];
+      const op = (this._currentOperatorValue = this.operatorEl.value);
       const opModelValue = this.toOperatorModelValue(op);
 
       this._criteriaDisplayValue = this.criteriaEl.value;
@@ -294,7 +323,9 @@ export default class WhereModifierGroup extends LightningElement {
         picklistValues
       };
 
-      const isMultiInput = this.isMulipleValueOperator(this._currentOperatorValue);
+      const isMultiInput = this.isMulipleValueOperator(
+        this._currentOperatorValue
+      );
 
       const inputValidator = isMultiInput
         ? ValidatorFactory.getFieldMultipleInputValidator(validateOptions)
@@ -306,7 +337,9 @@ export default class WhereModifierGroup extends LightningElement {
         return false;
       }
 
-      const operatorValidator = ValidatorFactory.getOperatorValidator(validateOptions);
+      const operatorValidator = ValidatorFactory.getOperatorValidator(
+        validateOptions
+      );
       result = operatorValidator.validate(op);
       if (!result.isValid) {
         this.errorMessage = this.operatorErrorMessage = result.message;
@@ -320,7 +353,7 @@ export default class WhereModifierGroup extends LightningElement {
       };
       if (isMultiInput) {
         const rawValues = splitMultiInputValues(normalizedInput);
-        const values = rawValues.map(value => {
+        const values = rawValues.map((value) => {
           return {
             type: critType,
             value
