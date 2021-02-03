@@ -4,8 +4,13 @@
  * Licensed under the BSD 3-Clause license.
  * For full license text, see LICENSE.txt file in the repo root or https://opensource.org/licenses/BSD-3-Clause
  */
-import { convertUiModelToSoql, convertSoqlToUiModel } from './soqlUtils';
-import { ToolingModelJson } from './toolingModelService';
+import {
+  convertUiModelToSoql,
+  convertSoqlToUiModel,
+  soqlStringLiteralToDisplayValue,
+  displayValueToSoqlStringLiteral
+} from './soqlUtils';
+import { ToolingModelJson } from './model';
 
 describe('SoqlUtils', () => {
   const uiModelOne: ToolingModelJson = {
@@ -54,15 +59,19 @@ describe('SoqlUtils', () => {
         type: 'UNEXPECTEDEOF'
       }
     ],
+    where: { conditions: [], andOr: undefined },
     unsupported: [
       {
         unmodeledSyntax: 'GROUP BY',
         reason: 'unmodeled:group-by'
       }
-    ]
+    ],
+    originalSoqlStatement: ''
   };
   const soqlOne =
-    'Select Name, Id from Account ORDER BY Name ASC NULLS FIRST LIMIT 11';
+    "Select Name, Id from Account WHERE Name = 'pwt' AND Id = 123456 ORDER BY Name ASC NULLS FIRST LIMIT 11";
+  const unsupportedWhereExpr =
+    "Select Name, Id from Account WHERE (Name = 'pwt' AND Id = 123456) OR Id = 654321 ORDER BY Name ASC NULLS FIRST LIMIT 11";
   const soqlError = 'Select Name from Account GROUP BY';
   it('transform UI Model to Soql', () => {
     const transformedSoql = convertUiModelToSoql(uiModelOne);
@@ -97,6 +106,7 @@ describe('SoqlUtils', () => {
       JSON.stringify(expectedUiModel)
     );
   });
+
   it('transforms Soql to UI Model with errors in soql syntax', () => {
     const transformedUiModel = convertSoqlToUiModel(soqlError);
     expect(transformedUiModel.errors[0].type).toEqual(

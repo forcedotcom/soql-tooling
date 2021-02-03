@@ -193,11 +193,7 @@ describe('SoqlModelUtils should', () => {
     expect(actual).toBeTruthy();
   });
   it('throws from simpleGroupToArray if condition not simple group', () => {
-    const nonSimpleGroup = new Impl.AndOrConditionImpl(
-      conditionFieldCompare,
-      Soql.AndOr.Or,
-      conditionAndOr
-    );
+    const nonSimpleGroup = new Impl.AndOrConditionImpl(conditionFieldCompare, Soql.AndOr.Or, conditionAndOr);
     expect(() => SoqlModelUtils.simpleGroupToArray(nonSimpleGroup)).toThrow();
   });
   it('returns array and operator from simpleGroupToArray for simple group', () => {
@@ -227,7 +223,11 @@ describe('SoqlModelUtils should', () => {
     const expected = new Impl.AndOrConditionImpl(
       conditions[0],
       andOr,
-      new Impl.AndOrConditionImpl(conditions[1], andOr, conditions[2])
+      new Impl.AndOrConditionImpl(
+        conditions[1],
+        andOr,
+        conditions[2]
+      )
     );
     const actual = SoqlModelUtils.arrayToSimpleGroup(conditions, andOr);
     expect(actual).toEqual(expected);

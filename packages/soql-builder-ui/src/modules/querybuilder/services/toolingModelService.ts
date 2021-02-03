@@ -16,6 +16,7 @@ import {
   convertUiModelToSoql,
   convertSoqlToUiModel
 } from '../services/soqlUtils';
+import { IMap, ToolingModel, ToolingModelJson, ModelProps } from './model';
 import { createQueryTelemetry } from './telemetryUtils';
 
 // This is to satisfy TS and stay dry
@@ -255,14 +256,14 @@ export class ToolingModelService {
           const soqlJSModel = convertSoqlToUiModel(originalSoqlStatement);
           soqlJSModel.originalSoqlStatement = originalSoqlStatement;
           const updatedModel = fromJS(soqlJSModel);
-          if (!updatedModel.equals(this.model.getValue())) {
+          if (!updatedModel.equals(this.immutableModel.getValue())) {
             if (
               originalSoqlStatement.length &&
               (soqlJSModel.errors.length || soqlJSModel.unsupported.length)
             ) {
               this.sendTelemetryToBackend(soqlJSModel);
             }
-            this.model.next(updatedModel);
+            this.immutableModel.next(updatedModel);
           }
           break;
         }

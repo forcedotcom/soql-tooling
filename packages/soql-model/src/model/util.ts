@@ -145,6 +145,13 @@ export namespace SoqlModelUtils {
     );
   }
 
+  export function getKeyByValue(
+    object: { [key: string]: string },
+    value: string
+  ): string | undefined {
+    return Object.keys(object).find((key: string) => object[key] === value);
+  }
+
   function stripNesting(condition: Condition): Condition {
     while (condition instanceof Impl.NestedConditionImpl) {
       condition = (condition as Impl.NestedConditionImpl).condition;
