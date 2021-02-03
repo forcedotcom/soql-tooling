@@ -12,18 +12,13 @@ export default class Fields extends LightningElement {
   @api selectedFields: string[] = [];
   @api hasError = false;
   @api isLoading = false;
-
-  get defaultOptionText() {
-    // TODO: i18n
-    return this.isLoading ? 'Loading...' : 'Select fields...';
-  }
+  selectPlaceHolderText = 'Search fields...'; // TODO: i18n
 
   handleFieldSelection(e) {
     e.preventDefault();
-    const value = e.target.value;
-    if (value && value.length) {
+    if (e.detail && e.detail.value) {
       const fieldSelectedEvent = new CustomEvent('fields__selected', {
-        detail: { field: e.target.value }
+        detail: { field: e.detail.value }
       });
       this.dispatchEvent(fieldSelectedEvent);
     }

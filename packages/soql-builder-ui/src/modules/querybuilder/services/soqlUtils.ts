@@ -24,17 +24,21 @@ export function convertSoqlModelToUiModel(
   queryModel: Soql.Query
 ): ToolingModelJson {
   const unsupported = [];
+  const headerComments = queryModel.headerComments
+    ? queryModel.headerComments.text
+    : undefined;
+
   const fields =
     queryModel.select &&
-      (queryModel.select as Soql.SelectExprs).selectExpressions
+    (queryModel.select as Soql.SelectExprs).selectExpressions
       ? (queryModel.select as Soql.SelectExprs).selectExpressions
-        .filter((expr) => !SoqlModelUtils.containsUnmodeledSyntax(expr))
-        .map((expr) => {
-          if (expr.field.fieldName) {
-            return expr.field.fieldName;
-          }
-          return undefined;
-        })
+          .filter((expr) => !SoqlModelUtils.containsUnmodeledSyntax(expr))
+          .map((expr) => {
+            if (expr.field.fieldName) {
+              return expr.field.fieldName;
+            }
+            return undefined;
+          })
       : undefined;
 
   const sObject = queryModel.from && queryModel.from.sobjectName;
@@ -46,13 +50,12 @@ export function convertSoqlModelToUiModel(
     if (!SoqlModelUtils.isUnmodeledSyntax(conditionsObj)) {
       const simpleGroupArray = SoqlModelUtils.simpleGroupToArray(conditionsObj);
       where = {
-        conditions: simpleGroupArray.conditions
-          .map((condition, index) => {
-            return {
-              condition,
-              index
-            };
-          }),
+        conditions: simpleGroupArray.conditions.map((condition, index) => {
+          return {
+            condition,
+            index
+          };
+        }),
         andOr: simpleGroupArray.andOr
       };
     }
@@ -60,15 +63,15 @@ export function convertSoqlModelToUiModel(
 
   const orderBy = queryModel.orderBy
     ? queryModel.orderBy.orderByExpressions
-      // TODO: Deal with empty OrderBy.  returns unmodelled syntax.
-      .filter((expr) => !SoqlModelUtils.containsUnmodeledSyntax(expr))
-      .map((expression) => {
-        return {
-          field: expression.field.fieldName,
-          order: expression.order,
-          nulls: expression.nullsOrder
-        };
-      })
+        // TODO: Deal with empty OrderBy.  returns unmodelled syntax.
+        .filter((expr) => !SoqlModelUtils.containsUnmodeledSyntax(expr))
+        .map((expression) => {
+          return {
+            field: expression.field.fieldName,
+            order: expression.order,
+            nulls: expression.nullsOrder
+          };
+        })
     : [];
 
   const limit = queryModel.limit
@@ -90,6 +93,7 @@ export function convertSoqlModelToUiModel(
   }
 
   const toolingModelTemplate: ToolingModelJson = {
+    headerComments: headerComments,
     sObject: sObject || '',
     fields: fields || [],
     where: where || { conditions: [], andOr: undefined },
@@ -117,14 +121,14 @@ function convertUiModelToSoqlModel(uiModel: ToolingModelJson): Soql.Query {
 
   let whereExprsImpl;
   if (uiModel.where && uiModel.where.conditions.length) {
-    const simpleGroupArray = uiModel.where.conditions.map(condition => {
+    const simpleGroupArray = uiModel.where.conditions.map((condition) => {
       const uiModelCondition = condition.condition;
       let returnCondition = undefined;
 
-
-      const field = uiModelCondition.field && uiModelCondition.field.fieldName
-        ? new Impl.FieldRefImpl(uiModelCondition.field.fieldName)
-        : undefined;
+      const field =
+        uiModelCondition.field && uiModelCondition.field.fieldName
+          ? new Impl.FieldRefImpl(uiModelCondition.field.fieldName)
+          : undefined;
 
       enum ConditionType {
         FieldCompare = 0,
@@ -146,23 +150,40 @@ function convertUiModelToSoqlModel(uiModel: ToolingModelJson): Soql.Query {
       }
 
       const compareValue = uiModelCondition.compareValue
-        ? new Impl.LiteralImpl(uiModelCondition.compareValue.type, uiModelCondition.compareValue.value)
+        ? new Impl.LiteralImpl(
+            uiModelCondition.compareValue.type,
+            uiModelCondition.compareValue.value
+          )
         : uiModelCondition.values
-          ? uiModelCondition.values.map(value => new Impl.LiteralImpl(value.type, value.value))
-          : undefined;
+        ? uiModelCondition.values.map(
+            (value) => new Impl.LiteralImpl(value.type, value.value)
+          )
+        : undefined;
 
       if (field && compareValue) {
         switch (conditionType) {
           case ConditionType.FieldCompare: {
-            returnCondition = new Impl.FieldCompareConditionImpl(field, uiModelCondition.operator, compareValue);
+            returnCondition = new Impl.FieldCompareConditionImpl(
+              field,
+              uiModelCondition.operator,
+              compareValue
+            );
             break;
           }
           case ConditionType.In: {
-            returnCondition = new Impl.InListConditionImpl(field, uiModelCondition.operator, compareValue);
+            returnCondition = new Impl.InListConditionImpl(
+              field,
+              uiModelCondition.operator,
+              compareValue
+            );
             break;
           }
           case ConditionType.Includes: {
-            returnCondition = new Impl.IncludesConditionImpl(field, uiModelCondition.operator, compareValue);
+            returnCondition = new Impl.IncludesConditionImpl(
+              field,
+              uiModelCondition.operator,
+              compareValue
+            );
             break;
           }
         }
@@ -170,7 +191,10 @@ function convertUiModelToSoqlModel(uiModel: ToolingModelJson): Soql.Query {
 
       return returnCondition;
     });
-    whereExprsImpl = SoqlModelUtils.arrayToSimpleGroup(simpleGroupArray, uiModel.where.andOr);
+    whereExprsImpl = SoqlModelUtils.arrayToSimpleGroup(
+      simpleGroupArray,
+      uiModel.where.andOr
+    );
   }
 
   const where =
@@ -198,6 +222,9 @@ function convertUiModelToSoqlModel(uiModel: ToolingModelJson): Soql.Query {
     undefined,
     orderBy,
     limit
+  );
+  queryModel.headerComments = new Impl.HeaderCommentsImpl(
+    uiModel.headerComments
   );
   return queryModel;
 }

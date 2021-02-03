@@ -15,6 +15,7 @@ import { QueryImpl } from './queryImpl';
 import { SelectExprsImpl } from './selectExprsImpl';
 import { WhereImpl } from './whereImpl';
 import { UnmodeledSyntaxImpl } from './unmodeledSyntaxImpl';
+import { HeaderCommentsImpl } from './headerCommentsImpl';
 
 export {
   AndOrConditionImpl,
@@ -34,4 +35,5 @@ export {
   OrderByExpressionImpl,
   WhereImpl,
   UnmodeledSyntaxImpl,
+  HeaderCommentsImpl,
 };

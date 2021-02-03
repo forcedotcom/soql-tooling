@@ -24,6 +24,8 @@ import {
   TerminalNode,
 } from 'antlr4ts/tree';
 import { Interval } from 'antlr4ts/misc/Interval';
+import { HeaderCommentsImpl } from '../model/impl/headerCommentsImpl';
+import { parseHeaderComments } from './soqlComments';
 
 export class ModelDeserializer {
   protected soqlSyntax: string;
@@ -38,13 +40,22 @@ export class ModelDeserializer {
       isMultiCurrencyEnabled: true,
       apiVersion: 50.0,
     });
-    const result = parser.parseQuery(this.soqlSyntax);
+
+
+    const { headerComments, headerPaddedSoqlText } = parseHeaderComments(
+      this.soqlSyntax
+    );
+
+    const result = parser.parseQuery(headerPaddedSoqlText);
     const parseTree = result.getParseTree();
     const errors = result.getParserErrors();
     if (parseTree) {
       const queryListener = new QueryListener();
       parseTree.enterRule(queryListener as ParseTreeListener);
       query = queryListener.getQuery();
+      if (query && headerComments) {
+        query.headerComments = new HeaderCommentsImpl(headerComments);
+      }
     }
 
     const errorIdentifer = new ErrorIdentifier(parseTree);

@@ -76,6 +76,17 @@ describe('Tooling Model Service', () => {
 
       expect(query!.sObject).toBe(mockSobject);
     });
+
+    it('should include originalSoqlStatement property in model', () => {
+      expect(query.originalSoqlStatement).toBe('');
+      modelService.setSObject('Account');
+      modelService.addField('Id');
+
+      // The formatting of the soql statement is hard to match exactly
+      // because the formatter inserts returns and spaces.
+      expect(query.originalSoqlStatement).toContain('SELECT Id');
+      expect(query.originalSoqlStatement).toContain('FROM Account');
+    });
   });
 
   describe('FIELDS', () => {
@@ -227,7 +238,9 @@ describe('Tooling Model Service', () => {
       newMock.fieldCompareExpr.condition.field.fieldName = newField;
       modelService.upsertWhereFieldExpr(newMock);
       expect(query!.where.conditions.length).toBe(1);
-      expect(query!.where.conditions[0].condition.field.fieldName).toContain(newField);
+      expect(query!.where.conditions[0].condition.field.fieldName).toContain(
+        newField
+      );
     });
 
     it('should DELETE condition by index', () => {
@@ -323,25 +336,39 @@ describe('Tooling Model Service', () => {
     });
   });
 
-  // LIMIT
-  describe('LIMIT', () => {
-    it('should update limit in model', () => {
-      (messageService.setState as jest.Mock).mockClear();
-      expect(messageService.setState).toHaveBeenCalledTimes(0);
-      query = ToolingModelService.toolingModelTemplate;
 
-      expect(query!.limit).toEqual('');
+  it('Receive SOQL Text from editor (with comments)', () => {
+    const soqlText =
+      '// This is a comment\n\n\n// Another comment\n\nSELECT Id FROM Foo';
+    const soqlEvent = { ...soqlEditorEvent };
+    soqlEvent.payload = soqlText;
+    (messageService.messagesToUI as BehaviorSubject<SoqlEditorEvent>).next(
+      soqlEvent
+    );
 
-      // Add
-      modelService.changeLimit('11');
-      expect(query!.limit).toBe('11');
+    expect(query.sObject).toEqual('Foo');
+    expect(query.fields[0]).toEqual('Id');
+    expect(query.errors.length).toEqual(0);
+    expect(query.unsupported.length).toEqual(0);
+    expect(query.headerComments).toEqual(
+      '// This is a comment\n\n\n// Another comment\n\n'
+    );
 
-      // Remove Limit
-      modelService.changeLimit(undefined);
-      expect(query!.limit).toBe('');
+    // Now modify the query. The resulting text must retain the comments
+    modelService.setSObject('Bar');
+    modelService.addField('Name');
 
-      // verify saves
-      expect(messageService.setState).toHaveBeenCalledTimes(2);
-    });
+    expect(query.sObject).toEqual('Bar');
+    expect(query.fields[0]).toEqual('Name');
+
+    expect(query.originalSoqlStatement).toContain(
+      '// This is a comment\n\n\n// Another comment\n\n'
+    );
+    expect(query.originalSoqlStatement).toContain('SELECT Name');
+    expect(query.originalSoqlStatement).toContain('FROM Bar');
+    expect(query.headerComments).toEqual(
+      '// This is a comment\n\n\n// Another comment\n\n'
+    );
   });
+
 });

@@ -63,10 +63,14 @@ export class ToolingModelService {
 
   // This method is destructive, will clear any selections except sObject.
   public setSObject(sObject: string) {
-    const emptyModel = fromJS(ToolingModelService.toolingModelTemplate);
-    const newModelWithSelection = emptyModel.set(ModelProps.SOBJECT, sObject);
-
-    this.changeModel(newModelWithSelection);
+    const newModelJS = Object.assign(
+      this.getModel().toJS(),
+      ToolingModelService.toolingModelTemplate,
+      {
+        sObject: sObject
+      }
+    );
+    this.changeModel(fromJS(newModelJS));
   }
 
   /* ---- FIELDS ---- */
@@ -260,20 +264,20 @@ export class ToolingModelService {
   }
 
   private changeModel(newModel) {
-    const newSoqlStatement = convertUiModelToSoql((newModel as IMap).toJS());
-    this.sendMessageToBackend(newSoqlStatement);
-    const newModelWithSoqlStatement = newModel.set(
+    const newSoqlQuery = convertUiModelToSoql((newModel as IMap).toJS());
+    const newModelWithSoqlQuery = newModel.set(
       'originalSoqlStatement',
-      newSoqlStatement
+      newSoqlQuery
     );
-    this.immutableModel.next(newModelWithSoqlStatement);
+    this.immutableModel.next(newModelWithSoqlQuery);
+    this.sendMessageToBackend(newSoqlQuery);
   }
 
-  public sendMessageToBackend(payload: string) {
+  public sendMessageToBackend(newSoqlQuery: string) {
     try {
       this.messageService.sendMessage({
         type: MessageType.UI_SOQL_CHANGED,
-        payload
+        payload: newSoqlQuery
       });
     } catch (e) {
       console.error(e);
