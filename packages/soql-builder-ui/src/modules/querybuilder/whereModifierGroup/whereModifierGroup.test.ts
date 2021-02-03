@@ -142,6 +142,29 @@ describe('WhereModifierGroup should', () => {
     expect(handler).toHaveBeenCalled();
   });
 
+  it('updates inputs when condition model changes', () => {
+    modifierGroup.condition = {
+      field: { fieldName: 'foo' },
+      operator: '!=',
+      compareValue: { type: 'STRING', value: "'HELLO'" }
+    };
+    document.body.appendChild(modifierGroup);
+
+    const { selectFieldEl, selectOperatorEl, criteriaInputEl } = getModifierElements();
+    expect(selectFieldEl.value).toEqual('foo');
+    expect(selectOperatorEl.value).toEqual('NOT_EQ');
+    expect(criteriaInputEl.value).toEqual('HELLO');
+
+    modifierGroup.condition = {
+      operator: '='
+    };
+    return Promise.resolve().then(() => {
+      expect(selectFieldEl.value).toEqual('');
+      expect(selectOperatorEl.value).toEqual('EQ');
+      expect(criteriaInputEl.value).toEqual('');
+    });
+  });
+
   it('display the correct operator', () => {
     modifierGroup.condition = {
       operator: '<'
