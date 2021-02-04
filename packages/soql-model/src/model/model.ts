@@ -95,8 +95,11 @@ export interface From extends SoqlModelObject {
 }
 
 export interface Select extends SoqlModelObject {
-  // SELECT COUNT() => UnmodeledSyntax
+  // SELECT COUNT() => SelectCount
   // SELECT [field] [subquery] [typeof] [distance] => SelectExprs
+}
+
+export interface SelectCount extends Select {
 }
 
 export interface SelectExprs extends Select {
@@ -246,7 +249,7 @@ export interface RecordTrackingType extends SoqlModelObject { }
 export interface Update extends SoqlModelObject { }
 
 export interface UnmodeledSyntax
-  extends Select,
+  extends
   SelectExpression,
   Field,
   Condition,
