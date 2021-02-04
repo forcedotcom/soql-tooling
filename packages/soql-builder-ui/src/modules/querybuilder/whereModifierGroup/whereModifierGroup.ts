@@ -38,6 +38,7 @@ export default class WhereModifierGroup extends LightningElement {
   }
   _condition: JsonMap;
   _currentOperatorValue;
+  @track
   _currentFieldSelection;
   @track _criteriaDisplayValue;
   _sobjectMetadata: any;
