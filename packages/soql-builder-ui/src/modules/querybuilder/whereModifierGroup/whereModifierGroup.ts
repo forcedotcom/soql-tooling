@@ -353,9 +353,10 @@ export default class WhereModifierGroup extends LightningElement {
         operator: opModelValue
       };
       if (isMultiInput) {
+        const endsWithCommaAndOptionalSpaceRegex = /,\s*$/; // matches ',' or ', ' or ',  '
         if (
           normalizedInput &&
-          !(normalizedInput.endsWith(',') || normalizedInput.endsWith(', '))
+          !endsWithCommaAndOptionalSpaceRegex.test(normalizedInput)
         ) {
           const rawValues = splitMultiInputValues(normalizedInput);
           const values = rawValues.map((value) => {
