@@ -146,6 +146,35 @@ describe('WhereModifierGroup should', () => {
     expect(handler).toHaveBeenCalled();
   });
 
+  it('clears all the values when the X is clicked', () => {
+    modifierGroup.condition = {
+      field: { fieldName: 'foo' },
+      operator: '!=',
+      compareValue: { type: 'STRING', value: "'HELLO'" }
+    };
+    document.body.appendChild(modifierGroup);
+
+    const clearConditionBtn = modifierGroup.shadowRoot.querySelector(
+      '[data-el-where-delete]'
+    );
+    const {
+      selectFieldEl,
+      selectOperatorEl,
+      criteriaInputEl
+    } = getModifierElements();
+
+    expect(selectFieldEl.value[0]).toEqual('foo');
+    expect(selectOperatorEl.value).toEqual('NOT_EQ');
+    expect(criteriaInputEl.value).toEqual('HELLO');
+
+    clearConditionBtn.click();
+    Promise.resolve().then(() => {
+      expect(selectFieldEl.value).toEqual([]);
+      expect(selectOperatorEl.value).toEqual('EQ');
+      expect(criteriaInputEl.value).toEqual('');
+    });
+  });
+
   it('updates inputs when condition model changes', () => {
     modifierGroup.condition = {
       field: { fieldName: 'foo' },
