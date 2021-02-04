@@ -34,6 +34,7 @@ export default class WhereModifierGroup extends LightningElement {
   }
   _condition: JsonMap;
   _currentOperatorValue;
+  _currentFieldSelection;
   @track _criteriaDisplayValue;
   _sobjectMetadata: any;
   sobjectTypeUtils: SObjectTypeUtils;
@@ -60,10 +61,12 @@ export default class WhereModifierGroup extends LightningElement {
     this._condition = condition;
     this._criteriaDisplayValue = '';
 
+    this._currentFieldSelection = this.getFieldName();
+
     const matchingOption = condition
       ? operatorOptions.find(
-          (option) => option.modelValue === condition.operator
-        )
+        (option) => option.modelValue === condition.operator
+      )
       : undefined;
     this._currentOperatorValue = matchingOption
       ? matchingOption.value
@@ -122,17 +125,13 @@ export default class WhereModifierGroup extends LightningElement {
   }
 
   /* --- FIELDS --- */
-  get hasSelectedField() {
-    return !!this.getFieldName();
-  }
-
   get _selectedField() {
-    return this.getFieldName() ? [this.getFieldName()] : [];
+    return this._currentFieldSelection ? [this._currentFieldSelection] : [];
   }
 
   get filteredFields() {
     return this.allFields.filter((field) => {
-      return field !== this.getFieldName();
+      return field !== this._currentFieldSelection;
     });
   }
 
@@ -265,8 +264,8 @@ export default class WhereModifierGroup extends LightningElement {
     // values need to be quoted
     return this.sobjectTypeUtils
       ? this.sobjectTypeUtils
-          .getPicklistValues(fieldName)
-          .map((value) => `'${value}'`)
+        .getPicklistValues(fieldName)
+        .map((value) => `'${value}'`)
       : [];
   }
 
@@ -309,7 +308,7 @@ export default class WhereModifierGroup extends LightningElement {
     if (this.checkAllModifiersHaveValues()) {
       this.resetErrorFlagsAndMessages();
 
-      const fieldName = this.fieldEl.value[0];
+      const fieldName = this._currentFieldSelection = this.fieldEl.value[0];
       const op = (this._currentOperatorValue = this.operatorEl.value);
       const opModelValue = this.toOperatorModelValue(op);
 
