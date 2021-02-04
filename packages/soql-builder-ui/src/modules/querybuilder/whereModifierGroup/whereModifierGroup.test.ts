@@ -109,6 +109,30 @@ describe('WhereModifierGroup should', () => {
     expect(handler).toHaveBeenCalled();
   });
 
+  it('not emit event when criteria is multi and input ends with comma and optional space', () => {
+    modifierGroup.condition = {
+      field: { fieldName: 'foo' },
+      operator: 'IN',
+      values: [{ type: 'string', value: '' }]
+    };
+    modifierGroup.sobjectMetadata = {
+      fields: [{ name: 'foo', type: 'string' }]
+    };
+    const handler = jest.fn();
+    modifierGroup.addEventListener('modifiergroupselection', handler);
+    document.body.appendChild(modifierGroup);
+
+    const { criteriaInputEl } = getModifierElements();
+    criteriaInputEl.value = "'peach', 'banana', ";
+    criteriaInputEl.dispatchEvent(new Event('input'));
+
+    expect(handler).not.toBeCalled;
+
+    criteriaInputEl.value = "'peach', 'banana', 'mango'";
+    criteriaInputEl.dispatchEvent(new Event('input'));
+    expect(handler).toBeCalled;
+  });
+
   it('not emit event when SOME modfiers have no value', () => {
     document.body.appendChild(modifierGroup);
     const handler = jest.fn();
