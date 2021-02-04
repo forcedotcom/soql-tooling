@@ -146,7 +146,7 @@ describe('WhereModifierGroup should', () => {
     expect(handler).toHaveBeenCalled();
   });
 
-  it.skip('updates inputs when condition model changes', () => {
+  it('updates inputs when condition model changes', () => {
     modifierGroup.condition = {
       field: { fieldName: 'foo' },
       operator: '!=',
@@ -159,7 +159,7 @@ describe('WhereModifierGroup should', () => {
       selectOperatorEl,
       criteriaInputEl
     } = getModifierElements();
-    expect(selectFieldEl.value).toEqual('foo');
+    expect(selectFieldEl.value[0]).toEqual('foo');
     expect(selectOperatorEl.value).toEqual('NOT_EQ');
     expect(criteriaInputEl.value).toEqual('HELLO');
 
@@ -167,7 +167,7 @@ describe('WhereModifierGroup should', () => {
       operator: '='
     };
     return Promise.resolve().then(() => {
-      expect(selectFieldEl.value).toEqual('');
+      expect(selectFieldEl.value).toEqual([]);
       expect(selectOperatorEl.value).toEqual('EQ');
       expect(criteriaInputEl.value).toEqual('');
     });
