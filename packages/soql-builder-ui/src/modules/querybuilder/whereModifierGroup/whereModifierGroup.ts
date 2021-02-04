@@ -353,17 +353,25 @@ export default class WhereModifierGroup extends LightningElement {
         operator: opModelValue
       };
       if (isMultiInput) {
-        const rawValues = splitMultiInputValues(normalizedInput);
-        const values = rawValues.map((value) => {
-          return {
-            type: critType,
-            value
+        const endsWithCommaAndOptionalSpaceRegex = /,\s*$/; // matches ',' or ', ' or ',  '
+        if (
+          normalizedInput &&
+          !endsWithCommaAndOptionalSpaceRegex.test(normalizedInput)
+        ) {
+          const rawValues = splitMultiInputValues(normalizedInput);
+          const values = rawValues.map((value) => {
+            return {
+              type: critType,
+              value
+            };
+          });
+          this.condition = {
+            ...conditionTemplate,
+            values
           };
-        });
-        this.condition = {
-          ...conditionTemplate,
-          values
-        };
+        } else {
+          // Do not trigger update. User is still typing or not finished their input.
+        }
       } else {
         this.condition = {
           ...conditionTemplate,
