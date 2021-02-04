@@ -27,7 +27,7 @@
   },
   "scripts": {
     "build": "lerna run build",
-    "clean": "lerna run clean && rimraf yarn.lock && rimraf node_modules; jest --clearCache",
+    "clean": "lerna run clean && rimraf yarn.lock && rimraf node_modules && jest --clearCache",
     "lint": "lerna run lint",
     "test": "lerna exec -- yarn run test",
     "start": "lerna run start"
