@@ -69,8 +69,8 @@ export default class WhereModifierGroup extends LightningElement {
 
     const matchingOption = condition
       ? operatorOptions.find(
-        (option) => option.modelValue === condition.operator
-      )
+          (option) => option.modelValue === condition.operator
+        )
       : undefined;
     this._currentOperatorValue = matchingOption
       ? matchingOption.value
@@ -131,12 +131,6 @@ export default class WhereModifierGroup extends LightningElement {
   /* --- FIELDS --- */
   get _selectedField() {
     return this._currentFieldSelection ? [this._currentFieldSelection] : [];
-  }
-
-  get filteredFields() {
-    return this.allFields.filter((field) => {
-      return field !== this._currentFieldSelection;
-    });
   }
 
   getFieldName(): string | undefined {
@@ -273,8 +267,8 @@ export default class WhereModifierGroup extends LightningElement {
     // values need to be quoted
     return this.sobjectTypeUtils
       ? this.sobjectTypeUtils
-        .getPicklistValues(fieldName)
-        .map((value) => `'${value}'`)
+          .getPicklistValues(fieldName)
+          .map((value) => `'${value}'`)
       : [];
   }
 
@@ -317,7 +311,7 @@ export default class WhereModifierGroup extends LightningElement {
     if (this.checkAllModifiersHaveValues()) {
       this.resetErrorFlagsAndMessages();
 
-      const fieldName = this._currentFieldSelection = this.fieldEl.value[0];
+      const fieldName = (this._currentFieldSelection = this.fieldEl.value[0]);
       const op = (this._currentOperatorValue = this.operatorEl.value);
       const opModelValue = this.toOperatorModelValue(op);
 
