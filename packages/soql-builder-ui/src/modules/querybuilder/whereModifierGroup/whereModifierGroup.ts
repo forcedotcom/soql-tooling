@@ -20,6 +20,10 @@ import {
   soqlStringLiteralToDisplayValue
 } from '../services/soqlUtils';
 
+const DEFAULT_FIELD_INPUT_VALUE = '';
+const DEFAULT_OPERATOR_INPUT_VALUE = 'EQ';
+const DEFAULT_CRITERIA_INPUT_VALUE = '';
+
 export default class WhereModifierGroup extends LightningElement {
   @api allFields: string[];
   @api isLoading = false;
@@ -204,6 +208,11 @@ export default class WhereModifierGroup extends LightningElement {
   /** end css class methods */
 
   handleConditionRemoved(e) {
+    // reset inputs to defaults
+    this._currentFieldSelection = DEFAULT_FIELD_INPUT_VALUE;
+    this._currentOperatorValue = DEFAULT_OPERATOR_INPUT_VALUE;
+    this._criteriaDisplayValue = DEFAULT_CRITERIA_INPUT_VALUE;
+
     e.preventDefault();
     const conditionRemovedEvent = new CustomEvent('where__condition_removed', {
       detail: {
