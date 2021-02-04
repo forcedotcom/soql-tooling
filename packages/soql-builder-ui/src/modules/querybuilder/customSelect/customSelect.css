@@ -59,7 +59,7 @@ main.custom-select {
 
 .select__dropdown-arrow {
   transform: rotate(180deg);
-  margin-right: 2px;
+  margin-right: 3px;
   cursor: pointer;
 }
 
