@@ -48,7 +48,7 @@ export default class CustomSelect extends LightningElement {
 
   set selectedOptions(selectedOptions: string[]) {
     this._selectedOptions = selectedOptions || [];
-    if (selectedOptions && selectedOptions.length) {
+    if (selectedOptions) {
       this._value = selectedOptions;
     }
   }
@@ -192,8 +192,8 @@ export default class CustomSelect extends LightningElement {
       const optionValue = validOptionMatch[0];
       const optionSelectionEvent = new CustomEvent('option__selection', {
         detail: {
-          value: optionValue
-        }
+          value: optionValue,
+        },
       });
 
       if (this.isSingleSelect) {
@@ -228,7 +228,7 @@ export default class CustomSelect extends LightningElement {
       this.optionList[position].classList.add('option--highlight');
       this.optionList[position].scrollIntoView({
         block: 'end',
-        inline: 'nearest'
+        inline: 'nearest',
       });
     }
   }
@@ -280,7 +280,7 @@ export default class CustomSelect extends LightningElement {
     const optionsOpenedEvent = new CustomEvent(this.customSelectEventName, {
       detail: { target: e.target },
       bubbles: true,
-      composed: true
+      composed: true,
     }) as CustomSelectEvent;
 
     this.dispatchEvent(optionsOpenedEvent);
