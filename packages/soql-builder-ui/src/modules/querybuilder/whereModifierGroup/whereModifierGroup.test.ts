@@ -199,6 +199,41 @@ describe('WhereModifierGroup should', () => {
     });
   });
 
+  it('clears any errors when X is clicked', () => {
+    modifierGroup.condition = {
+      field: { fieldName: 'foo' },
+      operator: '=',
+      compareValue: { type: 'BOOLEAN', value: 'TRUE' }
+    };
+    modifierGroup.sobjectMetadata = {
+      fields: [{ name: 'foo', type: 'boolean' }]
+    };
+    document.body.appendChild(modifierGroup);
+    const { criteriaInputEl } = getModifierElements();
+    criteriaInputEl.value = 'Hello'; // not a valid boolean criteria
+    criteriaInputEl.dispatchEvent(new Event('input'));
+
+    return Promise.resolve()
+      .then(() => {
+        const operatorContainerEl = modifierGroup.shadowRoot.querySelector(
+          '[data-el-where-criteria]'
+        );
+        expect(operatorContainerEl.className).toContain('error');
+      })
+      .then(() => {
+        const clearConditionBtn = modifierGroup.shadowRoot.querySelector(
+          '[data-el-where-delete]'
+        );
+        clearConditionBtn.click();
+      })
+      .then(() => {
+        const operatorContainerEl = modifierGroup.shadowRoot.querySelector(
+          '[data-el-where-criteria]'
+        );
+        expect(operatorContainerEl.className).not.toContain('error');
+      });
+  });
+
   it('updates inputs when condition model changes', () => {
     modifierGroup.condition = {
       field: { fieldName: 'foo' },
