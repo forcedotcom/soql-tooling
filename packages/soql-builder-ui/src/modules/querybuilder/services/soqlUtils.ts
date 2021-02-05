@@ -12,6 +12,7 @@ import {
   ModelSerializer,
   ModelDeserializer
 } from '@salesforce/soql-model';
+import { SoqlEditorEvent } from './message/soqlEditorEvent';
 import { ToolingModelJson } from './model';
 
 export function convertSoqlToUiModel(soql: string): ToolingModelJson {
@@ -30,16 +31,16 @@ export function convertSoqlModelToUiModel(
 
   const fields =
     queryModel.select &&
-    (queryModel.select as Soql.SelectExprs).selectExpressions
+      (queryModel.select as Soql.SelectExprs).selectExpressions
       ? (queryModel.select as Soql.SelectExprs).selectExpressions
-          .filter((expr) => !SoqlModelUtils.containsUnmodeledSyntax(expr))
-          .map((expr) => {
-            if (expr.field.fieldName) {
-              return expr.field.fieldName;
-            }
-            return undefined;
-          })
-      : undefined;
+        .filter((expr) => !SoqlModelUtils.containsUnmodeledSyntax(expr))
+        .map((expr) => {
+          if (expr.field.fieldName) {
+            return expr.field.fieldName;
+          }
+          return undefined;
+        })
+      : ['COUNT()'];
 
   const sObject = queryModel.from && queryModel.from.sobjectName;
 
@@ -65,15 +66,15 @@ export function convertSoqlModelToUiModel(
 
   const orderBy = queryModel.orderBy
     ? queryModel.orderBy.orderByExpressions
-        // TODO: Deal with empty OrderBy.  returns unmodelled syntax.
-        .filter((expr) => !SoqlModelUtils.containsUnmodeledSyntax(expr))
-        .map((expression) => {
-          return {
-            field: expression.field.fieldName,
-            order: expression.order,
-            nulls: expression.nullsOrder
-          };
-        })
+      // TODO: Deal with empty OrderBy.  returns unmodelled syntax.
+      .filter((expr) => !SoqlModelUtils.containsUnmodeledSyntax(expr))
+      .map((expression) => {
+        return {
+          field: expression.field.fieldName,
+          order: expression.order,
+          nulls: expression.nullsOrder
+        };
+      })
     : [];
 
   const limit = queryModel.limit
@@ -117,9 +118,16 @@ export function convertUiModelToSoql(uiModel: ToolingModelJson): string {
 }
 
 function convertUiModelToSoqlModel(uiModel: ToolingModelJson): Soql.Query {
-  const selectExprs = uiModel.fields.map(
-    (field) => new Impl.FieldSelectionImpl(new Impl.FieldRefImpl(field))
-  );
+  let select: Soql.Select;
+  const isSelectCount = uiModel.fields.length === 1 && uiModel.fields[0].toLowerCase() === 'count()';
+  if (isSelectCount) {
+    select = new Impl.SelectCountImpl();
+  } else {
+    const selectExprs = uiModel.fields.map(
+      (field) => new Impl.FieldSelectionImpl(new Impl.FieldRefImpl(field))
+    );
+    select = new Impl.SelectExprsImpl(selectExprs);
+  }
 
   let whereExprsImpl;
   if (uiModel.where && uiModel.where.conditions.length) {
@@ -153,14 +161,14 @@ function convertUiModelToSoqlModel(uiModel: ToolingModelJson): Soql.Query {
 
       const compareValue = uiModelCondition.compareValue
         ? new Impl.LiteralImpl(
-            uiModelCondition.compareValue.type,
-            uiModelCondition.compareValue.value
-          )
+          uiModelCondition.compareValue.type,
+          uiModelCondition.compareValue.value
+        )
         : uiModelCondition.values
-        ? uiModelCondition.values.map(
+          ? uiModelCondition.values.map(
             (value) => new Impl.LiteralImpl(value.type, value.value)
           )
-        : undefined;
+          : undefined;
 
       if (field && compareValue) {
         switch (conditionType) {
@@ -217,7 +225,7 @@ function convertUiModelToSoqlModel(uiModel: ToolingModelJson): Soql.Query {
   const limit =
     uiModel.limit.length > 0 ? new Impl.LimitImpl(uiModel.limit) : undefined;
   const queryModel = new Impl.QueryImpl(
-    new Impl.SelectExprsImpl(selectExprs),
+    select,
     new Impl.FromImpl(uiModel.sObject),
     where,
     undefined,

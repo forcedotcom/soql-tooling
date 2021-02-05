@@ -57,7 +57,7 @@ describe('Fields', () => {
     expect(handler).toHaveBeenCalled();
   });
 
-  it('renders the selected fields in the component', () => {
+  it('renders COUNT() and the selected fields in the component', () => {
     document.body.appendChild(fields);
 
     let selectedFieldEl = fields.shadowRoot.querySelectorAll('.selected-field');
@@ -68,7 +68,7 @@ describe('Fields', () => {
 
     return Promise.resolve().then(() => {
       selectedFieldEl = fields.shadowRoot.querySelectorAll('.selected-field');
-      expect(selectedFieldEl.length).toBe(3);
+      expect(selectedFieldEl.length).toBe(4);
     });
   });
 
@@ -85,5 +85,45 @@ describe('Fields', () => {
       hasError = fields.shadowRoot.querySelectorAll('[data-el-has-error]');
       expect(hasError.length).toEqual(1);
     });
+  });
+
+  it('removes other selections when COUNT() is selected', async () => {
+    fields.selectedFields = ['foo', 'bar'];
+    document.body.appendChild(fields);
+
+    const removeHandler = jest.fn();
+    fields.addEventListener('fields__removed', removeHandler);
+    const selectHandler = jest.fn();
+    fields.addEventListener('fields__selected', selectHandler);
+
+    const customSelect = fields.shadowRoot.querySelector(
+      'querybuilder-custom-select'
+    );
+    customSelect.dispatchEvent(
+      new CustomEvent('option__selection', { detail: { value: 'COUNT()' } })
+    );
+
+    expect(removeHandler).toHaveBeenCalledTimes(2);
+    expect(selectHandler).toHaveBeenCalledTimes(1);
+  });
+
+  it('removes COUNT() when something else is selected', async () => {
+    fields.selectedFields = ['COUNT()'];
+    document.body.appendChild(fields);
+
+    const removeHandler = jest.fn();
+    fields.addEventListener('fields__removed', removeHandler);
+    const selectHandler = jest.fn();
+    fields.addEventListener('fields__selected', selectHandler);
+
+    const customSelect = fields.shadowRoot.querySelector(
+      'querybuilder-custom-select'
+    );
+    customSelect.dispatchEvent(
+      new CustomEvent('option__selection', { detail: { value: 'foo' } })
+    );
+
+    expect(removeHandler).toHaveBeenCalledTimes(1);
+    expect(selectHandler).toHaveBeenCalledTimes(1);
   });
 });
