@@ -207,6 +207,7 @@ export default class WhereModifierGroup extends LightningElement {
     this._currentFieldSelection = DEFAULT_FIELD_INPUT_VALUE;
     this._currentOperatorValue = DEFAULT_OPERATOR_INPUT_VALUE;
     this._criteriaDisplayValue = DEFAULT_CRITERIA_INPUT_VALUE;
+    this.resetErrorFlagsAndMessages();
 
     e.preventDefault();
     const conditionRemovedEvent = new CustomEvent('where__condition_removed', {
