@@ -47,7 +47,7 @@ describe('Fields', () => {
     document.body.appendChild(fields);
 
     const handler = jest.fn();
-    fields.addEventListener('fields__removed', handler);
+    fields.addEventListener('fields__selected', handler);
 
     const selectedFieldCloseEl = fields.shadowRoot.querySelector(
       "[data-field='foo']"
@@ -91,9 +91,11 @@ describe('Fields', () => {
     fields.selectedFields = ['foo', 'bar'];
     document.body.appendChild(fields);
 
-    const removeHandler = jest.fn();
-    fields.addEventListener('fields__removed', removeHandler);
-    const selectHandler = jest.fn();
+
+    let selectionFromEvent;
+    const selectHandler = jest.fn().mockImplementation(e => {
+      selectionFromEvent = e.detail.fields;
+    });
     fields.addEventListener('fields__selected', selectHandler);
 
     const customSelect = fields.shadowRoot.querySelector(
@@ -103,17 +105,18 @@ describe('Fields', () => {
       new CustomEvent('option__selection', { detail: { value: 'COUNT()' } })
     );
 
-    expect(removeHandler).toHaveBeenCalledTimes(2);
     expect(selectHandler).toHaveBeenCalledTimes(1);
+    expect(selectionFromEvent).toEqual(['COUNT()']);
   });
 
   it('removes COUNT() when something else is selected', async () => {
     fields.selectedFields = ['COUNT()'];
     document.body.appendChild(fields);
 
-    const removeHandler = jest.fn();
-    fields.addEventListener('fields__removed', removeHandler);
-    const selectHandler = jest.fn();
+    let selectionFromEvent;
+    const selectHandler = jest.fn().mockImplementation(e => {
+      selectionFromEvent = e.detail.fields;
+    });
     fields.addEventListener('fields__selected', selectHandler);
 
     const customSelect = fields.shadowRoot.querySelector(
@@ -123,7 +126,7 @@ describe('Fields', () => {
       new CustomEvent('option__selection', { detail: { value: 'foo' } })
     );
 
-    expect(removeHandler).toHaveBeenCalledTimes(1);
     expect(selectHandler).toHaveBeenCalledTimes(1);
+    expect(selectionFromEvent).toEqual(['foo']);
   });
 });

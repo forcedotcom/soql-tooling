@@ -26,14 +26,16 @@ export default class Fields extends LightningElement {
   handleFieldSelection(e) {
     e.preventDefault();
     if (e.detail && e.detail.value) {
+      let selection = [];
       // COUNT() and other fields are mutually exclusive
       if (e.detail.value.toLowerCase() === 'count()') {
-        this.removeNonCountSelections();
+        selection.push('COUNT()');
       } else {
-        this.removeCountSelection();
+        selection = this.selectedFields.filter(value => value.toLowerCase() !== 'count()');
+        selection.push(e.detail.value);
       }
       const fieldSelectedEvent = new CustomEvent('fields__selected', {
-        detail: { field: e.detail.value }
+        detail: { fields: selection }
       });
       this.dispatchEvent(fieldSelectedEvent);
     }
@@ -41,31 +43,11 @@ export default class Fields extends LightningElement {
 
   handleFieldRemoved(e) {
     e.preventDefault();
-    const fieldRemovedEvent = new CustomEvent('fields__removed', {
-      detail: { field: e.target.dataset.field }
+    const fieldRemovedEvent = new CustomEvent('fields__selected', {
+      detail: { fields: this.selectedFields.filter(value => value !== e.target.dataset.field) }
     });
     this.dispatchEvent(fieldRemovedEvent);
   }
 
-  removeNonCountSelections() {
-    this.selectedFields.forEach(field => {
-      if (field.toLowerCase() !== 'count()') {
-        const fieldRemovedEvent = new CustomEvent('fields__removed', {
-          detail: { field }
-        });
-        this.dispatchEvent(fieldRemovedEvent);
-      }
-    });
-  }
 
-  removeCountSelection() {
-    this.selectedFields.forEach(field => {
-      if (field.toLowerCase() === 'count()') {
-        const fieldRemovedEvent = new CustomEvent('fields__removed', {
-          detail: { field }
-        });
-        this.dispatchEvent(fieldRemovedEvent);
-      }
-    });
-  }
 }

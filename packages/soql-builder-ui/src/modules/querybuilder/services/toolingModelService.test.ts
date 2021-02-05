@@ -80,7 +80,7 @@ describe('Tooling Model Service', () => {
     it('should include originalSoqlStatement property in model', () => {
       expect(query.originalSoqlStatement).toBe('');
       modelService.setSObject('Account');
-      modelService.addField('Id');
+      modelService.setFields(['Id']);
 
       // The formatting of the soql statement is hard to match exactly
       // because the formatter inserts returns and spaces.
@@ -90,25 +90,24 @@ describe('Tooling Model Service', () => {
   });
 
   describe('FIELDS', () => {
-    it('can Add, Delete Fields and saves changes', () => {
+    it('can set fields and changes are reflected', () => {
       (messageService.setState as jest.Mock).mockClear();
       expect(messageService.setState).toHaveBeenCalledTimes(0);
       query = ToolingModelService.toolingModelTemplate;
 
       expect(query!.fields.length).toEqual(0);
 
-      // Add
-      modelService.addField(mockField1);
-      modelService.addField(mockField2);
+      // set
+      modelService.setFields([mockField1, mockField2]);
       expect(query!.fields.length).toBe(2);
       expect(query!.fields).toContain(mockField1);
       expect(query!.fields).toContain(mockField2);
-      // Delete
-      modelService.removeField(mockField1);
+      // modify
+      modelService.setFields([mockField2]);
       expect(query!.fields.length).toBe(1);
       expect(query!.fields).toContain(mockField2);
       // verify saves
-      expect(messageService.setState).toHaveBeenCalledTimes(3);
+      expect(messageService.setState).toHaveBeenCalledTimes(2);
     });
   });
 
@@ -145,7 +144,7 @@ describe('Tooling Model Service', () => {
     it('should send message when ui changes the query', () => {
       expect(messageService.sendMessage).not.toHaveBeenCalled();
       // Add
-      modelService.addField(mockField1);
+      modelService.setFields([mockField1]);
       expect(messageService.sendMessage).toHaveBeenCalled();
     });
 
@@ -355,7 +354,7 @@ describe('Tooling Model Service', () => {
 
     // Now modify the query. The resulting text must retain the comments
     modelService.setSObject('Bar');
-    modelService.addField('Name');
+    modelService.setFields(['Name']);
 
     expect(query.sObject).toEqual('Bar');
     expect(query.fields[0]).toEqual('Name');
