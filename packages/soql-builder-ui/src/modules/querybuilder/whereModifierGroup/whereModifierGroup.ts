@@ -20,6 +20,10 @@ import {
   soqlStringLiteralToDisplayValue
 } from '../services/soqlUtils';
 
+const DEFAULT_FIELD_INPUT_VALUE = '';
+const DEFAULT_OPERATOR_INPUT_VALUE = 'EQ';
+const DEFAULT_CRITERIA_INPUT_VALUE = '';
+
 export default class WhereModifierGroup extends LightningElement {
   @api allFields: string[];
   @api isLoading = false;
@@ -34,6 +38,8 @@ export default class WhereModifierGroup extends LightningElement {
   }
   _condition: JsonMap;
   _currentOperatorValue;
+  @track
+  _currentFieldSelection;
   @track _criteriaDisplayValue;
   _sobjectMetadata: any;
   sobjectTypeUtils: SObjectTypeUtils;
@@ -59,6 +65,8 @@ export default class WhereModifierGroup extends LightningElement {
   set condition(condition: JsonMap) {
     this._condition = condition;
     this._criteriaDisplayValue = '';
+
+    this._currentFieldSelection = this.getFieldName();
 
     const matchingOption = condition
       ? operatorOptions.find(
@@ -122,18 +130,8 @@ export default class WhereModifierGroup extends LightningElement {
   }
 
   /* --- FIELDS --- */
-  get hasSelectedField() {
-    return !!this.getFieldName();
-  }
-
   get _selectedField() {
-    return this.getFieldName() ? [this.getFieldName()] : [];
-  }
-
-  get filteredFields() {
-    return this.allFields.filter((field) => {
-      return field !== this.getFieldName();
-    });
+    return this._currentFieldSelection ? [this._currentFieldSelection] : [];
   }
 
   getFieldName(): string | undefined {
@@ -205,6 +203,12 @@ export default class WhereModifierGroup extends LightningElement {
   /** end css class methods */
 
   handleConditionRemoved(e) {
+    // reset inputs to defaults
+    this._currentFieldSelection = DEFAULT_FIELD_INPUT_VALUE;
+    this._currentOperatorValue = DEFAULT_OPERATOR_INPUT_VALUE;
+    this._criteriaDisplayValue = DEFAULT_CRITERIA_INPUT_VALUE;
+    this.resetErrorFlagsAndMessages();
+
     e.preventDefault();
     const conditionRemovedEvent = new CustomEvent('where__condition_removed', {
       detail: {
@@ -309,7 +313,7 @@ export default class WhereModifierGroup extends LightningElement {
     if (this.checkAllModifiersHaveValues()) {
       this.resetErrorFlagsAndMessages();
 
-      const fieldName = this.fieldEl.value[0];
+      const fieldName = (this._currentFieldSelection = this.fieldEl.value[0]);
       const op = (this._currentOperatorValue = this.operatorEl.value);
       const opModelValue = this.toOperatorModelValue(op);
 
