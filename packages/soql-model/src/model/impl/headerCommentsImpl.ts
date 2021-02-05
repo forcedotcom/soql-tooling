@@ -8,11 +8,14 @@
 import * as Soql from '../model';
 import { SoqlModelObjectImpl } from './soqlModelObjectImpl';
 
-export class LikeConditionImpl extends SoqlModelObjectImpl implements Soql.LikeCondition {
-  public constructor(public field: Soql.Field, public compareValue: Soql.CompareValue) {
+export class HeaderCommentsImpl
+  extends SoqlModelObjectImpl
+  implements Soql.HeaderComments {
+  public constructor(public text: string) {
     super();
   }
+
   public toSoqlSyntax(options?: Soql.SyntaxOptions): string {
-    return `${this.field.toSoqlSyntax(options)} LIKE ${this.compareValue.toSoqlSyntax(options)}`;
+    return this.text || '';
   }
 }

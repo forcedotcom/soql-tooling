@@ -6,7 +6,7 @@
  *
  */
 
-import { fromJS, List, Map } from 'immutable';
+import { fromJS, List } from 'immutable';
 import { BehaviorSubject, Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { JsonMap } from '@salesforce/ts-types';
@@ -16,39 +16,17 @@ import {
   convertUiModelToSoql,
   convertSoqlToUiModel
 } from '../services/soqlUtils';
+import { IMap, ToolingModel, ToolingModelJson, ModelProps } from './model';
 import { createQueryTelemetry } from './telemetryUtils';
-
-// This is to satisfy TS and stay dry
-type IMap = Map<string, string | List<string>>;
-// Private immutable interface
-export interface ToolingModel extends IMap {
-  sObject: string;
-  fields: List<string>;
-  orderBy: List<Map>;
-  limit: string;
-  errors: List<Map>;
-  unsupported: List<Map>;
-  originalSoqlStatement: string;
-}
-// Public inteface for accessing modelService.query
-export interface ToolingModelJson extends JsonMap {
-  sObject: string;
-  fields: string[];
-  orderBy: JsonMap[];
-  limit: string;
-  errors: JsonMap[];
-  unsupported: JsonMap[];
-  originalSoqlStatement: string;
-}
-
 export class ToolingModelService {
-  private model: BehaviorSubject<ToolingModel>;
-  public query: Observable<ToolingModelJson>;
+  private immutableModel: BehaviorSubject<ToolingModel>;
+  public UIModel: Observable<ToolingModelJson>;
   public static toolingModelTemplate: ToolingModelJson = {
     sObject: '',
     fields: [],
     orderBy: [],
     limit: '',
+    where: { conditions: [], andOr: undefined },
     errors: [],
     unsupported: [],
     originalSoqlStatement: ''
@@ -57,11 +35,11 @@ export class ToolingModelService {
 
   constructor(messageService: IMessageService) {
     this.messageService = messageService;
-    this.model = new BehaviorSubject(
+    this.immutableModel = new BehaviorSubject(
       fromJS(ToolingModelService.toolingModelTemplate)
     );
-    this.model.subscribe(this.saveViewState.bind(this));
-    this.query = this.model.pipe(
+    this.immutableModel.subscribe(this.saveViewState.bind(this));
+    this.UIModel = this.immutableModel.pipe(
       map((soqlQueryModel) => {
         try {
           return (soqlQueryModel as IMap).toJS();
@@ -72,32 +50,39 @@ export class ToolingModelService {
       })
     );
 
-    this.messageService.messagesToUI.subscribe(this.onMessage.bind(this));
+    this.messageService.messagesToUI.subscribe(
+      this.onIncommingMessage.bind(this)
+    );
   }
 
   public getModel(): IMap {
-    return this.model.getValue();
+    return this.immutableModel.getValue();
   }
 
-  private getFields() {
-    return this.getModel().get('fields') as List<string>;
-  }
+  /* ---- OBJECTS ---- */
 
-  private getOrderBy() {
-    return this.getModel().get('orderBy') as List<JsonMap>;
-  }
   // This method is destructive, will clear any selections except sObject.
   public setSObject(sObject: string) {
-    const emptyModel = fromJS(ToolingModelService.toolingModelTemplate);
-    const newModelWithSelection = emptyModel.set('sObject', sObject);
+    const newModelJS = Object.assign(
+      this.getModel().toJS(),
+      ToolingModelService.toolingModelTemplate,
+      {
+        sObject: sObject
+      }
+    );
+    this.changeModel(fromJS(newModelJS));
+  }
 
-    this.changeModel(newModelWithSelection);
+  /* ---- FIELDS ---- */
+
+  private getFields() {
+    return this.getModel().get(ModelProps.FIELDS) as List<string>;
   }
 
   public addField(field: string) {
     const currentModel = this.getModel();
     const newModelWithAddedField = currentModel.set(
-      'fields',
+      ModelProps.FIELDS,
       this.getFields().toSet().add(field).toList()
     ) as ToolingModel;
 
@@ -107,13 +92,19 @@ export class ToolingModelService {
   public removeField(field: string) {
     const currentModel = this.getModel();
     const newModelWithFieldRemoved = currentModel.set(
-      'fields',
+      ModelProps.FIELDS,
       this.getFields().filter((item) => {
         return item !== field;
       }) as List<string>
     ) as ToolingModel;
 
     this.changeModel(newModelWithFieldRemoved);
+  }
+
+  /* ---- ORDER BY ---- */
+
+  private getOrderBy() {
+    return this.getModel().get(ModelProps.ORDER_BY) as List<JsonMap>;
   }
 
   private hasOrderByField(field: string) {
@@ -132,7 +123,7 @@ export class ToolingModelService {
       updatedOrderBy = this.getOrderBy().push(fromJS(orderByObj));
     }
     const newModel = currentModel.set(
-      'orderBy',
+      ModelProps.ORDER_BY,
       updatedOrderBy
     ) as ToolingModel;
     this.changeModel(newModel);
@@ -145,19 +136,99 @@ export class ToolingModelService {
       return item.get('field') !== field;
     }) as List<JsonMap>;
     const newModelWithFieldRemoved = currentModel.set(
-      'orderBy',
+      ModelProps.ORDER_BY,
       filteredOrderBy
     ) as ToolingModel;
 
     this.changeModel(newModelWithFieldRemoved);
   }
 
+  /* ---- WHERE ---- */
+
+  private getWhereConditions() {
+    return this.getModel()
+      .get(ModelProps.WHERE)
+      .get(ModelProps.WHERE_CONDITIONS) as List<JsonMap>;
+  }
+
+  private hasWhereConditionBy(index: string) {
+    if (this.getWhereConditions().count() > 0) {
+      return this.getWhereConditions().find(
+        (item) => item.get('index') === index
+      );
+    }
+    return false;
+  }
+
+  public setAndOr(andOr: string) {
+    const currentModel = this.getModel();
+    const newModel = currentModel.setIn(
+      [ModelProps.WHERE, ModelProps.WHERE_AND_OR],
+      andOr
+    );
+
+    this.changeModel(newModel);
+  }
+
+  public upsertWhereFieldExpr(whereObj: JsonMap) {
+    const currentModel = this.getModel();
+    let updatedWhereCondition;
+    const { fieldCompareExpr, andOr } = whereObj;
+    const existingExpr = this.hasWhereConditionBy(fieldCompareExpr.index);
+    if (existingExpr) {
+      updatedWhereCondition = this.getWhereConditions().update(
+        fieldCompareExpr.index,
+        () => {
+          return fromJS(fieldCompareExpr);
+        }
+      );
+    } else {
+      updatedWhereCondition = this.getWhereConditions().push(
+        fromJS(fieldCompareExpr)
+      );
+    }
+
+    let newModel = currentModel.setIn(
+      [ModelProps.WHERE, ModelProps.WHERE_CONDITIONS],
+      updatedWhereCondition
+    );
+    /*
+    The UI model should always be aware
+    of andOr UI state when expr is updated.
+    */
+    newModel = newModel.setIn(
+      [ModelProps.WHERE, ModelProps.WHERE_AND_OR],
+      andOr
+    );
+
+    this.changeModel(newModel);
+  }
+
+  public removeWhereFieldCondition(fieldCompareExpr: JsonMap) {
+    const currentModel = this.getModel();
+    const whereConditions = this.getWhereConditions();
+    const filteredConditions = whereConditions.filter((item) => {
+      return item.get('index') !== fieldCompareExpr.index;
+    });
+
+    const newModel = currentModel.setIn(
+      [ModelProps.WHERE, ModelProps.WHERE_CONDITIONS],
+      filteredConditions
+    );
+
+    this.changeModel(newModel);
+  }
+
+  /* ---- LIMIT ---- */
+
   public changeLimit(limit: string) {
-    const newLimitModel = this.getModel().set('limit', limit || '');
+    const newLimitModel = this.getModel().set(ModelProps.LIMIT, limit || '');
     this.changeModel(newLimitModel);
   }
 
-  private onMessage(event: SoqlEditorEvent) {
+  /* ---- MESSAGING ---- */
+
+  private onIncommingMessage(event: SoqlEditorEvent) {
     if (event && event.type) {
       switch (event.type) {
         case MessageType.TEXT_SOQL_CHANGED: {
@@ -165,14 +236,14 @@ export class ToolingModelService {
           const soqlJSModel = convertSoqlToUiModel(originalSoqlStatement);
           soqlJSModel.originalSoqlStatement = originalSoqlStatement;
           const updatedModel = fromJS(soqlJSModel);
-          if (!updatedModel.equals(this.model.getValue())) {
+          if (!updatedModel.equals(this.immutableModel.getValue())) {
             if (
               originalSoqlStatement.length &&
               (soqlJSModel.errors.length || soqlJSModel.unsupported.length)
             ) {
               this.sendTelemetryToBackend(soqlJSModel);
             }
-            this.model.next(updatedModel);
+            this.immutableModel.next(updatedModel);
           }
           break;
         }
@@ -181,6 +252,8 @@ export class ToolingModelService {
       }
     }
   }
+
+  /* ---- STATE & MODEL ---- */
 
   public saveViewState(model: ToolingModel) {
     try {
@@ -196,7 +269,7 @@ export class ToolingModelService {
       'originalSoqlStatement',
       newSoqlQuery
     );
-    this.model.next(newModelWithSoqlQuery);
+    this.immutableModel.next(newModelWithSoqlQuery);
     this.sendMessageToBackend(newSoqlQuery);
   }
 
@@ -224,7 +297,7 @@ export class ToolingModelService {
   }
 
   public restoreViewState() {
-    this.model.next(this.getSavedState());
+    this.immutableModel.next(this.getSavedState());
   }
 
   private getSavedState() {

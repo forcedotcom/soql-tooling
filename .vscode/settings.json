@@ -1,5 +1,4 @@
 {
-  "debug.node.autoAttach": "on",
   "license-header-manager.excludeExtensions": [
     ".sh",
     ".js",
@@ -28,6 +27,8 @@
   },
   "editor.tabSize": 2,
   "prettier.singleQuote": true,
+  "prettier.configPath": "../.prettierrc",
+  "prettier.trailingComma": "none",
   "rewrap.wrappingColumn": 80,
   "yaml.format.singleQuote": true,
   "editor.formatOnSave": true,
@@ -60,5 +61,6 @@
     "activityBar.background": "#523d89",
     "titleBar.activeBackground": "#523d89",
     "titleBar.activeForeground": "#f3f1ef"
-  }
+  },
+  "editor.defaultFormatter": "esbenp.prettier-vscode"
 }

@@ -41,7 +41,7 @@ describe('From', () => {
     document.body.appendChild(from);
 
     const handler = jest.fn();
-    from.addEventListener('objectselected', handler);
+    from.addEventListener('from__object_selected', handler);
     const customSelect = from.shadowRoot.querySelector(
       'querybuilder-custom-select'
     );

@@ -30,7 +30,7 @@ describe('OrderBy should', () => {
     document.body.appendChild(orderBy);
 
     const handler = jest.fn();
-    orderBy.addEventListener('orderbyselected', handler);
+    orderBy.addEventListener('orderby__selected', handler);
     const selectField = orderBy.shadowRoot.querySelector(
       'querybuilder-custom-select'
     );
@@ -50,7 +50,7 @@ describe('OrderBy should', () => {
     document.body.appendChild(orderBy);
 
     const handler = jest.fn();
-    orderBy.addEventListener('orderbyselected', handler);
+    orderBy.addEventListener('orderby__selected', handler);
     const selectField = orderBy.shadowRoot.querySelector(
       'querybuilder-custom-select'
     );
@@ -78,7 +78,7 @@ describe('OrderBy should', () => {
     document.body.appendChild(orderBy);
 
     const handler = jest.fn();
-    orderBy.addEventListener('orderbyselected', handler);
+    orderBy.addEventListener('orderby__selected', handler);
     const selectField = orderBy.shadowRoot.querySelector(
       'querybuilder-custom-select'
     );
@@ -96,7 +96,7 @@ describe('OrderBy should', () => {
     document.body.appendChild(orderBy);
 
     const handler = jest.fn();
-    orderBy.addEventListener('orderbyremoved', handler);
+    orderBy.addEventListener('orderby__removed', handler);
 
     const selectedFieldCloseEl = orderBy.shadowRoot.querySelector(
       "[data-field='foo']"

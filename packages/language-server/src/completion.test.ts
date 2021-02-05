@@ -1008,6 +1008,23 @@ describe('Special cases around newlines', () => {
   );
 });
 
+describe('Support leading comment lines (starting with // )', () => {
+  validateCompletionsFor(
+    `// This a  comment line
+     SELECT id FROM |`,
+    expectedSObjectCompletions
+  );
+});
+describe('Support leading comment lines (starting with // )', () => {
+  validateCompletionsFor(
+    `// This a comment line 1
+     // This a comment line 2
+     // This a comment line 3
+     SELECT id FROM |`,
+    expectedSObjectCompletions
+  );
+});
+
 function validateCompletionsFor(
   text: string,
   expectedItems: CompletionItem[],
