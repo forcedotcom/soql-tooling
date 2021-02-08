@@ -4,6 +4,7 @@
  * Licensed under the BSD 3-Clause license.
  * For full license text, see LICENSE.txt file in the repo root or https://opensource.org/licenses/BSD-3-Clause
  */
+import { Soql } from '@salesforce/soql-model';
 import {
   convertUiModelToSoql,
   convertSoqlToUiModel,
@@ -63,7 +64,7 @@ describe('SoqlUtils', () => {
     unsupported: [
       {
         unmodeledSyntax: 'GROUP BY',
-        reason: 'unmodeled:group-by'
+        reason: Soql.REASON_UNMODELED_GROUPBY
       }
     ],
     originalSoqlStatement: ''
@@ -156,7 +157,9 @@ describe('SoqlUtils', () => {
     const transformedUiModel = convertSoqlToUiModel(unsupportedWhereExpr);
     expect(transformedUiModel.where.conditions.length).toBe(0);
     expect(transformedUiModel.unsupported.length).toBe(1);
-    expect(transformedUiModel.unsupported[0]).toContain('where:');
+    expect(transformedUiModel.unsupported[0].reason).toEqual(
+      Soql.REASON_UNMODELED_COMPLEXGROUP
+    );
   });
 
   it('transforms Soql to UI Model with errors in soql syntax', () => {

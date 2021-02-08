@@ -6,7 +6,7 @@
  */
 
 import * as Impl from '.';
-import { ConditionOperator, LiteralType } from '../model';
+import * as Soql from '../model';
 
 describe('QueryImpl should', () => {
   it('store query components as appropriate model objects', () => {
@@ -14,31 +14,31 @@ describe('QueryImpl should', () => {
       select: { selectExpressions: [] },
       from: { sobjectName: 'songs' },
       where: { condition: { field: { fieldName: 'paint_it' }, operator: '=', compareValue: { type: 'STRING', value: "'black'" } } },
-      with: { unmodeledSyntax: 'gimme shelter', reason: 'unmodeled:with' },
-      groupBy: { unmodeledSyntax: 'start me up', reason: 'unmodeled:group-by' },
+      with: { unmodeledSyntax: 'gimme shelter', reason: Soql.REASON_UNMODELED_WITH },
+      groupBy: { unmodeledSyntax: 'start me up', reason: Soql.REASON_UNMODELED_GROUPBY },
       orderBy: { orderByExpressions: [{ field: { fieldName: 'angie' } }] },
       limit: { limit: 5 },
-      offset: { unmodeledSyntax: 'wild horses', reason: 'unmodeled:offset' },
-      bind: { unmodeledSyntax: 'miss you', reason: 'unmodeled:bind' },
-      recordTrackingType: { unmodeledSyntax: 'satisfaction', reason: 'unmodeled:record-tracking' },
-      update: { unmodeledSyntax: 'under my thumb', reason: 'unmodeled:update' },
+      offset: { unmodeledSyntax: 'wild horses', reason: Soql.REASON_UNMODELED_OFFSET },
+      bind: { unmodeledSyntax: 'miss you', reason: Soql.REASON_UNMODELED_BIND },
+      recordTrackingType: { unmodeledSyntax: 'satisfaction', reason: Soql.REASON_UNMODELED_RECORDTRACKING },
+      update: { unmodeledSyntax: 'under my thumb', reason: Soql.REASON_UNMODELED_UPDATE },
     };
     const actual = new Impl.QueryImpl(
       new Impl.SelectExprsImpl([]),
       new Impl.FromImpl(expected.from.sobjectName),
       new Impl.WhereImpl(new Impl.FieldCompareConditionImpl(
         new Impl.FieldRefImpl(expected.where.condition.field.fieldName),
-        ConditionOperator.Equals,
-        new Impl.LiteralImpl(LiteralType.String, expected.where.condition.compareValue.value)
+        Soql.ConditionOperator.Equals,
+        new Impl.LiteralImpl(Soql.LiteralType.String, expected.where.condition.compareValue.value)
       )),
-      new Impl.UnmodeledSyntaxImpl(expected.with.unmodeledSyntax, 'unmodeled:with'),
-      new Impl.UnmodeledSyntaxImpl(expected.groupBy.unmodeledSyntax, 'unmodeled:group-by'),
+      new Impl.UnmodeledSyntaxImpl(expected.with.unmodeledSyntax, Soql.REASON_UNMODELED_WITH),
+      new Impl.UnmodeledSyntaxImpl(expected.groupBy.unmodeledSyntax, Soql.REASON_UNMODELED_GROUPBY),
       new Impl.OrderByImpl([new Impl.OrderByExpressionImpl(new Impl.FieldRefImpl(expected.orderBy.orderByExpressions[0].field.fieldName))]),
       new Impl.LimitImpl(expected.limit.limit),
-      new Impl.UnmodeledSyntaxImpl(expected.offset.unmodeledSyntax, 'unmodeled:offset'),
-      new Impl.UnmodeledSyntaxImpl(expected.bind.unmodeledSyntax, 'unmodeled:bind'),
-      new Impl.UnmodeledSyntaxImpl(expected.recordTrackingType.unmodeledSyntax, 'unmodeled:record-tracking'),
-      new Impl.UnmodeledSyntaxImpl(expected.update.unmodeledSyntax, 'unmodeled:update')
+      new Impl.UnmodeledSyntaxImpl(expected.offset.unmodeledSyntax, Soql.REASON_UNMODELED_OFFSET),
+      new Impl.UnmodeledSyntaxImpl(expected.bind.unmodeledSyntax, Soql.REASON_UNMODELED_BIND),
+      new Impl.UnmodeledSyntaxImpl(expected.recordTrackingType.unmodeledSyntax, Soql.REASON_UNMODELED_RECORDTRACKING),
+      new Impl.UnmodeledSyntaxImpl(expected.update.unmodeledSyntax, Soql.REASON_UNMODELED_UPDATE)
     );
     expect(actual).toEqual(expected);
   });
@@ -49,8 +49,8 @@ describe('QueryImpl should', () => {
       new Impl.FromImpl('songs'),
       new Impl.WhereImpl(new Impl.FieldCompareConditionImpl(
         new Impl.FieldRefImpl('paint_it'),
-        ConditionOperator.Equals,
-        new Impl.LiteralImpl(LiteralType.String, "'black'")
+        Soql.ConditionOperator.Equals,
+        new Impl.LiteralImpl(Soql.LiteralType.String, "'black'")
       ))
     ).toSoqlSyntax();
     expect(actual).toEqual(expected);

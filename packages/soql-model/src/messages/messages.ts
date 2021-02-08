@@ -33,4 +33,27 @@ export namespace Messages {
   export const error_fieldInput_list = 'Input must be a comma separated list of values';
 
   export const error_operatorInput = "{0} operator can't be used for this field type";
+
+  export const unmodeled_as = 'Object alias';
+  export const unmodeled_using = 'USING SCOPE clause';
+  export const unmodeled_alias = 'Field alias';
+  export const unmodeled_semijoin = 'Subquery';
+  export const unmodeled_typeof = 'TYPEOF clause';
+  export const unmodeled_distance = 'DISTANCE expression';
+  export const unmodeled_select = 'Unsupported SELECT expression';
+  export const unmodeled_complexgroup = 'Complex condition containing NOT or a mix of AND and OR';
+  export const unmodeled_count = 'COUNT function';
+  export const unmodeled_with = 'WITH filtering expression';
+  export const unmodeled_groupby = 'GROUP BY clause';
+  export const unmodeled_offset = 'OFFSET clause';
+  export const unmodeled_bind = 'BIND clause';
+  export const unmodeled_recordtracking = 'Record tracking clause';
+  export const unmodeled_update = 'Update statistics clause';
+  export const unmodeled_functionreference = 'Function expression';
+  export const unmodeled_colonexpression = 'Colon expression';
+  export const unmodeled_emptycondition = 'Empty condition';
+  export const unmodeled_calculatedcondition = 'Calculated condition field';
+  export const unmodeled_distancecondition = 'DISTANCE condition';
+  export const unmodeled_incolonexpressioncondition = 'Colon expression as IN value';
+  export const unmodeled_insemijoincondition = 'Subquery as IN value';
 }
