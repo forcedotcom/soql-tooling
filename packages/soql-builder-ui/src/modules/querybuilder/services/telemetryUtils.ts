@@ -21,6 +21,6 @@ export function createQueryTelemetry(
   telemetry.errors = query.errors.map(
     (err) => `${err.type}:${err.grammarRule}`
   );
-  telemetry.unsupported = query.unsupported.map((unsup) => unsup.reason);
+  telemetry.unsupported = query.unsupported.map((unsup) => unsup.reason.reasonCode);
   return telemetry;
 }

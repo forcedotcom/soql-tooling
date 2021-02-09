@@ -47,7 +47,7 @@ export function convertSoqlModelToUiModel(
   if (queryModel.where && queryModel.where.condition) {
     const conditionsObj = queryModel.where.condition;
 
-    if (SoqlModelUtils.isSimpleGroup(conditionsObj)) {
+    if (!SoqlModelUtils.isUnmodeledSyntax(conditionsObj)) {
       const simpleGroupArray = SoqlModelUtils.simpleGroupToArray(conditionsObj);
       where = {
         conditions: simpleGroupArray.conditions.map((condition, index) => {
@@ -58,8 +58,6 @@ export function convertSoqlModelToUiModel(
         }),
         andOr: simpleGroupArray.andOr
       };
-    } else {
-      unsupported.push('where:complex-group');
     }
   }
 
@@ -225,9 +223,11 @@ function convertUiModelToSoqlModel(uiModel: ToolingModelJson): Soql.Query {
     orderBy,
     limit
   );
-  queryModel.headerComments = new Impl.HeaderCommentsImpl(
-    uiModel.headerComments
-  );
+  if (uiModel.headerComments) {
+    queryModel.headerComments = new Impl.HeaderCommentsImpl(
+      uiModel.headerComments
+    );
+  }
   return queryModel;
 }
 
