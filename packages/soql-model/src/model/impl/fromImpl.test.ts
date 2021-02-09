@@ -5,6 +5,7 @@
  * For full license text, see LICENSE.txt file in the repo root or https://opensource.org/licenses/BSD-3-Clause
  */
 
+import * as Soql from '../model';
 import * as Impl from '.';
 
 describe('FromImpl should', () => {
@@ -16,13 +17,13 @@ describe('FromImpl should', () => {
   it('store as and using clauses as unmodeled syntax', () => {
     const expected = {
       sobjectName: 'black',
-      as: { unmodeledSyntax: 'and', reason: 'unmodeled:as' },
-      using: { unmodeledSyntax: 'blue', reason: 'unmodeled:using' },
+      as: { unmodeledSyntax: 'and', reason: Soql.REASON_UNMODELED_AS },
+      using: { unmodeledSyntax: 'blue', reason: Soql.REASON_UNMODELED_USING },
     };
     const actual = new Impl.FromImpl(
       expected.sobjectName,
-      new Impl.UnmodeledSyntaxImpl(expected.as.unmodeledSyntax, 'unmodeled:as'),
-      new Impl.UnmodeledSyntaxImpl(expected.using.unmodeledSyntax, 'unmodeled:using')
+      new Impl.UnmodeledSyntaxImpl(expected.as.unmodeledSyntax, Soql.REASON_UNMODELED_AS),
+      new Impl.UnmodeledSyntaxImpl(expected.using.unmodeledSyntax, Soql.REASON_UNMODELED_USING)
     );
     expect(actual).toEqual(expected);
   });
@@ -30,8 +31,8 @@ describe('FromImpl should', () => {
     const expected = 'FROM exile on main';
     const actual = new Impl.FromImpl(
       'exile',
-      new Impl.UnmodeledSyntaxImpl('on', 'unmodeled:as'),
-      new Impl.UnmodeledSyntaxImpl('main', 'unmodeled:using')
+      new Impl.UnmodeledSyntaxImpl('on', Soql.REASON_UNMODELED_AS),
+      new Impl.UnmodeledSyntaxImpl('main', Soql.REASON_UNMODELED_USING)
     ).toSoqlSyntax();
     expect(actual).toEqual(expected);
   });

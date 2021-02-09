@@ -48,7 +48,6 @@ describe('Fields', () => {
 
     const handler = jest.fn();
     fields.addEventListener('fields__selected', handler);
-
     const selectedFieldCloseEl = fields.shadowRoot.querySelector(
       "[data-field='foo']"
     );

@@ -14,7 +14,7 @@ export namespace SoqlModelUtils {
    * @param model
    */
   export function containsUnmodeledSyntax(model: object): boolean {
-    if ('unmodeledSyntax' in model) {
+    if (isUnmodeledSyntax(model)) {
       return true;
     }
     for (const property in model) {
@@ -28,6 +28,14 @@ export namespace SoqlModelUtils {
       }
     }
     return false;
+  }
+
+  /**
+   * This method determins whether the model object is an instance of unmodeled syntax, without checking property objects.
+   * @param model
+   */
+  export function isUnmodeledSyntax(model: object): boolean {
+    return ('unmodeledSyntax' in model);
   }
 
   /**
