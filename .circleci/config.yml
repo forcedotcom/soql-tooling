@@ -36,34 +36,6 @@ jobs:
           name: Upload coverage report to Codecov
           command: bash <(curl -s https://codecov.io/bash) -F soql-builder-ui -t ${CODECOV_TOKEN}
 
-  language-server:
-    docker: *node-build-image
-    environment:
-      PACKAGE_PATH: 'packages/language-server'
-    steps:
-      - checkout
-      - restore_cache:
-          key: dependency-cache-{{ checksum "yarn.lock" }}
-      - run: yarn
-      - save_cache:
-          key: dependency-cache-{{ checksum "yarn.lock" }}
-          paths:
-            - ./node_modules
-      - run:
-          name: Build Packages
-          command: |
-            echo 'Build all packages for linked dependencies'
-            yarn run build
-      - run:
-          name: 'Language Server: Run LWC Unit Tests'
-          command: |
-            echo 'Language Server: Run LWC Unit Tests'
-            cd $PACKAGE_PATH
-            yarn run test:unit:coverage
-      - run:
-          name: Upload coverage report to Codecov
-          command: bash <(curl -s https://codecov.io/bash) -F language-server -t ${CODECOV_TOKEN}
-
   soql-model:
     docker: *node-build-image
     environment:
@@ -110,10 +82,8 @@ workflows:
   commit-workflow:
     jobs:
       - soql-builder-ui
-      - language-server
       - soql-model
       - notify_slack:
           requires:
             - soql-builder-ui
-            - language-server
             - soql-model
