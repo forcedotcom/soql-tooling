@@ -756,16 +756,16 @@ describe('ModelDeserializer should', () => {
 
   it('identify unexpected end of file', () => {
     expectError(
-      'SELECT field1 FROM obejct1 WHERE field = \'', 
-      ErrorType.UNEXPECTEDEOF
+      'SELECT field1 FROM obejct1 WHERE field = \'',
+      Soql.ErrorType.UNEXPECTEDEOF
     );
     expectError(
-      'SELECT field1 FROM object1 GROUP BY', 
-      ErrorType.UNEXPECTEDEOF
+      'SELECT field1 FROM object1 GROUP BY',
+      Soql.ErrorType.UNEXPECTEDEOF
     );
   });
 
-  function expectError(query: string, expectedType: ErrorType): void {
+  function expectError(query: string, expectedType: Soql.ErrorType): void {
     const model = new ModelDeserializer(query).deserialize();
     if (model.errors && model.errors.length === 1) {
       expect(model.errors[0].type).toEqual(expectedType);
