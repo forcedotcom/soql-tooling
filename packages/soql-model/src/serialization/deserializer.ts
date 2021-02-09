@@ -264,8 +264,17 @@ class ErrorIdentifier {
           context.exception instanceof InputMismatchException
         )
       )
+    },
+    // NOTE: new known errors should go above;
+    // unexpectedEOF is an EOF catch-all, make sure it is tested last
+    {
+      type: Soql.ErrorType.UNEXPECTEDEOF,
+      message: Messages.error_unexpectedEOF,
+      predicate: (error, context) => (
+        error.getToken()?.type === Token.EOF
+      )
     }
-  ]
+  ];
 
   constructor(parseTree: ParseTree) {
     this.parseTree = parseTree;

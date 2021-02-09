@@ -30,15 +30,15 @@ export function convertSoqlModelToUiModel(
 
   const fields =
     queryModel.select &&
-    (queryModel.select as Soql.SelectExprs).selectExpressions
+      (queryModel.select as Soql.SelectExprs).selectExpressions
       ? (queryModel.select as Soql.SelectExprs).selectExpressions
-          .filter((expr) => !SoqlModelUtils.containsUnmodeledSyntax(expr))
-          .map((expr) => {
-            if (expr.field.fieldName) {
-              return expr.field.fieldName;
-            }
-            return undefined;
-          })
+        .filter((expr) => !SoqlModelUtils.containsUnmodeledSyntax(expr))
+        .map((expr) => {
+          if (expr.field.fieldName) {
+            return expr.field.fieldName;
+          }
+          return undefined;
+        })
       : undefined;
 
   const sObject = queryModel.from && queryModel.from.sobjectName;
@@ -63,15 +63,15 @@ export function convertSoqlModelToUiModel(
 
   const orderBy = queryModel.orderBy
     ? queryModel.orderBy.orderByExpressions
-        // TODO: Deal with empty OrderBy.  returns unmodelled syntax.
-        .filter((expr) => !SoqlModelUtils.containsUnmodeledSyntax(expr))
-        .map((expression) => {
-          return {
-            field: expression.field.fieldName,
-            order: expression.order,
-            nulls: expression.nullsOrder
-          };
-        })
+      // TODO: Deal with empty OrderBy.  returns unmodelled syntax.
+      .filter((expr) => !SoqlModelUtils.containsUnmodeledSyntax(expr))
+      .map((expression) => {
+        return {
+          field: expression.field.fieldName,
+          order: expression.order,
+          nulls: expression.nullsOrder
+        };
+      })
     : [];
 
   const limit = queryModel.limit
@@ -151,14 +151,14 @@ function convertUiModelToSoqlModel(uiModel: ToolingModelJson): Soql.Query {
 
       const compareValue = uiModelCondition.compareValue
         ? new Impl.LiteralImpl(
-            uiModelCondition.compareValue.type,
-            uiModelCondition.compareValue.value
-          )
+          uiModelCondition.compareValue.type,
+          uiModelCondition.compareValue.value
+        )
         : uiModelCondition.values
-        ? uiModelCondition.values.map(
+          ? uiModelCondition.values.map(
             (value) => new Impl.LiteralImpl(value.type, value.value)
           )
-        : undefined;
+          : undefined;
 
       if (field && compareValue) {
         switch (conditionType) {

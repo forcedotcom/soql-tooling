@@ -76,7 +76,6 @@ describe('Tooling Model Service', () => {
 
       expect(query!.sObject).toBe(mockSobject);
     });
-
     it('should include originalSoqlStatement property in model', () => {
       expect(query.originalSoqlStatement).toBe('');
       modelService.setSObject('Account');

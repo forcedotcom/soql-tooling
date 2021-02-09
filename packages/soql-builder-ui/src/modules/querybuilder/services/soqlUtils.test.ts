@@ -57,7 +57,7 @@ describe('SoqlUtils', () => {
     limit: '',
     errors: [
       {
-        type: 'UNKNOWN'
+        type: 'UNEXPECTEDEOF'
       }
     ],
     where: { conditions: [], andOr: undefined },
