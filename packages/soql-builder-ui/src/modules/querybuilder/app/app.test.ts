@@ -57,6 +57,7 @@ describe('App should', () => {
     type: MessageType.TEXT_SOQL_CHANGED,
     payload: accountQuery
   };
+  const querybuilderFromSelector = 'querybuilder-from';
   let originalCreateFn;
   function createSoqlEditorEvent(queryOverride = accountQuery, eventOverride?) {
     const query = queryOverride;
@@ -95,7 +96,7 @@ describe('App should', () => {
 
   describe('GENERAL', () => {
     it('display the app', () => {
-      const from = app.shadowRoot.querySelectorAll('querybuilder-from');
+      const from = app.shadowRoot.querySelectorAll(querybuilderFromSelector);
       expect(from.length).toEqual(1);
 
       const fields = app.shadowRoot.querySelectorAll('querybuilder-fields');
@@ -125,7 +126,7 @@ describe('App should', () => {
       expect(loadSObjectMetadataSpy).not.toHaveBeenCalled();
       app.fields = [];
       messageService.messagesToUI.next(
-        createSoqlEditorEvent('SELECT Id FROM Account')
+        createSoqlEditorEvent(accountQuery)
       );
       expect(loadSObjectMetadataSpy.mock.calls.length).toEqual(1);
       expect(app.fields.length).toEqual(0);
@@ -216,24 +217,35 @@ describe('App should', () => {
   });
 
   describe('HANDLE ERRORS', () => {
+    const unsupportedSoqlQuery = 'SELECT Id FROM Account GROUP BY';
+    const unsupportedOverlaySelector = '.unsupported-syntax-overlay';
+    const warningNotificationSelector = '.warning-notification';
     it('block the query builder ui on unrecoverable error', async () => {
-      let blockingElement = app.shadowRoot.querySelectorAll(
-        '.unsupported-syntax'
+      let warningElement = app.shadowRoot.querySelectorAll(
+        warningNotificationSelector
       );
-      expect(blockingElement.length).toBeFalsy();
+      let queryBuilder = app.shadowRoot.querySelectorAll(
+        querybuilderFromSelector
+      );
+      expect(queryBuilder.length).toBeTruthy();
+      expect(warningElement.length).toBeFalsy();
       app.hasUnrecoverableError = true;
       return Promise.resolve().then(() => {
-        blockingElement = app.shadowRoot.querySelectorAll(
-          '.unsupported-syntax'
+        warningElement = app.shadowRoot.querySelectorAll(
+          warningNotificationSelector
         );
-        expect(blockingElement.length).toBeTruthy();
+        queryBuilder = app.shadowRoot.querySelectorAll(
+          querybuilderFromSelector
+        );
+        expect(warningElement.length).toBeTruthy();
+        expect(queryBuilder.length).toBeFalsy();
       });
     });
 
     it('not block the query builder ui on recoverable error', async () => {
       document.body.appendChild(app);
       let blockingElement = app.shadowRoot.querySelectorAll(
-        '.unsupported-syntax'
+        warningNotificationSelector
       );
       expect(blockingElement.length).toBeFalsy();
       messageService.messagesToUI.next(
@@ -241,7 +253,7 @@ describe('App should', () => {
       );
       return Promise.resolve().then(() => {
         blockingElement = app.shadowRoot.querySelectorAll(
-          '.unsupported-syntax'
+          warningNotificationSelector
         );
         expect(blockingElement.length).toBeFalsy();
       });
@@ -249,18 +261,45 @@ describe('App should', () => {
 
     it('block the query builder on unsupported syntax', async () => {
       let blockingElement = app.shadowRoot.querySelectorAll(
-        '.unsupported-syntax'
+        warningNotificationSelector
       );
+      let queryBuilder = app.shadowRoot.querySelectorAll(
+        querybuilderFromSelector
+      );
+      expect(queryBuilder.length).toBeTruthy();
       expect(blockingElement.length).toBeFalsy();
       messageService.messagesToUI.next(
         createSoqlEditorEvent('SELECT Id FROM Account GROUP BY')
       );
       return Promise.resolve().then(() => {
         blockingElement = app.shadowRoot.querySelectorAll(
-          '.unsupported-syntax'
+          warningNotificationSelector
         );
+        queryBuilder = app.shadowRoot.querySelectorAll(
+          querybuilderFromSelector
+        );
+        expect(queryBuilder.length).not.toBeTruthy();
         expect(blockingElement.length).toBeTruthy();
       });
+    });
+
+    it('allows the user to dismiss blocking message', () => {
+      messageService.messagesToUI.next(
+        createSoqlEditorEvent(unsupportedSoqlQuery)
+      );
+      return Promise.resolve()
+        .then(() => {
+          const buttonElement = app.shadowRoot.querySelector(
+            '.warning-notification__dismiss button'
+          );
+          buttonElement.click();
+        })
+        .then(() => {
+          const blockingElement = app.shadowRoot.querySelectorAll(
+            unsupportedOverlaySelector
+          );
+          expect(blockingElement.length).toBeFalsy();
+        });
     });
   });
 
