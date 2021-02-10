@@ -43,8 +43,6 @@ class TestApp extends App {
   isFieldsLoading = false;
   @api
   isQueryRunning = false;
-  @api
-  hasUnrecoverableError = false;
 }
 
 describe('App should', () => {
@@ -229,7 +227,9 @@ describe('App should', () => {
       );
       expect(queryBuilder.length).toBeTruthy();
       expect(warningElement.length).toBeFalsy();
-      app.hasUnrecoverableError = true;
+      messageService.messagesToUI.next(
+        createSoqlEditorEvent('SELECT Id FROM Account GROUP BY')
+      );
       return Promise.resolve().then(() => {
         warningElement = app.shadowRoot.querySelectorAll(
           warningNotificationSelector
@@ -239,6 +239,10 @@ describe('App should', () => {
         );
         expect(warningElement.length).toBeTruthy();
         expect(queryBuilder.length).toBeFalsy();
+        const listElements = app.shadowRoot.querySelectorAll(
+          `${warningNotificationSelector} li`
+        );
+        expect(listElements.length).toBeTruthy();
       });
     });
 
