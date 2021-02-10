@@ -30,15 +30,15 @@ export function convertSoqlModelToUiModel(
 
   const fields =
     queryModel.select &&
-      (queryModel.select as Soql.SelectExprs).selectExpressions
+    (queryModel.select as Soql.SelectExprs).selectExpressions
       ? (queryModel.select as Soql.SelectExprs).selectExpressions
-        .filter((expr) => !SoqlModelUtils.containsUnmodeledSyntax(expr))
-        .map((expr) => {
-          if (expr.field.fieldName) {
-            return expr.field.fieldName;
-          }
-          return undefined;
-        })
+          .filter((expr) => !SoqlModelUtils.containsUnmodeledSyntax(expr))
+          .map((expr) => {
+            if (expr.field.fieldName) {
+              return expr.field.fieldName;
+            }
+            return undefined;
+          })
       : undefined;
 
   const sObject = queryModel.from && queryModel.from.sobjectName;
@@ -63,15 +63,15 @@ export function convertSoqlModelToUiModel(
 
   const orderBy = queryModel.orderBy
     ? queryModel.orderBy.orderByExpressions
-      // TODO: Deal with empty OrderBy.  returns unmodelled syntax.
-      .filter((expr) => !SoqlModelUtils.containsUnmodeledSyntax(expr))
-      .map((expression) => {
-        return {
-          field: expression.field.fieldName,
-          order: expression.order,
-          nulls: expression.nullsOrder
-        };
-      })
+        // TODO: Deal with empty OrderBy.  returns unmodelled syntax.
+        .filter((expr) => !SoqlModelUtils.containsUnmodeledSyntax(expr))
+        .map((expression) => {
+          return {
+            field: expression.field.fieldName,
+            order: expression.order,
+            nulls: expression.nullsOrder
+          };
+        })
     : [];
 
   const limit = queryModel.limit
@@ -151,14 +151,14 @@ function convertUiModelToSoqlModel(uiModel: ToolingModelJson): Soql.Query {
 
       const compareValue = uiModelCondition.compareValue
         ? new Impl.LiteralImpl(
-          uiModelCondition.compareValue.type,
-          uiModelCondition.compareValue.value
-        )
+            uiModelCondition.compareValue.type,
+            uiModelCondition.compareValue.value
+          )
         : uiModelCondition.values
-          ? uiModelCondition.values.map(
+        ? uiModelCondition.values.map(
             (value) => new Impl.LiteralImpl(value.type, value.value)
           )
-          : undefined;
+        : undefined;
 
       if (field && compareValue) {
         switch (conditionType) {
@@ -269,4 +269,52 @@ export function displayValueToSoqlStringLiteral(displayString: string): string {
   normalized = `'${normalized}'`;
 
   return normalized;
+}
+
+/* ======= LIKE OPERATOR UTILS ======= */
+const WILD_CARD = '%';
+const wildCardRegEx = new RegExp(WILD_CARD, 'g');
+/* LIKE_START ABC% */
+export function isLikeStart(value: string) {
+  if (value && value.length) {
+    const wildCardCount = value.match(wildCardRegEx).length;
+    const lastCharacter = value[value.length - 1];
+
+    if (wildCardCount === 1 && lastCharacter === WILD_CARD) {
+      return true;
+    }
+  }
+
+  return false;
+}
+/* LIKE_END %ABC */
+export function isLikeEnds(value: string) {
+  if (value && value.length) {
+    const wildCardCount = value.match(wildCardRegEx).length;
+    const firstCharacter = value[0];
+
+    if (wildCardCount === 1 && firstCharacter === WILD_CARD) {
+      return true;
+    }
+  }
+
+  return false;
+}
+/* LIKE_CONTAINS %ABC% */
+export function isLikeContains(value: string) {
+  if (value && value.length) {
+    const wildCardCount = value.match(wildCardRegEx).length;
+    const firstCharacter = value[0];
+    const lastCharacter = value[value.length - 1];
+
+    if (
+      wildCardCount === 2 &&
+      firstCharacter === WILD_CARD &&
+      lastCharacter === WILD_CARD
+    ) {
+      return true;
+    }
+  }
+
+  return false;
 }
