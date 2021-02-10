@@ -66,9 +66,9 @@
             <div class="warning-notification__message">
               <template if:true={showUnsupportedNotification}>
                 <!-- TODO: i18n -->
-                Your query contains statements that SOQL Builder doesn't currently
-                support. You can use a a text editor to edit the query. If you
-                click Edit Query Anyway, SOQL Builder removes the unsupported syntax.
+                <strong>Your query contains statements that SOQL Builder doesn't currently
+                support.</strong><p>You can use a a text editor to edit the query. If you
+                click Edit Query Anyway, SOQL Builder removes the unsupported syntax.</p>
               </template>
               <template if:true={showSyntaxErrorNotification}>
                 <!-- TODO: i18n -->
