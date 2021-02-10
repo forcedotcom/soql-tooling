@@ -37,7 +37,7 @@ export default class WhereModifierGroup extends LightningElement {
     this.resetErrorFlagsAndMessages();
   }
   _condition: JsonMap;
-  _currentOperatorValue;
+  _currentOperatorValue: string;
   @track
   _currentFieldSelection;
   @track _criteriaDisplayValue;
@@ -70,7 +70,7 @@ export default class WhereModifierGroup extends LightningElement {
 
     const matchingOption = condition
       ? operatorOptions.find(
-          (option) => option.modelValue === condition.operator
+          (option) => option.predicate(condition)
         )
       : undefined;
     this._currentOperatorValue = matchingOption
@@ -150,7 +150,7 @@ export default class WhereModifierGroup extends LightningElement {
   get hasSelectedOperator() {
     return !!this._currentOperatorValue;
   }
-
+  // consumed for UI rendering
   get _selectedOperator() {
     return operatorOptions.find(
       (option) => option.value === this._currentOperatorValue
@@ -220,18 +220,19 @@ export default class WhereModifierGroup extends LightningElement {
 
     this.dispatchEvent(conditionRemovedEvent);
   }
-
+  // pass operator info, this would be to remove % to be displayed in the input
   displayValue(type: Soql.LiteralType, rawValue: string): string {
     let displayValue = rawValue;
     switch (type) {
       case Soql.LiteralType.String: {
         displayValue = soqlStringLiteralToDisplayValue(rawValue);
+        // handle is LIKE and what kind
         break;
       }
     }
     return displayValue;
   }
-
+  //NOTE: add the % to the value if LIKE
   normalizeInput(type: Soql.SObjectFieldType, value: string): string {
     let normalized = value;
     if (!this.isMulipleValueOperator(this._currentOperatorValue)) {
@@ -319,6 +320,10 @@ export default class WhereModifierGroup extends LightningElement {
 
       this._criteriaDisplayValue = this.criteriaEl.value;
       const type = this.getSObjectFieldType(fieldName);
+      /* NOTE:
+      Need to determine which type of LIKE is selected
+      send the operator information to normalizeInput, then add %
+      */
       const normalizedInput = this.normalizeInput(type, this.criteriaEl.value);
       const critType = this.getCriteriaType(type, normalizedInput);
       const picklistValues = this.getPicklistValues(fieldName);
