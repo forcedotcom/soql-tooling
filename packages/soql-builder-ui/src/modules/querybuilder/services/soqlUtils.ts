@@ -278,9 +278,8 @@ const wildCardRegEx = new RegExp(WILD_CARD, 'g');
 export function isLikeStart(value: string) {
   if (value && value.length) {
     const wildCardCount = value.match(wildCardRegEx).length;
-    const lastCharacter = value[value.length - 1];
 
-    if (wildCardCount === 1 && lastCharacter === WILD_CARD) {
+    if (wildCardCount === 1 && value.endsWith(WILD_CARD)) {
       return true;
     }
   }
@@ -291,9 +290,8 @@ export function isLikeStart(value: string) {
 export function isLikeEnds(value: string) {
   if (value && value.length) {
     const wildCardCount = value.match(wildCardRegEx).length;
-    const firstCharacter = value[0];
 
-    if (wildCardCount === 1 && firstCharacter === WILD_CARD) {
+    if (wildCardCount === 1 && value.startsWith(WILD_CARD)) {
       return true;
     }
   }
@@ -304,13 +302,11 @@ export function isLikeEnds(value: string) {
 export function isLikeContains(value: string) {
   if (value && value.length) {
     const wildCardCount = value.match(wildCardRegEx).length;
-    const firstCharacter = value[0];
-    const lastCharacter = value[value.length - 1];
 
     if (
       wildCardCount === 2 &&
-      firstCharacter === WILD_CARD &&
-      lastCharacter === WILD_CARD
+      value.startsWith(WILD_CARD) &&
+      value.endsWith(WILD_CARD)
     ) {
       return true;
     }
