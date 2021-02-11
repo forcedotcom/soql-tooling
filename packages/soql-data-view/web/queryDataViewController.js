@@ -48,6 +48,7 @@
       pagination: 'local',
       layout: 'fitColumns',
       height: '60vh',
+      nestedFieldSeparator: '|'
     });
   }
 
