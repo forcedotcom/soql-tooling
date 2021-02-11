@@ -16,6 +16,7 @@ import { SelectExprsImpl } from './selectExprsImpl';
 import { WhereImpl } from './whereImpl';
 import { UnmodeledSyntaxImpl } from './unmodeledSyntaxImpl';
 import { HeaderCommentsImpl } from './headerCommentsImpl';
+import { SelectCountImpl } from './selectCountImpl';
 
 export {
   AndOrConditionImpl,
@@ -36,4 +37,5 @@ export {
   WhereImpl,
   UnmodeledSyntaxImpl,
   HeaderCommentsImpl,
+  SelectCountImpl
 };
