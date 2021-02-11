@@ -19,7 +19,8 @@ import { SObjectTypeUtils } from '../services/sobjectUtils';
 import {
   displayValueToSoqlStringLiteral,
   soqlStringLiteralToDisplayValue,
-  stripWildCards
+  stripWildCards,
+  addWildCardToValue
 } from '../services/soqlUtils';
 
 const DEFAULT_FIELD_INPUT_VALUE = '';
@@ -249,8 +250,12 @@ export default class WhereModifierGroup extends LightningElement {
     }
     return displayValue;
   }
-  //NOTE: add the % to the value if LIKE
-  normalizeInput(type: Soql.SObjectFieldType, value: string): string {
+  // This is represents the compareValue in the SOQL Query
+  normalizeInput(
+    type: Soql.SObjectFieldType,
+    value: string,
+    operatorValue?: OPERATOR
+  ): string {
     let normalized = value;
     if (!this.isMulipleValueOperator(this._currentOperatorValue)) {
       switch (type) {
@@ -268,7 +273,12 @@ export default class WhereModifierGroup extends LightningElement {
         default: {
           // treat like string
           if (value.toLowerCase().trim() !== 'null') {
-            normalized = displayValueToSoqlStringLiteral(value);
+            if (this.isSpecialLikeCondition(operatorValue)) {
+              let wildCardValue = addWildCardToValue(operatorValue, value);
+              normalized = displayValueToSoqlStringLiteral(wildCardValue);
+            } else {
+              normalized = displayValueToSoqlStringLiteral(normalized);
+            }
           }
           break;
         }
@@ -337,11 +347,11 @@ export default class WhereModifierGroup extends LightningElement {
 
       this._criteriaDisplayValue = this.criteriaEl.value;
       const type = this.getSObjectFieldType(fieldName);
-      /* NOTE:
-      Need to determine which type of LIKE is selected
-      send the operator information to normalizeInput, then add %
-      */
-      const normalizedInput = this.normalizeInput(type, this.criteriaEl.value);
+      const normalizedInput = this.normalizeInput(
+        type,
+        this.criteriaEl.value,
+        op
+      );
       const critType = this.getCriteriaType(type, normalizedInput);
       const picklistValues = this.getPicklistValues(fieldName);
 

@@ -10,7 +10,8 @@ import {
   Soql,
   SoqlModelUtils,
   ModelSerializer,
-  ModelDeserializer
+  ModelDeserializer,
+  OPERATOR
 } from '@salesforce/soql-model';
 import { ToolingModelJson } from './model';
 
@@ -327,4 +328,23 @@ export function stripWildCards(rawValue: string) {
     displayValue = displayValue.replace(WILD_CARD, '');
   }
   return displayValue;
+}
+
+export function addWildCardToValue(operatorValue: OPERATOR, rawValue: string) {
+  let value = rawValue;
+  switch (operatorValue) {
+    case OPERATOR.LIKE_START:
+      value = `${value}${WILD_CARD}`;
+      break;
+    case OPERATOR.LIKE_END:
+      value = `${WILD_CARD}${value}`;
+      break;
+    case OPERATOR.LIKE_CONTAINS:
+      value = `${WILD_CARD}${value}${WILD_CARD}`;
+      break;
+    default:
+      break;
+  }
+
+  return value;
 }
