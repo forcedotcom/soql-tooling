@@ -12,4 +12,11 @@ import { ModelDeserializer } from './serialization/deserializer';
 import { ModelSerializer } from './serialization/serializer';
 
 export { Soql, Impl, SoqlModelUtils, ModelDeserializer, ModelSerializer };
-export { ValidateOptions, ValidateResult, Validator, ValidatorFactory, splitMultiInputValues } from './validators';
+export {
+  ValidateOptions,
+  ValidateResult,
+  Validator,
+  ValidatorFactory,
+  splitMultiInputValues,
+  OPERATOR
+} from './validators';

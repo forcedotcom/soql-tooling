@@ -10,14 +10,16 @@ import { debounce } from 'debounce';
 import {
   Soql,
   ValidatorFactory,
-  splitMultiInputValues
+  splitMultiInputValues,
+  OPERATOR
 } from '@salesforce/soql-model';
 import { JsonMap } from '@salesforce/types';
 import { operatorOptions } from '../services/model';
 import { SObjectTypeUtils } from '../services/sobjectUtils';
 import {
   displayValueToSoqlStringLiteral,
-  soqlStringLiteralToDisplayValue
+  soqlStringLiteralToDisplayValue,
+  stripWildCards
 } from '../services/soqlUtils';
 
 const DEFAULT_FIELD_INPUT_VALUE = '';
@@ -69,9 +71,7 @@ export default class WhereModifierGroup extends LightningElement {
     this._currentFieldSelection = this.getFieldName();
 
     const matchingOption = condition
-      ? operatorOptions.find(
-          (option) => option.predicate(condition)
-        )
+      ? operatorOptions.find((option) => option.predicate(condition))
       : undefined;
     this._currentOperatorValue = matchingOption
       ? matchingOption.value
@@ -90,11 +90,14 @@ export default class WhereModifierGroup extends LightningElement {
       if (
         condition.compareValue &&
         condition.compareValue.type &&
-        condition.compareValue.value
+        condition.compareValue.value &&
+        matchingOption &&
+        matchingOption.value
       ) {
         this._criteriaDisplayValue = this.displayValue(
           condition.compareValue.type,
-          condition.compareValue.value
+          condition.compareValue.value,
+          matchingOption.value
         );
       }
     }
@@ -177,10 +180,10 @@ export default class WhereModifierGroup extends LightningElement {
 
   isMulipleValueOperator(operatorValue: string): boolean {
     return (
-      operatorValue === 'IN' ||
-      operatorValue === 'NOT_IN' ||
-      operatorValue === 'INCLUDES' ||
-      operatorValue === 'EXCLUDES'
+      operatorValue === OPERATOR.IN ||
+      operatorValue === OPERATOR.NOT_IN ||
+      operatorValue === OPERATOR.INCLUDES ||
+      operatorValue === OPERATOR.EXCLUDES
     );
   }
 
@@ -220,13 +223,27 @@ export default class WhereModifierGroup extends LightningElement {
 
     this.dispatchEvent(conditionRemovedEvent);
   }
-  // pass operator info, this would be to remove % to be displayed in the input
-  displayValue(type: Soql.LiteralType, rawValue: string): string {
+
+  isSpecialLikeCondition(operatorValue: string): boolean {
+    return (
+      operatorValue === OPERATOR.LIKE_START ||
+      operatorValue === OPERATOR.LIKE_END ||
+      operatorValue === OPERATOR.LIKE_CONTAINS
+    );
+  }
+  // This is the value displayed in modifier <input>
+  displayValue(
+    type: Soql.LiteralType,
+    rawValue: string,
+    operatorValue?: string
+  ): string {
     let displayValue = rawValue;
     switch (type) {
       case Soql.LiteralType.String: {
         displayValue = soqlStringLiteralToDisplayValue(rawValue);
-        // handle is LIKE and what kind
+        if (this.isSpecialLikeCondition(operatorValue)) {
+          displayValue = stripWildCards(displayValue);
+        }
         break;
       }
     }
