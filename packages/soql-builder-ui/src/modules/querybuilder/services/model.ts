@@ -27,6 +27,8 @@ export enum AndOr {
   OR = 'OR'
 }
 
+export const SELECT_COUNT = 'COUNT()';
+
 // This is to satisfy TS and stay dry
 export type IMap = Map<string, string | List<string>>;
 // Private immutable interface

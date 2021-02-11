@@ -7,18 +7,36 @@
  */
 
 import { LightningElement, api } from 'lwc';
+import { SELECT_COUNT } from '../services/model';
 export default class Fields extends LightningElement {
-  @api fields: string[];
+  @api set fields(fields: string[]) {
+    this._displayFields = [
+      SELECT_COUNT,
+      ...fields
+    ];
+  }
+  get fields() {
+    return this._displayFields;
+  }
   @api selectedFields: string[] = [];
   @api hasError = false;
   @api isLoading = false;
   selectPlaceHolderText = 'Search fields...'; // TODO: i18n
+  _displayFields: string[];
 
   handleFieldSelection(e) {
     e.preventDefault();
     if (e.detail && e.detail.value) {
+      let selection = [];
+      // COUNT() and other fields are mutually exclusive
+      if (e.detail.value.toLowerCase() === SELECT_COUNT.toLowerCase()) {
+        selection.push(SELECT_COUNT);
+      } else {
+        selection = this.selectedFields.filter(value => value.toLowerCase() !== SELECT_COUNT.toLowerCase());
+        selection.push(e.detail.value);
+      }
       const fieldSelectedEvent = new CustomEvent('fields__selected', {
-        detail: { field: e.detail.value }
+        detail: { fields: selection }
       });
       this.dispatchEvent(fieldSelectedEvent);
     }
@@ -26,9 +44,11 @@ export default class Fields extends LightningElement {
 
   handleFieldRemoved(e) {
     e.preventDefault();
-    const fieldRemovedEvent = new CustomEvent('fields__removed', {
-      detail: { field: e.target.dataset.field }
+    const fieldRemovedEvent = new CustomEvent('fields__selected', {
+      detail: { fields: this.selectedFields.filter(value => value !== e.target.dataset.field) }
     });
     this.dispatchEvent(fieldRemovedEvent);
   }
+
+
 }

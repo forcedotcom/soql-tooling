@@ -522,8 +522,7 @@ class QueryListener implements SoqlParserListener {
         (selectCtx as Parser.SoqlSelectExprsClauseContext).soqlSelectExprs().enterRule(this);
         this.select = new Impl.SelectExprsImpl(this.selectExpressions);
       } else if (selectCtx instanceof Parser.SoqlSelectCountClauseContext) {
-        // not a modeled case
-        this.select = this.toUnmodeledSyntax(selectCtx.start, selectCtx.stop as Token, Soql.REASON_UNMODELED_COUNT);
+        this.select = new Impl.SelectCountImpl();
       } else {
         // no selections
         this.select = new Impl.SelectExprsImpl([]);

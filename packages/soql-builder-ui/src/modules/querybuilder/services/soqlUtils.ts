@@ -12,7 +12,8 @@ import {
   ModelSerializer,
   ModelDeserializer
 } from '@salesforce/soql-model';
-import { ToolingModelJson } from './model';
+import { SoqlEditorEvent } from './message/soqlEditorEvent';
+import { SELECT_COUNT, ToolingModelJson } from './model';
 
 export function convertSoqlToUiModel(soql: string): ToolingModelJson {
   const queryModel = new ModelDeserializer(soql).deserialize();
@@ -39,7 +40,7 @@ export function convertSoqlModelToUiModel(
           }
           return undefined;
         })
-      : undefined;
+      : [SELECT_COUNT];
 
   const sObject = queryModel.from && queryModel.from.sobjectName;
 
@@ -115,9 +116,16 @@ export function convertUiModelToSoql(uiModel: ToolingModelJson): string {
 }
 
 function convertUiModelToSoqlModel(uiModel: ToolingModelJson): Soql.Query {
-  const selectExprs = uiModel.fields.map(
-    (field) => new Impl.FieldSelectionImpl(new Impl.FieldRefImpl(field))
-  );
+  let select: Soql.Select;
+  const isSelectCount = uiModel.fields.length === 1 && uiModel.fields[0].toLowerCase() === SELECT_COUNT.toLowerCase();
+  if (isSelectCount) {
+    select = new Impl.SelectCountImpl();
+  } else {
+    const selectExprs = uiModel.fields.map(
+      (field) => new Impl.FieldSelectionImpl(new Impl.FieldRefImpl(field))
+    );
+    select = new Impl.SelectExprsImpl(selectExprs);
+  }
 
   let whereExprsImpl;
   if (uiModel.where && uiModel.where.conditions.length) {
@@ -215,7 +223,7 @@ function convertUiModelToSoqlModel(uiModel: ToolingModelJson): Soql.Query {
   const limit =
     uiModel.limit.length > 0 ? new Impl.LimitImpl(uiModel.limit) : undefined;
   const queryModel = new Impl.QueryImpl(
-    new Impl.SelectExprsImpl(selectExprs),
+    select,
     new Impl.FromImpl(uiModel.sObject),
     where,
     undefined,
