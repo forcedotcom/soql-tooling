@@ -45,13 +45,15 @@ main.custom-select {
 }
 
 .select__dropdown-arrow {
-  transform: rotate(180deg);
+  transform: rotate(0deg);
+  margin-top: 3px;
   margin-right: 3px;
   cursor: pointer;
 }
 
 .select__dropdown-arrow--up {
-  transform: rotate(0deg);
+  transform: rotate(180deg);
+  margin-top: 0px;
 }
 
 div.select__dropdown-arrow:focus {
