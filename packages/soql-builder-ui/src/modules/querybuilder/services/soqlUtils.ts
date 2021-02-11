@@ -13,7 +13,7 @@ import {
   ModelDeserializer
 } from '@salesforce/soql-model';
 import { SoqlEditorEvent } from './message/soqlEditorEvent';
-import { ToolingModelJson } from './model';
+import { SELECT_COUNT, ToolingModelJson } from './model';
 
 export function convertSoqlToUiModel(soql: string): ToolingModelJson {
   const queryModel = new ModelDeserializer(soql).deserialize();
@@ -40,7 +40,7 @@ export function convertSoqlModelToUiModel(
           }
           return undefined;
         })
-      : ['COUNT()'];
+      : [SELECT_COUNT];
 
   const sObject = queryModel.from && queryModel.from.sobjectName;
 
@@ -117,7 +117,7 @@ export function convertUiModelToSoql(uiModel: ToolingModelJson): string {
 
 function convertUiModelToSoqlModel(uiModel: ToolingModelJson): Soql.Query {
   let select: Soql.Select;
-  const isSelectCount = uiModel.fields.length === 1 && uiModel.fields[0].toLowerCase() === 'count()';
+  const isSelectCount = uiModel.fields.length === 1 && uiModel.fields[0].toLowerCase() === SELECT_COUNT.toLowerCase();
   if (isSelectCount) {
     select = new Impl.SelectCountImpl();
   } else {

@@ -7,10 +7,11 @@
  */
 
 import { LightningElement, api } from 'lwc';
+import { SELECT_COUNT } from '../services/model';
 export default class Fields extends LightningElement {
   @api set fields(fields: string[]) {
     this._displayFields = [
-      'COUNT()',
+      SELECT_COUNT,
       ...fields
     ];
   }
@@ -28,10 +29,10 @@ export default class Fields extends LightningElement {
     if (e.detail && e.detail.value) {
       let selection = [];
       // COUNT() and other fields are mutually exclusive
-      if (e.detail.value.toLowerCase() === 'count()') {
-        selection.push('COUNT()');
+      if (e.detail.value.toLowerCase() === SELECT_COUNT.toLowerCase()) {
+        selection.push(SELECT_COUNT);
       } else {
-        selection = this.selectedFields.filter(value => value.toLowerCase() !== 'count()');
+        selection = this.selectedFields.filter(value => value.toLowerCase() !== SELECT_COUNT.toLowerCase());
         selection.push(e.detail.value);
       }
       const fieldSelectedEvent = new CustomEvent('fields__selected', {

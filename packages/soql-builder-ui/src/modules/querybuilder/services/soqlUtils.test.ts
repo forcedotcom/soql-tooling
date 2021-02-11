@@ -11,7 +11,7 @@ import {
   soqlStringLiteralToDisplayValue,
   displayValueToSoqlStringLiteral
 } from './soqlUtils';
-import { ToolingModelJson } from './model';
+import { SELECT_COUNT, ToolingModelJson } from './model';
 
 describe('SoqlUtils', () => {
   const uiModelOne: ToolingModelJson = {
@@ -52,7 +52,7 @@ describe('SoqlUtils', () => {
   };
   const uiModelCount: ToolingModelJson = {
     sObject: 'Account',
-    fields: ['COUNT()'],
+    fields: [SELECT_COUNT],
     where: {
       conditions: [],
       andOr: undefined

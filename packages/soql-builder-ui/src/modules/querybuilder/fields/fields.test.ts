@@ -8,6 +8,7 @@
 
 import { createElement } from 'lwc';
 import Fields from 'querybuilder/fields';
+import { SELECT_COUNT } from '../services/model';
 
 describe('Fields', () => {
   const fields = createElement('querybuilder-fields', {
@@ -101,15 +102,15 @@ describe('Fields', () => {
       'querybuilder-custom-select'
     );
     customSelect.dispatchEvent(
-      new CustomEvent('option__selection', { detail: { value: 'COUNT()' } })
+      new CustomEvent('option__selection', { detail: { value: SELECT_COUNT } })
     );
 
     expect(selectHandler).toHaveBeenCalledTimes(1);
-    expect(selectionFromEvent).toEqual(['COUNT()']);
+    expect(selectionFromEvent).toEqual([SELECT_COUNT]);
   });
 
   it('removes COUNT() when something else is selected', async () => {
-    fields.selectedFields = ['COUNT()'];
+    fields.selectedFields = [SELECT_COUNT];
     document.body.appendChild(fields);
 
     let selectionFromEvent;
