@@ -12,7 +12,8 @@ import {
   displayValueToSoqlStringLiteral,
   isLikeContains,
   isLikeEnds,
-  isLikeStart
+  isLikeStart,
+  stripWildCards
 } from './soqlUtils';
 import { ToolingModelJson } from './model';
 
@@ -234,6 +235,14 @@ describe('SoqlUtils', () => {
       expect(isLikeContains('%ABC')).toBe(false);
       expect(isLikeContains('A%BC')).toBe(false);
       expect(isLikeContains('A%BC%')).toBe(false);
+    });
+    it('stripWildCards() should remove all % from the string', () => {
+      const cleanValue = 'ABC';
+      expect(stripWildCards(cleanValue)).toEqual(cleanValue);
+      expect(stripWildCards('ABC%')).toEqual(cleanValue);
+      expect(stripWildCards('%ABC')).toEqual(cleanValue);
+      expect(stripWildCards('%ABC%')).toEqual(cleanValue);
+      expect(stripWildCards('%A%B%C%')).toEqual(cleanValue);
     });
   });
 });

@@ -320,3 +320,11 @@ export function isLikeContains(value: string) {
 
   return false;
 }
+
+export function stripWildCards(rawValue: string) {
+  let displayValue = rawValue;
+  while (displayValue.match(wildCardRegEx)) {
+    displayValue = displayValue.replace(WILD_CARD, '');
+  }
+  return displayValue;
+}
