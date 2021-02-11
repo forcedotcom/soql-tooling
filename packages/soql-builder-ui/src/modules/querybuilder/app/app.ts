@@ -106,7 +106,7 @@ export default class App extends LightningElement {
     // only re-render if incoming soql statement is different
     if (this.query.originalSoqlStatement !== newQuery.originalSoqlStatement) {
       this.notifications = lwcIndexableArray<string>([...this.inspectUnsupported(newQuery.unsupported), ...this.inspectErrors(newQuery.errors)]);
-        this.loadSObjectMetadata(newQuery);
+      this.loadSObjectMetadata(newQuery);
       this.query = newQuery;
     }
   }
