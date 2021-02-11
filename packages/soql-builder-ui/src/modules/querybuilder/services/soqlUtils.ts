@@ -277,7 +277,9 @@ const wildCardRegEx = new RegExp(WILD_CARD, 'g');
 /* LIKE_START ABC% */
 export function isLikeStart(value: string) {
   if (value && value.length) {
-    const wildCardCount = value.match(wildCardRegEx).length;
+    value = soqlStringLiteralToDisplayValue(value);
+    const wildcardMatch = value.match(wildCardRegEx);
+    const wildCardCount = wildcardMatch ? wildcardMatch.length : 0;
 
     if (wildCardCount === 1 && value.endsWith(WILD_CARD)) {
       return true;
@@ -289,7 +291,9 @@ export function isLikeStart(value: string) {
 /* LIKE_END %ABC */
 export function isLikeEnds(value: string) {
   if (value && value.length) {
-    const wildCardCount = value.match(wildCardRegEx).length;
+    value = soqlStringLiteralToDisplayValue(value);
+    const wildcardMatch = value.match(wildCardRegEx);
+    const wildCardCount = wildcardMatch ? wildcardMatch.length : 0;
 
     if (wildCardCount === 1 && value.startsWith(WILD_CARD)) {
       return true;
@@ -301,7 +305,9 @@ export function isLikeEnds(value: string) {
 /* LIKE_CONTAINS %ABC% */
 export function isLikeContains(value: string) {
   if (value && value.length) {
-    const wildCardCount = value.match(wildCardRegEx).length;
+    value = soqlStringLiteralToDisplayValue(value);
+    const wildcardMatch = value.match(wildCardRegEx);
+    const wildCardCount = wildcardMatch ? wildcardMatch.length : 0;
 
     if (
       wildCardCount === 2 &&

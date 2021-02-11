@@ -204,6 +204,8 @@ describe('SoqlUtils', () => {
   describe('LIKE OPERATOR UTILS', () => {
     it('isLikeStart() should return true with compareValue of ABC%', () => {
       expect(isLikeStart('ABC%')).toBe(true);
+      expect(isLikeStart("'ABC%'")).toBe(true);
+      expect(isLikeStart("A'BC%'")).toBe(true);
 
       expect(isLikeStart('')).toBe(false);
       expect(isLikeStart('%ABC')).toBe(false);
@@ -213,6 +215,8 @@ describe('SoqlUtils', () => {
     });
     it('isLikeEnds() should return true with compareValue of %ABC', () => {
       expect(isLikeEnds('%ABC')).toBe(true);
+      expect(isLikeEnds("'%ABC'")).toBe(true);
+      expect(isLikeEnds("%AB'C'")).toBe(true);
 
       expect(isLikeEnds('ABC%')).toBe(false);
       expect(isLikeEnds('')).toBe(false);
@@ -222,6 +226,8 @@ describe('SoqlUtils', () => {
     });
     it('isLikeContains() should return true with compareValue of %ABC%', () => {
       expect(isLikeContains('%ABC%')).toBe(true);
+      expect(isLikeContains("'%ABC%'")).toBe(true);
+      expect(isLikeContains("'%A'BC%'")).toBe(true);
 
       expect(isLikeContains('ABC%')).toBe(false);
       expect(isLikeContains('')).toBe(false);

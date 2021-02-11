@@ -8,6 +8,7 @@
 import { Soql } from '@salesforce/soql-model';
 import { List, Map } from 'immutable';
 import { JsonMap } from '@salesforce/ts-types';
+import { isLikeStart, isLikeEnds, isLikeContains } from '../services/soqlUtils';
 
 export enum ModelProps {
   SOBJECT = 'sObject',
@@ -57,7 +58,7 @@ export interface ToolingModelJson extends JsonMap {
 export interface OperatorOption {
   value: string;
   displayValue: string;
-  modelValue: Soql.ConditionOperator,
+  modelValue: Soql.ConditionOperator;
   predicate: (condition: JsonMap) => boolean;
 }
 
@@ -66,85 +67,116 @@ export const operatorOptions: OperatorOption[] = [
     value: 'EQ',
     displayValue: '=',
     modelValue: Soql.ConditionOperator.Equals,
-    predicate: (conditon: JsonMap): boolean => conditon.operator === Soql.ConditionOperator.Equals
-
+    predicate: (conditon: JsonMap): boolean =>
+      conditon.operator === Soql.ConditionOperator.Equals
   },
   {
     value: 'NOT_EQ',
     displayValue: '≠',
     modelValue: Soql.ConditionOperator.NotEquals,
-    predicate: (conditon: JsonMap): boolean => conditon.operator === Soql.ConditionOperator.NotEquals,
+    predicate: (conditon: JsonMap): boolean =>
+      conditon.operator === Soql.ConditionOperator.NotEquals
   },
   {
     value: 'LT',
     displayValue: '<',
     modelValue: Soql.ConditionOperator.LessThan,
-    predicate: (conditon: JsonMap): boolean => conditon.operator === Soql.ConditionOperator.LessThan
+    predicate: (conditon: JsonMap): boolean =>
+      conditon.operator === Soql.ConditionOperator.LessThan
   },
   {
     value: 'LT_EQ',
     displayValue: '≤',
     modelValue: Soql.ConditionOperator.LessThanOrEqual,
-    predicate: (conditon: JsonMap): boolean => conditon.operator === Soql.ConditionOperator.LessThanOrEqual
+    predicate: (conditon: JsonMap): boolean =>
+      conditon.operator === Soql.ConditionOperator.LessThanOrEqual
   },
   {
     value: 'GT',
     displayValue: '>',
     modelValue: Soql.ConditionOperator.GreaterThan,
-    predicate: (conditon: JsonMap): boolean => conditon.operator === Soql.ConditionOperator.GreaterThan
+    predicate: (conditon: JsonMap): boolean =>
+      conditon.operator === Soql.ConditionOperator.GreaterThan
   },
   {
     value: 'GT_EQ',
     displayValue: '≥',
     modelValue: Soql.ConditionOperator.GreaterThanOrEqual,
-    predicate: (conditon: JsonMap): boolean => conditon.operator === Soql.ConditionOperator.GreaterThanOrEqual
+    predicate: (conditon: JsonMap): boolean =>
+      conditon.operator === Soql.ConditionOperator.GreaterThanOrEqual
   },
   {
     value: 'IN',
     displayValue: 'in',
     modelValue: Soql.ConditionOperator.In,
-    predicate: (conditon: JsonMap): boolean => conditon.operator === Soql.ConditionOperator.In
+    predicate: (conditon: JsonMap): boolean =>
+      conditon.operator === Soql.ConditionOperator.In
   },
   {
     value: 'NOT_IN',
     displayValue: 'not in',
     modelValue: Soql.ConditionOperator.NotIn,
-    predicate: (conditon: JsonMap): boolean => conditon.operator === Soql.ConditionOperator.NotIn
+    predicate: (conditon: JsonMap): boolean =>
+      conditon.operator === Soql.ConditionOperator.NotIn
   },
   {
     value: 'INCLUDES',
     displayValue: 'includes',
     modelValue: Soql.ConditionOperator.Includes,
-    predicate: (conditon: JsonMap): boolean => conditon.operator === Soql.ConditionOperator.Includes
+    predicate: (conditon: JsonMap): boolean =>
+      conditon.operator === Soql.ConditionOperator.Includes
   },
   {
     value: 'EXCLUDES',
     displayValue: 'excludes',
     modelValue: Soql.ConditionOperator.Excludes,
-    predicate: (conditon: JsonMap): boolean => conditon.operator === Soql.ConditionOperator.Excludes
+    predicate: (conditon: JsonMap): boolean =>
+      conditon.operator === Soql.ConditionOperator.Excludes
   },
   {
     value: 'LIKE',
     displayValue: 'like',
     modelValue: Soql.ConditionOperator.Like,
-    predicate: (conditon: JsonMap): boolean => conditon.operator === Soql.ConditionOperator.Like
+    predicate: (conditon: JsonMap): boolean => {
+      const value = conditon.compareValue.value;
+      return (
+        conditon.operator === Soql.ConditionOperator.Like &&
+        !(isLikeStart(value) || isLikeEnds(value) || isLikeContains(value))
+      );
+    }
   },
   {
     value: 'LIKE_START',
     displayValue: 'starts with',
     modelValue: Soql.ConditionOperator.Like,
-    predicate: (conditon: JsonMap): boolean => false
+    predicate: (conditon: JsonMap): boolean => {
+      const value = conditon.compareValue.value;
+      return (
+        conditon.operator === Soql.ConditionOperator.Like && isLikeStart(value)
+      );
+    }
   },
   {
     value: 'LIKE_END',
     displayValue: 'ends with',
     modelValue: Soql.ConditionOperator.Like,
-    predicate: (conditon: JsonMap): boolean => false
+    predicate: (conditon: JsonMap): boolean => {
+      const value = conditon.compareValue.value;
+      return (
+        conditon.operator === Soql.ConditionOperator.Like && isLikeEnds(value)
+      );
+    }
   },
   {
     value: 'LIKE_CONTAINS',
     displayValue: 'contains',
     modelValue: Soql.ConditionOperator.Like,
-    predicate: (conditon: JsonMap): boolean => false
+    predicate: (conditon: JsonMap): boolean => {
+      const value = conditon.compareValue.value;
+      return (
+        conditon.operator === Soql.ConditionOperator.Like &&
+        isLikeContains(value)
+      );
+    }
   }
 ];
