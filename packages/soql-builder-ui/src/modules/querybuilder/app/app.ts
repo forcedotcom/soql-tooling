@@ -25,6 +25,7 @@ import {
 } from '../error/errorModel';
 import { getBodyClass } from '../services/globals';
 import { ToolingModelJson } from '../services/model';
+import { lwcIndexableArray } from '../services/lwcUtils';
 
 export default class App extends LightningElement {
   @track
@@ -36,20 +37,18 @@ export default class App extends LightningElement {
   messageService: IMessageService;
   theme = 'light';
   sobjectMetadata: any;
+  notifications = [];
 
-  get hasUnsupported() {
-    return this.query && this.query.unsupported
-      ? this.query.unsupported.length
-      : 0;
+  get shouldBlockQueryBuilder() {
+    return ( this.hasUnrecoverableError || this.hasUnsupportedMessage ) && this.dismissNotifications === false;
   }
-
-  get hasUnrecoverable() {
-    return !this.hasUnsupported && this.hasUnrecoverableError;
+  get showUnsupportedNotification() {
+    return !this.hasUnrecoverableError && this.hasUnsupportedMessage;
   }
-
-  get blockQueryBuilder() {
-    return this.hasUnrecoverableError || this.hasUnsupported;
+  get showSyntaxErrorNotification() {
+    return this.hasUnrecoverableError;
   }
+  hasUnsupportedMessage = false;
   hasRecoverableFieldsError = false;
   hasRecoverableFromError = false;
   hasRecoverableLimitError = false;
@@ -58,6 +57,7 @@ export default class App extends LightningElement {
   isFromLoading = false;
   isFieldsLoading = false;
   isQueryRunning = false;
+  dismissNotifications = false;
 
   @track
   query: ToolingModelJson = ToolingModelService.toolingModelTemplate;
@@ -105,10 +105,8 @@ export default class App extends LightningElement {
   uiModelSubscriber(newQuery: ToolingModelJson) {
     // only re-render if incoming soql statement is different
     if (this.query.originalSoqlStatement !== newQuery.originalSoqlStatement) {
-      this.inspectErrors(newQuery.errors);
-      if (this.hasUnrecoverableError === false) {
-        this.loadSObjectMetadata(newQuery);
-      }
+      this.notifications = lwcIndexableArray<string>([...this.inspectUnsupported(newQuery.unsupported), ...this.inspectErrors(newQuery.errors)]);
+      this.loadSObjectMetadata(newQuery);
       this.query = newQuery;
     }
   }
@@ -145,6 +143,7 @@ export default class App extends LightningElement {
     this.hasRecoverableFromError = false;
     this.hasRecoverableLimitError = false;
     this.hasUnrecoverableError = false;
+    let messages = [];
     errors.forEach((error) => {
       if (recoverableErrors[error.type]) {
         this.hasRecoverableError = true;
@@ -160,7 +159,20 @@ export default class App extends LightningElement {
       } else {
         this.hasUnrecoverableError = true;
       }
+      messages.push(error.message);
     });
+    return messages;
+  }
+
+  inspectUnsupported(unsupported) {
+    const filteredUnsupported = unsupported
+      // this reason is often associated with a parse error, so snuffing it out instead of double notifications
+      .filter(unsup => unsup.reason.reasonCode !== 'unmodeled:empty-condition')
+      .map(unsup => {
+        return unsup.reason.message;
+      });
+      this.hasUnsupportedMessage = (filteredUnsupported.length > 0);
+      return filteredUnsupported;
   }
   /* ---- SOBJECT HANDLERS ---- */
   handleObjectChange(e) {
@@ -202,6 +214,11 @@ export default class App extends LightningElement {
   }
   handleRemoveWhereCondition(e) {
     this.modelService.removeWhereFieldCondition(e.detail);
+  }
+
+  /* ---- MISC HANDLERS ---- */
+  handleDismissNotifications() {
+    this.dismissNotifications = true;
   }
 
   handleRunQuery() {
