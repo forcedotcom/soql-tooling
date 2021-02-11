@@ -79,26 +79,13 @@ export class ToolingModelService {
     return this.getModel().get(ModelProps.FIELDS) as List<string>;
   }
 
-  public addField(field: string) {
+  public setFields(fields: string[]) {
     const currentModel = this.getModel();
-    const newModelWithAddedField = currentModel.set(
+    const newModel = currentModel.set(
       ModelProps.FIELDS,
-      this.getFields().toSet().add(field).toList()
-    ) as ToolingModel;
-
-    this.changeModel(newModelWithAddedField);
-  }
-
-  public removeField(field: string) {
-    const currentModel = this.getModel();
-    const newModelWithFieldRemoved = currentModel.set(
-      ModelProps.FIELDS,
-      this.getFields().filter((item) => {
-        return item !== field;
-      }) as List<string>
-    ) as ToolingModel;
-
-    this.changeModel(newModelWithFieldRemoved);
+      fields
+    );
+    this.changeModel(newModel);
   }
 
   /* ---- ORDER BY ---- */

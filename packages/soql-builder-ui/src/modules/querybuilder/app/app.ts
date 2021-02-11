@@ -193,12 +193,9 @@ export default class App extends LightningElement {
   }
   /* ---- FIELD HANDLERS ---- */
   handleFieldSelected(e) {
-    this.modelService.addField(e.detail.field);
+    this.modelService.setFields(e.detail.fields);
   }
 
-  handleFieldRemoved(e) {
-    this.modelService.removeField(e.detail.field);
-  }
   /* ---- ORDER BY HANDLERS ---- */
   handleOrderBySelected(e) {
     this.modelService.addUpdateOrderByField(e.detail);

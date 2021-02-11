@@ -47,7 +47,7 @@ const fromWithUnmodeledSyntax = {
   using: { unmodeledSyntax: 'USING SCOPE everything', reason: Soql.REASON_UNMODELED_USING },
 };
 
-const selectCountUnmdeledSyntax = { unmodeledSyntax: 'SELECT COUNT()', reason: Soql.REASON_UNMODELED_COUNT };
+const selectCount = {};
 
 const limitZero = { limit: 0 };
 
@@ -145,9 +145,9 @@ describe('ModelDeserializer should', () => {
     expect(actual).toEqual(expected);
   });
 
-  it('model COUNT() in SELECT clause as unmodeled syntax', () => {
+  it('identify SELECT COUNT() clause', () => {
     const expected = {
-      select: selectCountUnmdeledSyntax,
+      select: selectCount,
       from: testQueryModel.from,
       errors: testQueryModel.errors,
     };
@@ -161,7 +161,7 @@ describe('ModelDeserializer should', () => {
     const expected = testQueryModel;
     const actual = new ModelDeserializer(
       'SELECT field1, field2, field3 alias3, COUNT(fieldZ), (SELECT fieldA FROM objectA), TYPEOF obj WHEN typeX THEN fieldX ELSE fieldY END FROM object1 ' +
-        'WHERE field1 = 5 WITH DATA CATEGORY cat__c AT val__c GROUP BY field1 ORDER BY field2 DESC NULLS LAST, field1 LIMIT 20 OFFSET 2 BIND field1 = 5 FOR VIEW UPDATE TRACKING'
+      'WHERE field1 = 5 WITH DATA CATEGORY cat__c AT val__c GROUP BY field1 ORDER BY field2 DESC NULLS LAST, field1 LIMIT 20 OFFSET 2 BIND field1 = 5 FOR VIEW UPDATE TRACKING'
     ).deserialize();
     expect(actual).toEqual(expected);
   });
