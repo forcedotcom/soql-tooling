@@ -30,6 +30,10 @@ main.custom-select {
   border: none;
 }
 
+svg line {
+  stroke: var(--vscode-foreground, var(--soql-foreground));
+}
+
 .select__input.select__input-placeholder--fadeout::placeholder {
   opacity: 0.5;
 }

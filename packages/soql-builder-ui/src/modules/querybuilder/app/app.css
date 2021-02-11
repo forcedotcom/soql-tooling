@@ -82,5 +82,5 @@ main {
   text-align: left;
   padding: 0 1rem 1rem 1rem;
   font-size: small;
-  color: var(--vscode-foreground, var(--soql-forground));
+  color: var(--vscode-foreground, var(--soql-foreground));
 }
