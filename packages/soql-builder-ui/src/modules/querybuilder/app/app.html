@@ -17,73 +17,82 @@
     </header>
     <article class="querybuilder-body">
       <section class="querybuilder-form">
-        <querybuilder-from
-          onfrom__object_selected={handleObjectChange}
-          sobjects={sObjects}
-          selected={query.sObject}
-          has-error={hasRecoverableFromError}
-          is-loading={isFromLoading}
-          class={theme}
-        ></querybuilder-from>
-        <querybuilder-fields
-          selected-fields={query.fields}
-          fields={fields}
-          onfields__selected={handleFieldSelected}
-          has-error={hasRecoverableFieldsError}
-          is-loading={isFieldsLoading}
-          class={theme}
-        ></querybuilder-fields>
-        <querybuilder-where
-          where-expr={query.where}
-          where-fields={fields}
-          onwhere__group_selection={handleWhereSelection}
-          onwhere__andor_selection={handleAndOrSelection}
-          onwhere__condition_removed={handleRemoveWhereCondition}
-          is-loading={isFieldsLoading}
-          class={theme}
-          sobject-metadata={sobjectMetadata}
-        ></querybuilder-where>
-        <querybuilder-order-by
-          selected-order-by-fields={query.orderBy}
-          order-by-fields={fields}
-          onorderby__selected={handleOrderBySelected}
-          onorderby__removed={handleOrderByRemoved}
-          has-error={hasRecoverableOrderByError}
-          is-loading={isFieldsLoading}
-          class={theme}
-        ></querybuilder-order-by>
-        <querybuilder-limit
-          limit={query.limit}
-          has-error={hasRecoverableLimitError}
-          onlimit__changed={handleLimitChanged}
-          class={theme}
-        ></querybuilder-limit>
-        <!-- div.unsupported-syntax should always be
-        last in the <section class="querybuilder-form">
-        So it stays on top of form elements -->
-        <template if:true={blockQueryBuilder}>
-          <div class="unsupported-syntax"></div>
-          <template if:true={hasUnsupported}>
-            <!-- TODO: i18n -->
-            <div class="block-message">
-              <h3>Syntax Not Yet Supported</h3>
-              <p>
-                Your query contains statements that SOQL Builder doesn't
-                currently support. You can still run the query but must use a
-                text editor to change it.
-              </p>
+        <template if:false={shouldBlockQueryBuilder}>
+          <querybuilder-from
+            onfrom__object_selected={handleObjectChange}
+            sobjects={sObjects}
+            selected={query.sObject}
+            has-error={hasRecoverableFromError}
+            is-loading={isFromLoading}
+            class={theme}
+          ></querybuilder-from>
+          <querybuilder-fields
+            selected-fields={query.fields}
+            fields={fields}
+            onfields__selected={handleFieldSelected}
+            onfields__removed={handleFieldRemoved}
+            has-error={hasRecoverableFieldsError}
+            is-loading={isFieldsLoading}
+            class={theme}
+          ></querybuilder-fields>
+          <querybuilder-where
+            where-expr={query.where}
+            where-fields={fields}
+            onwhere__group_selection={handleWhereSelection}
+            onwhere__andor_selection={handleAndOrSelection}
+            onwhere__condition_removed={handleRemoveWhereCondition}
+            is-loading={isFieldsLoading}
+            class={theme}
+            sobject-metadata={sobjectMetadata}
+          ></querybuilder-where>
+          <querybuilder-order-by
+            selected-order-by-fields={query.orderBy}
+            order-by-fields={fields}
+            onorderby__selected={handleOrderBySelected}
+            onorderby__removed={handleOrderByRemoved}
+            has-error={hasRecoverableOrderByError}
+            is-loading={isFieldsLoading}
+            class={theme}
+          ></querybuilder-order-by>
+          <querybuilder-limit
+            limit={query.limit}
+            has-error={hasRecoverableLimitError}
+            onlimit__changed={handleLimitChanged}
+            class={theme}
+          ></querybuilder-limit>
+        </template>
+        <template if:true={shouldBlockQueryBuilder}>
+          <div class="warning-notification">
+            <div class="warning-notification__message">
+              <template if:true={showUnsupportedNotification}>
+                <!-- TODO: i18n -->
+                <strong>Your query contains statements that SOQL Builder doesn't currently
+                support.</strong><p>You can use a a text editor to edit the query. If you
+                click Edit Query Anyway, SOQL Builder removes the unsupported syntax.</p>
+              </template>
+              <template if:true={showSyntaxErrorNotification}>
+                <!-- TODO: i18n -->
+                <strong>Your query contains syntax errors that SOQL Builder can't parse.</strong><p>You can use a
+                a text editor to edit the query. If you click Edit Query Anyway, SOQL
+                Builder will rewrite your query.</p>
+              </template>
+              <ol type="number">
+                <template for:each={notifications} for:item="notification"
+                  ><li key={notification.index}>
+                    {notification.item}
+                  </li></template
+                >
+              </ol>
             </div>
-          </template>
-          <template if:true={hasUnrecoverable}>
-            <!-- TODO: i18n -->
-            <div class="block-message">
-              <h3>Syntax Error</h3>
-              <p>
-                Your SOQL statement contains syntax errors. Use a text editor to
-                edit the query, and try again.
-              </p>
+            <div class="warning-notification__dismiss">
+              <button
+                class="btn--error text-center"
+                onclick={handleDismissNotifications}
+              ><!-- TODO: i18n -->
+                Edit Query Anyway
+              </button>
             </div>
-          </template>
+          </div>
         </template>
       </section>
       <section class="query-preview">
