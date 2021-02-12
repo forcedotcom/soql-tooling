@@ -10,8 +10,7 @@ import { debounce } from 'debounce';
 import {
   Soql,
   ValidatorFactory,
-  splitMultiInputValues,
-  OPERATOR
+  splitMultiInputValues
 } from '@salesforce/soql-model';
 import { JsonMap } from '@salesforce/types';
 import { operatorOptions } from '../services/model';
@@ -181,10 +180,10 @@ export default class WhereModifierGroup extends LightningElement {
 
   isMulipleValueOperator(operatorValue: string): boolean {
     return (
-      operatorValue === OPERATOR.IN ||
-      operatorValue === OPERATOR.NOT_IN ||
-      operatorValue === OPERATOR.INCLUDES ||
-      operatorValue === OPERATOR.EXCLUDES
+      operatorValue === Soql.UiOperatorValue.IN ||
+      operatorValue === Soql.UiOperatorValue.NOT_IN ||
+      operatorValue === Soql.UiOperatorValue.INCLUDES ||
+      operatorValue === Soql.UiOperatorValue.EXCLUDES
     );
   }
 
@@ -227,9 +226,9 @@ export default class WhereModifierGroup extends LightningElement {
 
   isSpecialLikeCondition(operatorValue: string): boolean {
     return (
-      operatorValue === OPERATOR.LIKE_START ||
-      operatorValue === OPERATOR.LIKE_END ||
-      operatorValue === OPERATOR.LIKE_CONTAINS
+      operatorValue === Soql.UiOperatorValue.LIKE_START ||
+      operatorValue === Soql.UiOperatorValue.LIKE_END ||
+      operatorValue === Soql.UiOperatorValue.LIKE_CONTAINS
     );
   }
   // This is the value displayed in modifier <input>
@@ -254,7 +253,7 @@ export default class WhereModifierGroup extends LightningElement {
   normalizeInput(
     type: Soql.SObjectFieldType,
     value: string,
-    operatorValue?: OPERATOR
+    operatorValue?: Soql.UiOperatorValue
   ): string {
     let normalized = value;
     if (!this.isMulipleValueOperator(this._currentOperatorValue)) {

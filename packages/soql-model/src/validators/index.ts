@@ -10,7 +10,6 @@ export {
   MultipleInputValidator,
   ValidateOptions,
   ValidateResult,
-  Validator,
-  OPERATOR
+  Validator
 } from './validator';
 export { ValidatorFactory } from './validatorFactory';

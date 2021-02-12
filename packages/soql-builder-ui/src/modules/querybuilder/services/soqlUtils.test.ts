@@ -4,7 +4,7 @@
  * Licensed under the BSD 3-Clause license.
  * For full license text, see LICENSE.txt file in the repo root or https://opensource.org/licenses/BSD-3-Clause
  */
-import { Soql, OPERATOR } from '@salesforce/soql-model';
+import { Soql } from '@salesforce/soql-model';
 import {
   convertUiModelToSoql,
   convertSoqlToUiModel,
@@ -247,13 +247,21 @@ describe('SoqlUtils', () => {
     });
     it('addWildCardToValue() should add % in right place', () => {
       let rawValue = 'ABC';
-      expect(addWildCardToValue(OPERATOR.LIKE_START, rawValue)).toEqual('ABC%');
-      expect(addWildCardToValue(OPERATOR.LIKE_END, rawValue)).toEqual('%ABC');
-      expect(addWildCardToValue(OPERATOR.LIKE_CONTAINS, rawValue)).toEqual(
-        '%ABC%'
+      expect(
+        addWildCardToValue(Soql.UiOperatorValue.LIKE_START, rawValue)
+      ).toEqual('ABC%');
+      expect(
+        addWildCardToValue(Soql.UiOperatorValue.LIKE_END, rawValue)
+      ).toEqual('%ABC');
+      expect(
+        addWildCardToValue(Soql.UiOperatorValue.LIKE_CONTAINS, rawValue)
+      ).toEqual('%ABC%');
+      expect(addWildCardToValue(Soql.UiOperatorValue.LIKE, rawValue)).toEqual(
+        'ABC'
       );
-      expect(addWildCardToValue(OPERATOR.LIKE, rawValue)).toEqual('ABC');
-      expect(addWildCardToValue(OPERATOR.EQ, rawValue)).toEqual('ABC');
+      expect(addWildCardToValue(Soql.UiOperatorValue.EQ, rawValue)).toEqual(
+        'ABC'
+      );
     });
   });
 });

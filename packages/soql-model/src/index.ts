@@ -17,6 +17,5 @@ export {
   ValidateResult,
   Validator,
   ValidatorFactory,
-  splitMultiInputValues,
-  OPERATOR
+  splitMultiInputValues
 } from './validators';

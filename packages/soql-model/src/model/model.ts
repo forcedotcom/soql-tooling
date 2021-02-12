@@ -6,7 +6,6 @@
  */
 import { UnmodeledSyntaxReason } from './unmodeled';
 
-
 export interface ModelError {
   type: ErrorType;
   message: string;
@@ -62,6 +61,24 @@ export enum SObjectFieldType {
   TextArea = 'textarea',
   Time = 'time',
   Url = 'url'
+}
+
+export enum UiOperatorValue {
+  EQ = 'EQ',
+  NOT_EQ = 'NOT_EQ',
+  ALT_NOT_EQ = 'ALT_NOT_EQ',
+  LT_EQ = 'LT_EQ',
+  GT_EQ = 'GT_EQ',
+  LT = 'LT',
+  GT = 'GT',
+  LIKE = 'LIKE',
+  LIKE_START = 'LIKE_START',
+  LIKE_END = 'LIKE_END',
+  LIKE_CONTAINS = 'LIKE_CONTAINS',
+  IN = 'IN',
+  NOT_IN = 'NOT_IN',
+  INCLUDES = 'INCLUDES',
+  EXCLUDES = 'EXCLUDES'
 }
 
 export interface SoqlModelObject {
@@ -239,25 +256,25 @@ export interface HeaderComments extends SoqlModelObject {
   text: string;
 }
 
-export interface With extends SoqlModelObject { }
-export interface GroupBy extends SoqlModelObject { }
-export interface Offset extends SoqlModelObject { }
-export interface Bind extends SoqlModelObject { }
-export interface RecordTrackingType extends SoqlModelObject { }
-export interface Update extends SoqlModelObject { }
+export interface With extends SoqlModelObject {}
+export interface GroupBy extends SoqlModelObject {}
+export interface Offset extends SoqlModelObject {}
+export interface Bind extends SoqlModelObject {}
+export interface RecordTrackingType extends SoqlModelObject {}
+export interface Update extends SoqlModelObject {}
 
 export interface UnmodeledSyntax
   extends Select,
-  SelectExpression,
-  Field,
-  Condition,
-  CompareValue,
-  With,
-  GroupBy,
-  Offset,
-  Bind,
-  RecordTrackingType,
-  Update {
+    SelectExpression,
+    Field,
+    Condition,
+    CompareValue,
+    With,
+    GroupBy,
+    Offset,
+    Bind,
+    RecordTrackingType,
+    Update {
   unmodeledSyntax: string;
   reason: UnmodeledSyntaxReason;
 }
