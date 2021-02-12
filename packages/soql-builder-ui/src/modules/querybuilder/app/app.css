@@ -19,7 +19,6 @@ main {
 
 .querybuilder-form {
   flex: 1;
-  position: relative;
   min-width: var(--soql-main-min-width);
 }
 
@@ -43,44 +42,21 @@ main {
   }
 }
 
-.unsupported-syntax {
-  position: absolute;
-  width: calc(var(--soql-media-max-width) + 1rem);
-  height: 100%;
-  top: -0.5rem;
-  left: -0.5rem;
-  opacity: 0.5;
-  background-color: rgba(0, 0, 0, 0.6);
-  border-radius: 3px;
-  z-index: 2; /* one above the custom select options pane */
+.warning-notification {
+  max-width: var(--soql-media-max-width);
 }
 
-.block-message {
-  position: absolute;
-  top: 0;
-  left: 0;
-  z-index: 2; /* one above the custom select options pane */
+.warning-notification__message {
   background-color: var(
-    --vscode-inputValidation-warningBackground,
-    var(--soql-error-background)
+    --soql-red
   );
-  width: calc(var(--soql-media-max-width));
-  margin: 0 auto;
-  text-align: center;
-  border-radius: 3px;
-  box-shadow: 0 2px 3px 0 rgba(0, 0, 0, 0.16);
-}
-
-.block-message h3 {
-  font-weight: bolder;
-  font-size: large;
-  color: var(--vscode-editorWarning-foreground, var(--soql-red));
-  text-shadow: 0 2px 3px rgba(0, 0, 0, 0.16);
-}
-
-.block-message p {
-  text-align: left;
-  padding: 0 1rem 1rem 1rem;
+  color: var(--soql-white);
   font-size: small;
-  color: var(--vscode-foreground, var(--soql-foreground));
+  padding: 1rem;
+  border-radius: 3px;
+  margin-bottom: 1rem;
+}
+
+.warning-notification__dismiss {
+  text-align: right;
 }
