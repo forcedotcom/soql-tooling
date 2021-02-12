@@ -263,6 +263,11 @@ export default class CustomSelect extends LightningElement {
     e.stopPropagation();
     if (this.optionListIsHidden) {
       this.handleOpenOptions(e);
+      if (this.isMultipleSelect) {
+        this.selectInputEl.focus();
+      } else {
+        this.selectInputEl.select();
+      }
     } else {
       this.handleCloseOptions(e);
     }

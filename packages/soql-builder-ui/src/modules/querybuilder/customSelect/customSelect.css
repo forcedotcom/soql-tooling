@@ -22,25 +22,16 @@ main.custom-select {
 /*
 - rotate nueter symbol to mimic search icon
 */
-.select__wrapper::before {
-  position: absolute;
-  content: '⚲';
-  font-size: 1.5em;
-  left: 6px;
-  transform: rotate(-45deg);
-  border-radius: 50%;
-  background-color: transparent;
-  color: var(
-    --vscode-list-inactiveSelectionBackground,
-    var(--soql-color-medium-grey)
-  );
-}
 
 .select__input {
   width: 90%;
-  height: 1.25em;
-  margin-left: 24px;
+  height: 1.25rem;
+  margin-left: 2px;
   border: none;
+}
+
+svg line {
+  stroke: var(--vscode-foreground, var(--soql-foreground));
 }
 
 .select__input.select__input-placeholder--fadeout::placeholder {
@@ -58,13 +49,15 @@ main.custom-select {
 }
 
 .select__dropdown-arrow {
-  transform: rotate(180deg);
-  margin-right: 2px;
+  transform: rotate(0deg);
+  margin-top: 3px;
+  margin-right: 3px;
   cursor: pointer;
 }
 
 .select__dropdown-arrow--up {
-  transform: rotate(0deg);
+  transform: rotate(180deg);
+  margin-top: 0px;
 }
 
 div.select__dropdown-arrow:focus {
