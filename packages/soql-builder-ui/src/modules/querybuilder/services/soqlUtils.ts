@@ -274,50 +274,47 @@ export function displayValueToSoqlStringLiteral(displayString: string): string {
 /* ======= LIKE OPERATOR UTILS ======= */
 const WILD_CARD = '%';
 const wildCardRegEx = new RegExp(WILD_CARD, 'g');
+
+export function getWildCardCount(value: string): number {
+  let wildCardCount = 0;
+  if (value && value.length) {
+    const wildcardMatch = value.match(wildCardRegEx);
+    wildCardCount = wildcardMatch ? wildcardMatch.length : 0;
+  }
+  return wildCardCount;
+}
 /* LIKE_START ABC% */
 export function isLikeStart(value: string) {
   if (value && value.length) {
     value = soqlStringLiteralToDisplayValue(value);
-    const wildcardMatch = value.match(wildCardRegEx);
-    const wildCardCount = wildcardMatch ? wildcardMatch.length : 0;
-
-    if (wildCardCount === 1 && value.endsWith(WILD_CARD)) {
+    if (getWildCardCount(value) === 1 && value.endsWith(WILD_CARD)) {
       return true;
     }
   }
-
   return false;
 }
 /* LIKE_END %ABC */
 export function isLikeEnds(value: string) {
   if (value && value.length) {
     value = soqlStringLiteralToDisplayValue(value);
-    const wildcardMatch = value.match(wildCardRegEx);
-    const wildCardCount = wildcardMatch ? wildcardMatch.length : 0;
-
-    if (wildCardCount === 1 && value.startsWith(WILD_CARD)) {
+    if (getWildCardCount(value) === 1 && value.startsWith(WILD_CARD)) {
       return true;
     }
   }
-
   return false;
 }
 /* LIKE_CONTAINS %ABC% */
 export function isLikeContains(value: string) {
   if (value && value.length) {
     value = soqlStringLiteralToDisplayValue(value);
-    const wildcardMatch = value.match(wildCardRegEx);
-    const wildCardCount = wildcardMatch ? wildcardMatch.length : 0;
-
     if (
-      wildCardCount === 2 &&
+      getWildCardCount(value) === 2 &&
       value.startsWith(WILD_CARD) &&
       value.endsWith(WILD_CARD)
     ) {
       return true;
     }
   }
-
   return false;
 }
 
@@ -333,7 +330,7 @@ export function addWildCardToValue(
   operatorValue: Soql.UiOperatorValue,
   rawValue: string
 ) {
-  let value = rawValue;
+  let value = stripWildCards(rawValue);
   switch (operatorValue) {
     case Soql.UiOperatorValue.LIKE_START:
       value = `${value}${WILD_CARD}`;
@@ -347,6 +344,19 @@ export function addWildCardToValue(
     default:
       break;
   }
-
   return value;
+}
+
+export function trimWildCardLeft(rawStr: string) {
+  if (!rawStr.startsWith(WILD_CARD)) {
+    return rawStr;
+  }
+  return trimWildCardLeft(rawStr.substring(1));
+}
+
+export function trimWildCardRight(rawStr: string) {
+  if (!rawStr.endsWith(WILD_CARD)) {
+    return rawStr;
+  }
+  return trimWildCardRight(rawStr.substring(0, rawStr.length - 1));
 }

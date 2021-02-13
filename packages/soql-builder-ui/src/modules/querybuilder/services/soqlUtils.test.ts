@@ -14,7 +14,9 @@ import {
   isLikeEnds,
   isLikeStart,
   stripWildCards,
-  addWildCardToValue
+  addWildCardToValue,
+  trimWildCardLeft,
+  trimWildCardRight
 } from './soqlUtils';
 import { ToolingModelJson } from './model';
 
@@ -262,6 +264,25 @@ describe('SoqlUtils', () => {
       expect(addWildCardToValue(Soql.UiOperatorValue.EQ, rawValue)).toEqual(
         'ABC'
       );
+      expect(
+        addWildCardToValue(Soql.UiOperatorValue.LIKE_START, 'A%%%BC')
+      ).toEqual('ABC%');
+    });
+    it('trimWildCardLeft() should remove any wildcards before the first non-wildcard char', () => {
+      expect(trimWildCardLeft('abc')).toEqual('abc');
+      expect(trimWildCardLeft('abc%%')).toEqual('abc%%');
+      expect(trimWildCardLeft('%abc')).toEqual('abc');
+      expect(trimWildCardLeft('%%%abc')).toEqual('abc');
+      expect(trimWildCardLeft('%%a%bc')).toEqual('a%bc');
+      expect(trimWildCardLeft('%%100%bc')).toEqual('100%bc');
+    });
+    it('trimWildCardRight() should remove any wildcards before the first non-wildcard char', () => {
+      expect(trimWildCardRight('abc')).toEqual('abc');
+      expect(trimWildCardRight('abc%%')).toEqual('abc');
+      expect(trimWildCardRight('%abc%%')).toEqual('%abc');
+      expect(trimWildCardRight('abc%%%')).toEqual('abc');
+      expect(trimWildCardRight('a%bc%%')).toEqual('a%bc');
+      expect(trimWildCardRight('%bc100%%')).toEqual('%bc100');
     });
   });
 });
