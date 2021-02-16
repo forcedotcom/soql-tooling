@@ -14,7 +14,20 @@ import { parseHeaderComments } from '../serialization/soqlComments';
 export interface Selection {
   selectionQueryText: string;
   queryResultsPath: string[];
+  objectName: string;
   columnName: string;
+  isSubQuerySelection: boolean;
+}
+
+export interface ColumnData {
+  objectName: string;
+  columns: Column[];
+  subTables: ColumnData[];
+}
+
+export interface Column {
+  title: string;
+  fieldHelper: string[];
 }
 export class SelectAnalyzer {
   protected parseTree: ParseTree;
@@ -34,16 +47,50 @@ export class SelectAnalyzer {
     this.parseTree = result.getParseTree();
   }
 
-  public getSelections() {
+  public getSelections(): Selection[] {
     const visitor = new SelectVisitor();
     this.parseTree.accept(visitor);
     return visitor.selections;
+  }
+
+  public getColumnData(): ColumnData {
+    const selections = this.getSelections();
+    const columnData = {
+      objectName: '',
+      columns: new Array<Column>(),
+      subTables: new Array<ColumnData>()
+    };
+    selections.forEach(selection => {
+      if (selection.isSubQuerySelection) {
+        let subTable = columnData.subTables.find((data: ColumnData) => data.objectName === selection.objectName);
+        if (!subTable) {
+          subTable = {
+            objectName: selection.objectName,
+            columns: [],
+            subTables: []
+          };
+          columnData.subTables.push(subTable);
+        }
+        subTable.columns.push({
+          title: selection.columnName,
+          fieldHelper: selection.queryResultsPath
+        });
+      } else {
+        columnData.objectName = selection.objectName;
+        columnData.columns.push({
+          title: selection.columnName,
+          fieldHelper: selection.queryResultsPath
+        });
+      }
+    });
+    return columnData;
   }
 }
 
 class SelectVisitor extends AbstractParseTreeVisitor<void> implements SoqlParserVisitor<void> {
   public selections: Selection[] = [];
   protected currentNamespace = '';
+  protected currentObjectName = '';
   protected currentAggregateExpression = 0;
   protected static AGGREGATEEXPR_PREFIX = 'expr';
   protected isInnerQuery = false;
@@ -53,11 +100,13 @@ class SelectVisitor extends AbstractParseTreeVisitor<void> implements SoqlParser
     ctx.soqlInnerQuery().accept(this);
     this.isInnerQuery = false;
     this.currentNamespace = '';
+    this.currentObjectName = '';
   }
 
   public visitSoqlFromExpr(ctx: Parser.SoqlFromExprContext): void {
+    this.currentObjectName = ctx.soqlIdentifier()[0].text;
     if (this.isInnerQuery) {
-      this.currentNamespace = `${ctx.soqlIdentifier()[0].text}.`;
+      this.currentNamespace = `${this.currentObjectName}.`;
     }
   }
 
@@ -75,12 +124,14 @@ class SelectVisitor extends AbstractParseTreeVisitor<void> implements SoqlParser
     if (isAggregateExpression) {
       queryResultsPath.push(aliasText || `${SelectVisitor.AGGREGATEEXPR_PREFIX}${this.currentAggregateExpression}`);
     } else {
-      queryResultsPath = `${this.currentNamespace}${fieldText}`.split('.');
+      queryResultsPath = `${fieldText}`.split('.');
     }
     this.selections.push({
       selectionQueryText: fieldText,
       queryResultsPath,
-      columnName: aliasText || `${this.currentNamespace}${fieldText}`
+      objectName: this.currentObjectName,
+      columnName: aliasText || `${this.currentNamespace}${fieldText}`,
+      isSubQuerySelection: this.isInnerQuery
     });
     if (isAggregateExpression) {
       this.currentAggregateExpression++;

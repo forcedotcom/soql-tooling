@@ -44,12 +44,69 @@
   function renderTableWith(tableData) {
     new Tabulator('#data-table', {
       data: tableData.records,
-      autoColumns: true,
       pagination: 'local',
       layout: 'fitColumns',
       height: '60vh',
-      nestedFieldSeparator: '|'
+      columns: getColumns(tableData, tableData.columnData),
+      rowFormatter: row => {
+        tableData.columnData.subTables.forEach(subTable => {
+
+          const key = Object.keys(row.getData()).find(k => k.toLowerCase() === subTable.objectName.toLowerCase());
+          if (key && row.getData()[key]) {
+            var data = row.getData()[key];
+            //create and style holder elements
+            var holderEl = document.createElement("div");
+            var tableEl = document.createElement("div");
+
+            holderEl.style.boxSizing = "border-box";
+            holderEl.style.padding = "10px 30px 10px 10px";
+            holderEl.style.borderTop = "1px solid #333";
+            holderEl.style.borderBotom = "1px solid #333";
+            holderEl.style.background = "#ddd";
+
+            tableEl.style.border = "1px solid #333";
+
+            holderEl.appendChild(tableEl);
+
+            row.getElement().appendChild(holderEl);
+
+            new Tabulator(tableEl, {
+              layout:"fitColumns",
+              data: data.records,
+              columns: getColumns(data, subTable)
+            });
+          }
+        });
+      }
     });
+  }
+
+  function getColumns(obj, columnData) {
+    var columns = [];
+    var record = obj.records && obj.records.length
+      ? obj.records[0]
+      : undefined;
+    console.log('record:' + record);
+    if (record) {
+      columnData.columns.forEach(col => {
+        let field = '';
+        let currentObject = record;
+        col.fieldHelper.forEach(segment => {
+          var key = Object.keys(currentObject).find(k => k.toLowerCase() === segment.toLowerCase());
+          if (key) {
+            field = field.length === 0
+              ? key
+              : field + '.' + key;
+            currentObject = currentObject[key];
+          }
+        });
+        columns.push({
+          title: col.title,
+          field
+        })
+      });
+    }
+    return columns;
   }
 
   // ---- EVENT LISTENERS ---- //
