@@ -16,7 +16,7 @@ import {
   addWildCardToValue,
   stripWildCardPadding
 } from './soqlUtils';
-import { ToolingModelJson } from './model';
+import { SELECT_COUNT, ToolingModelJson } from './model';
 
 describe('SoqlUtils', () => {
   const uiModelOne: ToolingModelJson = {
@@ -55,6 +55,19 @@ describe('SoqlUtils', () => {
     unsupported: [],
     originalSoqlStatement: ''
   };
+  const uiModelCount: ToolingModelJson = {
+    sObject: 'Account',
+    fields: [SELECT_COUNT],
+    where: {
+      conditions: [],
+      andOr: undefined
+    },
+    orderBy: [],
+    limit: '',
+    errors: [],
+    unsupported: [],
+    originalSoqlStatement: ''
+  };
   const uiModelErrors: ToolingModelJson = {
     sObject: 'Account',
     fields: ['Name'],
@@ -76,6 +89,8 @@ describe('SoqlUtils', () => {
   };
   const soqlOne =
     "Select Name, Id from Account WHERE Name = 'pwt' AND Id = 123456 ORDER BY Name ASC NULLS FIRST LIMIT 11";
+  const soqlCount =
+    "SELECT COUNT() FROM Account";
   const unsupportedWhereExpr =
     "Select Name, Id from Account WHERE (Name = 'pwt' AND Id = 123456) OR Id = 654321 ORDER BY Name ASC NULLS FIRST LIMIT 11";
   const soqlError = 'Select Name from Account GROUP BY';
@@ -97,6 +112,11 @@ describe('SoqlUtils', () => {
     expect(transformedSoql).toContain(uiModelOne.orderBy[0].order);
     expect(transformedSoql).toContain(uiModelOne.orderBy[0].nulls);
     expect(transformedSoql).toContain('11');
+  });
+
+  it('transform UI Model to SOQL with SELECT COUNT() clause', () => {
+    const transformedSoql = convertUiModelToSoql(uiModelCount);
+    expect(transformedSoql).toContain('SELECT COUNT()');
   });
 
   it('transform UI Model to Soql but leaves out errors/unsupported', () => {
@@ -132,6 +152,15 @@ describe('SoqlUtils', () => {
     delete expectedUiModel.originalSoqlStatement;
     expect(JSON.stringify(transformedUiModel)).toEqual(
       JSON.stringify(expectedUiModel)
+    );
+  });
+
+  it('transforms SOQL to UI Model with SELECT COUNT() clause', () => {
+    const transformedUiModel = convertSoqlToUiModel(soqlCount);
+    let expected = { ...uiModelCount } as any;
+    delete expected.originalSoqlStatement;
+    expect(JSON.stringify(transformedUiModel)).toEqual(
+      JSON.stringify(expected)
     );
   });
 

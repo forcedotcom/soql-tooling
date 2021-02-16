@@ -8,6 +8,7 @@
 
 import { createElement } from 'lwc';
 import Fields from 'querybuilder/fields';
+import { SELECT_COUNT } from '../services/model';
 
 describe('Fields', () => {
   const fields = createElement('querybuilder-fields', {
@@ -47,7 +48,7 @@ describe('Fields', () => {
     document.body.appendChild(fields);
 
     const handler = jest.fn();
-    fields.addEventListener('fields__removed', handler);
+    fields.addEventListener('fields__selected', handler);
     const selectedFieldCloseEl = fields.shadowRoot.querySelector(
       "[data-field='foo']"
     );
@@ -56,7 +57,7 @@ describe('Fields', () => {
     expect(handler).toHaveBeenCalled();
   });
 
-  it('renders the selected fields in the component', () => {
+  it('renders COUNT() and the selected fields in the component', () => {
     document.body.appendChild(fields);
 
     let selectedFieldEl = fields.shadowRoot.querySelectorAll('.selected-field');
@@ -67,7 +68,7 @@ describe('Fields', () => {
 
     return Promise.resolve().then(() => {
       selectedFieldEl = fields.shadowRoot.querySelectorAll('.selected-field');
-      expect(selectedFieldEl.length).toBe(3);
+      expect(selectedFieldEl.length).toBe(4);
     });
   });
 
@@ -84,5 +85,48 @@ describe('Fields', () => {
       hasError = fields.shadowRoot.querySelectorAll('[data-el-has-error]');
       expect(hasError.length).toEqual(1);
     });
+  });
+
+  it('removes other selections when COUNT() is selected', async () => {
+    fields.selectedFields = ['foo', 'bar'];
+    document.body.appendChild(fields);
+
+
+    let selectionFromEvent;
+    const selectHandler = jest.fn().mockImplementation(e => {
+      selectionFromEvent = e.detail.fields;
+    });
+    fields.addEventListener('fields__selected', selectHandler);
+
+    const customSelect = fields.shadowRoot.querySelector(
+      'querybuilder-custom-select'
+    );
+    customSelect.dispatchEvent(
+      new CustomEvent('option__selection', { detail: { value: SELECT_COUNT } })
+    );
+
+    expect(selectHandler).toHaveBeenCalledTimes(1);
+    expect(selectionFromEvent).toEqual([SELECT_COUNT]);
+  });
+
+  it('removes COUNT() when something else is selected', async () => {
+    fields.selectedFields = [SELECT_COUNT];
+    document.body.appendChild(fields);
+
+    let selectionFromEvent;
+    const selectHandler = jest.fn().mockImplementation(e => {
+      selectionFromEvent = e.detail.fields;
+    });
+    fields.addEventListener('fields__selected', selectHandler);
+
+    const customSelect = fields.shadowRoot.querySelector(
+      'querybuilder-custom-select'
+    );
+    customSelect.dispatchEvent(
+      new CustomEvent('option__selection', { detail: { value: 'foo' } })
+    );
+
+    expect(selectHandler).toHaveBeenCalledTimes(1);
+    expect(selectionFromEvent).toEqual(['foo']);
   });
 });

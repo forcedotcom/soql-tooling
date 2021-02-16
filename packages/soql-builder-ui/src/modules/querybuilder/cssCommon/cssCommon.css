@@ -78,7 +78,7 @@ default to the width of the parent.
 }
 .delete-trigger {
   margin: 0 0.25rem 0 0.5rem;
-  color: var(--vscode-button-foreground, var(--soql-white));
+  color: var(--vscode-foreground, var(--soql-foreground));
   font-weight: bold;
   font-size: smaller;
 }
@@ -218,4 +218,11 @@ button:active {
 /* MISC ------------ */
 .pointer {
   cursor: pointer;
+}
+
+.text-center {
+  text-align: center;
+}
+.text-right {
+  text-align: right;
 }
