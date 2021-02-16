@@ -18,8 +18,8 @@ import { SObjectTypeUtils } from '../services/sobjectUtils';
 import {
   displayValueToSoqlStringLiteral,
   soqlStringLiteralToDisplayValue,
-  stripWildCards,
-  addWildCardToValue
+  addWildCardToValue,
+  stripWildCardPadding
 } from '../services/soqlUtils';
 
 const DEFAULT_FIELD_INPUT_VALUE = '';
@@ -242,7 +242,7 @@ export default class WhereModifierGroup extends LightningElement {
       case Soql.LiteralType.String: {
         displayValue = soqlStringLiteralToDisplayValue(rawValue);
         if (this.isSpecialLikeCondition(operatorValue)) {
-          displayValue = stripWildCards(displayValue);
+          displayValue = stripWildCardPadding(displayValue);
         }
         break;
       }
