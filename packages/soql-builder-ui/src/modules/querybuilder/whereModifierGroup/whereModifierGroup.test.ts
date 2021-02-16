@@ -431,4 +431,102 @@ describe('WhereModifierGroup should', () => {
         expect(operatorContainerEl.className).not.toContain('error');
       });
   });
+
+  describe('LIKE CONDITIONS', () => {
+    describe('display the correct operator for', () => {
+      it('LIKE', () => {
+        modifierGroup.condition = {
+          field: { fieldName: 'foo' },
+          operator: 'LIKE',
+          compareValue: { type: 'STRING', value: "'HELLO'" }
+        };
+        document.body.appendChild(modifierGroup);
+
+        const { selectOperatorEl } = getModifierElements();
+
+        expect(selectOperatorEl.value).toBe('LIKE');
+        const firstOptionElement = selectOperatorEl
+          .children[0] as HTMLOptionElement;
+
+        expect(firstOptionElement.selected).toBeTruthy();
+        expect(selectOperatorEl.children[0].innerHTML).toContain('like');
+      });
+
+      it('STARTS_WITH', () => {
+        modifierGroup.condition = {
+          field: { fieldName: 'foo' },
+          operator: 'LIKE',
+          compareValue: { type: 'STRING', value: "'HELLO%'" }
+        };
+        document.body.appendChild(modifierGroup);
+
+        const { selectOperatorEl } = getModifierElements();
+
+        expect(selectOperatorEl.value).toBe('LIKE_START');
+        const firstOptionElement = selectOperatorEl
+          .children[0] as HTMLOptionElement;
+
+        expect(firstOptionElement.selected).toBeTruthy();
+        expect(selectOperatorEl.children[0].innerHTML).toContain('starts with');
+      });
+
+      it('ENDS_WITH', () => {
+        modifierGroup.condition = {
+          field: { fieldName: 'foo' },
+          operator: 'LIKE',
+          compareValue: { type: 'STRING', value: "'%HELLO'" }
+        };
+        document.body.appendChild(modifierGroup);
+
+        const { selectOperatorEl } = getModifierElements();
+
+        expect(selectOperatorEl.value).toBe('LIKE_END');
+        const firstOptionElement = selectOperatorEl
+          .children[0] as HTMLOptionElement;
+
+        expect(firstOptionElement.selected).toBeTruthy();
+        expect(selectOperatorEl.children[0].innerHTML).toContain('ends with');
+      });
+
+      it('CONTAINS', () => {
+        modifierGroup.condition = {
+          field: { fieldName: 'foo' },
+          operator: 'LIKE',
+          compareValue: { type: 'STRING', value: "'%HELLO%'" }
+        };
+        document.body.appendChild(modifierGroup);
+
+        const { selectOperatorEl } = getModifierElements();
+
+        expect(selectOperatorEl.value).toBe('LIKE_CONTAINS');
+        const firstOptionElement = selectOperatorEl
+          .children[0] as HTMLOptionElement;
+
+        expect(firstOptionElement.selected).toBeTruthy();
+        expect(selectOperatorEl.children[0].innerHTML).toContain('contains');
+      });
+    });
+
+    it('display the correct criteria value for LIKE', () => {
+      modifierGroup.condition = {
+        field: { fieldName: 'foo' },
+        operator: 'LIKE',
+        compareValue: { type: 'STRING', value: "'%HELLO%'" }
+      };
+      document.body.appendChild(modifierGroup);
+
+      let { criteriaInputEl } = getModifierElements();
+      expect(criteriaInputEl.value).toEqual('HELLO');
+
+      modifierGroup.condition = {
+        field: { fieldName: 'foo' },
+        operator: 'LIKE',
+        compareValue: { type: 'STRING', value: "'%HE%%O%'" }
+      };
+      return Promise.resolve().then(() => {
+        let { criteriaInputEl } = getModifierElements();
+        expect(criteriaInputEl.value).toEqual('HE%%O');
+      });
+    });
+  });
 });
