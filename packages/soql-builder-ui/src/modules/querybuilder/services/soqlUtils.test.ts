@@ -13,10 +13,8 @@ import {
   isLikeContains,
   isLikeEnds,
   isLikeStart,
-  stripWildCards,
   addWildCardToValue,
-  trimWildCardLeft,
-  trimWildCardRight
+  stripWildCardPadding
 } from './soqlUtils';
 import { ToolingModelJson } from './model';
 
@@ -210,12 +208,12 @@ describe('SoqlUtils', () => {
       expect(isLikeStart('ABC%')).toBe(true);
       expect(isLikeStart("'ABC%'")).toBe(true);
       expect(isLikeStart("A'BC%'")).toBe(true);
+      expect(isLikeStart('A%BC%')).toBe(true);
 
       expect(isLikeStart('')).toBe(false);
       expect(isLikeStart('%ABC')).toBe(false);
       expect(isLikeStart('%ABC%')).toBe(false);
       expect(isLikeStart('A%BC')).toBe(false);
-      expect(isLikeStart('A%BC%')).toBe(false);
     });
     it('isLikeEnds() should return true with compareValue of %ABC', () => {
       expect(isLikeEnds('%ABC')).toBe(true);
@@ -239,15 +237,8 @@ describe('SoqlUtils', () => {
       expect(isLikeContains('A%BC')).toBe(false);
       expect(isLikeContains('A%BC%')).toBe(false);
     });
-    it('stripWildCards() should remove all % from the string', () => {
-      const cleanValue = 'ABC';
-      expect(stripWildCards(cleanValue)).toEqual(cleanValue);
-      expect(stripWildCards('ABC%')).toEqual(cleanValue);
-      expect(stripWildCards('%ABC')).toEqual(cleanValue);
-      expect(stripWildCards('%ABC%')).toEqual(cleanValue);
-      expect(stripWildCards('%A%B%C%')).toEqual(cleanValue);
-    });
-    it('addWildCardToValue() should add % in right place', () => {
+
+    it('addWildCardToValue() should clean value & add % in right place', () => {
       let rawValue = 'ABC';
       expect(
         addWildCardToValue(Soql.UiOperatorValue.LIKE_START, rawValue)
@@ -265,24 +256,17 @@ describe('SoqlUtils', () => {
         'ABC'
       );
       expect(
-        addWildCardToValue(Soql.UiOperatorValue.LIKE_START, 'A%%%BC')
-      ).toEqual('ABC%');
+        addWildCardToValue(Soql.UiOperatorValue.LIKE_START, '%%A%%%BC')
+      ).toEqual('A%%%BC%');
     });
-    it('trimWildCardLeft() should remove any wildcards before the first non-wildcard char', () => {
-      expect(trimWildCardLeft('abc')).toEqual('abc');
-      expect(trimWildCardLeft('abc%%')).toEqual('abc%%');
-      expect(trimWildCardLeft('%abc')).toEqual('abc');
-      expect(trimWildCardLeft('%%%abc')).toEqual('abc');
-      expect(trimWildCardLeft('%%a%bc')).toEqual('a%bc');
-      expect(trimWildCardLeft('%%100%bc')).toEqual('100%bc');
-    });
-    it('trimWildCardRight() should remove any wildcards before the first non-wildcard char', () => {
-      expect(trimWildCardRight('abc')).toEqual('abc');
-      expect(trimWildCardRight('abc%%')).toEqual('abc');
-      expect(trimWildCardRight('%abc%%')).toEqual('%abc');
-      expect(trimWildCardRight('abc%%%')).toEqual('abc');
-      expect(trimWildCardRight('a%bc%%')).toEqual('a%bc');
-      expect(trimWildCardRight('%bc100%%')).toEqual('%bc100');
+
+    it('stripWildCardPadding() should remove any wildcards before the first non-wildcard char', () => {
+      expect(stripWildCardPadding('abc')).toEqual('abc');
+      expect(stripWildCardPadding('%%abc%%')).toEqual('abc');
+      expect(stripWildCardPadding('%%abc%')).toEqual('abc');
+      expect(stripWildCardPadding('abc%%%')).toEqual('abc');
+      expect(stripWildCardPadding('a%bc%%')).toEqual('a%bc');
+      expect(stripWildCardPadding('%bc%%100%%')).toEqual('bc%%100');
     });
   });
 });
