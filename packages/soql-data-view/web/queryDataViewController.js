@@ -86,7 +86,6 @@
     var record = obj.records && obj.records.length
       ? obj.records[0]
       : undefined;
-    console.log('record:' + record);
     if (record) {
       columnData.columns.forEach(col => {
         let field = '';
