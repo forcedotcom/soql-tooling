@@ -1,6 +1,6 @@
 {
   "name": "@salesforce/soql-model",
-  "version": "0.1.21",
+  "version": "0.1.23",
   "description": "SOQL Model",
   "engines": {
     "node": "*"
@@ -17,8 +17,7 @@
     "postpublish": "./scripts/unbundle-parser.js"
   },
   "dependencies": {
-    "antlr4ts": "^0.5.0-alpha.3",
-    "@salesforce/soql-parser": "file:../../Dependencies/salesforce-soql-parser-0.19.0.tgz"
+    "antlr4ts": "^0.5.0-alpha.3"
   },
   "devDependencies": {
     "@types/jest": "22.2.3",
@@ -38,5 +37,8 @@
     "access": "public",
     "registry": "http://registry.npmjs.org/"
   },
-  "license": "BSD-3-Clause"
+  "license": "BSD-3-Clause",
+  "bundledDependencies": [
+    "@salesforce/soql-parser"
+  ]
 }
