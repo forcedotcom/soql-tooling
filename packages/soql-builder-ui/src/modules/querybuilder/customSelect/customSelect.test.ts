@@ -37,6 +37,9 @@ describe('Custom Select', () => {
   const getClearSearch = () => {
     return customSelect.shadowRoot.querySelector('.select__clear-search');
   };
+  const getDropdownTrigger = () => {
+    return customSelect.shadowRoot.querySelector('[data-el-chevron]')
+  }
 
   beforeEach(() => {
     customSelect = createElement('querybuilder-custom-select', {
@@ -263,6 +266,20 @@ describe('Custom Select', () => {
           expect(selectSpy).toHaveBeenCalled();
         });
       });
+
+      it('should select the text in the input when toggle chevron clicked', () => {
+        customSelect.selectedOptions = [OPTION_FOO];
+        document.body.appendChild(customSelect);
+        expect(customSelect.multiple).toBe(false);
+        const dropdownTrigger = getDropdownTrigger();
+        const searchBar = getInputSearchBar();
+        const selectSpy = jest.spyOn(searchBar, 'select');
+        dropdownTrigger.click();
+        return Promise.resolve().then(() => {
+          expect(selectSpy).toHaveBeenCalled();
+        });
+      });
+
     });
     describe('Multiple Selection Mode', () => {
       it('should NOT display the selected options as input value', () => {
@@ -280,6 +297,18 @@ describe('Custom Select', () => {
         const searchBar = getInputSearchBar();
         expect(searchBar.value).toBe('');
         expect(customSelect.value).toBe(customSelect.selectedOptions);
+      });
+      it('should focus the cursor in the input when toggle chevron clicked', () => {
+        customSelect.selectedOptions = [OPTION_FOO];
+        document.body.appendChild(customSelect);
+        expect(customSelect.multiple).toBe(true);
+        const dropdownTrigger = getDropdownTrigger();
+        const searchBar = getInputSearchBar();
+        const focusSpy = jest.spyOn(searchBar, 'focus');
+        dropdownTrigger.click();
+        return Promise.resolve().then(() => {
+          expect(focusSpy).toHaveBeenCalled();
+        });
       });
     });
 

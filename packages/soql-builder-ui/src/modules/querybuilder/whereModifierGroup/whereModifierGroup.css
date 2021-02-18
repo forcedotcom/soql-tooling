@@ -26,6 +26,6 @@
 }
 
 .button__close {
-  color: var(--vscode-button-foreground, var(--soql-white));
+  color: var(--vscode-foreground, var(--soql-foreground));
   font-weight: bold;
 }
