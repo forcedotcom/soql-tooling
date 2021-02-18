@@ -81,6 +81,24 @@
     });
   }
 
+  // getColumns uses ColumnData to match QueryResult fields to columns.
+  // The columnData object contains metadata about the columns of a
+  // given SELECT clause and is defined as follows:
+  //    export interface ColumnData {
+  //      objectName: string;
+  //      columns: Column[];
+  //      subTables: ColumnData[];
+  //    }
+  //    export interface Column {
+  //      title: string;
+  //      fieldHelper: string[];
+  //    }
+  // The Column.fieldHelper property contains the expected field path in
+  // the QueryResult object, but since the column data metadata is calculated
+  // by analyzing the text of the (case insensitive) SELECT statement, so
+  // the expected field path may not match that in the actual QueryResult
+  // object.
+
   function getColumns(obj, columnData) {
     var columns = [];
     var record = obj.records && obj.records.length
