@@ -17,7 +17,8 @@
     "postpublish": "./scripts/unbundle-parser.js"
   },
   "dependencies": {
-    "antlr4ts": "^0.5.0-alpha.3"
+    "antlr4ts": "^0.5.0-alpha.3",
+    "@salesforce/soql-parser": "file:../../Dependencies/salesforce-soql-parser-0.19.0.tgz"
   },
   "devDependencies": {
     "@types/jest": "22.2.3",
@@ -37,8 +38,5 @@
     "access": "public",
     "registry": "http://registry.npmjs.org/"
   },
-  "license": "BSD-3-Clause",
-  "bundledDependencies": [
-    "@salesforce/soql-parser"
-  ]
+  "license": "BSD-3-Clause"
 }
