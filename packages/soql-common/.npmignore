@@ -1,0 +1,18 @@
+# Standard src folder
+/src
+
+/soql-parser
+
+# Tooling files
+node_modules
+.eslintignore
+.eslintrc.json
+.prettierignore
+.prettierrc
+jest.config.js
+tsconfig.json
+coverage
+
+
+# MacOS system files
+.DS_Store

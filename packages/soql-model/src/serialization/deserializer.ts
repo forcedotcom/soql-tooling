@@ -5,10 +5,10 @@
  * For full license text, see LICENSE.txt file in the repo root or https://opensource.org/licenses/BSD-3-Clause
  */
 
-import { SOQLParser, ParserError } from '@salesforce/soql-parser';
-import { SoqlParserListener } from '@salesforce/soql-parser/lib/generated/SoqlParserListener';
-import { SoqlParserVisitor } from '@salesforce/soql-parser/lib/generated/SoqlParserVisitor';
-import * as Parser from '@salesforce/soql-parser/lib/generated/SoqlParser';
+import { SOQLParser, ParserError } from '@salesforce/soql-common/lib/soql-parser';
+import { SoqlParserListener } from '@salesforce/soql-common/lib/soql-parser/generated/SoqlParserListener';
+import { SoqlParserVisitor } from '@salesforce/soql-common/lib/soql-parser/generated/SoqlParserVisitor';
+import * as Parser from '@salesforce/soql-common/lib/soql-parser/generated/SoqlParser';
 import { Messages } from '../messages/messages';
 import * as Soql from '../model/model';
 import * as Impl from '../model/impl';
@@ -25,7 +25,7 @@ import {
 } from 'antlr4ts/tree';
 import { Interval } from 'antlr4ts/misc/Interval';
 import { HeaderCommentsImpl } from '../model/impl/headerCommentsImpl';
-import { parseHeaderComments } from './soqlComments';
+import { soqlComments } from '@salesforce/soql-common';
 
 export class ModelDeserializer {
   protected soqlSyntax: string;
@@ -42,7 +42,7 @@ export class ModelDeserializer {
     });
 
 
-    const { headerComments, headerPaddedSoqlText } = parseHeaderComments(
+    const { headerComments, headerPaddedSoqlText } = soqlComments.parseHeaderComments(
       this.soqlSyntax
     );
 
