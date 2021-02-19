@@ -1,6 +1,6 @@
 {
   "name": "@salesforce/soql-model",
-  "version": "0.1.22",
+  "version": "0.1.23",
   "description": "SOQL Model",
   "engines": {
     "node": "*"
@@ -40,4 +40,3 @@
   },
   "license": "BSD-3-Clause"
 }
- 
