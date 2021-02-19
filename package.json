@@ -16,7 +16,10 @@
   },
   "dependencies": {},
   "devDependencies": {
+    "@commitlint/cli": "^11.0.0",
+    "@commitlint/config-conventional": "^11.0.0",
     "@salesforce/dev-config": "1.4.1",
+    "husky": "4.3.8",
     "lerna": "^3.19.0",
     "rimraf": "^3.0.2",
     "tslint": "^5.8.0",
@@ -28,5 +31,10 @@
     "lint": "lerna run lint",
     "test": "lerna exec -- yarn run test",
     "start": "lerna run start"
+  },
+  "husky": {
+    "hooks": {
+      "commit-msg": "commitlint -E HUSKY_GIT_PARAMS"
+    }
   }
 }
