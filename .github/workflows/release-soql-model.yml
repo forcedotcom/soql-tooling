@@ -32,11 +32,12 @@ jobs:
         run: |
          SOQL_MODEL_VERSION=${{ steps.release.outputs.major}}.${{ steps.release.outputs.minor }}.${{ steps.release.outputs.patch}}
          sed -i.back -E 's/"@salesforce\/soql-model": +"[^"]+"/"@salesforce\/soql-model": "'$SOQL_MODEL_VERSION'"/g' packages/*/package.json
-         git diff
-         git config --local user.email "$(git log --format='%ae' HEAD^!)"
-         git config --local user.name "$(git log --format='%an' HEAD^!)"
-         git commit -a -m "chore: bump soql-model version on soql-builder-ui to $SOQL_MODEL_VERSION"
-         git push
+         if ! git diff --exit-code; then
+           git config --local user.email "$(git log --format='%ae' HEAD^!)"
+           git config --local user.name "$(git log --format='%an' HEAD^!)"
+           git commit -a -m "chore: bump soql-model version on soql-builder-ui to $SOQL_MODEL_VERSION"
+           git push
+         fi
         if: ${{ steps.release.outputs.release_created }}
       - name: build-and-publish
         run: |
