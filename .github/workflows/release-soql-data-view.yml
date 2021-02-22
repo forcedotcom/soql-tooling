@@ -20,21 +20,38 @@ jobs:
           path: packages/soql-data-view
           monorepo-tags: true
           default-branch: main
+      - run: |
+          echo 'Release outputs:${{ toJSON(steps.release.outputs) }}'
+        # Case 1:
+        # If this is not the result of a Release PR merge, then update version
+        # of internal dependencies on the release branch
       - uses: actions/checkout@v2
-        # these if statements ensure that a publication only occurs when
-        # a new release is created (when merging a release PR to main):
+        if: ${{ ! steps.release.outputs.release_created }}
+      - name: bump-inter-dependencies-on-release-branch
+        if: ${{ ! steps.release.outputs.release_created }}
+        run: ./scripts/gh-action-bump-interdeps-versions-on-release-branch.sh soql-data-view
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        # Case 2:
+        # If this IS the result of a Release PR merge into main, then proceed to publish
+        # the npm package
+      - uses: actions/checkout@v2
         if: ${{ steps.release.outputs.release_created }}
       - uses: actions/setup-node@v2
+        if: ${{ steps.release.outputs.release_created }}
         with:
           node-version: 12
           registry-url: 'https://registry.npmjs.org'
           scope: '@salesforce'
+      - name: build
         if: ${{ steps.release.outputs.release_created }}
-      - run: |
+        run: |
          yarn
          yarn build
-         cd packages/soql-data-view
-         npm publish
+      - name: publish
+        if: ${{ steps.release.outputs.release_created }}
+        run: |
+          cd packages/soql-data-view
+          npm publish
         env:
           NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}
-        if: ${{ steps.release.outputs.release_created }}
