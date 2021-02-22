@@ -12,6 +12,7 @@ import { ModelDeserializer } from './serialization/deserializer';
 import { ModelSerializer } from './serialization/serializer';
 
 export { Soql, Impl, SoqlModelUtils, ModelDeserializer, ModelSerializer };
+export { SelectAnalyzer, Selection, ColumnData, Column } from './analyzers/selectAnalyzer';
 export {
   ValidateOptions,
   ValidateResult,
