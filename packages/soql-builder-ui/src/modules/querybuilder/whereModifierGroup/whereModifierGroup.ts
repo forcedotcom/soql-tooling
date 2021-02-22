@@ -17,7 +17,9 @@ import { operatorOptions } from '../services/model';
 import { SObjectTypeUtils } from '../services/sobjectUtils';
 import {
   displayValueToSoqlStringLiteral,
-  soqlStringLiteralToDisplayValue
+  soqlStringLiteralToDisplayValue,
+  addWildCardToValue,
+  stripWildCardPadding
 } from '../services/soqlUtils';
 
 const DEFAULT_FIELD_INPUT_VALUE = '';
@@ -28,22 +30,9 @@ export default class WhereModifierGroup extends LightningElement {
   @api allFields: string[];
   @api isLoading = false;
   @api index;
-  @api get sobjectMetadata() {
-    return this._sobjectMetadata;
-  }
-  set sobjectMetadata(sobjectMetadata: any) {
-    this._sobjectMetadata = sobjectMetadata;
-    this.sobjectTypeUtils = new SObjectTypeUtils(sobjectMetadata);
-    this.resetErrorFlagsAndMessages();
-  }
-  _condition: JsonMap;
-  _currentOperatorValue;
-  @track
-  _currentFieldSelection;
+  @track _currentFieldSelection;
   @track _criteriaDisplayValue;
-  _sobjectMetadata: any;
   sobjectTypeUtils: SObjectTypeUtils;
-  _allModifiersHaveValue: boolean = false;
   fieldEl: HTMLSelectElement;
   operatorEl: HTMLSelectElement;
   criteriaEl: HTMLInputElement;
@@ -52,16 +41,32 @@ export default class WhereModifierGroup extends LightningElement {
   hasOperatorError = false;
   hasCriteriaError = false;
   selectPlaceHolderText = 'Search Fields...'; //i18n
-
+  _allModifiersHaveValue: boolean = false;
+  _sobjectMetadata: any;
+  _condition: JsonMap;
+  _currentOperatorValue: string;
   handleSelectionEvent: () => void;
-  // this need to be public so parent can read value
-  @api get allModifiersHaveValue() {
+
+  @api
+  get sobjectMetadata() {
+    return this._sobjectMetadata;
+  }
+  set sobjectMetadata(sobjectMetadata: any) {
+    this._sobjectMetadata = sobjectMetadata;
+    this.sobjectTypeUtils = new SObjectTypeUtils(sobjectMetadata);
+    this.resetErrorFlagsAndMessages();
+  }
+
+  @api // this need to be public so parent can read value
+  get allModifiersHaveValue() {
     return this._allModifiersHaveValue;
   }
 
-  @api get condition(): JsonMap {
+  @api
+  get condition(): JsonMap {
     return this._condition;
   }
+
   set condition(condition: JsonMap) {
     this._condition = condition;
     this._criteriaDisplayValue = '';
@@ -69,9 +74,7 @@ export default class WhereModifierGroup extends LightningElement {
     this._currentFieldSelection = this.getFieldName();
 
     const matchingOption = condition
-      ? operatorOptions.find(
-          (option) => option.modelValue === condition.operator
-        )
+      ? operatorOptions.find((option) => option.predicate(condition))
       : undefined;
     this._currentOperatorValue = matchingOption
       ? matchingOption.value
@@ -90,101 +93,19 @@ export default class WhereModifierGroup extends LightningElement {
       if (
         condition.compareValue &&
         condition.compareValue.type &&
-        condition.compareValue.value
+        condition.compareValue.value &&
+        matchingOption &&
+        matchingOption.value
       ) {
         this._criteriaDisplayValue = this.displayValue(
           condition.compareValue.type,
-          condition.compareValue.value
+          condition.compareValue.value,
+          matchingOption.value
         );
       }
     }
   }
-
-  constructor() {
-    super();
-    this.handleSelectionEvent = debounce(selectionEventHandler.bind(this), 500);
-  }
-
-  renderedCallback() {
-    this.fieldEl = this.template.querySelector('querybuilder-custom-select');
-    this.operatorEl = this.template.querySelector(
-      '[data-el-where-operator-input]'
-    );
-    this.criteriaEl = this.template.querySelector(
-      '[data-el-where-criteria-input]'
-    );
-    this.checkAllModifiersHaveValues();
-  }
-
-  resetErrorFlagsAndMessages() {
-    this.operatorErrorMessage = this.criteriaErrorMessage = '';
-    this.hasOperatorError = this.hasCriteriaError = false;
-  }
-
-  checkAllModifiersHaveValues(): Boolean {
-    const allHaveValues = Boolean(
-      this.fieldEl.value[0] && this.operatorEl.value && this.criteriaEl.value
-    );
-    this._allModifiersHaveValue = allHaveValues;
-    return allHaveValues;
-  }
-
-  /* --- FIELDS --- */
-  get _selectedField() {
-    return this._currentFieldSelection ? [this._currentFieldSelection] : [];
-  }
-
-  getFieldName(): string | undefined {
-    return this.condition &&
-      this.condition.field &&
-      this.condition.field.fieldName
-      ? this.condition.field.fieldName
-      : undefined;
-  }
-
-  get defaultFieldOptionText() {
-    // TODO: i18n
-    return this.isLoading ? 'Loading...' : 'Select Field...';
-  }
-  /* --- OPERATORS --- */
-  get hasSelectedOperator() {
-    return !!this._currentOperatorValue;
-  }
-
-  get _selectedOperator() {
-    return operatorOptions.find(
-      (option) => option.value === this._currentOperatorValue
-    );
-  }
-
-  toOperatorModelValue(value: string): string | undefined {
-    const matchingOption = operatorOptions.find(
-      (option) => option.value === value
-    );
-    return matchingOption ? matchingOption.modelValue : undefined;
-  }
-
-  get filteredOperators() {
-    return operatorOptions.filter((option) => {
-      return option.value !== this._currentOperatorValue;
-    });
-  }
-
-  /* --- CRITERIA --- */
-  get criteriaDisplayValue(): string | undefined {
-    return this._criteriaDisplayValue;
-  }
-
-  isMulipleValueOperator(operatorValue: string): boolean {
-    return (
-      operatorValue === 'IN' ||
-      operatorValue === 'NOT_IN' ||
-      operatorValue === 'INCLUDES' ||
-      operatorValue === 'EXCLUDES'
-    );
-  }
-
-  /** css class methods */
+  /* ======= CSS CLASS METHODS ======= */
   get operatorClasses() {
     let classes = 'modifier__item modifier__operator';
     classes = this.hasOperatorError
@@ -200,39 +121,124 @@ export default class WhereModifierGroup extends LightningElement {
       : classes;
     return classes;
   }
-  /** end css class methods */
-
-  handleConditionRemoved(e) {
-    // reset inputs to defaults
-    this._currentFieldSelection = DEFAULT_FIELD_INPUT_VALUE;
-    this._currentOperatorValue = DEFAULT_OPERATOR_INPUT_VALUE;
-    this._criteriaDisplayValue = DEFAULT_CRITERIA_INPUT_VALUE;
-    this.resetErrorFlagsAndMessages();
-
-    e.preventDefault();
-    const conditionRemovedEvent = new CustomEvent('where__condition_removed', {
-      detail: {
-        index: this.index
-      },
-      bubbles: true,
-      composed: true
-    });
-
-    this.dispatchEvent(conditionRemovedEvent);
+  /* --------------------------------- */
+  constructor() {
+    super();
+    this.handleSelectionEvent = debounce(selectionEventHandler.bind(this), 500);
+  }
+  /* ======= LIFECYCLE HOOKS ======= */
+  renderedCallback() {
+    this.fieldEl = this.template.querySelector('querybuilder-custom-select');
+    this.operatorEl = this.template.querySelector(
+      '[data-el-where-operator-input]'
+    );
+    this.criteriaEl = this.template.querySelector(
+      '[data-el-where-criteria-input]'
+    );
+    this.checkAllModifiersHaveValues();
   }
 
-  displayValue(type: Soql.LiteralType, rawValue: string): string {
+  /* ======= FIELDS ======= */
+  get _selectedField() {
+    return this._currentFieldSelection ? [this._currentFieldSelection] : [];
+  }
+
+  get defaultFieldOptionText() {
+    // TODO: i18n
+    return this.isLoading ? 'Loading...' : 'Select Field...';
+  }
+
+  getFieldName(): string | undefined {
+    return this.condition &&
+      this.condition.field &&
+      this.condition.field.fieldName
+      ? this.condition.field.fieldName
+      : undefined;
+  }
+
+  /* ======= OPERATORS ======= */
+  get hasSelectedOperator() {
+    return !!this._currentOperatorValue;
+  }
+  // consumed in UI template for rendering
+  get _selectedOperator() {
+    return operatorOptions.find(
+      (option) => option.value === this._currentOperatorValue
+    );
+  }
+
+  get filteredOperators() {
+    return operatorOptions.filter((option) => {
+      return option.value !== this._currentOperatorValue;
+    });
+  }
+
+  toOperatorModelValue(value: string): string | undefined {
+    const matchingOption = operatorOptions.find(
+      (option) => option.value === value
+    );
+    return matchingOption ? matchingOption.modelValue : undefined;
+  }
+
+  /* ======= CRITERIA ======= */
+  get criteriaDisplayValue(): string | undefined {
+    return this._criteriaDisplayValue;
+  }
+
+  /* ======= UTILITIES ======= */
+  resetErrorFlagsAndMessages() {
+    this.operatorErrorMessage = this.criteriaErrorMessage = '';
+    this.hasOperatorError = this.hasCriteriaError = false;
+  }
+
+  checkAllModifiersHaveValues(): Boolean {
+    const allHaveValues = Boolean(
+      this.fieldEl.value[0] && this.operatorEl.value && this.criteriaEl.value
+    );
+    this._allModifiersHaveValue = allHaveValues;
+    return allHaveValues;
+  }
+
+  isMulipleValueOperator(operatorValue: string): boolean {
+    return (
+      operatorValue === Soql.UiOperatorValue.IN ||
+      operatorValue === Soql.UiOperatorValue.NOT_IN ||
+      operatorValue === Soql.UiOperatorValue.INCLUDES ||
+      operatorValue === Soql.UiOperatorValue.EXCLUDES
+    );
+  }
+
+  isSpecialLikeCondition(operatorValue: string): boolean {
+    return (
+      operatorValue === Soql.UiOperatorValue.LIKE_START ||
+      operatorValue === Soql.UiOperatorValue.LIKE_END ||
+      operatorValue === Soql.UiOperatorValue.LIKE_CONTAINS
+    );
+  }
+  // This is the value displayed in modifier <input>
+  displayValue(
+    type: Soql.LiteralType,
+    rawValue: string,
+    operatorValue?: string
+  ): string {
     let displayValue = rawValue;
     switch (type) {
       case Soql.LiteralType.String: {
         displayValue = soqlStringLiteralToDisplayValue(rawValue);
+        if (this.isSpecialLikeCondition(operatorValue)) {
+          displayValue = stripWildCardPadding(displayValue);
+        }
         break;
       }
     }
     return displayValue;
   }
-
-  normalizeInput(type: Soql.SObjectFieldType, value: string): string {
+  // This is represents the compareValue in the SOQL Query
+  normalizeInput(
+    type: Soql.SObjectFieldType,
+    value: string,
+    operatorValue?: Soql.UiOperatorValue
+  ): string {
     let normalized = value;
     if (!this.isMulipleValueOperator(this._currentOperatorValue)) {
       switch (type) {
@@ -250,7 +256,12 @@ export default class WhereModifierGroup extends LightningElement {
         default: {
           // treat like string
           if (value.toLowerCase().trim() !== 'null') {
-            normalized = displayValueToSoqlStringLiteral(value);
+            if (this.isSpecialLikeCondition(operatorValue)) {
+              let wildCardValue = addWildCardToValue(operatorValue, value);
+              normalized = displayValueToSoqlStringLiteral(wildCardValue);
+            } else {
+              normalized = displayValueToSoqlStringLiteral(normalized);
+            }
           }
           break;
         }
@@ -319,7 +330,11 @@ export default class WhereModifierGroup extends LightningElement {
 
       this._criteriaDisplayValue = this.criteriaEl.value;
       const type = this.getSObjectFieldType(fieldName);
-      const normalizedInput = this.normalizeInput(type, this.criteriaEl.value);
+      const normalizedInput = this.normalizeInput(
+        type,
+        this.criteriaEl.value,
+        op
+      );
       const critType = this.getCriteriaType(type, normalizedInput);
       const picklistValues = this.getPicklistValues(fieldName);
 
@@ -389,11 +404,30 @@ export default class WhereModifierGroup extends LightningElement {
 
     return true;
   }
+  /* ======= EVENT HANDLERS ======= */
+  handleConditionRemoved(e) {
+    // reset inputs to defaults
+    this._currentFieldSelection = DEFAULT_FIELD_INPUT_VALUE;
+    this._currentOperatorValue = DEFAULT_OPERATOR_INPUT_VALUE;
+    this._criteriaDisplayValue = DEFAULT_CRITERIA_INPUT_VALUE;
+    this.resetErrorFlagsAndMessages();
+
+    e.preventDefault();
+    const conditionRemovedEvent = new CustomEvent('where__condition_removed', {
+      detail: {
+        index: this.index
+      },
+      bubbles: true,
+      composed: true
+    });
+
+    this.dispatchEvent(conditionRemovedEvent);
+  }
 }
 
 function selectionEventHandler(e) {
   e.preventDefault();
-
+  // note: this.validateInput() will change state by setting this.condition
   if (this.checkAllModifiersHaveValues() && this.validateInput()) {
     const modGroupSelectionEvent = new CustomEvent('modifiergroupselection', {
       detail: {

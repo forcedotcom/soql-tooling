@@ -9,7 +9,12 @@ import {
   convertUiModelToSoql,
   convertSoqlToUiModel,
   soqlStringLiteralToDisplayValue,
-  displayValueToSoqlStringLiteral
+  displayValueToSoqlStringLiteral,
+  isLikeContains,
+  isLikeEnds,
+  isLikeStart,
+  addWildCardToValue,
+  stripWildCardPadding
 } from './soqlUtils';
 import { SELECT_COUNT, ToolingModelJson } from './model';
 
@@ -213,6 +218,7 @@ describe('SoqlUtils', () => {
       expect(actual).toEqual(expected);
     });
   });
+
   describe('displayValueToSoqlStringLiteral should', () => {
     it('surround display value with quotes', () => {
       const expected = "'hello'";
@@ -223,6 +229,73 @@ describe('SoqlUtils', () => {
       const expected = "'\\'\\\"\\\\'";
       const actual = displayValueToSoqlStringLiteral('\'"\\');
       expect(actual).toEqual(expected);
+    });
+  });
+
+  describe('LIKE OPERATOR UTILS', () => {
+    it('isLikeStart() should return true with compareValue of ABC%', () => {
+      expect(isLikeStart('ABC%')).toBe(true);
+      expect(isLikeStart("'ABC%'")).toBe(true);
+      expect(isLikeStart("A'BC%'")).toBe(true);
+      expect(isLikeStart('A%BC%')).toBe(true);
+
+      expect(isLikeStart('')).toBe(false);
+      expect(isLikeStart('%ABC')).toBe(false);
+      expect(isLikeStart('%ABC%')).toBe(false);
+      expect(isLikeStart('A%BC')).toBe(false);
+    });
+    it('isLikeEnds() should return true with compareValue of %ABC', () => {
+      expect(isLikeEnds('%ABC')).toBe(true);
+      expect(isLikeEnds("'%ABC'")).toBe(true);
+      expect(isLikeEnds("%AB'C'")).toBe(true);
+
+      expect(isLikeEnds('ABC%')).toBe(false);
+      expect(isLikeEnds('')).toBe(false);
+      expect(isLikeEnds('%ABC%')).toBe(false);
+      expect(isLikeEnds('A%BC')).toBe(false);
+      expect(isLikeEnds('A%BC%')).toBe(false);
+    });
+    it('isLikeContains() should return true with compareValue of %ABC%', () => {
+      expect(isLikeContains('%ABC%')).toBe(true);
+      expect(isLikeContains("'%ABC%'")).toBe(true);
+      expect(isLikeContains("'%A'BC%'")).toBe(true);
+
+      expect(isLikeContains('ABC%')).toBe(false);
+      expect(isLikeContains('')).toBe(false);
+      expect(isLikeContains('%ABC')).toBe(false);
+      expect(isLikeContains('A%BC')).toBe(false);
+      expect(isLikeContains('A%BC%')).toBe(false);
+    });
+
+    it('addWildCardToValue() should clean value & add % in right place', () => {
+      let rawValue = 'ABC';
+      expect(
+        addWildCardToValue(Soql.UiOperatorValue.LIKE_START, rawValue)
+      ).toEqual('ABC%');
+      expect(
+        addWildCardToValue(Soql.UiOperatorValue.LIKE_END, rawValue)
+      ).toEqual('%ABC');
+      expect(
+        addWildCardToValue(Soql.UiOperatorValue.LIKE_CONTAINS, rawValue)
+      ).toEqual('%ABC%');
+      expect(addWildCardToValue(Soql.UiOperatorValue.LIKE, rawValue)).toEqual(
+        'ABC'
+      );
+      expect(addWildCardToValue(Soql.UiOperatorValue.EQ, rawValue)).toEqual(
+        'ABC'
+      );
+      expect(
+        addWildCardToValue(Soql.UiOperatorValue.LIKE_START, '%%A%%%BC')
+      ).toEqual('A%%%BC%');
+    });
+
+    it('stripWildCardPadding() should remove any wildcards before the first non-wildcard char', () => {
+      expect(stripWildCardPadding('abc')).toEqual('abc');
+      expect(stripWildCardPadding('%%abc%%')).toEqual('abc');
+      expect(stripWildCardPadding('%%abc%')).toEqual('abc');
+      expect(stripWildCardPadding('abc%%%')).toEqual('abc');
+      expect(stripWildCardPadding('a%bc%%')).toEqual('a%bc');
+      expect(stripWildCardPadding('%bc%%100%%')).toEqual('bc%%100');
     });
   });
 });

@@ -13,4 +13,10 @@ import { ModelSerializer } from './serialization/serializer';
 
 export { Soql, Impl, SoqlModelUtils, ModelDeserializer, ModelSerializer };
 export { SelectAnalyzer, Selection, ColumnData, Column } from './analyzers/selectAnalyzer';
-export { ValidateOptions, ValidateResult, Validator, ValidatorFactory, splitMultiInputValues } from './validators';
+export {
+  ValidateOptions,
+  ValidateResult,
+  Validator,
+  ValidatorFactory,
+  splitMultiInputValues
+} from './validators';

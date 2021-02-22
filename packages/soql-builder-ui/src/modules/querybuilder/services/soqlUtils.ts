@@ -31,7 +31,7 @@ export function convertSoqlModelToUiModel(
 
   const fields =
     queryModel.select &&
-      (queryModel.select as Soql.SelectExprs).selectExpressions
+    (queryModel.select as Soql.SelectExprs).selectExpressions
       ? (queryModel.select as Soql.SelectExprs).selectExpressions
         .filter((expr) => !SoqlModelUtils.containsUnmodeledSyntax(expr))
         .map((expr) => {
@@ -64,15 +64,15 @@ export function convertSoqlModelToUiModel(
 
   const orderBy = queryModel.orderBy
     ? queryModel.orderBy.orderByExpressions
-      // TODO: Deal with empty OrderBy.  returns unmodelled syntax.
-      .filter((expr) => !SoqlModelUtils.containsUnmodeledSyntax(expr))
-      .map((expression) => {
-        return {
-          field: expression.field.fieldName,
-          order: expression.order,
-          nulls: expression.nullsOrder
-        };
-      })
+        // TODO: Deal with empty OrderBy.  returns unmodelled syntax.
+        .filter((expr) => !SoqlModelUtils.containsUnmodeledSyntax(expr))
+        .map((expression) => {
+          return {
+            field: expression.field.fieldName,
+            order: expression.order,
+            nulls: expression.nullsOrder
+          };
+        })
     : [];
 
   const limit = queryModel.limit
@@ -159,14 +159,14 @@ function convertUiModelToSoqlModel(uiModel: ToolingModelJson): Soql.Query {
 
       const compareValue = uiModelCondition.compareValue
         ? new Impl.LiteralImpl(
-          uiModelCondition.compareValue.type,
-          uiModelCondition.compareValue.value
-        )
+            uiModelCondition.compareValue.type,
+            uiModelCondition.compareValue.value
+          )
         : uiModelCondition.values
-          ? uiModelCondition.values.map(
+        ? uiModelCondition.values.map(
             (value) => new Impl.LiteralImpl(value.type, value.value)
           )
-          : undefined;
+        : undefined;
 
       if (field && compareValue) {
         switch (conditionType) {
@@ -277,4 +277,80 @@ export function displayValueToSoqlStringLiteral(displayString: string): string {
   normalized = `'${normalized}'`;
 
   return normalized;
+}
+
+/* ======= LIKE OPERATOR UTILS ======= */
+const WILD_CARD = '%';
+
+/* LIKE_START ABC% */
+export function isLikeStart(value: string) {
+  if (value && value.length) {
+    value = soqlStringLiteralToDisplayValue(value);
+    if (value.endsWith(WILD_CARD) && !value.startsWith(WILD_CARD)) {
+      return true;
+    }
+  }
+  return false;
+}
+/* LIKE_END %ABC */
+export function isLikeEnds(value: string) {
+  if (value && value.length) {
+    value = soqlStringLiteralToDisplayValue(value);
+    if (value.startsWith(WILD_CARD) && !value.endsWith(WILD_CARD)) {
+      return true;
+    }
+  }
+  return false;
+}
+/* LIKE_CONTAINS %ABC% */
+export function isLikeContains(value: string) {
+  if (value && value.length) {
+    value = soqlStringLiteralToDisplayValue(value);
+    if (value.startsWith(WILD_CARD) && value.endsWith(WILD_CARD)) {
+      return true;
+    }
+  }
+  return false;
+}
+
+export function addWildCardToValue(
+  operatorValue: Soql.UiOperatorValue,
+  rawValue: string
+) {
+  let value = stripWildCardPadding(rawValue);
+  switch (operatorValue) {
+    case Soql.UiOperatorValue.LIKE_START:
+      value = `${value}${WILD_CARD}`;
+      break;
+    case Soql.UiOperatorValue.LIKE_END:
+      value = `${WILD_CARD}${value}`;
+      break;
+    case Soql.UiOperatorValue.LIKE_CONTAINS:
+      value = `${WILD_CARD}${value}${WILD_CARD}`;
+      break;
+    default:
+      break;
+  }
+  return value;
+}
+
+export function stripWildCardPadding(rawStr: string) {
+  let value = rawStr;
+  value = trimWildCardRight(value);
+  value = trimWildCardLeft(value);
+  return value;
+}
+
+function trimWildCardLeft(rawStr: string) {
+  if (!rawStr.startsWith(WILD_CARD)) {
+    return rawStr;
+  }
+  return trimWildCardLeft(rawStr.substring(1));
+}
+
+function trimWildCardRight(rawStr: string) {
+  if (!rawStr.endsWith(WILD_CARD)) {
+    return rawStr;
+  }
+  return trimWildCardRight(rawStr.substring(0, rawStr.length - 1));
 }

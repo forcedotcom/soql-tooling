@@ -1,0 +1,38 @@
+on:
+  workflow_dispatch:  # <- this allows triggering from github's UI
+  push:
+    branches:
+      - main
+    paths:
+    - '*'
+    - '.github/workflows/*'
+    - 'packages/soql-builder-ui/**'
+name: release-soql-builder-ui
+jobs:
+  release-soql-builder-ui:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: GoogleCloudPlatform/release-please-action@v2
+        id: release
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          release-type: node
+          path: packages/soql-builder-ui
+          monorepo-tags: true
+          default-branch: main
+      - uses: actions/checkout@v2
+        # these if statements ensure that a publication only occurs when
+        # a new release is created (when merging a release PR to main):
+        if: ${{ steps.release.outputs.release_created }}
+      - uses: actions/setup-node@v2
+        with:
+          node-version: 12
+        if: ${{ steps.release.outputs.release_created }}
+      - run: |
+         yarn
+         yarn build
+         cd packages/soql-builder-ui
+         npm publish
+        env:
+          NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}
+        if: ${{ steps.release.outputs.release_created }}
