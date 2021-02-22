@@ -1,20 +1,18 @@
 {
-  "name": "@salesforce/soql-model",
-  "version": "0.1.22",
-  "description": "SOQL Model",
+  "name": "@salesforce/soql-common",
+  "version": "0.1.0",
+  "description": "SOQL Common utility library",
   "engines": {
     "node": "*"
   },
   "main": "lib/",
   "scripts": {
-    "build": "tsc --project .",
+    "compile": "tsc --project .",
+    "include-soql-parser": "cp -r soql-parser ./lib",
+    "build": "yarn run compile && yarn run include-soql-parser",
     "clean": "rimraf lib && rimraf node_modules",
     "test": "jest --runInBand",
     "test:unit:coverage": "jest --runInBand --coverage"
-  },
-  "dependencies": {
-    "@salesforce/soql-common": "0.1.0",
-    "antlr4ts": "^0.5.0-alpha.3"
   },
   "devDependencies": {
     "@types/jest": "22.2.3",
@@ -23,11 +21,11 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/forcedotcom/soql-tooling.git"
+    "url": "git+https://github.com/forcedotcom/soql-common.git"
   },
   "keywords": [
     "soql",
-    "model"
+    "common"
   ],
   "author": "Salesforce",
   "publishConfig": {

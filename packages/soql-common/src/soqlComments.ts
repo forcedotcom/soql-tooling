@@ -6,12 +6,6 @@
  *
  */
 
-
-/**
- * Note: This file is duplicated at soql's language-server module
- * Until we share a common module: if you make a change here,
- * you might want to make that same change over there
- */
 export interface SoqlWithComments {
   // Original complete SOQL string, untouched:
   originalSoqlText: string;
