@@ -30,12 +30,12 @@ jobs:
         if: ${{ steps.release.outputs.release_created }}
       - name: bump-dependencies-to-soql-common
         run: |
-         SOQL_MODEL_VERSION=${{ steps.release.outputs.major}}.${{ steps.release.outputs.minor }}.${{ steps.release.outputs.patch}}
-         sed -i.back -E 's/"@salesforce\/soql-common": +"[^"]+"/"@salesforce\/soql-common": "'$SOQL_MODEL_VERSION'"/g' packages/*/package.json
+         SOQL_COMMON_VERSION=${{ steps.release.outputs.major}}.${{ steps.release.outputs.minor }}.${{ steps.release.outputs.patch}}
+         sed -i.back -E 's/"@salesforce\/soql-common": +"[^"]+"/"@salesforce\/soql-common": "'$SOQL_COMMON_VERSION'"/g' packages/*/package.json
          if ! git diff --exit-code; then
            git config --local user.email "$(git log --format='%ae' HEAD^!)"
            git config --local user.name "$(git log --format='%an' HEAD^!)"
-           git commit -a -m "chore: bump soql-common version on soql-builder-ui to $SOQL_MODEL_VERSION"
+           git commit -a -m "chore: bump soql-common version dependents to $SOQL_MODEL_VERSION"
            git push
          fi
         if: ${{ steps.release.outputs.release_created }}
