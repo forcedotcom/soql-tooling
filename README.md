@@ -7,6 +7,7 @@ This repo contains the source for the SOQL Language Tooling features including:
     packages
     |-- soql-builder-ui/        SOQL Query Builder UI with [LWC](https://lwc.dev/)
     |-- soql-model/             SOQL internal model
+    |-- soql-common/            SOQL common library. Shared by Query Builder and Language Server
     `-- soql-data-view/         Web assests for displaying SOQL Results
 
 ### Development
