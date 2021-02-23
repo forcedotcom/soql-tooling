@@ -5,11 +5,11 @@
  * For full license text, see LICENSE.txt file in the repo root or https://opensource.org/licenses/BSD-3-Clause
  */
 
-import { SOQLParser } from '@salesforce/soql-parser';
-import { SoqlParserVisitor } from '@salesforce/soql-parser/lib/generated/SoqlParserVisitor';
-import * as Parser from '@salesforce/soql-parser/lib/generated/SoqlParser';
+import { SOQLParser } from '@salesforce/soql-common/soql-parser';
+import { SoqlParserVisitor } from '@salesforce/soql-common/soql-parser/generated/SoqlParserVisitor';
+import * as Parser from '@salesforce/soql-common/soql-parser/generated/SoqlParser';
 import { AbstractParseTreeVisitor, ParseTree } from 'antlr4ts/tree';
-import { parseHeaderComments } from '../serialization/soqlComments';
+import { soqlComments } from '@salesforce/soql-common';
 
 export interface Selection {
   selectionQueryText: string;
@@ -35,13 +35,13 @@ export class SelectAnalyzer {
     const parser = SOQLParser({
       isApex: true,
       isMultiCurrencyEnabled: true,
-      apiVersion: 50.0,
+      apiVersion: 50.0
     });
 
-
-    const { headerComments, headerPaddedSoqlText } = parseHeaderComments(
-      this.queryText
-    );
+    const {
+      headerComments,
+      headerPaddedSoqlText
+    } = soqlComments.parseHeaderComments(this.queryText);
 
     const result = parser.parseQuery(headerPaddedSoqlText);
     this.parseTree = result.getParseTree();
@@ -60,9 +60,11 @@ export class SelectAnalyzer {
       columns: new Array<Column>(),
       subTables: new Array<ColumnData>()
     };
-    selections.forEach(selection => {
+    selections.forEach((selection) => {
       if (selection.isSubQuerySelection) {
-        let subTable = columnData.subTables.find((data: ColumnData) => data.objectName === selection.objectName);
+        let subTable = columnData.subTables.find(
+          (data: ColumnData) => data.objectName === selection.objectName
+        );
         if (!subTable) {
           subTable = {
             objectName: selection.objectName,
@@ -87,7 +89,9 @@ export class SelectAnalyzer {
   }
 }
 
-class SelectVisitor extends AbstractParseTreeVisitor<void> implements SoqlParserVisitor<void> {
+class SelectVisitor
+  extends AbstractParseTreeVisitor<void>
+  implements SoqlParserVisitor<void> {
   public selections: Selection[] = [];
   protected currentNamespace = '';
   protected currentObjectName = '';
@@ -95,7 +99,9 @@ class SelectVisitor extends AbstractParseTreeVisitor<void> implements SoqlParser
   protected static AGGREGATEEXPR_PREFIX = 'expr';
   protected isInnerQuery = false;
 
-  public visitSoqlSelectInnerQueryExpr(ctx: Parser.SoqlSelectInnerQueryExprContext): void {
+  public visitSoqlSelectInnerQueryExpr(
+    ctx: Parser.SoqlSelectInnerQueryExprContext
+  ): void {
     this.isInnerQuery = true;
     ctx.soqlInnerQuery().accept(this);
     this.isInnerQuery = false;
@@ -116,13 +122,18 @@ class SelectVisitor extends AbstractParseTreeVisitor<void> implements SoqlParser
     ctx.soqlSelectClause().accept(this);
   }
 
-  public visitSoqlSelectColumnExpr(ctx: Parser.SoqlSelectColumnExprContext): void {
+  public visitSoqlSelectColumnExpr(
+    ctx: Parser.SoqlSelectColumnExprContext
+  ): void {
     const fieldText = ctx.soqlField().text;
     const isAggregateExpression = fieldText.includes('(');
     const aliasText = ctx.soqlAlias()?.text;
     let queryResultsPath: string[] = [];
     if (isAggregateExpression) {
-      queryResultsPath.push(aliasText || `${SelectVisitor.AGGREGATEEXPR_PREFIX}${this.currentAggregateExpression}`);
+      queryResultsPath.push(
+        aliasText ||
+          `${SelectVisitor.AGGREGATEEXPR_PREFIX}${this.currentAggregateExpression}`
+      );
     } else {
       queryResultsPath = `${fieldText}`.split('.');
     }
@@ -138,6 +149,5 @@ class SelectVisitor extends AbstractParseTreeVisitor<void> implements SoqlParser
     }
   }
 
-  protected defaultResult(): void {
-  }
+  protected defaultResult(): void {}
 }
