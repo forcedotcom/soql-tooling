@@ -1,15 +1,15 @@
 const webpack = require('webpack');
-module.exports =
-{
+const TerserPlugin = require('terser-webpack-plugin');
+module.exports = {
   output: {
-    filename: "app.js"
+    filename: 'app.js'
   },
   resolve: {
     fallback: {
       fs: false
     },
     alias: {
-      os: "os-browserify/browser"
+      os: 'os-browserify/browser'
     }
   },
   plugins: [
@@ -18,5 +18,13 @@ module.exports =
       util: 'util/',
       assert: 'assert/'
     })
-  ]
-}
+  ],
+  optimization: {
+    // this removes license.txt from the output bundle
+    minimizer: [
+      new TerserPlugin({
+        extractComments: false
+      })
+    ]
+  }
+};
