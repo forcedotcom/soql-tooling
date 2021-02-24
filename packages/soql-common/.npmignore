@@ -1,7 +1,7 @@
 # Standard src folder
 /src
-
-/soql-parser
+/soql-parser.lib
+/scripts
 
 # Tooling files
 node_modules
