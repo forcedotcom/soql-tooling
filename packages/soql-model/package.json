@@ -1,6 +1,6 @@
 {
   "name": "@salesforce/soql-model",
-  "version": "0.1.23",
+  "version": "0.2.0",
   "description": "SOQL Model",
   "engines": {
     "node": "*"
@@ -13,7 +13,7 @@
     "test:unit:coverage": "jest --runInBand --coverage"
   },
   "dependencies": {
-    "@salesforce/soql-common": "0.1.0",
+    "@salesforce/soql-common": "0.2.0",
     "antlr4ts": "^0.5.0-alpha.3"
   },
   "devDependencies": {
