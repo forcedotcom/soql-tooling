@@ -8,7 +8,7 @@
   "main": "lib/",
   "scripts": {
     "compile": "tsc --project .",
-    "include-soql-parser": "cp -r soql-parser ./lib",
+    "include-soql-parser": "cp -r soql-parser.lib ./lib/soql-parser",
     "build": "yarn run compile && yarn run include-soql-parser",
     "clean": "rimraf lib && rimraf node_modules",
     "test": "jest --runInBand",
