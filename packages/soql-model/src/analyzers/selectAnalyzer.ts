@@ -5,9 +5,9 @@
  * For full license text, see LICENSE.txt file in the repo root or https://opensource.org/licenses/BSD-3-Clause
  */
 
-import { SOQLParser } from '@salesforce/soql-common/soql-parser';
-import { SoqlParserVisitor } from '@salesforce/soql-common/soql-parser/generated/SoqlParserVisitor';
-import * as Parser from '@salesforce/soql-common/soql-parser/generated/SoqlParser';
+import { SOQLParser } from '@salesforce/soql-common/lib/soql-parser';
+import { SoqlParserVisitor } from '@salesforce/soql-common/lib/soql-parser/generated/SoqlParserVisitor';
+import * as Parser from '@salesforce/soql-common/lib/soql-parser/generated/SoqlParser';
 import { AbstractParseTreeVisitor, ParseTree } from 'antlr4ts/tree';
 import { soqlComments } from '@salesforce/soql-common';
 
