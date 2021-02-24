@@ -27,6 +27,8 @@ jobs:
       - uses: actions/setup-node@v2
         with:
           node-version: 12
+          registry-url: 'https://registry.npmjs.org'
+          scope: '@salesforce'
         if: ${{ steps.release.outputs.release_created }}
       - name: bump-dependencies-to-soql-model
         run: |
