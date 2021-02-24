@@ -12,5 +12,4 @@
 ### Bug Fixes
 
 * rename pre-compiled soql-parser dir and adjust imports ([#209](https://www.github.com/forcedotcom/soql-tooling/issues/209)) ([857019a](https://www.github.com/forcedotcom/soql-tooling/commit/857019afa1347e743f7fd8cc9f6e0573ee9e85ea))
-* soql-model fake commit to trigger release ([808adc5](https://www.github.com/forcedotcom/soql-tooling/commit/808adc54d55080f1cd4d8e9d58e8da4c99b319b7))
 * update imports from soql-common ([#205](https://www.github.com/forcedotcom/soql-tooling/issues/205)) ([042cd61](https://www.github.com/forcedotcom/soql-tooling/commit/042cd61cf28c8207bc44c839238ba1991eb2e579))
