@@ -11,6 +11,7 @@ node_modules
 jest.config.js
 lwc-services.config.js
 lwc.config.json
+webpack.config.js
 
 # MacOS system files
 .DS_Store
