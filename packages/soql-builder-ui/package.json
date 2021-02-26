@@ -7,9 +7,7 @@
     "access": "public",
     "registry": "http://registry.npmjs.org/"
   },
-  "dependencies": {
-    "comments": "since these are all webpacked, they are moved to devDependencies: debounce, immutable, rxjs"
-  },
+  "dependencies": {},
   "devDependencies": {
     "@lwc/jest-preset": "^7.0.0",
     "@salesforce/soql-model": "0.1.22",
