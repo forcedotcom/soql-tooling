@@ -5,7 +5,7 @@ orbs:
 
 variables:
   - &node-build-image
-    - image: cmig/node:14.15.5
+    - image: cimg/node:14.15.5
 
 jobs:
   soql-builder-ui:
