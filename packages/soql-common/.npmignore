@@ -3,6 +3,11 @@
 /soql-parser.lib
 /scripts
 
+# test files
+/lib/**/*.test.d.ts
+/lib/**/*.test.js
+/lib/**/*.test.js.map
+
 # Tooling files
 node_modules
 .eslintignore
