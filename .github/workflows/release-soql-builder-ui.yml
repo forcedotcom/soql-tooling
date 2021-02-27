@@ -1,12 +1,12 @@
 on:
-  workflow_dispatch:  # <- this allows triggering from github's UI
+  workflow_dispatch: # <- this allows triggering from github's UI
   push:
     branches:
       - main
     paths:
-    - '*'
-    - '.github/workflows/*'
-    - 'packages/soql-builder-ui/**'
+      - '*'
+      - '.github/workflows/*'
+      - 'packages/soql-builder-ui/**'
 name: release-soql-builder-ui
 jobs:
   release-soql-builder-ui:
@@ -26,13 +26,13 @@ jobs:
         if: ${{ steps.release.outputs.release_created }}
       - uses: actions/setup-node@v2
         with:
-          node-version: 12
+          node-version: 14
         if: ${{ steps.release.outputs.release_created }}
       - run: |
-         yarn
-         yarn build
-         cd packages/soql-builder-ui
-         npm publish
+          yarn
+          yarn build
+          cd packages/soql-builder-ui
+          npm publish
         env:
           NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}
         if: ${{ steps.release.outputs.release_created }}
