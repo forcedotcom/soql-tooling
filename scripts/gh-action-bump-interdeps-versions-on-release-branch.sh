@@ -10,10 +10,15 @@ echo RELEASE_BRANCH_PREFIX=$RELEASE_BRANCH_PREFIX
 
 gh --version
 PR_LIST_FILE=$(mktemp)
-gh pr list --label "autorelease: pending" |grep ${RELEASE_BRANCH_PREFIX} >> $PR_LIST_FILE
+gh pr list --label "autorelease: pending" | { grep ${RELEASE_BRANCH_PREFIX} || true; } > $PR_LIST_FILE
 PR_COUNT=$(cat $PR_LIST_FILE | wc -l)
 
 echo PR_COUNT:$PR_COUNT
+if [ $PR_COUNT -eq 0 ]; then
+  echo "No release PR for ${RELEASE_BRANCH_PREFIX}. Nothing to do."
+  exit 0
+fi
+
 if [ $PR_COUNT -ne 1 ]; then
   echo "Error: the given pattern must match one and only one PR"
   exit 2
