@@ -8,10 +8,6 @@
   "workspaces": {
     "packages": [
       "packages/*"
-    ],
-    "nohoist": [
-      "**/@salesforce/soql-parser",
-      "**/@salesforce/soql-parser/**"
     ]
   },
   "dependencies": {},
