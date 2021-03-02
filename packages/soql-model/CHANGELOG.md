@@ -1,5 +1,12 @@
 # Changelog
 
+### [0.2.1](https://www.github.com/forcedotcom/soql-tooling/compare/v0.2.0...v0.2.1) (2021-03-01)
+
+
+### Bug Fixes
+
+* do not publish unnecessary files ([#214](https://www.github.com/forcedotcom/soql-tooling/issues/214)) ([cdcb905](https://www.github.com/forcedotcom/soql-tooling/commit/cdcb905c2a90773c2f9e26e2f51acfcc098c0ffc))
+
 ## [0.2.0](https://www.github.com/forcedotcom/soql-tooling/compare/soql-model-v0.1.22...v0.2.0) (2021-02-24)
 
 
