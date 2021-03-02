@@ -1,12 +1,12 @@
 on:
-  workflow_dispatch:  # <- this allows triggering from github's UI
+  workflow_dispatch: # <- this allows triggering from github's UI
   push:
     branches:
       - main
     paths:
-    - '*'
-    - '.github/workflows/*'
-    - 'packages/soql-common/**'
+      - '*'
+      - '.github/workflows/*'
+      - 'packages/soql-common/**'
 name: release-soql-common
 jobs:
   release-soql-common:
@@ -40,14 +40,14 @@ jobs:
       - uses: actions/setup-node@v2
         if: ${{ steps.release.outputs.release_created }}
         with:
-          node-version: 12
+          node-version: 14
           registry-url: 'https://registry.npmjs.org'
           scope: '@salesforce'
       - name: build
         if: ${{ steps.release.outputs.release_created }}
         run: |
-         yarn
-         yarn build
+          yarn
+          yarn build
       - name: publish
         if: ${{ steps.release.outputs.release_created }}
         run: |
