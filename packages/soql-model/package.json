@@ -8,7 +8,7 @@
   "main": "lib/",
   "scripts": {
     "build": "tsc --project .",
-    "clean": "rimraf lib && rimraf node_modules",
+    "clean": "shx rm -rf lib && shx rm -rf node_modules",
     "test": "jest --runInBand",
     "test:unit:coverage": "jest --runInBand --coverage"
   },
