@@ -89,8 +89,10 @@ jobs:
           command: bash <(curl -s https://codecov.io/bash) -F soql-builder-ui -t ${CODECOV_TOKEN}
 
   notify_slack:
-    executor: win/default
-    shell: bash.exe
+    parameters:
+      e:
+        type: executor
+    executor: << parameters.e >>
     steps:
       - slack/notify:
           channel: web-tools-bot
