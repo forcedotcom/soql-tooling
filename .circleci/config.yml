@@ -18,6 +18,10 @@ commands:
           command: |
             nvm install $NODE_VERSION
             nvm use $NODE_VERSION
+      - run:
+          name: 'Install yarn'
+          shell: bash.exe
+          command: |
             npm install --global yarn
             yarn --version
       - run:
