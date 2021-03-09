@@ -11,6 +11,8 @@ perameters:
 
 commands:
   build-windows:
+    environment:
+      NODE_VERSION: << pipeline.parameters.node-version >>
     steps:
       - run:
           name: 'Install node'
