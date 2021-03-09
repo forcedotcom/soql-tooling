@@ -1,71 +1,91 @@
 version: 2.1
 
 orbs:
+  win: circleci/windows@2.2.0
   slack: circleci/slack@3.4.2
 
-variables:
-  - &node-build-image
-    - image: cimg/node:14.15.5
+perameters:
+  node-version:
+    type: string
+    default: '14.15.5'
+
+commands:
+  build-windows:
+    steps:
+      - run:
+          name: 'Install node'
+          shell: bash.exe
+          command: |
+            nvm install $NODE_VERSION
+            nvm use $NODE_VERSION
+            node --version
+            yarn --version
+      - run:
+          name: 'Install dependencies'
+          shell: bash.exe
+          command: yarn
+      - run:
+          name: 'Compile Project'
+          shell: bash.exe
+          command: |
+            echo 'Build all packages for linked dependencies'
+            yarn build
 
 jobs:
   soql-builder-ui:
-    docker: *node-build-image
+    executor: win/default
     environment:
       PACKAGE_PATH: 'packages/soql-builder-ui'
+      NODE_VERSION: << pipeline.parameters.node-version >>
     steps:
       - checkout
       - restore_cache:
           key: dependency-cache-{{ checksum "yarn.lock" }}
-      - run: yarn
+      - build-windows
       - save_cache:
           key: dependency-cache-{{ checksum "yarn.lock" }}
           paths:
             - ./node_modules
       - run:
-          name: Build Packages
-          command: |
-            echo 'Build all packages for linked dependencies'
-            yarn run build
-      - run:
           name: Run SOQL builder UI Unit Tests
+          shell: bash.exe
           command: |
             echo 'Run SOQL builder UI Unit Tests'
             cd $PACKAGE_PATH
             yarn run test:unit:coverage
       - run:
           name: Upload coverage report to Codecov
+          shell: bash.exe
           command: bash <(curl -s https://codecov.io/bash) -F soql-builder-ui -t ${CODECOV_TOKEN}
 
   soql-model:
-    docker: *node-build-image
+    executor: win/default
     environment:
       PACKAGE_PATH: 'packages/soql-model'
+      NODE_VERSION: << pipeline.parameters.node-version >>
     steps:
       - checkout
       - restore_cache:
           key: dependency-cache-{{ checksum "yarn.lock" }}
-      - run: yarn
+      - build-windows
       - save_cache:
           key: dependency-cache-{{ checksum "yarn.lock" }}
           paths:
             - ./node_modules
       - run:
-          name: Build Packages
+          name: Run SOQL builder UI Unit Tests
+          shell: bash.exe
           command: |
-            echo 'Build all packages for linked dependencies'
-            yarn run build
-      - run:
-          name: 'Run SOQL Model Server Unit Tests'
-          command: |
-            echo 'Run SOQL Model Server Unit Tests'
+            echo 'Run SOQL builder UI Unit Tests'
             cd $PACKAGE_PATH
             yarn run test:unit:coverage
       - run:
           name: Upload coverage report to Codecov
-          command: bash <(curl -s https://codecov.io/bash) -F soql-model -t ${CODECOV_TOKEN}
+          shell: bash.exe
+          command: bash <(curl -s https://codecov.io/bash) -F soql-builder-ui -t ${CODECOV_TOKEN}
 
   notify_slack:
-    docker: *node-build-image
+    executor: win/default
     steps:
       - slack/notify:
           channel: web-tools-bot
