@@ -90,6 +90,7 @@ jobs:
 
   notify_slack:
     executor: win/default
+    shell: bash.exe
     steps:
       - slack/notify:
           channel: web-tools-bot
