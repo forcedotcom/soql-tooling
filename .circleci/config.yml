@@ -4,15 +4,13 @@ orbs:
   win: circleci/windows@2.2.0
   slack: circleci/slack@3.4.2
 
-perameters:
+parameters:
   node-version:
     type: string
     default: '14.15.5'
 
 commands:
   build-windows:
-    environment:
-      NODE_VERSION: << pipeline.parameters.node-version >>
     steps:
       - run:
           name: 'Install node'
