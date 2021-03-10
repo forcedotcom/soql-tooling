@@ -88,6 +88,32 @@ jobs:
           shell: bash.exe
           command: bash <(curl -s https://codecov.io/bash) -F soql-builder-ui -t ${CODECOV_TOKEN}
 
+  soql-common:
+    executor: win/default
+    environment:
+      PACKAGE_PATH: 'packages/soql-common'
+      NODE_VERSION: << pipeline.parameters.node-version >>
+    steps:
+      - checkout
+      - restore_cache:
+          key: dependency-cache-{{ checksum "yarn.lock" }}
+      - build-windows
+      - save_cache:
+          key: dependency-cache-{{ checksum "yarn.lock" }}
+          paths:
+            - ./node_modules
+      - run:
+          name: Run SOQL builder UI Unit Tests
+          shell: bash.exe
+          command: |
+            echo 'Run SOQL builder UI Unit Tests'
+            cd $PACKAGE_PATH
+            yarn run test:unit:coverage
+      - run:
+          name: Upload coverage report to Codecov
+          shell: bash.exe
+          command: bash <(curl -s https://codecov.io/bash) -F soql-builder-ui -t ${CODECOV_TOKEN}
+
   notify_slack:
     docker:
       - image: cimg/node:<< pipeline.parameters.node-version >>
