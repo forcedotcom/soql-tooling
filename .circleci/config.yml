@@ -77,10 +77,10 @@ jobs:
           paths:
             - ./node_modules
       - run:
-          name: Run SOQL builder UI Unit Tests
+          name: Run SOQL Model Unit Tests
           shell: bash.exe
           command: |
-            echo 'Run SOQL builder UI Unit Tests'
+            echo 'Run SOQL Model Unit Tests'
             cd $PACKAGE_PATH
             yarn run test:unit:coverage
       - run:
@@ -103,10 +103,10 @@ jobs:
           paths:
             - ./node_modules
       - run:
-          name: Run SOQL builder UI Unit Tests
+          name: Run SOQL Common Unit Tests
           shell: bash.exe
           command: |
-            echo 'Run SOQL builder UI Unit Tests'
+            echo 'Run SOQL Common Unit Tests'
             cd $PACKAGE_PATH
             yarn run test:unit:coverage
       - run:
