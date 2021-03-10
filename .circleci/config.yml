@@ -134,7 +134,9 @@ workflows:
     jobs:
       - soql-builder-ui
       - soql-model
+      - soql-common
       - notify_slack:
           requires:
             - soql-builder-ui
             - soql-model
+            - soql-common
