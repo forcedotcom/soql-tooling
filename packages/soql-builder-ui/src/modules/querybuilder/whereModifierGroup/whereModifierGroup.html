@@ -8,7 +8,7 @@
         selected-options={_selectedField}
         placeholder-text={selectPlaceHolderText}
         onoption__selection={handleSelectionEvent}
-        aria-label="Field"
+        aria-label-text="Where Field"
       ></querybuilder-custom-select>
     </div>
     <!-- OPERATORS -->
@@ -16,11 +16,14 @@
       data-text={operatorErrorMessage}
       class={operatorClasses}
       data-el-where-operator
-      ><select
+    >
+      <label for="operator" hidden>Where Operator</label>
+      <select
+        id="operator"
         name="operator"
         data-el-where-operator-input
         onchange={handleSelectionEvent}
-        aria-label="Operator"
+        aria-label-text="Where Operator"
       >
         <template if:true={hasSelectedOperator}>
           <option value={_selectedOperator.value}>
@@ -40,13 +43,14 @@
       class={criteriaClasses}
       data-el-where-criteria
     >
+      <label for="criteria" hidden>Where Value</label>
       <input
+        id="criteria"
         name="criteria"
         type="text"
         oninput={handleSelectionEvent}
         value={criteriaDisplayValue}
         maxlength="250"
-        aria-label="Value"
         data-el-where-criteria-input
       />
     </span>

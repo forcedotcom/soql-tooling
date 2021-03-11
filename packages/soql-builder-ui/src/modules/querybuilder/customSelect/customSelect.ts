@@ -24,7 +24,7 @@ export default class CustomSelect extends LightningElement {
   @api multiple = false;
   @api isLoading = false;
   @api allOptions: string[];
-  @api ariaLabel: string;
+  @api ariaLabelText: string;
   @track _renderedOptions: string[] = [];
   availableOptions: string[] = [];
   searchTerm = '';
@@ -108,6 +108,10 @@ export default class CustomSelect extends LightningElement {
 
   get isMultipleSelect() {
     return this.multiple;
+  }
+
+  get ariaLabelId() {
+    return `${this.ariaLabel}-${this.id}`;
   }
 
   /* ======= LIFECYCLE HOOKS ======= */

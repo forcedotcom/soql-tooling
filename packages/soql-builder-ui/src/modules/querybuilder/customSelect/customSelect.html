@@ -1,7 +1,9 @@
 <template>
   <main class="custom-select">
     <div class="select__wrapper">
+      <label for="custom-select-input" hidden>{ariaLabelText}</label>
       <input
+        id="custom-select-input"
         class="select__input"
         name="search-bar"
         placeholder={placeholderText}
@@ -11,7 +13,6 @@
         onkeydown={handleKeyDown}
         onfocus={handleInputFocus}
         onblur={handleInputFocus}
-        aria-label={ariaLabel}
         maxlength="40"
       />
       <template if:true={hasSearchTerm}>

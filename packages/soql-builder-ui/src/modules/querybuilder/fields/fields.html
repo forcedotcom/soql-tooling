@@ -27,15 +27,14 @@
         onoption__selection={handleFieldSelection}
         placeholder-text={selectPlaceHolderText}
         multiple="true"
-        aria-label="Field"
+        aria-label-text="Select Field"
       ></querybuilder-custom-select>
-      <div class="selected-fields-container" aria-label="Selected Fields">
+      <div class="selected-fields-container">
         <template for:each={selectedFields} for:item="field">
           <div class="selected-field" key={field}>
             {field}
             <span
               role="button"
-              aria-label="Delete"
               class="pointer delete-trigger"
               onclick={handleFieldRemoved}
               data-field={field}

@@ -49,7 +49,7 @@ describe('Custom Select', () => {
     customSelect.allOptions = [OPTION_FOO, OPTION_BAR, OPTION_BAZ];
     customSelect.selectedOptions = [];
     customSelect.multiple = true;
-    customSelect.ariaLabel = ARIA_LABEL;
+    customSelect.ariaLabelText = ARIA_LABEL;
   });
 
   afterEach(() => {
@@ -105,11 +105,10 @@ describe('Custom Select', () => {
       });
     });
 
-    it('should use a provided aria-label', () => {
+    it('should use a provided hidden label', () => {
       document.body.appendChild(customSelect);
-      let searchBar = getInputSearchBar();
-      const label = searchBar.getAttribute('aria-label');
-      expect(label).toEqual(ARIA_LABEL);
+      const label = customSelect.shadowRoot.querySelector('label');
+      expect(label.innerHTML).toEqual(ARIA_LABEL);
     });
 
     it('should NOT display the options wrapper by default', () => {
