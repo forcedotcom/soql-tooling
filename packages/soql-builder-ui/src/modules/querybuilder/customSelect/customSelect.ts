@@ -24,6 +24,7 @@ export default class CustomSelect extends LightningElement {
   @api multiple = false;
   @api isLoading = false;
   @api allOptions: string[];
+  @api ariaLabel: string;
   @track _renderedOptions: string[] = [];
   availableOptions: string[] = [];
   searchTerm = '';

@@ -8,6 +8,7 @@
         selected-options={_selectedField}
         placeholder-text={selectPlaceHolderText}
         onoption__selection={handleSelectionEvent}
+        aria-label="Field"
       ></querybuilder-custom-select>
     </div>
     <!-- OPERATORS -->
@@ -19,6 +20,7 @@
         name="operator"
         data-el-where-operator-input
         onchange={handleSelectionEvent}
+        aria-label="Operator"
       >
         <template if:true={hasSelectedOperator}>
           <option value={_selectedOperator.value}>
@@ -44,6 +46,7 @@
         oninput={handleSelectionEvent}
         value={criteriaDisplayValue}
         maxlength="250"
+        aria-label="Value"
         data-el-where-criteria-input
       />
     </span>

@@ -11,6 +11,7 @@
         onkeydown={handleKeyDown}
         onfocus={handleInputFocus}
         onblur={handleInputFocus}
+        aria-label={ariaLabel}
         maxlength="40"
       />
       <template if:true={hasSearchTerm}>

@@ -9,7 +9,7 @@
   },
   "//dependencies": {
     "comments": "since these are all webpacked, they are moved to devDependencies",
-    "@salesforce/soql-model": "0.1.22",
+    "@salesforce/soql-model": "current version in ../soql-model/package.json",
     "debounce": "^1.2.0",
     "immutable": "3.8.2",
     "rxjs": "^6.6.2"

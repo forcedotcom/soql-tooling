@@ -24,10 +24,16 @@
         is-loading={isLoading}
         all-options={orderByFields}
         placeholder-text={selectPlaceHolderText}
+        aria-label="Field"
       ></querybuilder-custom-select>
       <div class="group-orderby-modifiers">
         <span class="group-orderby-order">
-          <select id="orderby-order" name="orderby-order" data-el-orderby-order>
+          <select
+            id="orderby-order"
+            name="orderby-order"
+            aria-label="Direction"
+            data-el-orderby-order
+          >
             <option value="" class="placeholder" default>Direction...</option>
             <!-- TODO: i18n (maybe) -->
             <option value="ASC">Ascending</option>
@@ -35,7 +41,12 @@
           </select></span
         >
         <span class="group-orderby-nulls">
-          <select id="orderby-nulls" name="orderby-nulls" data-el-orderby-nulls>
+          <select
+            id="orderby-nulls"
+            name="orderby-nulls"
+            aria-label="Nulls"
+            data-el-orderby-nulls
+          >
             <option value="" class="placeholder" default>Nulls...</option>
             <!-- TODO: i18n (maybe) -->
             <option value="NULLS FIRST">Nulls First</option>
@@ -45,7 +56,10 @@
         <button onclick={handleOrderBySelected} data-el-add-button>Add</button>
       </div>
 
-      <div class="selected-fields-container">
+      <div
+        class="selected-fields-container"
+        aria-label="Existing Order By Statements"
+      >
         <template for:each={selectedOrderByFields} for:item="field">
           <div class="selected-field" key={field.field}>
             {field.field} {field.order} {field.nulls}

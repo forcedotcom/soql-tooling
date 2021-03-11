@@ -19,6 +19,7 @@ describe('Custom Select', () => {
   const OPTION_BAZ = 'Baz';
   const PLACEHOLDER = 'placeholder';
   const ARIA_HIDDEN = 'aria-hidden';
+  const ARIA_LABEL = 'Field';
   const DATA_OPTION_VALUE = 'data-option-value';
   const OPTION_HIGHLIGHT = 'option--highlight';
   const EVENT_OPTION_SELECTION = 'option__selection';
@@ -38,8 +39,8 @@ describe('Custom Select', () => {
     return customSelect.shadowRoot.querySelector('.select__clear-search');
   };
   const getDropdownTrigger = () => {
-    return customSelect.shadowRoot.querySelector('[data-el-chevron]')
-  }
+    return customSelect.shadowRoot.querySelector('[data-el-chevron]');
+  };
 
   beforeEach(() => {
     customSelect = createElement('querybuilder-custom-select', {
@@ -48,6 +49,7 @@ describe('Custom Select', () => {
     customSelect.allOptions = [OPTION_FOO, OPTION_BAR, OPTION_BAZ];
     customSelect.selectedOptions = [];
     customSelect.multiple = true;
+    customSelect.ariaLabel = 'Field';
   });
 
   afterEach(() => {
@@ -101,6 +103,13 @@ describe('Custom Select', () => {
         const classList = Array.from(searchBar.classList);
         expect(classList).toContain('select__input-placeholder--fadeout');
       });
+    });
+
+    it('should use a provided aria-label', () => {
+      document.body.appendChild(customSelect);
+      let searchBar = getInputSearchBar();
+      const label = searchBar.getAttribute('aria-label');
+      expect(label).toEqual(ARIA_LABEL);
     });
 
     it('should NOT display the options wrapper by default', () => {
@@ -279,7 +288,6 @@ describe('Custom Select', () => {
           expect(selectSpy).toHaveBeenCalled();
         });
       });
-
     });
     describe('Multiple Selection Mode', () => {
       it('should NOT display the selected options as input value', () => {
