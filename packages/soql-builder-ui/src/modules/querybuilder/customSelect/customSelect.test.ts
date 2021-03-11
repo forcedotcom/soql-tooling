@@ -49,7 +49,7 @@ describe('Custom Select', () => {
     customSelect.allOptions = [OPTION_FOO, OPTION_BAR, OPTION_BAZ];
     customSelect.selectedOptions = [];
     customSelect.multiple = true;
-    customSelect.ariaLabel = 'Field';
+    customSelect.ariaLabel = ARIA_LABEL;
   });
 
   afterEach(() => {
