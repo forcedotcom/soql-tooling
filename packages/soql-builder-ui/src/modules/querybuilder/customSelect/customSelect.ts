@@ -110,10 +110,6 @@ export default class CustomSelect extends LightningElement {
     return this.multiple;
   }
 
-  get ariaLabelId() {
-    return `${this.ariaLabel}-${this.id}`;
-  }
-
   /* ======= LIFECYCLE HOOKS ======= */
 
   // close the options menu when user clicks outside component
