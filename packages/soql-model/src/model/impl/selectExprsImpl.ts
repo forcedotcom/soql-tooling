@@ -8,7 +8,8 @@
 import * as Soql from '../model';
 import { SoqlModelObjectImpl } from './soqlModelObjectImpl';
 
-export class SelectExprsImpl extends SoqlModelObjectImpl
+export class SelectExprsImpl
+  extends SoqlModelObjectImpl
   implements Soql.SelectExprs {
   public selectExpressions: Soql.SelectExpression[];
   public constructor(selectExpressions: Soql.SelectExpression[]) {
@@ -16,8 +17,8 @@ export class SelectExprsImpl extends SoqlModelObjectImpl
     this.selectExpressions = selectExpressions;
   }
   public toSoqlSyntax(options?: Soql.SyntaxOptions): string {
-    let syntax: string = 'SELECT ';
-    let first: boolean = true;
+    let syntax = 'SELECT ';
+    let first = true;
     if (this.selectExpressions.length > 0) {
       this.selectExpressions.forEach((selectExpression) => {
         if (!first) {

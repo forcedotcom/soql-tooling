@@ -61,5 +61,6 @@
     "titleBar.activeBackground": "#523d89",
     "titleBar.activeForeground": "#f3f1ef"
   },
-  "editor.defaultFormatter": "esbenp.prettier-vscode"
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
+  "editor.formatOnSaveMode": "modifications"
 }
