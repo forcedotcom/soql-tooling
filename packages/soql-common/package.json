@@ -11,6 +11,7 @@
     "include-soql-parser": "shx cp -R soql-parser.lib ./lib/soql-parser",
     "build": "yarn run compile && yarn run include-soql-parser",
     "clean": "shx rm -rf lib && shx rm -rf node_modules",
+    "lint": "eslint ./src",
     "test": "jest --runInBand",
     "test:unit:coverage": "jest --runInBand --coverage"
   },

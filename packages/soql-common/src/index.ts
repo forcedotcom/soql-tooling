@@ -9,4 +9,3 @@ export * as soqlComments from './soqlComments';
 
 //export soqlComments;
 //export { soqlParser };
-

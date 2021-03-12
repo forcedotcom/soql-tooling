@@ -8,20 +8,19 @@
 import * as Impl from './impl';
 import { AndOr, Condition } from './model';
 
+// eslint-disable-next-line @typescript-eslint/no-namespace
 export namespace SoqlModelUtils {
   /**
    * This method returns quickly as soon as it finds unmodeled syntax.
    * @param model
    */
-  export function containsUnmodeledSyntax(model: object): boolean {
+  export function containsUnmodeledSyntax(model: Record<string, any>): boolean {
     if (isUnmodeledSyntax(model)) {
       return true;
     }
     for (const property in model) {
-      if (typeof (model as any)[property] === 'object') {
-        const hasUnmodeledSyntax = containsUnmodeledSyntax(
-          (model as any)[property]
-        );
+      if (typeof model[property] === 'object') {
+        const hasUnmodeledSyntax = containsUnmodeledSyntax(model[property]);
         if (hasUnmodeledSyntax) {
           return true;
         }
@@ -34,8 +33,8 @@ export namespace SoqlModelUtils {
    * This method determins whether the model object is an instance of unmodeled syntax, without checking property objects.
    * @param model
    */
-  export function isUnmodeledSyntax(model: object): boolean {
-    return ('unmodeledSyntax' in model);
+  export function isUnmodeledSyntax(model: Record<string, any>): boolean {
+    return 'unmodeledSyntax' in model;
   }
 
   /**
@@ -44,7 +43,7 @@ export namespace SoqlModelUtils {
    * @param collector
    */
   export function getUnmodeledSyntax(
-    model: object,
+    model: Record<string, any>,
     collector?: Impl.UnmodeledSyntaxImpl[]
   ): Impl.UnmodeledSyntaxImpl[] {
     collector = collector || [];
@@ -53,24 +52,24 @@ export namespace SoqlModelUtils {
       return collector;
     }
     for (const property in model) {
-      if (typeof (model as any)[property] === 'object') {
-        getUnmodeledSyntax((model as any)[property], collector);
+      if (typeof model[property] === 'object') {
+        getUnmodeledSyntax(model[property], collector);
       }
     }
     return collector;
   }
 
-  export function containsError(model: object): boolean {
+  export function containsError(model: Record<string, any>): boolean {
     if (
       'errors' in model &&
-      Array.isArray((model as any).errors) &&
-      (model as any).errors.length > 0
+      Array.isArray(model.errors) &&
+      model.errors.length > 0
     ) {
       return true;
     }
     for (const property in model) {
-      if (typeof (model as any)[property] === 'object') {
-        const hasError = containsError((model as any)[property]);
+      if (typeof model[property] === 'object') {
+        const hasError = containsError(model[property]);
         if (hasError) {
           return true;
         }

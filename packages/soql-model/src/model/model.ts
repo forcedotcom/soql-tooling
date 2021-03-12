@@ -4,6 +4,8 @@
  * Licensed under the BSD 3-Clause license.
  * For full license text, see LICENSE.txt file in the repo root or https://opensource.org/licenses/BSD-3-Clause
  */
+/* eslint-disable @typescript-eslint/no-empty-interface */
+
 import { UnmodeledSyntaxReason } from './unmodeled';
 
 export interface ModelError {
@@ -87,8 +89,8 @@ export interface SoqlModelObject {
 }
 
 export class SyntaxOptions {
-  wrapColumn: number = 80;
-  indent: number = 2;
+  wrapColumn = 80;
+  indent = 2;
 }
 
 export interface Query extends SoqlModelObject {
