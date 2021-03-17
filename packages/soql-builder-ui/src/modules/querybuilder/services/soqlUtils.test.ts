@@ -17,6 +17,7 @@ import {
   stripWildCardPadding
 } from './soqlUtils';
 import { SELECT_COUNT, ToolingModelJson } from './model';
+import { EOL } from 'os';
 
 describe('SoqlUtils', () => {
   const uiModelOne: ToolingModelJson = {
@@ -89,8 +90,7 @@ describe('SoqlUtils', () => {
   };
   const soqlOne =
     "Select Name, Id from Account WHERE Name = 'pwt' AND Id = 123456 ORDER BY Name ASC NULLS FIRST LIMIT 11";
-  const soqlCount =
-    "SELECT COUNT() FROM Account";
+  const soqlCount = 'SELECT COUNT() FROM Account';
   const unsupportedWhereExpr =
     "Select Name, Id from Account WHERE (Name = 'pwt' AND Id = 123456) OR Id = 654321 ORDER BY Name ASC NULLS FIRST LIMIT 11";
   const soqlError = 'Select Name from Account GROUP BY';
@@ -129,7 +129,7 @@ describe('SoqlUtils', () => {
 
   it('transform UI Model with comments to Soql Model', () => {
     const modelWithComments: ToolingModelJson = {
-      headerComments: '// Comments here\n',
+      headerComments: `// Comments here${EOL}`,
       sObject: 'Foo',
       fields: ['Id'],
       where: { andOr: undefined, conditions: [] },
@@ -137,12 +137,12 @@ describe('SoqlUtils', () => {
       limit: '',
       errors: [],
       unsupported: [],
-      originalSoqlStatement: '// Comments here\nSELECT Id FROM Foo'
+      originalSoqlStatement: `// Comments here${EOL}SELECT Id FROM Foo`
     };
     const transformedSoql = convertUiModelToSoql(modelWithComments);
     const transformedSoqlNormalized = transformedSoql.replace(/\n\s+/g, '\n');
     expect(transformedSoqlNormalized).toEqual(
-      '// Comments here\nSELECT Id\nFROM Foo\n'
+      `// Comments here${EOL}SELECT Id${EOL}FROM Foo${EOL}`
     );
   });
 
@@ -166,10 +166,10 @@ describe('SoqlUtils', () => {
 
   it('transforms Soql with comments to UI', () => {
     const transformedUiModel = convertSoqlToUiModel(
-      '// Comments here\nSELECT Id FROM Foo'
+      `// Comments here${EOL}SELECT Id FROM Foo`
     );
     const expectedUiModel: ToolingModelJson = {
-      headerComments: '// Comments here\n',
+      headerComments: `// Comments here${EOL}`,
       sObject: 'Foo',
       fields: ['Id'],
       where: { andOr: undefined, conditions: [] },
@@ -177,7 +177,7 @@ describe('SoqlUtils', () => {
       limit: '',
       errors: [],
       unsupported: [],
-      originalSoqlStatement: '// Comments here\nSELECT Id FROM Foo'
+      originalSoqlStatement: `// Comments here${EOL}SELECT Id FROM Foo`
     };
     delete expectedUiModel.originalSoqlStatement;
     expect(transformedUiModel).toEqual(expectedUiModel);
