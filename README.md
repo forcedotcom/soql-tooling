@@ -9,7 +9,7 @@ This repo contains the source for SOQL Language Tooling features including:
 - `soql-common`: SOQL common utility library. Shared by Query Builder and [Language Server](https://github.com/forcedotcom/soql-language-server)
 - `soql-data-view`: Web assests for displaying SOQL Results
 
-These packages are used from VS Code extension `salesforcedx-vscode-soql` which lives in repo [salesforcedx-vscode](https://github.com/forcedotcom/salesforcedx-vscode).
+These packages are used from [Salesforce's SOQL VS Code extension](https://marketplace.visualstudio.com/items?itemName=salesforce.salesforcedx-vscode-soql) which lives in repo [salesforcedx-vscode](https://github.com/forcedotcom/salesforcedx-vscode).
 
 ## Development
 
