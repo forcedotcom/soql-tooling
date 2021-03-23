@@ -1,3 +1,7 @@
+/* eslint-disable @typescript-eslint/require-await */
+/* eslint-disable @typescript-eslint/no-unsafe-member-access */
+/* eslint-disable @typescript-eslint/no-unsafe-call */
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
 /*
  *  Copyright (c) 2020, salesforce.com, inc.
  *  All rights reserved.
@@ -91,9 +95,8 @@ describe('Fields', () => {
     fields.selectedFields = ['foo', 'bar'];
     document.body.appendChild(fields);
 
-
     let selectionFromEvent;
-    const selectHandler = jest.fn().mockImplementation(e => {
+    const selectHandler = jest.fn().mockImplementation((e) => {
       selectionFromEvent = e.detail.fields;
     });
     fields.addEventListener('fields__selected', selectHandler);
@@ -114,7 +117,7 @@ describe('Fields', () => {
     document.body.appendChild(fields);
 
     let selectionFromEvent;
-    const selectHandler = jest.fn().mockImplementation(e => {
+    const selectHandler = jest.fn().mockImplementation((e) => {
       selectionFromEvent = e.detail.fields;
     });
     fields.addEventListener('fields__selected', selectHandler);

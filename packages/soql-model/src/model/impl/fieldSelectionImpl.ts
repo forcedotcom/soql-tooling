@@ -18,8 +18,6 @@ export class FieldSelectionImpl extends SoqlModelObjectImpl implements Soql.Fiel
   }
 
   public toSoqlSyntax(options?: Soql.SyntaxOptions): string {
-    return this.alias
-      ? `${this.field.toSoqlSyntax()} ${this.alias.toSoqlSyntax(options)}`
-      : this.field.toSoqlSyntax();
+    return this.alias ? `${this.field.toSoqlSyntax()} ${this.alias.toSoqlSyntax(options)}` : this.field.toSoqlSyntax();
   }
 }

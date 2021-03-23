@@ -6,31 +6,33 @@
  *
  */
 
-import { IMessageService } from './iMessageService';
 import { JsonMap } from '@salesforce/ts-types';
-import { getLocalStorage, getWindow } from '../globals';
 import { BehaviorSubject } from 'rxjs';
+import { getLocalStorage, getWindow } from '../globals';
+import { IMessageService } from './iMessageService';
 import { MessageType, SoqlEditorEvent } from './soqlEditorEvent';
 import { VscodeMessageService } from './vscodeMessageService';
 
 class MockVscode {
   private window = getWindow();
   private localStorage = getLocalStorage();
-  postMessage(messageObj) {
+  public postMessage(messageObj): void {
     this.window.parent.postMessage(messageObj, '*');
   }
   public getState(): JsonMap {
-    let state = this.localStorage.getItem('query');
+    const state = this.localStorage.getItem('query');
     try {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-return
       return JSON.parse(state);
     } catch (e) {
       this.localStorage.clear();
+      // eslint-disable-next-line no-console
       console.warn('state can not be parsed');
     }
     return state;
   }
 
-  public setState(state: JsonMap) {
+  public setState(state: JsonMap): void {
     this.localStorage.setItem('query', JSON.stringify(state));
   }
 }
@@ -41,13 +43,14 @@ export class StandaloneMessageService
   public messagesToUI: BehaviorSubject<SoqlEditorEvent>;
   public localStorage;
   protected vscode;
-  constructor() {
+  public constructor() {
     super();
     this.localStorage = getLocalStorage();
   }
 
-  public sendActivatedMessage() {
+  public sendActivatedMessage(): void {
     this.vscode = new MockVscode();
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access,@typescript-eslint/no-unsafe-call
     this.vscode.postMessage({ type: MessageType.UI_ACTIVATED });
   }
 }

@@ -5,15 +5,15 @@
  * For full license text, see LICENSE.txt file in the repo root or https://opensource.org/licenses/BSD-3-Clause
  */
 
-import * as Impl from '.';
 import { NullsOrder, Order } from '../model';
+import * as Impl from '.';
 
 describe('OrderByExpressionImpl should', () => {
   it('store order by expression components', () => {
     const expected = {
       field: { fieldName: 'shattered' },
       order: 'ASC',
-      nullsOrder: 'NULLS FIRST'
+      nullsOrder: 'NULLS FIRST',
     };
     const actual = new Impl.OrderByExpressionImpl(
       new Impl.FieldRefImpl('shattered'),

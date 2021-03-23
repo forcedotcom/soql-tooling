@@ -9,7 +9,11 @@ import * as Soql from '../model';
 import { SoqlModelObjectImpl } from './soqlModelObjectImpl';
 
 export class AndOrConditionImpl extends SoqlModelObjectImpl implements Soql.AndOrCondition {
-  public constructor(public leftCondition: Soql.Condition, public andOr: Soql.AndOr, public rightCondition: Soql.Condition) {
+  public constructor(
+    public leftCondition: Soql.Condition,
+    public andOr: Soql.AndOr,
+    public rightCondition: Soql.Condition
+  ) {
     super();
   }
   public toSoqlSyntax(options?: Soql.SyntaxOptions): string {

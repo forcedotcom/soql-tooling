@@ -9,10 +9,11 @@
 import { LightningElement, api } from 'lwc';
 
 export default class Limit extends LightningElement {
-  @api hasError = false;
-  @api limit;
+  @api public hasError = false;
+  @api public limit;
 
-  handleLimitChange(e) {
+  /* eslint-disable @typescript-eslint/no-unsafe-assignment,@typescript-eslint/no-unsafe-call,@typescript-eslint/no-unsafe-member-access */
+  public handleLimitChange(e): void {
     e.preventDefault();
     const limit = e.target.value;
     const sObjectSelected = new CustomEvent('limit__changed', {
@@ -20,4 +21,5 @@ export default class Limit extends LightningElement {
     });
     this.dispatchEvent(sObjectSelected);
   }
+  /* eslint-enable @typescript-eslint/no-unsafe-assignment,@typescript-eslint/no-unsafe-call,@typescript-eslint/no-unsafe-member-access */
 }

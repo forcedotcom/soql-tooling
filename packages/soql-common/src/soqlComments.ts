@@ -24,17 +24,13 @@ export interface SoqlWithComments {
   soqlText: string;
 }
 
-export function parseHeaderComments(
-  originalSoqlText: string
-): SoqlWithComments {
-  const [, headerComments, soqlText] =
-    HEADER_COMMENT_EXTRACTION_REGEX.exec(originalSoqlText) || [];
+export function parseHeaderComments(originalSoqlText: string): SoqlWithComments {
+  const [, headerComments, soqlText] = HEADER_COMMENT_EXTRACTION_REGEX.exec(originalSoqlText) || [];
 
   const commentLineCount = (headerComments.match(/(\n|\r|\r\n)/g) || []).length;
   const headerPaddedSoqlText = originalSoqlText.replace(
     HEADER_COMMENT_EXTRACTION_REGEX,
-    (wholeMatch, headerText, soqlText) =>
-      headerText.replace(/[^\n\r]/gm, ' ') + soqlText
+    (wholeMatch, headerText: string, bodyText: string) => headerText.replace(/[^\n\r]/gm, ' ') + bodyText
   );
 
   const result = {
@@ -49,12 +45,7 @@ export function parseHeaderComments(
 
 const COMMENT_LINE = /(?:[\s]*\/\/.*?[\r\n])/;
 const EMPTY_LINE = /(?:^[\s]*[\r\n])/;
-const OPTIONAL_HEADER_LINES = new RegExp(
-  '((?:' + COMMENT_LINE.source + '|' + EMPTY_LINE.source + ')*)'
-);
+const OPTIONAL_HEADER_LINES = new RegExp('((?:' + COMMENT_LINE.source + '|' + EMPTY_LINE.source + ')*)');
 const ANYTHING = /([^]*)/;
 
-const HEADER_COMMENT_EXTRACTION_REGEX = new RegExp(
-  OPTIONAL_HEADER_LINES.source + ANYTHING.source,
-  'm'
-);
+const HEADER_COMMENT_EXTRACTION_REGEX = new RegExp(OPTIONAL_HEADER_LINES.source + ANYTHING.source, 'm');

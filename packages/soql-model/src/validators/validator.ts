@@ -20,11 +20,12 @@ export interface ValidateResult {
 }
 
 export abstract class Validator {
-  constructor(protected options: ValidateOptions) {}
+  public constructor(protected options: ValidateOptions) {}
   public abstract validate(input: string): ValidateResult;
 }
 
 export class DefaultValidator extends Validator {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   public validate(input: string): ValidateResult {
     return { isValid: true };
   }
@@ -57,16 +58,10 @@ const allOperators: Operator[] = [
 
 export class OperatorValidator extends Validator {
   public validate(input: string): ValidateResult {
-    const operator = allOperators.find(
-      (operator) => operator.description === input.toUpperCase().trim()
-    );
+    const operator = allOperators.find((op) => op.description === input.toUpperCase().trim());
     const display = operator ? operator.display : input;
-    const isValid = operator
-      ? operator.types.includes(this.options.type)
-      : false;
-    const message = isValid
-      ? undefined
-      : Messages.error_operatorInput.replace('{0}', display);
+    const isValid = operator ? operator.types.includes(this.options.type) : false;
+    const message = isValid ? undefined : Messages.error_operatorInput.replace('{0}', display);
     return { isValid, message };
   }
 }
@@ -78,17 +73,13 @@ export class DefaultOperatorValidator extends OperatorValidator {
 }
 
 export class MultipleInputValidator extends Validator {
-  constructor(
-    protected options: ValidateOptions,
-    protected delegateValidator: Validator
-  ) {
+  public constructor(protected options: ValidateOptions, protected delegateValidator: Validator) {
     super(options);
   }
   public validate(input: string): ValidateResult {
     const values = splitMultiInputValues(input);
     if (values.length > 0) {
-      for (let i = 0; i < values.length; i++) {
-        const value = values[i];
+      for (const value of values) {
         const result = this.delegateValidator.validate(value);
         if (!result.isValid) {
           return result;
@@ -97,7 +88,7 @@ export class MultipleInputValidator extends Validator {
     } else {
       return {
         isValid: false,
-        message: Messages.error_fieldInput_list
+        message: Messages.error_fieldInput_list,
       };
     }
     return { isValid: true };

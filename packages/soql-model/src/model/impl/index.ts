@@ -37,5 +37,5 @@ export {
   WhereImpl,
   UnmodeledSyntaxImpl,
   HeaderCommentsImpl,
-  SelectCountImpl
+  SelectCountImpl,
 };

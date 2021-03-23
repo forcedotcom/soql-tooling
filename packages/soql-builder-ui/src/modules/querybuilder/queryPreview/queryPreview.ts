@@ -10,5 +10,5 @@ import { api, LightningElement } from 'lwc';
 
 export default class QueryPreview extends LightningElement {
   @api
-  soqlStatement;
+  public soqlStatement;
 }

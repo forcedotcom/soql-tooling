@@ -5,12 +5,14 @@
  * For full license text, see LICENSE.txt file in the repo root or https://opensource.org/licenses/BSD-3-Clause
  */
 
-import * as Impl from '.';
 import { ConditionOperator, LiteralType } from '../model';
+import * as Impl from '.';
 
 describe('NotConditionImpl should', () => {
   it('store condition', () => {
-    const expected = { condition: { field: { fieldName: 'field' }, operator: '=', compareValue: { type: 'STRING', value: "'abc'" } } };
+    const expected = {
+      condition: { field: { fieldName: 'field' }, operator: '=', compareValue: { type: 'STRING', value: "'abc'" } },
+    };
     const actual = new Impl.NotConditionImpl(
       new Impl.FieldCompareConditionImpl(
         new Impl.FieldRefImpl('field'),
@@ -21,7 +23,7 @@ describe('NotConditionImpl should', () => {
     expect(actual).toEqual(expected);
   });
   it('return condition preceded by NOT keyword for toSoqlSyntax()', () => {
-    const expected = "NOT field = 'abc'"
+    const expected = "NOT field = 'abc'";
     const actual = new Impl.NotConditionImpl(
       new Impl.FieldCompareConditionImpl(
         new Impl.FieldRefImpl('field'),

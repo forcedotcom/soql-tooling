@@ -42,7 +42,7 @@ const staticDateRangeLiterals = [
   'next_fiscal_quarter',
   'last_fiscal_year',
   'this_fiscal_year',
-  'next_fiscal_year'
+  'next_fiscal_year',
 ];
 
 const parameterizedDateRangeLiteralPrefixes = [
@@ -59,16 +59,16 @@ const parameterizedDateRangeLiteralPrefixes = [
   'last_n_fiscal_quarters:',
   'next_n_fiscal_quarters:',
   'last_n_fiscal_years:',
-  'next_n_fiscal_years:'
+  'next_n_fiscal_years:',
 ];
 
 function isDatePattern(s: string): boolean {
   const DATE_ONLY_PATTERN = /^[1-4][0-9][0-9][0-9]-[0-1][0-9]-[0-3][0-9]$/;
   const DATE_TIME_UTC_PATTERN = /^[1-4][0-9][0-9][0-9]-[0-1][0-9]-[0-3][0-9][tT][0-2][0-9]:[0-5][0-9]:[0-5][0-9][zZ]$/;
   const DATE_TIME_OFFSET_PATTERN = /^[1-4][0-9][0-9][0-9]-[0-1][0-9]-[0-3][0-9][tT][0-2][0-9]:[0-5][0-9]:[0-5][0-9][+-][0-1][0-9]:[0-5][0-9]$/;
-  return DATE_ONLY_PATTERN.test(s.trim())
-    || DATE_TIME_UTC_PATTERN.test(s.trim())
-    || DATE_TIME_OFFSET_PATTERN.test(s.trim());
+  return (
+    DATE_ONLY_PATTERN.test(s.trim()) || DATE_TIME_UTC_PATTERN.test(s.trim()) || DATE_TIME_OFFSET_PATTERN.test(s.trim())
+  );
 }
 
 function isDateRangeLiteral(s: string): boolean {

@@ -5,19 +5,16 @@
  * For full license text, see LICENSE.txt file in the repo root or https://opensource.org/licenses/BSD-3-Clause
  */
 
-import { ModelSerializer } from './serializer';
-import * as Impl from '../model/impl';
-import { HeaderCommentsImpl } from '../model/impl/headerCommentsImpl';
 import { EOL } from 'os';
+import { HeaderCommentsImpl } from '../model/impl/headerCommentsImpl';
+import * as Impl from '../model/impl';
+import { ModelSerializer } from './serializer';
 
 describe('ModelSerializer should', () => {
   it('transform model to SOQL syntax', () => {
     const expected = `SELECT field${EOL}  FROM object${EOL}`;
     const actual = new ModelSerializer(
-      new Impl.QueryImpl(
-        new Impl.SelectExprsImpl([new Impl.FieldRefImpl('field')]),
-        new Impl.FromImpl('object')
-      )
+      new Impl.QueryImpl(new Impl.SelectExprsImpl([new Impl.FieldRefImpl('field')]), new Impl.FromImpl('object'))
     ).serialize();
     expect(actual).toEqual(expected);
   });
@@ -29,9 +26,7 @@ describe('ModelSerializer should', () => {
       new Impl.SelectExprsImpl([new Impl.FieldRefImpl('field')]),
       new Impl.FromImpl('object')
     );
-    query.headerComments = new HeaderCommentsImpl(
-      `// Comment 1${EOL}// Comment 2${EOL}`
-    );
+    query.headerComments = new HeaderCommentsImpl(`// Comment 1${EOL}// Comment 2${EOL}`);
     const actual = new ModelSerializer(query).serialize();
     expect(actual).toEqual(expected);
   });

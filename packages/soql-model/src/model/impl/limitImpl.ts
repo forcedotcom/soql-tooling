@@ -14,6 +14,7 @@ export class LimitImpl extends SoqlModelObjectImpl implements Soql.Limit {
     super();
     this.limit = limit;
   }
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   public toSoqlSyntax(options?: Soql.SyntaxOptions): string {
     return `LIMIT ${this.limit}`;
   }

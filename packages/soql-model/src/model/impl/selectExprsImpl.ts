@@ -8,9 +8,7 @@
 import * as Soql from '../model';
 import { SoqlModelObjectImpl } from './soqlModelObjectImpl';
 
-export class SelectExprsImpl
-  extends SoqlModelObjectImpl
-  implements Soql.SelectExprs {
+export class SelectExprsImpl extends SoqlModelObjectImpl implements Soql.SelectExprs {
   public selectExpressions: Soql.SelectExpression[];
   public constructor(selectExpressions: Soql.SelectExpression[]) {
     super();

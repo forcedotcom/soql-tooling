@@ -10,7 +10,7 @@ import * as Soql from '../model';
 import { SoqlModelObjectImpl } from './soqlModelObjectImpl';
 
 export class QueryImpl extends SoqlModelObjectImpl implements Soql.Query {
-  headerComments?: Soql.HeaderComments;
+  public headerComments?: Soql.HeaderComments;
   public select?: Soql.Select;
   public from?: Soql.From;
   public where?: Soql.Where;
@@ -49,63 +49,43 @@ export class QueryImpl extends SoqlModelObjectImpl implements Soql.Query {
     this.update = update;
   }
   public toSoqlSyntax(options?: Soql.SyntaxOptions): string {
-    const _options = this.getSyntaxOptions(options);
+    const opts = this.getSyntaxOptions(options);
     let syntax = '';
     if (this.headerComments) {
-      syntax += `${this.headerComments.toSoqlSyntax(options)}`;
+      syntax += `${this.headerComments.toSoqlSyntax(opts)}`;
     }
     if (this.select) {
-      syntax += `${this.select.toSoqlSyntax(_options)}${os.EOL}`;
+      syntax += `${this.select.toSoqlSyntax(opts)}${os.EOL}`;
     }
     if (this.from) {
-      syntax += `${' '.repeat(_options.indent)}${this.from.toSoqlSyntax(
-        _options
-      )}${os.EOL}`;
+      syntax += `${' '.repeat(opts.indent)}${this.from.toSoqlSyntax(opts)}${os.EOL}`;
     }
     if (this.where) {
-      syntax += `${' '.repeat(_options.indent)}${this.where.toSoqlSyntax(
-        _options
-      )}${os.EOL}`;
+      syntax += `${' '.repeat(opts.indent)}${this.where.toSoqlSyntax(opts)}${os.EOL}`;
     }
     if (this.with) {
-      syntax += `${' '.repeat(_options.indent)}${this.with.toSoqlSyntax(
-        _options
-      )}${os.EOL}`;
+      syntax += `${' '.repeat(opts.indent)}${this.with.toSoqlSyntax(opts)}${os.EOL}`;
     }
     if (this.groupBy) {
-      syntax += `${' '.repeat(_options.indent)}${this.groupBy.toSoqlSyntax(
-        _options
-      )}${os.EOL}`;
+      syntax += `${' '.repeat(opts.indent)}${this.groupBy.toSoqlSyntax(opts)}${os.EOL}`;
     }
     if (this.orderBy) {
-      syntax += `${' '.repeat(_options.indent)}${this.orderBy.toSoqlSyntax(
-        _options
-      )}${os.EOL}`;
+      syntax += `${' '.repeat(opts.indent)}${this.orderBy.toSoqlSyntax(opts)}${os.EOL}`;
     }
     if (this.limit) {
-      syntax += `${' '.repeat(_options.indent)}${this.limit.toSoqlSyntax(
-        _options
-      )}${os.EOL}`;
+      syntax += `${' '.repeat(opts.indent)}${this.limit.toSoqlSyntax(opts)}${os.EOL}`;
     }
     if (this.offset) {
-      syntax += `${' '.repeat(_options.indent)}${this.offset.toSoqlSyntax(
-        _options
-      )}${os.EOL}`;
+      syntax += `${' '.repeat(opts.indent)}${this.offset.toSoqlSyntax(opts)}${os.EOL}`;
     }
     if (this.bind) {
-      syntax += `${' '.repeat(_options.indent)}${this.bind.toSoqlSyntax(
-        _options
-      )}${os.EOL}`;
+      syntax += `${' '.repeat(opts.indent)}${this.bind.toSoqlSyntax(opts)}${os.EOL}`;
     }
     if (this.recordTrackingType) {
-      syntax += `${' '.repeat(
-        _options.indent
-      )}${this.recordTrackingType.toSoqlSyntax(_options)}${os.EOL}`;
+      syntax += `${' '.repeat(opts.indent)}${this.recordTrackingType.toSoqlSyntax(opts)}${os.EOL}`;
     }
     if (this.update) {
-      syntax += `${' '.repeat(_options.indent)}${this.update.toSoqlSyntax(
-        _options
-      )}${os.EOL}`;
+      syntax += `${' '.repeat(opts.indent)}${this.update.toSoqlSyntax(opts)}${os.EOL}`;
     }
     return syntax;
   }

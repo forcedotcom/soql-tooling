@@ -8,8 +8,7 @@
 import * as Soql from '../model';
 import { SoqlModelObjectImpl } from './soqlModelObjectImpl';
 
-export class OrderByExpressionImpl extends SoqlModelObjectImpl
-  implements Soql.OrderByExpression {
+export class OrderByExpressionImpl extends SoqlModelObjectImpl implements Soql.OrderByExpression {
   public field: Soql.Field;
   public order?: Soql.Order;
   public nullsOrder?: Soql.NullsOrder;

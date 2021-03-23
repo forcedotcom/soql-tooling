@@ -13,7 +13,7 @@ describe('SelectAnalyzer should', () => {
     queryResultsPath: ['A'],
     objectName: 'X',
     columnName: 'A',
-    isSubQuerySelection: false
+    isSubQuerySelection: false,
   };
   const simpleAColumn = { title: simpleA.columnName, fieldHelper: simpleA.queryResultsPath };
   const simpleB: Selection = {
@@ -21,23 +21,20 @@ describe('SelectAnalyzer should', () => {
     queryResultsPath: ['B'],
     objectName: 'X',
     columnName: 'B',
-    isSubQuerySelection: false
+    isSubQuerySelection: false,
   };
   const simpleBColumn = { title: simpleB.columnName, fieldHelper: simpleB.queryResultsPath };
   const simpleColumnData: ColumnData = {
     objectName: 'X',
-    columns: [
-      simpleAColumn,
-      simpleBColumn
-    ],
-    subTables: []
+    columns: [simpleAColumn, simpleBColumn],
+    subTables: [],
   };
   const innerA: Selection = {
     selectionQueryText: 'A',
     queryResultsPath: ['A'],
     objectName: 'Y',
     columnName: 'Y.A',
-    isSubQuerySelection: true
+    isSubQuerySelection: true,
   };
   const innerAColumn = { title: innerA.columnName, fieldHelper: innerA.queryResultsPath };
   const innerB: Selection = {
@@ -45,47 +42,42 @@ describe('SelectAnalyzer should', () => {
     queryResultsPath: ['B'],
     objectName: 'Y',
     columnName: 'Y.B',
-    isSubQuerySelection: true
+    isSubQuerySelection: true,
   };
   const innerBColumn = { title: innerB.columnName, fieldHelper: innerB.queryResultsPath };
   const innerColumnData = {
     objectName: 'X',
-    columns: [
-      simpleAColumn,
-      simpleBColumn
-    ],
+    columns: [simpleAColumn, simpleBColumn],
     subTables: [
       {
         objectName: 'Y',
-        columns: [
-          innerAColumn,
-          innerBColumn
-        ],
-        subTables: []
-      }
-    ]
+        columns: [innerAColumn, innerBColumn],
+        subTables: [],
+      },
+    ],
   };
   const parentRelationshipCD: Selection = {
     selectionQueryText: 'C.D',
     queryResultsPath: ['C', 'D'],
     objectName: 'X',
     columnName: 'C.D',
-    isSubQuerySelection: false
+    isSubQuerySelection: false,
   };
-  const parentRelationshipColumn = { title: parentRelationshipCD.columnName, fieldHelper: parentRelationshipCD.queryResultsPath };
+  const parentRelationshipColumn = {
+    title: parentRelationshipCD.columnName,
+    fieldHelper: parentRelationshipCD.queryResultsPath,
+  };
   const parentRelationshipColumnData = {
     objectName: 'X',
-    columns: [
-      parentRelationshipColumn
-    ],
-    subTables: []
-  }
+    columns: [parentRelationshipColumn],
+    subTables: [],
+  };
   const minE: Selection = {
     selectionQueryText: 'MIN(E)',
     queryResultsPath: ['expr0'],
     objectName: 'X',
     columnName: 'MIN(E)',
-    isSubQuerySelection: false
+    isSubQuerySelection: false,
   };
   const minEColumn = { title: minE.columnName, fieldHelper: minE.queryResultsPath };
   const maxE: Selection = {
@@ -93,32 +85,26 @@ describe('SelectAnalyzer should', () => {
     queryResultsPath: ['expr1'],
     objectName: 'X',
     columnName: 'MAX(E)',
-    isSubQuerySelection: false
+    isSubQuerySelection: false,
   };
   const maxEColumn = { title: maxE.columnName, fieldHelper: maxE.queryResultsPath };
   const functionColumnData = {
     objectName: 'X',
-    columns: [
-      simpleAColumn,
-      minEColumn,
-      maxEColumn
-    ],
-    subTables: []
+    columns: [simpleAColumn, minEColumn, maxEColumn],
+    subTables: [],
   };
   const alias: Selection = {
     selectionQueryText: 'MIN(E)',
     queryResultsPath: ['MIN'],
     objectName: 'X',
     columnName: 'MIN',
-    isSubQuerySelection: false
+    isSubQuerySelection: false,
   };
   const aliasColumn = { title: alias.columnName, fieldHelper: alias.queryResultsPath };
   const aliasColumnData = {
     objectName: 'X',
-    columns: [
-      aliasColumn
-    ],
-    subTables: []
+    columns: [aliasColumn],
+    subTables: [],
   };
 
   it('identify simple selections', () => {

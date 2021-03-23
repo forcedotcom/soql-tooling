@@ -9,12 +9,16 @@ import * as Soql from '../model';
 import { SoqlModelObjectImpl } from './soqlModelObjectImpl';
 
 export class IncludesConditionImpl extends SoqlModelObjectImpl implements Soql.IncludesCondition {
-  public constructor(public field: Soql.Field, public operator: Soql.ConditionOperator, public values: Soql.CompareValue[]) {
+  public constructor(
+    public field: Soql.Field,
+    public operator: Soql.ConditionOperator,
+    public values: Soql.CompareValue[]
+  ) {
     super();
   }
   public toSoqlSyntax(options?: Soql.SyntaxOptions): string {
     let valuesSyntax = '';
-    this.values.forEach(value => valuesSyntax = `${valuesSyntax}, ${value.toSoqlSyntax(options)}`);
+    this.values.forEach((value) => (valuesSyntax = `${valuesSyntax}, ${value.toSoqlSyntax(options)}`));
     if (valuesSyntax.length > 2) {
       // remove comma separator at start of string
       valuesSyntax = valuesSyntax.substring(2);

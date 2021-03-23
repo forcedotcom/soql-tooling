@@ -8,16 +8,10 @@ import { splitMultiInputValues } from './inputUtils';
 
 describe('splitMultiInputValues should', () => {
   it('split input at comma', () => {
-    const expected = [
-      "'string'",
-      "TRUE",
-      "15",
-      "USD100",
-      "interstitial'quote and spaces",
-      "'escaped\\'quote'",
-      "end"
-    ];
-    const actual = splitMultiInputValues("  'string' , TRUE, 15, USD100 , interstitial'quote and spaces ,'escaped\\'quote',end");
+    const expected = ["'string'", 'TRUE', '15', 'USD100', "interstitial'quote and spaces", "'escaped\\'quote'", 'end'];
+    const actual = splitMultiInputValues(
+      "  'string' , TRUE, 15, USD100 , interstitial'quote and spaces ,'escaped\\'quote',end"
+    );
     expect(actual).toEqual(expected);
   });
 });

@@ -10,11 +10,11 @@ import * as Impl from '.';
 describe('SelectExprsImpl should', () => {
   it('store select expressions', () => {
     const expected = {
-      selectExpressions: [{ field: { fieldName: 'sticky' } }, { field: { fieldName: 'fingers' } }]
+      selectExpressions: [{ field: { fieldName: 'sticky' } }, { field: { fieldName: 'fingers' } }],
     };
     const actual = new Impl.SelectExprsImpl([
       new Impl.FieldSelectionImpl(new Impl.FieldRefImpl(expected.selectExpressions[0].field.fieldName)),
-      new Impl.FieldSelectionImpl(new Impl.FieldRefImpl(expected.selectExpressions[1].field.fieldName))
+      new Impl.FieldSelectionImpl(new Impl.FieldRefImpl(expected.selectExpressions[1].field.fieldName)),
     ]);
     expect(actual).toEqual(expected);
   });
@@ -28,7 +28,7 @@ describe('SelectExprsImpl should', () => {
     const actual = new Impl.SelectExprsImpl([
       new Impl.FieldSelectionImpl(new Impl.FieldRefImpl('let')),
       new Impl.FieldSelectionImpl(new Impl.FieldRefImpl('it')),
-      new Impl.FieldSelectionImpl(new Impl.FieldRefImpl('bleed'))
+      new Impl.FieldSelectionImpl(new Impl.FieldRefImpl('bleed')),
     ]).toSoqlSyntax();
     expect(actual).toEqual(expected);
   });

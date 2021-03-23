@@ -1,5 +1,5 @@
-import { ToolingModelJson } from './model';
 import { JsonMap } from '@salesforce/ts-types';
+import { ToolingModelJson } from './model';
 
 export interface TelemetryModelJson extends JsonMap {
   sObject: string;
@@ -19,8 +19,13 @@ export function createQueryTelemetry(
   telemetry.orderBy = query.orderBy.length;
   telemetry.limit = query.limit;
   telemetry.errors = query.errors.map(
+    // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
     (err) => `${err.type}:${err.grammarRule}`
   );
-  telemetry.unsupported = query.unsupported.map((unsup) => unsup.reason.reasonCode);
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+  telemetry.unsupported = query.unsupported.map(
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
+    (unsup) => unsup.reason.reasonCode
+  );
   return telemetry;
 }

@@ -1,19 +1,19 @@
+/* eslint-disable no-underscore-dangle */
 import { api, track, LightningElement } from 'lwc';
 
-/** CUSTOM SELECT API
- *  @attr multiple: string - Toggle single-select or multi-select behavior.
- *                  NOTE --> Will be interpreted as true if there is any string value passed in.
- *  @attr is-loading: boolean - Will display 'Loading...' when true.
- *  @attr all-options: string[] - This the list of all possible options
- *                                the user can select from.
- *  @attr selected-options: string[] - If present in single-select, the selectedOption
- *                                     will be displayed as the value of the input.
- *                                     The list of options rendered will be all-options - selected-options
- *  @attr placeholder-text: string - This is the value to be displayed as a placeholder for the input.
- *  @property value: string[] - Will return the currently selected value(s).
- *  @event option__selection - This is emitted everytime a valid option is selected.
- *                             detail { value: optionValue }
- * **/
+/**
+ * CUSTOM SELECT API
+ *
+ * @attr multiple: string - Toggle single-select or multi-select behavior. NOTE --> Will be interpreted as true if there is any string value passed in.
+ * @attr is-loading: boolean - Will display 'Loading...' when true.
+ * @attr all-options: string[] - This the list of all possible options the user can select from.
+ * @attr selected-options: string[] - If present in single-select, the selectedOption will be displayed as the value of the input.
+ * The list of options rendered will be all-options - selected-options
+ * @attr placeholder-text: string - This is the value to be displayed as a placeholder for the input.
+ * @property value: string[] - Will return the currently selected value(s).
+ * @event option__selection - This is emitted everytime a valid option is selected. detail { value: optionValue }
+ *
+ */
 interface CustomSelectEvent extends CustomEvent {
   detail: {
     target: HTMLInputElement;
@@ -21,47 +21,47 @@ interface CustomSelectEvent extends CustomEvent {
 }
 
 export default class CustomSelect extends LightningElement {
-  @api multiple = false;
-  @api isLoading = false;
-  @api allOptions: string[];
-  @track _renderedOptions: string[] = [];
-  availableOptions: string[] = [];
-  searchTerm = '';
-  originalUserInput = '';
-  dropdownArrow: HTMLElement;
-  selectInputEl: HTMLInputElement;
-  optionsWrapper: HTMLElement;
-  optionList: HTMLCollection;
-  optionListIsHidden = true;
-  selectInputIsFocused = false;
-  activeOptionIndex = -1;
-  numberOfSearchResults;
-  customSelectEventName = 'customselect__optionsopened';
-  _placeholderText = '';
-  _selectedOptions: string[] = [];
-  _value: string[] = [];
+  @api public multiple = false;
+  @api public isLoading = false;
+  @api public allOptions: string[];
+  @track public _renderedOptions: string[] = [];
+  public availableOptions: string[] = [];
+  public searchTerm = '';
+  public originalUserInput = '';
+  public dropdownArrow: HTMLElement;
+  public selectInputEl: HTMLInputElement;
+  public optionsWrapper: HTMLElement;
+  public optionList: HTMLCollection;
+  public optionListIsHidden = true;
+  public selectInputIsFocused = false;
+  public activeOptionIndex = -1;
+  public numberOfSearchResults;
+  public customSelectEventName = 'customselect__optionsopened';
+  public _placeholderText = '';
+  public _selectedOptions: string[] = [];
+  public _value: string[] = [];
 
   @api
-  get selectedOptions() {
+  public get selectedOptions(): string[] {
     return this._selectedOptions;
   }
 
-  set selectedOptions(selectedOptions: string[]) {
+  public set selectedOptions(selectedOptions: string[]) {
     this._selectedOptions = this._value = selectedOptions || [];
   }
 
   @api
-  get value(): string[] {
+  public get value(): string[] {
     return this._value;
   }
 
   @api
-  get placeholderText() {
+  public get placeholderText(): string {
     // TODO: i18n
     return this.isLoading ? 'Loading...' : this._placeholderText;
   }
 
-  set placeholderText(text: string) {
+  public set placeholderText(text: string) {
     this._placeholderText = text;
   }
   /*
@@ -73,7 +73,7 @@ export default class CustomSelect extends LightningElement {
     & the input is empty
     display the placeholder
   */
-  get displayValue(): string {
+  public get displayValue(): string {
     if (this.hasSearchTerm) {
       return this.searchTerm;
     }
@@ -87,32 +87,32 @@ export default class CustomSelect extends LightningElement {
     return '';
   }
 
-  get hasSearchTerm() {
+  public get hasSearchTerm(): unknown {
     return !!this.searchTerm;
   }
 
-  get noResultsFound() {
+  public get noResultsFound(): boolean {
     return this.hasSearchTerm && this.numberOfSearchResults === 0;
   }
 
-  get dropDownArrowClassList() {
+  public get dropDownArrowClassList(): string {
     let classList = 'select__dropdown-arrow';
     classList += this.optionListIsHidden ? '' : ' select__dropdown-arrow--up';
     return classList;
   }
 
-  get isSingleSelect() {
+  public get isSingleSelect(): boolean {
     return !this.multiple;
   }
 
-  get isMultipleSelect() {
+  public get isMultipleSelect(): boolean {
     return this.multiple;
   }
 
   /* ======= LIFECYCLE HOOKS ======= */
 
   // close the options menu when user clicks outside component
-  connectedCallback() {
+  public connectedCallback(): void {
     document.addEventListener(
       this.customSelectEventName,
       this.handleCloseOptions
@@ -121,7 +121,7 @@ export default class CustomSelect extends LightningElement {
   }
 
   // prevent a memory leak
-  disconnectedCallback() {
+  public disconnectedCallback(): void {
     document.removeEventListener(
       this.customSelectEventName,
       this.handleCloseOptions
@@ -129,7 +129,7 @@ export default class CustomSelect extends LightningElement {
     document.addEventListener('click', this.handleCloseOptions);
   }
 
-  renderedCallback() {
+  public renderedCallback(): void {
     this.optionsWrapper =
       this.optionsWrapper || this.template.querySelector('.options__wrapper');
     this.optionList = this.optionsWrapper.children;
@@ -142,7 +142,7 @@ export default class CustomSelect extends LightningElement {
 
   /* ======= UTILITIES ======= */
 
-  calculateAvailableOptions() {
+  public calculateAvailableOptions(): void {
     this.availableOptions = this.allOptions.filter(
       (baseOption) =>
         !this.selectedOptions.some(
@@ -152,7 +152,7 @@ export default class CustomSelect extends LightningElement {
     );
   }
 
-  filterOptionsBySearchTerm() {
+  public filterOptionsBySearchTerm(): void {
     if (this.searchTerm) {
       const filteredOptions = this.availableOptions.filter((option) => {
         return option.toLowerCase().includes(this.searchTerm.toLowerCase());
@@ -164,7 +164,7 @@ export default class CustomSelect extends LightningElement {
     }
   }
 
-  getCurrentOptionValue(): string {
+  public getCurrentOptionValue(): string {
     return this.optionList[this.activeOptionIndex]
       ? this.optionList[this.activeOptionIndex].getAttribute(
           'data-option-value'
@@ -178,7 +178,7 @@ export default class CustomSelect extends LightningElement {
   - the state of _value will be updated either way
   & can be queried independantly of the model.
  */
-  addSelectedOption(optionName: string = this.searchTerm) {
+  public addSelectedOption(optionName: string = this.searchTerm): void {
     const validOptionMatch: string[] = this.availableOptions.filter(
       (option) => {
         return option.toLowerCase() === optionName.toLowerCase();
@@ -204,7 +204,7 @@ export default class CustomSelect extends LightningElement {
     }
   }
 
-  hasOptionsToNavigate(): boolean {
+  public hasOptionsToNavigate(): boolean {
     return (
       this.optionListIsHidden === false &&
       this.optionList.length > 0 &&
@@ -212,7 +212,7 @@ export default class CustomSelect extends LightningElement {
     );
   }
 
-  clearActiveHighlight() {
+  public clearActiveHighlight(): void {
     if (this.optionList[this.activeOptionIndex]) {
       this.optionList[this.activeOptionIndex].classList.remove(
         'option--highlight'
@@ -220,7 +220,7 @@ export default class CustomSelect extends LightningElement {
     }
   }
 
-  addOptionHighlight(position: number) {
+  public addOptionHighlight(position: number): void {
     if (this.optionList[position]) {
       this.optionList[position].classList.add('option--highlight');
       this.optionList[position].scrollIntoView({
@@ -230,7 +230,7 @@ export default class CustomSelect extends LightningElement {
     }
   }
 
-  resetSearchBar() {
+  public resetSearchBar(): void {
     this.clearActiveHighlight();
     this.handleCloseOptions();
     this.searchTerm = '';
@@ -239,7 +239,7 @@ export default class CustomSelect extends LightningElement {
     this.numberOfSearchResults = undefined;
   }
 
-  openOptionsMenu() {
+  public openOptionsMenu(): void {
     if (this.optionListIsHidden) {
       this.calculateAvailableOptions();
       this.optionsWrapper.classList.add('options--open');
@@ -247,7 +247,7 @@ export default class CustomSelect extends LightningElement {
     }
   }
 
-  handleInputFocus() {
+  public handleInputFocus(): void {
     this.selectInputIsFocused = !this.selectInputIsFocused;
 
     if (this.selectInputEl) {
@@ -258,7 +258,8 @@ export default class CustomSelect extends LightningElement {
   /* ======= EVENT HANDLERS ======= */
 
   // this is used for the dropdown Arrow button
-  toggleOpenOptions(e) {
+  /* eslint-disable @typescript-eslint/explicit-module-boundary-types,@typescript-eslint/no-unsafe-member-access,@typescript-eslint/no-unsafe-call,@typescript-eslint/no-unsafe-assignment */
+  public toggleOpenOptions(e): void {
     e.preventDefault();
     e.stopPropagation();
     if (this.optionListIsHidden) {
@@ -278,7 +279,7 @@ export default class CustomSelect extends LightningElement {
   of the event. Custom event is needed due to
   “event retargeting.” by LWC.
   */
-  sendOptionsOpenEvent(e: Event) {
+  public sendOptionsOpenEvent(e: Event): void {
     const optionsOpenedEvent = new CustomEvent(this.customSelectEventName, {
       detail: { target: e.target },
       bubbles: true,
@@ -289,7 +290,7 @@ export default class CustomSelect extends LightningElement {
   }
 
   // called only when user clicks on search bar input
-  handleOpenOptions(e) {
+  public handleOpenOptions(e): void {
     e.preventDefault();
     e.stopPropagation();
     // only highlight current value if user clicks on input
@@ -312,7 +313,7 @@ export default class CustomSelect extends LightningElement {
    * This syntax allows the function to retain context of this
    * while also usable with addEventListener and removeEventListener
    */
-  handleCloseOptions = (e?: CustomSelectEvent) => {
+  public handleCloseOptions = (e?: CustomSelectEvent): void => {
     /*
     Anytime a OptionsOpenEvent is fired this will get called
     so that any other optionsMenu that is open will close
@@ -338,7 +339,7 @@ export default class CustomSelect extends LightningElement {
   InputChange will fire with typing && paste events
   Where key down/up will not pick up paste events
   */
-  handleInputChange(e) {
+  public handleInputChange(e): void {
     e.preventDefault();
     // if the user deletes the text
     if (!e.target.value) {
@@ -356,13 +357,13 @@ export default class CustomSelect extends LightningElement {
     this.openOptionsMenu();
   }
 
-  handleClearSearch(e) {
+  public handleClearSearch(e): void {
     e.preventDefault();
     e.stopPropagation();
     this.resetSearchBar();
   }
 
-  handleOptionClickSelection(e) {
+  public handleOptionClickSelection(e): void {
     e.preventDefault();
     e.stopPropagation();
     const optionValue = e.target.getAttribute('data-option-value');
@@ -375,7 +376,7 @@ export default class CustomSelect extends LightningElement {
     will fire with both character and non-character keys
     this handler is used for keyboard events and navigation
   */
-  handleKeyDown(e) {
+  public handleKeyDown(e): void {
     const key: string = e.key;
     const activeOption: Element = this.optionList[this.activeOptionIndex];
 

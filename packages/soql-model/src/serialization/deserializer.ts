@@ -7,25 +7,17 @@
 
 import { SOQLParser, ParserError } from '@salesforce/soql-common/lib/soql-parser';
 import { SoqlParserListener } from '@salesforce/soql-common/lib/soql-parser/generated/SoqlParserListener';
-import { SoqlParserVisitor } from '@salesforce/soql-common/lib/soql-parser/generated/SoqlParserVisitor';
 import * as Parser from '@salesforce/soql-common/lib/soql-parser/generated/SoqlParser';
+import { CharStream, ParserRuleContext, Token } from 'antlr4ts';
+import { NoViableAltException, InputMismatchException } from 'antlr4ts';
+import { ErrorNode, ParseTreeListener, ParseTree } from 'antlr4ts/tree';
+import { Interval } from 'antlr4ts/misc/Interval';
+import { soqlComments } from '@salesforce/soql-common';
 import { Messages } from '../messages/messages';
 import * as Soql from '../model/model';
 import * as Impl from '../model/impl';
 import { SoqlModelUtils } from '../model/util';
-import { CharStream, ParserRuleContext, Token } from 'antlr4ts';
-import { NoViableAltException, InputMismatchException } from 'antlr4ts';
-import {
-  ErrorNode,
-  ParseTreeListener,
-  ParseTreeWalker,
-  AbstractParseTreeVisitor,
-  ParseTree,
-  TerminalNode,
-} from 'antlr4ts/tree';
-import { Interval } from 'antlr4ts/misc/Interval';
 import { HeaderCommentsImpl } from '../model/impl/headerCommentsImpl';
-import { soqlComments } from '@salesforce/soql-common';
 
 export class ModelDeserializer {
   protected soqlSyntax: string;
@@ -41,10 +33,7 @@ export class ModelDeserializer {
       apiVersion: 50.0,
     });
 
-
-    const { headerComments, headerPaddedSoqlText } = soqlComments.parseHeaderComments(
-      this.soqlSyntax
-    );
+    const { headerComments, headerPaddedSoqlText } = soqlComments.parseHeaderComments(this.soqlSyntax);
 
     const result = parser.parseQuery(headerPaddedSoqlText);
     const parseTree = result.getParseTree();
@@ -75,7 +64,7 @@ interface KnownError {
   predicate: (error: ParserError, context?: ParseTree) => boolean;
 }
 
-
+// eslint-disable @typescript-eslint/no-unused-vars
 class ErrorIdentifier {
   protected parseTree: ParseTree;
   protected nodesWithExceptionsAndErrorNodes: ParseTree[];
@@ -83,200 +72,163 @@ class ErrorIdentifier {
     {
       type: Soql.ErrorType.EMPTY,
       message: Messages.error_empty,
-      predicate: (error) => (
-        this.parseTree instanceof ParserRuleContext
-        && this.parseTree.start.type === Token.EOF
-      )
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      predicate: (error): boolean =>
+        this.parseTree instanceof ParserRuleContext && this.parseTree.start.type === Token.EOF,
     },
     {
       type: Soql.ErrorType.NOSELECT,
       message: Messages.error_noSelect,
-      predicate: (error, context) => (
+      predicate: (error, context): boolean =>
         context instanceof Parser.SoqlSelectClauseContext &&
         context.exception instanceof InputMismatchException &&
-        !this.hasNonErrorChildren(context)
-      )
+        !this.hasNonErrorChildren(context),
     },
     {
       type: Soql.ErrorType.NOSELECTIONS,
       message: Messages.error_noSelections,
-      predicate: (error, context) => (
+      predicate: (error, context): boolean =>
         context instanceof Parser.SoqlSelectClauseContext &&
         context.exception instanceof NoViableAltException &&
-        !this.hasNonErrorChildren(context)
-      )
+        !this.hasNonErrorChildren(context),
     },
     {
       type: Soql.ErrorType.NOFROM,
       message: Messages.error_noFrom,
-      predicate: (error, context) => (
+      predicate: (error, context): boolean =>
         context instanceof Parser.SoqlFromClauseContext &&
         context.exception instanceof InputMismatchException &&
-        !this.hasNonErrorChildren(context)
-      )
+        !this.hasNonErrorChildren(context),
     },
     {
       type: Soql.ErrorType.INCOMPLETEFROM,
       message: Messages.error_incompleteFrom,
-      predicate: (error, context) => (
+      predicate: (error, context): boolean =>
         context instanceof Parser.SoqlIdentifierContext &&
         context.parent instanceof Parser.SoqlFromExprContext &&
-        context.exception instanceof InputMismatchException
-      )
+        context.exception instanceof InputMismatchException,
     },
     {
       type: Soql.ErrorType.INCOMPLETELIMIT,
       message: Messages.error_incompleteLimit,
-      predicate: (error, context) => (
+      predicate: (error, context): boolean =>
         context instanceof Parser.SoqlIntegerValueContext &&
-        this.hasAncestorOfType(context, Parser.SoqlLimitClauseContext)
-      )
+        this.hasAncestorOfType(context, Parser.SoqlLimitClauseContext),
     },
     {
       type: Soql.ErrorType.EMPTYWHERE,
       message: Messages.error_emptyWhere,
-      predicate: (error, context) => (
-        context instanceof Parser.SoqlWhereExprsContext &&
-        context.childCount === 0
-      )
+      predicate: (error, context): boolean =>
+        context instanceof Parser.SoqlWhereExprsContext && context.childCount === 0,
     },
     {
       type: Soql.ErrorType.INCOMPLETENESTEDCONDITION,
       message: Messages.error_incompleteNestedCondition,
-      predicate: (error, context) => (
-        context instanceof ErrorNode &&
-        context.parent instanceof Parser.NestedWhereExprContext
-      )
+      predicate: (error, context): boolean =>
+        context instanceof ErrorNode && context.parent instanceof Parser.NestedWhereExprContext,
     },
     {
       type: Soql.ErrorType.INCOMPLETEANDORCONDITION,
       message: Messages.error_incompleteAndOrCondition,
-      predicate: (error, context) => (
+      predicate: (error, context): boolean =>
         // trailing AND/OR
-        context instanceof Parser.SoqlWhereExprContext &&
-        (context.parent instanceof Parser.SoqlAndWhereContext || context.parent instanceof Parser.SoqlOrWhereContext) &&
-        !this.hasNonErrorChildren(context)
-      ) || (
-          // leading AND/OR
-          context instanceof ErrorNode &&
+        (context instanceof Parser.SoqlWhereExprContext &&
+          (context.parent instanceof Parser.SoqlAndWhereContext ||
+            context.parent instanceof Parser.SoqlOrWhereContext) &&
+          !this.hasNonErrorChildren(context)) ||
+        // leading AND/OR
+        (context instanceof ErrorNode &&
           context.parent instanceof Parser.SoqlWhereAndOrExprContext &&
-          context.parent.childCount <= 2
-        )
+          context.parent.childCount <= 2),
     },
     {
       type: Soql.ErrorType.INCOMPLETENOTCONDITION,
       message: Messages.error_incompleteNotCondition,
-      predicate: (error, context) => (
+      predicate: (error, context): boolean =>
         context instanceof Parser.SoqlWhereExprContext &&
         context.parent instanceof Parser.SoqlWhereNotExprContext &&
-        !this.hasNonErrorChildren(context)
-      )
+        !this.hasNonErrorChildren(context),
     },
     {
       type: Soql.ErrorType.UNRECOGNIZEDCOMPAREVALUE,
       message: Messages.error_unrecognizedCompareValue,
-      predicate: (error, context) => (
-        (
-          (
-            context instanceof Parser.SoqlLiteralValueContext &&
-            (context.parent instanceof Parser.SimpleWhereExprContext ||
-              context.parent instanceof Parser.SoqlLiteralValuesContext)
-          ) ||
-          (context instanceof Parser.SoqlLikeValueContext &&
-            context.parent instanceof Parser.LikeWhereExprContext)
-        ) &&
-        context.exception instanceof NoViableAltException
-      )
+      predicate: (error, context): boolean =>
+        ((context instanceof Parser.SoqlLiteralValueContext &&
+          (context.parent instanceof Parser.SimpleWhereExprContext ||
+            context.parent instanceof Parser.SoqlLiteralValuesContext)) ||
+          (context instanceof Parser.SoqlLikeValueContext && context.parent instanceof Parser.LikeWhereExprContext)) &&
+        context.exception instanceof NoViableAltException,
     },
     {
       type: Soql.ErrorType.UNRECOGNIZEDCOMPAREOPERATOR,
       message: Messages.error_unrecognizedCompareOperator,
-      predicate: (error, context) => (
+      predicate: (error, context): boolean =>
         context instanceof Parser.SoqlWhereExprContext &&
         context.childCount >= 2 &&
         context.getChild(1) instanceof ErrorNode &&
-        (context.getChild(1) as ErrorNode).symbol === error.getToken()
-      )
+        (context.getChild(1) as ErrorNode).symbol === error.getToken(),
     },
     {
       type: Soql.ErrorType.UNRECOGNIZEDCOMPAREFIELD,
       message: Messages.error_unrecognizedCompareField,
-      predicate: (error, context) => (
+      predicate: (error, context): boolean =>
         context instanceof Parser.SoqlWhereExprsContext &&
         context.childCount >= 1 &&
         context.getChild(0) instanceof ErrorNode &&
-        (context.getChild(0) as ErrorNode).symbol === error.getToken()
-      )
+        (context.getChild(0) as ErrorNode).symbol === error.getToken(),
     },
     {
       type: Soql.ErrorType.NOCOMPAREVALUE,
       message: Messages.error_noCompareValue,
-      predicate: (error, context) => (
-        (
-          (
-            (context instanceof Parser.SoqlLiteralValueContext &&
-              context.parent instanceof Parser.SimpleWhereExprContext) ||
-            (context instanceof Parser.SoqlLikeValueContext &&
-              context.parent instanceof Parser.LikeWhereExprContext)
-          ) &&
+      predicate: (error, context): boolean =>
+        (((context instanceof Parser.SoqlLiteralValueContext &&
+          context.parent instanceof Parser.SimpleWhereExprContext) ||
+          (context instanceof Parser.SoqlLikeValueContext && context.parent instanceof Parser.LikeWhereExprContext)) &&
           context.childCount === 0 &&
-          context.exception instanceof InputMismatchException
-        ) || (
-          context instanceof Parser.SoqlWhereExprContext &&
+          context.exception instanceof InputMismatchException) ||
+        (context instanceof Parser.SoqlWhereExprContext &&
           context.childCount === 2 &&
           context.getChild(1).text.toLowerCase() === 'in' &&
-          context.exception instanceof NoViableAltException
-        ) || (
-          context instanceof Parser.IncludesWhereExprContext &&
+          context.exception instanceof NoViableAltException) ||
+        (context instanceof Parser.IncludesWhereExprContext &&
           context.childCount === 2 &&
-          context.exception instanceof InputMismatchException
-        )
-      )
+          context.exception instanceof InputMismatchException),
     },
     {
       type: Soql.ErrorType.NOCOMPAREOPERATOR,
       message: Messages.error_noCompareOperator,
-      predicate: (error, context) => (
+      predicate: (error, context): boolean =>
         context instanceof Parser.SoqlWhereExprContext &&
         context.childCount === 1 &&
         context.getChild(0) instanceof ErrorNode &&
-        (context.getChild(0) as ErrorNode).symbol !== error.getToken()
-      )
+        (context.getChild(0) as ErrorNode).symbol !== error.getToken(),
     },
     {
       type: Soql.ErrorType.INCOMPLETEMULTIVALUELIST,
       message: Messages.error_incompleteMultiValueList,
-      predicate: (error, context) => (
-        (
-          context instanceof Parser.SoqlWhereExprContext &&
+      predicate: (error, context): boolean =>
+        (context instanceof Parser.SoqlWhereExprContext &&
           context.childCount === 3 &&
           context.getChild(2).text === '(' &&
-          context.exception instanceof NoViableAltException
-        ) || (
-          context instanceof ErrorNode &&
-          (
-            context.parent instanceof Parser.InWhereExprContext ||
-            context.parent instanceof Parser.IncludesWhereExprContext
-          )
-        ) || (
-          context instanceof Parser.SoqlLiteralValueContext &&
+          context.exception instanceof NoViableAltException) ||
+        (context instanceof ErrorNode &&
+          (context.parent instanceof Parser.InWhereExprContext ||
+            context.parent instanceof Parser.IncludesWhereExprContext)) ||
+        (context instanceof Parser.SoqlLiteralValueContext &&
           context.parent instanceof Parser.SoqlLiteralValuesContext &&
-          context.exception instanceof InputMismatchException
-        )
-      )
+          context.exception instanceof InputMismatchException),
     },
     // NOTE: new known errors should go above;
     // unexpectedEOF is an EOF catch-all, make sure it is tested last
     {
       type: Soql.ErrorType.UNEXPECTEDEOF,
       message: Messages.error_unexpectedEOF,
-      predicate: (error, context) => (
-        error.getToken()?.type === Token.EOF
-      )
-    }
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      predicate: (error, context): boolean => error.getToken()?.type === Token.EOF,
+    },
   ];
 
-  constructor(parseTree: ParseTree) {
+  public constructor(parseTree: ParseTree) {
     this.parseTree = parseTree;
     this.nodesWithExceptionsAndErrorNodes = [];
     this.findExceptionsAndErrorNodes(parseTree);
@@ -284,23 +236,23 @@ class ErrorIdentifier {
 
   public identifyError(error: ParserError): Soql.ModelError {
     const context = this.matchErrorToContext(error);
-    const knownErrorMatch = this.knownErrors.find(knownError => knownError.predicate(error, context));
+    const knownErrorMatch = this.knownErrors.find((knownError) => knownError.predicate(error, context));
 
     return knownErrorMatch
       ? {
-        type: knownErrorMatch.type,
-        message: knownErrorMatch.message,
-        lineNumber: error.getLineNumber(),
-        charInLine: error.getCharacterPositionInLine(),
-        grammarRule: this.getGrammarRule(error)
-      }
+          type: knownErrorMatch.type,
+          message: knownErrorMatch.message,
+          lineNumber: error.getLineNumber(),
+          charInLine: error.getCharacterPositionInLine(),
+          grammarRule: this.getGrammarRule(error),
+        }
       : {
-        type: Soql.ErrorType.UNKNOWN,
-        message: error.getMessage(),
-        lineNumber: error.getLineNumber(),
-        charInLine: error.getCharacterPositionInLine(),
-        grammarRule: this.getGrammarRule(error)
-      };
+          type: Soql.ErrorType.UNKNOWN,
+          message: error.getMessage(),
+          lineNumber: error.getLineNumber(),
+          charInLine: error.getCharacterPositionInLine(),
+          grammarRule: this.getGrammarRule(error),
+        };
   }
 
   protected findExceptionsAndErrorNodes(context: ParseTree): void {
@@ -327,18 +279,18 @@ class ErrorIdentifier {
   }
 
   protected matchErrorToContext(error: ParserError): ParseTree | undefined {
-    for (let i = 0; i < this.nodesWithExceptionsAndErrorNodes.length; i++) {
-      const node = this.nodesWithExceptionsAndErrorNodes[i];
-      if (node instanceof ParserRuleContext &&
-        node.exception?.getOffendingToken() === error.getToken()) {
+    for (const node of this.nodesWithExceptionsAndErrorNodes) {
+      if (node instanceof ParserRuleContext && node.exception?.getOffendingToken() === error.getToken()) {
         return node;
       }
       // ErrorNode matches if location matches (or if location is off by one character when the error is on <EOF>)
-      if (node instanceof ErrorNode
-        && node.symbol.line === error.getLineNumber()
-        && (node.symbol.charPositionInLine === error.getCharacterPositionInLine()
-          || (node.symbol.charPositionInLine === error.getCharacterPositionInLine() - 1
-            && error.getToken()?.type === Token.EOF))) {
+      if (
+        node instanceof ErrorNode &&
+        node.symbol.line === error.getLineNumber() &&
+        (node.symbol.charPositionInLine === error.getCharacterPositionInLine() ||
+          (node.symbol.charPositionInLine === error.getCharacterPositionInLine() - 1 &&
+            error.getToken()?.type === Token.EOF))
+      ) {
         return node;
       }
     }
@@ -357,6 +309,7 @@ class ErrorIdentifier {
     return false;
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   protected hasAncestorOfType(context: ParserRuleContext, type: any): boolean {
     if (context instanceof type) {
       return true;
@@ -376,7 +329,7 @@ class QueryVisitor
   protected defaultResult(): void {}
   visitSoqlFromExpr(ctx: Parser.SoqlFromExprContext): void {}
 }
-*/
+ */
 class QueryListener implements SoqlParserListener {
   public query?: Soql.Query;
   public select?: Soql.Select;
@@ -408,7 +361,7 @@ class QueryListener implements SoqlParserListener {
 
     const safeUSING = ctx.soqlUsingClause();
     const using = safeUSING
-      ? this.toUnmodeledSyntax(safeUSING.start as Token, safeUSING.stop as Token, Soql.REASON_UNMODELED_USING)
+      ? this.toUnmodeledSyntax(safeUSING.start, safeUSING.stop as Token, Soql.REASON_UNMODELED_USING)
       : undefined;
     this.from = new Impl.FromImpl(sobjectName, as, using);
   }
@@ -435,7 +388,7 @@ class QueryListener implements SoqlParserListener {
       // other functions but the antr4-tool's typescript definitions are not
       // perfect for listeners; workaround by type-checking
       if (exprContext instanceof Parser.SoqlSelectColumnExprContext) {
-        const fieldCtx = (exprContext as Parser.SoqlSelectColumnExprContext).soqlField();
+        const fieldCtx = exprContext.soqlField();
         const field = this.toField(fieldCtx);
         if (field instanceof Impl.UnmodeledSyntaxImpl) {
           this.selectExpressions.push(
@@ -443,7 +396,7 @@ class QueryListener implements SoqlParserListener {
           );
         } else {
           let alias: Soql.UnmodeledSyntax | undefined;
-          const aliasCtx = (exprContext as Parser.SoqlSelectColumnExprContext).soqlAlias();
+          const aliasCtx = exprContext.soqlAlias();
           if (aliasCtx) {
             alias = this.toUnmodeledSyntax(aliasCtx.start, aliasCtx.stop as Token, Soql.REASON_UNMODELED_ALIAS);
           }
@@ -455,24 +408,22 @@ class QueryListener implements SoqlParserListener {
           exprContext instanceof Parser.SoqlSelectInnerQueryExprContext
             ? Soql.REASON_UNMODELED_SEMIJOIN
             : exprContext instanceof Parser.SoqlSelectTypeofExprContext
-              ? Soql.REASON_UNMODELED_TYPEOF
-              : exprContext instanceof Parser.SoqlSelectDistanceExprContext
-                ? Soql.REASON_UNMODELED_DISTANCE
-                : Soql.REASON_UNMODELED_SELECT;
-        this.selectExpressions.push(
-          this.toUnmodeledSyntax(exprContext.start, exprContext.stop as Token, reason)
-        );
+            ? Soql.REASON_UNMODELED_TYPEOF
+            : exprContext instanceof Parser.SoqlSelectDistanceExprContext
+            ? Soql.REASON_UNMODELED_DISTANCE
+            : Soql.REASON_UNMODELED_SELECT;
+        this.selectExpressions.push(this.toUnmodeledSyntax(exprContext.start, exprContext.stop as Token, reason));
       }
     });
   }
 
   public enterSoqlLimitClause(ctx: Parser.SoqlLimitClauseContext): void {
-    let value = undefined;
+    let value;
     if (ctx.soqlIntegerValue()) {
       const valueString = ctx.soqlIntegerValue().text;
-      value = parseInt(valueString);
+      value = parseInt(valueString, 10);
     }
-    if (typeof value === 'number' && value !== NaN) {
+    if (typeof value === 'number' && !isNaN(value)) {
       this.limit = new Impl.LimitImpl(value);
     }
   }
@@ -486,19 +437,11 @@ class QueryListener implements SoqlParserListener {
     const exprContexts = ctx.getRuleContexts(Parser.SoqlOrderByClauseExprContext);
     exprContexts.forEach((exprContext) => {
       if (exprContext instanceof Parser.SoqlOrderByClauseExprContext) {
-        const obCtx = exprContext as Parser.SoqlOrderByClauseExprContext;
+        const obCtx = exprContext;
         const fieldCtx = obCtx.soqlOrderByClauseField();
         const field = this.toOrderByField(fieldCtx);
-        const order = obCtx.ASC()
-          ? Soql.Order.Ascending
-          : obCtx.DESC()
-            ? Soql.Order.Descending
-            : undefined;
-        const nullsOrder = obCtx.FIRST()
-          ? Soql.NullsOrder.First
-          : obCtx.LAST()
-            ? Soql.NullsOrder.Last
-            : undefined;
+        const order = obCtx.ASC() ? Soql.Order.Ascending : obCtx.DESC() ? Soql.Order.Descending : undefined;
+        const nullsOrder = obCtx.FIRST() ? Soql.NullsOrder.First : obCtx.LAST() ? Soql.NullsOrder.Last : undefined;
         this.orderByExpressions.push(new Impl.OrderByExpressionImpl(field, order, nullsOrder));
       }
     });
@@ -507,7 +450,11 @@ class QueryListener implements SoqlParserListener {
   public enterSoqlWhereClauseMethod(ctx: Parser.SoqlWhereClauseMethodContext): void {
     let condition = this.exprsToCondition(ctx.soqlWhereExprs());
     if (!SoqlModelUtils.isSimpleGroup(condition)) {
-      condition = this.toUnmodeledSyntax(ctx.soqlWhereExprs().start, ctx.soqlWhereExprs().stop as Token, Soql.REASON_UNMODELED_COMPLEXGROUP);
+      condition = this.toUnmodeledSyntax(
+        ctx.soqlWhereExprs().start,
+        ctx.soqlWhereExprs().stop as Token,
+        Soql.REASON_UNMODELED_COMPLEXGROUP
+      );
     }
     this.where = new Impl.WhereImpl(condition);
   }
@@ -519,7 +466,7 @@ class QueryListener implements SoqlParserListener {
       // other functions but the antr4-tool's typescript definitions are not
       // perfect for listeners; workaround by type-checking
       if (selectCtx instanceof Parser.SoqlSelectExprsClauseContext) {
-        (selectCtx as Parser.SoqlSelectExprsClauseContext).soqlSelectExprs().enterRule(this);
+        selectCtx.soqlSelectExprs().enterRule(this);
         this.select = new Impl.SelectExprsImpl(this.selectExpressions);
       } else if (selectCtx instanceof Parser.SoqlSelectCountClauseContext) {
         this.select = new Impl.SelectCountImpl();
@@ -607,16 +554,14 @@ class QueryListener implements SoqlParserListener {
       return new Impl.UnmodeledSyntaxImpl('', reason);
     }
 
-    const text = (start.inputStream as CharStream).getText(
-      Interval.of(start.startIndex, stop.stopIndex)
-    );
+    const text = (start.inputStream as CharStream).getText(Interval.of(start.startIndex, stop.stopIndex));
     return new Impl.UnmodeledSyntaxImpl(text, reason);
   }
 
   protected toOrderByField(ctx: Parser.SoqlOrderByClauseFieldContext): Soql.Field {
     let result: Soql.Field;
     if (ctx instanceof Parser.SoqlOrderByColumnExprContext) {
-      const fieldCtx = (ctx as Parser.SoqlOrderByColumnExprContext).soqlField();
+      const fieldCtx = ctx.soqlField();
       result = this.toField(fieldCtx);
     } else {
       result = this.toUnmodeledSyntax(ctx.start, ctx.stop as Token, Soql.REASON_UNMODELED_DISTANCE);
@@ -636,9 +581,7 @@ class QueryListener implements SoqlParserListener {
     return result;
   }
 
-  protected toCompareOperator(
-    ctx: Parser.SoqlComparisonOperatorContext
-  ): Soql.ConditionOperator {
+  protected toCompareOperator(ctx: Parser.SoqlComparisonOperatorContext): Soql.ConditionOperator {
     let operator = Soql.ConditionOperator.Equals;
     switch (ctx.text) {
       case '=': {
@@ -720,10 +663,10 @@ class QueryListener implements SoqlParserListener {
   protected exprsToCondition(ctx: Parser.SoqlWhereExprsContext): Soql.Condition {
     let condition: Soql.Condition;
     if (ctx instanceof Parser.SoqlWhereAndOrExprContext) {
-      const andOrExprCtx = ctx as Parser.SoqlWhereAndOrExprContext;
+      const andOrExprCtx = ctx;
       const left = this.exprToCondition(andOrExprCtx.soqlWhereExpr());
       let andOr: Soql.AndOr;
-      let right: Soql.Condition | undefined = undefined;
+      let right: Soql.Condition | undefined;
       const andCtx = andOrExprCtx.soqlAndWhere();
       const orCtx = andOrExprCtx.soqlOrWhere();
       if (andCtx) {
@@ -768,9 +711,7 @@ class QueryListener implements SoqlParserListener {
         condition = left;
       }
     } else if (ctx instanceof Parser.SoqlWhereNotExprContext) {
-      condition = new Impl.NotConditionImpl(
-        this.exprToCondition((ctx as Parser.SoqlWhereNotExprContext).soqlWhereExpr())
-      );
+      condition = new Impl.NotConditionImpl(this.exprToCondition(ctx.soqlWhereExpr()));
     } else {
       // empty clause
       condition = new Impl.UnmodeledSyntaxImpl('', Soql.REASON_UNMODELED_EMPTYCONDITION);
@@ -796,17 +737,13 @@ class QueryListener implements SoqlParserListener {
     } else if (ctx instanceof Parser.IncludesWhereExprContext) {
       const field = this.toField(ctx.soqlField());
       const opCtx = ctx.soqlIncludesOperator();
-      const operator = opCtx.EXCLUDES()
-        ? Soql.ConditionOperator.Excludes
-        : Soql.ConditionOperator.Includes;
+      const operator = opCtx.EXCLUDES() ? Soql.ConditionOperator.Excludes : Soql.ConditionOperator.Includes;
       const values = this.toCompareValues(ctx.tryGetRuleContext(0, Parser.SoqlLiteralValuesContext));
       return new Impl.IncludesConditionImpl(field, operator, values);
     } else if (ctx instanceof Parser.InWhereExprContext) {
       const field = this.toField(ctx.soqlField());
       const opCtx = ctx.soqlInOperator();
-      const operator = opCtx.NOT()
-        ? Soql.ConditionOperator.NotIn
-        : Soql.ConditionOperator.In;
+      const operator = opCtx.NOT() ? Soql.ConditionOperator.NotIn : Soql.ConditionOperator.In;
       const values = this.toCompareValues(ctx.tryGetRuleContext(0, Parser.SoqlLiteralValuesContext));
       return new Impl.InListConditionImpl(field, operator, values);
     } else if (ctx instanceof Parser.CalculatedWhereExprContext) {

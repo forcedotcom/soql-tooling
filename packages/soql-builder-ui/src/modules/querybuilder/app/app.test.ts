@@ -1,3 +1,11 @@
+/* eslint-disable @typescript-eslint/require-await */
+/* eslint-disable @lwc/lwc/prefer-custom-event */
+/* eslint-disable @typescript-eslint/no-unsafe-call */
+/* eslint-disable @typescript-eslint/no-unsafe-return */
+/* eslint-disable @typescript-eslint/no-unsafe-member-access */
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
+/* eslint-disable @typescript-eslint/no-empty-function */
+/* eslint-disable @typescript-eslint/explicit-function-return-type */
 /*
  *  Copyright (c) 2020, salesforce.com, inc.
  *  All rights reserved.
@@ -8,6 +16,7 @@
 
 import { api, createElement } from 'lwc';
 import App from 'querybuilder/app';
+import { Observable, BehaviorSubject } from 'rxjs';
 import {
   ToolingModelJson,
   ToolingModelService
@@ -17,32 +26,31 @@ import {
   MessageType,
   SoqlEditorEvent
 } from '../services/message/soqlEditorEvent';
-import { BehaviorSubject, Observable } from 'rxjs';
 import { MessageServiceFactory } from '../services/message/messageServiceFactory';
 import { IMessageService } from '../services/message/iMessageService';
 import { StandaloneMessageService } from '../services/message/standaloneMessageService';
 import * as globals from '../services/globals';
 
 class TestMessageService implements IMessageService {
-  messagesToUI: Observable<SoqlEditorEvent> = new BehaviorSubject(
+  public messagesToUI: Observable<SoqlEditorEvent> = new BehaviorSubject(
     ({} as unknown) as SoqlEditorEvent
   );
-  sendMessage() { }
-  setState() { }
-  getState() { }
+  public sendMessage() {}
+  public setState() {}
+  public getState() {}
 }
 
 class TestApp extends App {
   @api
-  query: ToolingModelJson = ToolingModelService.toolingModelTemplate;
+  public query: ToolingModelJson = ToolingModelService.toolingModelTemplate;
   @api
-  fields;
+  public fields;
   @api
-  isFromLoading = false;
+  public isFromLoading = false;
   @api
-  isFieldsLoading = false;
+  public isFieldsLoading = false;
   @api
-  isQueryRunning = false;
+  public isQueryRunning = false;
 }
 
 describe('App should', () => {
@@ -50,8 +58,8 @@ describe('App should', () => {
   let messageService;
   let loadSObjectDefinitionsSpy;
   let loadSObjectMetadataSpy;
-  let accountQuery = 'SELECT Id FROM Account';
-  let soqlEditorEvent = {
+  const accountQuery = 'SELECT Id FROM Account';
+  const soqlEditorEvent = {
     type: MessageType.TEXT_SOQL_CHANGED,
     payload: accountQuery
   };
@@ -65,6 +73,7 @@ describe('App should', () => {
   }
   beforeEach(() => {
     messageService = (new TestMessageService() as unknown) as StandaloneMessageService;
+    // eslint-disable-next-line @typescript-eslint/unbound-method
     originalCreateFn = MessageServiceFactory.create;
     MessageServiceFactory.create = () => {
       return messageService;
@@ -78,6 +87,7 @@ describe('App should', () => {
       'loadSObjectMetatada'
     );
     jest.spyOn(globals, 'getBodyClass').mockReturnValue('vscode-dark');
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     app = createElement('querybuilder-app', {
       is: TestApp
     });
@@ -123,9 +133,7 @@ describe('App should', () => {
     it('should clear fields when sobject is same but fields are empty', async () => {
       expect(loadSObjectMetadataSpy).not.toHaveBeenCalled();
       app.fields = [];
-      messageService.messagesToUI.next(
-        createSoqlEditorEvent(accountQuery)
-      );
+      messageService.messagesToUI.next(createSoqlEditorEvent(accountQuery));
       expect(loadSObjectMetadataSpy.mock.calls.length).toEqual(1);
       expect(app.fields.length).toEqual(0);
     });
@@ -334,7 +342,9 @@ describe('App should', () => {
       );
       expect(
         (postMessageSpy.mock.calls[0][0] as SoqlEditorEvent).payload
-      ).toContain(eventPayload.detail.fieldCompareExpr.condition.field.fieldName);
+      ).toContain(
+        eventPayload.detail.fieldCompareExpr.condition.field.fieldName
+      );
     });
 
     it('should send message to vs code with REMOVE CONDITION event', () => {

@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-unsafe-call */
+/* eslint-disable @typescript-eslint/no-unsafe-member-access */
 /*
  *  Copyright (c) 2020, salesforce.com, inc.
  *  All rights reserved.
@@ -7,17 +9,18 @@
  */
 
 import { JsonMap } from '@salesforce/ts-types';
-import { IMessageService } from './iMessageService';
 import { fromEvent, Observable } from 'rxjs';
 import { filter, pluck } from 'rxjs/operators';
 import { getWindow, getVscode } from '../globals';
+import { IMessageService } from './iMessageService';
 import { SoqlEditorEvent, MessageType } from './soqlEditorEvent';
 
 export class VscodeMessageService implements IMessageService {
-  protected vscode;
   public messagesToUI: Observable<SoqlEditorEvent>;
 
-  constructor() {
+  protected vscode;
+
+  public constructor() {
     this.vscode = getVscode();
     const source = fromEvent(getWindow(), 'message');
     this.messagesToUI = source.pipe(
@@ -27,34 +30,41 @@ export class VscodeMessageService implements IMessageService {
     this.sendActivatedMessage();
   }
 
+  public sendActivatedMessage(): void {
+    this.vscode.postMessage({ type: MessageType.UI_ACTIVATED });
+  }
+
+  // eslint-disable-next-line @typescript-eslint/require-await
+  public async sendMessage(event: SoqlEditorEvent): Promise<void> {
+    this.vscode.postMessage(event);
+  }
+
+  public sendTelemetry(telemetry: JSON): void {
+    this.vscode.postMessage({
+      type: MessageType.UI_TELEMETRY,
+      payload: telemetry
+    });
+  }
+
+  public getState(): unknown {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+    const state = this.vscode.getState();
+    return state;
+  }
+
+  public setState(state: JsonMap): void {
+    this.vscode.setState(state);
+  }
+
+  // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
   private onlyDataProperty() {
     return pluck('data');
   }
 
+  // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
   private onlyIfValidEditorEvent() {
     return filter((event: SoqlEditorEvent) => {
       return event.type !== undefined;
     });
-  }
-
-  public sendActivatedMessage() {
-    this.vscode.postMessage({ type: MessageType.UI_ACTIVATED });
-  }
-
-  public async sendMessage(event: SoqlEditorEvent) {
-    this.vscode.postMessage(event);
-  }
-
-  public sendTelemetry(telemetry: JSON) {
-    this.vscode.postMessage({ type: MessageType.UI_TELEMETRY, payload: telemetry})
-  }
-
-  public getState() {
-    let state = this.vscode.getState();
-    return state;
-  }
-
-  public setState(state: JsonMap) {
-    this.vscode.setState(state);
   }
 }

@@ -1,3 +1,9 @@
+/* eslint-disable @lwc/lwc/prefer-custom-event */
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
+/* eslint-disable @typescript-eslint/no-unsafe-member-access */
+/* eslint-disable @typescript-eslint/explicit-function-return-type */
+/* eslint-disable @typescript-eslint/no-unsafe-call */
+/* eslint-disable @typescript-eslint/no-unsafe-return */
 /* eslint-disable @lwc/lwc/no-inner-html */
 /*
  *  Copyright (c) 2020, salesforce.com, inc.
@@ -38,8 +44,8 @@ describe('Custom Select', () => {
     return customSelect.shadowRoot.querySelector('.select__clear-search');
   };
   const getDropdownTrigger = () => {
-    return customSelect.shadowRoot.querySelector('[data-el-chevron]')
-  }
+    return customSelect.shadowRoot.querySelector('[data-el-chevron]');
+  };
 
   beforeEach(() => {
     customSelect = createElement('querybuilder-custom-select', {
@@ -80,7 +86,7 @@ describe('Custom Select', () => {
     it('should use placeholder api', () => {
       document.body.appendChild(customSelect);
       const exampleText = 'hold my beer';
-      let searchBar = getInputSearchBar();
+      const searchBar = getInputSearchBar();
       expect(searchBar.getAttribute(PLACEHOLDER)).toBe('');
 
       customSelect.placeholderText = exampleText;
@@ -95,7 +101,7 @@ describe('Custom Select', () => {
     it('should style the placeholder text when input has focus', () => {
       document.body.appendChild(customSelect);
       customSelect.placeholderText = 'hold my beer';
-      let searchBar = getInputSearchBar();
+      const searchBar = getInputSearchBar();
       searchBar.focus();
       return Promise.resolve().then(() => {
         const classList = Array.from(searchBar.classList);
@@ -279,7 +285,6 @@ describe('Custom Select', () => {
           expect(selectSpy).toHaveBeenCalled();
         });
       });
-
     });
     describe('Multiple Selection Mode', () => {
       it('should NOT display the selected options as input value', () => {
@@ -366,7 +371,7 @@ describe('Custom Select', () => {
           customSelect.allOptions.length
         );
 
-        for (let option of customSelect.allOptions) {
+        for (const option of customSelect.allOptions) {
           expect(optionsList.innerHTML).toContain(option);
         }
       });
@@ -492,7 +497,7 @@ describe('Custom Select', () => {
       return Promise.resolve().then(() => {
         const optionsList = getOptionsWrapper();
 
-        for (let option of optionsList.children) {
+        for (const option of optionsList.children) {
           expect(option.classList).not.toContain(OPTION_HIGHLIGHT);
         }
       });

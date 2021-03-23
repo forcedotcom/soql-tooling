@@ -12,11 +12,7 @@ export class FromImpl extends SoqlModelObjectImpl implements Soql.From {
   public sobjectName: string;
   public as?: Soql.UnmodeledSyntax;
   public using?: Soql.UnmodeledSyntax;
-  public constructor(
-    sobjectName: string,
-    as?: Soql.UnmodeledSyntax,
-    using?: Soql.UnmodeledSyntax
-  ) {
+  public constructor(sobjectName: string, as?: Soql.UnmodeledSyntax, using?: Soql.UnmodeledSyntax) {
     super();
     this.sobjectName = sobjectName;
     this.as = as;

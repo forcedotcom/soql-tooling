@@ -9,10 +9,11 @@ import { ValidateResult, Validator } from './validator';
 
 export class StringValidator extends Validator {
   public validate(input: string): ValidateResult {
-    const isValid = input.length >= 2
-      && input.startsWith("'")
-      && input.endsWith("'")
-      && !this.isEscaped(input.substring(1, input.length - 1));
+    const isValid =
+      input.length >= 2 &&
+      input.startsWith("'") &&
+      input.endsWith("'") &&
+      !this.isEscaped(input.substring(1, input.length - 1));
     const message = isValid ? undefined : Messages.error_fieldInput_string;
     return { isValid, message };
   }

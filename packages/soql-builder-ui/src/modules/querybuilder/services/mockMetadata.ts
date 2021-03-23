@@ -1,9 +1,9 @@
-/* 
+/*
  *  Copyright (c) 2020, salesforce.com, inc.
  *  All rights reserved.
  *  Licensed under the BSD 3-Clause license.
  *  For full license text, see LICENSE.txt file in the repo root or https://opensource.org/licenses/BSD-3-Clause
- *   
+ *
  */
 
 import { JsonMap } from '@salesforce/ts-types';
@@ -54,6 +54,7 @@ export const mockMDT: MockMetadata = {
       'TotalAmount',
       'Status'
     ],
+    // eslint-disable-next-line camelcase
     CodeBuilder__Workspace__c: [
       'CreatedById',
       'CodeBuilder__Error_State_Info__c',
@@ -64,6 +65,7 @@ export const mockMDT: MockMetadata = {
       'CodeBuilder__URL__c',
       'Name'
     ],
+    // eslint-disable-next-line camelcase
     CodeBuilder__WorkspaceUsage__c: [
       'CreatedById',
       'LastModifiedById',
