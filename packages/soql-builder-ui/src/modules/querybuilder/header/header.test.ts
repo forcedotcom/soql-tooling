@@ -1,3 +1,6 @@
+/* eslint-disable @typescript-eslint/no-unsafe-member-access */
+/* eslint-disable @typescript-eslint/no-unsafe-call */
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
 /*
  *  Copyright (c) 2020, salesforce.com, inc.
  *  All rights reserved.
@@ -6,7 +9,6 @@
  *
  */
 
-// @ts-ignore
 import { createElement } from 'lwc';
 import Header from 'querybuilder/header';
 

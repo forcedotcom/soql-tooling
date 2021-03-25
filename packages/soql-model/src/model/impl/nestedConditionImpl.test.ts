@@ -5,12 +5,14 @@
  * For full license text, see LICENSE.txt file in the repo root or https://opensource.org/licenses/BSD-3-Clause
  */
 
-import * as Impl from '.';
 import { ConditionOperator, LiteralType } from '../model';
+import * as Impl from '.';
 
 describe('NestedConditionImpl should', () => {
   it('store condition', () => {
-    const expected = { condition: { field: { fieldName: 'field' }, operator: '=', compareValue: { type: 'STRING', value: "'abc'" } } };
+    const expected = {
+      condition: { field: { fieldName: 'field' }, operator: '=', compareValue: { type: 'STRING', value: "'abc'" } },
+    };
     const actual = new Impl.NestedConditionImpl(
       new Impl.FieldCompareConditionImpl(
         new Impl.FieldRefImpl('field'),
@@ -21,7 +23,7 @@ describe('NestedConditionImpl should', () => {
     expect(actual).toEqual(expected);
   });
   it('return nested condition in parentheses for toSoqlSyntax()', () => {
-    const expected = "( field = 'abc' )"
+    const expected = "( field = 'abc' )";
     const actual = new Impl.NestedConditionImpl(
       new Impl.FieldCompareConditionImpl(
         new Impl.FieldRefImpl('field'),

@@ -66,4 +66,4 @@ describe('MultipleInputValidator should', () => {
     const validResult = { isValid: true };
     expect(validator.validate("'good', 'also good'")).toEqual(validResult);
   });
-})
+});

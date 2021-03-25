@@ -1,3 +1,6 @@
+/* eslint-disable @typescript-eslint/no-unsafe-member-access */
+/* eslint-disable @typescript-eslint/no-unsafe-call */
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
 /*
  *  Copyright (c) 2020, salesforce.com, inc.
  *  All rights reserved.
@@ -5,8 +8,6 @@
  *  For full license text, see LICENSE.txt file in the repo root or https://opensource.org/licenses/BSD-3-Clause
  *
  */
-
-// @ts-ignore
 import { createElement } from 'lwc';
 import QueryPreview from 'querybuilder/queryPreview';
 

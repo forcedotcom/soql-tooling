@@ -8,9 +8,7 @@
 import * as Soql from '../model';
 import { SoqlModelObjectImpl } from './soqlModelObjectImpl';
 
-export class OrderByImpl extends SoqlModelObjectImpl
-  implements Soql.OrderBy {
-
+export class OrderByImpl extends SoqlModelObjectImpl implements Soql.OrderBy {
   public orderByExpressions: Soql.OrderByExpression[];
 
   public constructor(orderByExpressions: Soql.OrderByExpression[]) {
@@ -19,8 +17,8 @@ export class OrderByImpl extends SoqlModelObjectImpl
   }
 
   public toSoqlSyntax(options?: Soql.SyntaxOptions): string {
-    let syntax: string = 'ORDER BY ';
-    let first: boolean = true;
+    let syntax = 'ORDER BY ';
+    let first = true;
     if (this.orderByExpressions.length > 0) {
       this.orderByExpressions.forEach((orderByExpressions) => {
         if (!first) {

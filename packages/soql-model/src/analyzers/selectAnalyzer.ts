@@ -31,17 +31,14 @@ export interface Column {
 }
 export class SelectAnalyzer {
   protected parseTree: ParseTree;
-  constructor(protected queryText: string) {
+  public constructor(protected queryText: string) {
     const parser = SOQLParser({
       isApex: true,
       isMultiCurrencyEnabled: true,
-      apiVersion: 50.0
+      apiVersion: 50.0,
     });
 
-    const {
-      headerComments,
-      headerPaddedSoqlText
-    } = soqlComments.parseHeaderComments(this.queryText);
+    const { headerPaddedSoqlText } = soqlComments.parseHeaderComments(this.queryText);
 
     const result = parser.parseQuery(headerPaddedSoqlText);
     this.parseTree = result.getParseTree();
@@ -58,30 +55,28 @@ export class SelectAnalyzer {
     const columnData = {
       objectName: '',
       columns: new Array<Column>(),
-      subTables: new Array<ColumnData>()
+      subTables: new Array<ColumnData>(),
     };
     selections.forEach((selection) => {
       if (selection.isSubQuerySelection) {
-        let subTable = columnData.subTables.find(
-          (data: ColumnData) => data.objectName === selection.objectName
-        );
+        let subTable = columnData.subTables.find((data: ColumnData) => data.objectName === selection.objectName);
         if (!subTable) {
           subTable = {
             objectName: selection.objectName,
             columns: [],
-            subTables: []
+            subTables: [],
           };
           columnData.subTables.push(subTable);
         }
         subTable.columns.push({
           title: selection.columnName,
-          fieldHelper: selection.queryResultsPath
+          fieldHelper: selection.queryResultsPath,
         });
       } else {
         columnData.objectName = selection.objectName;
         columnData.columns.push({
           title: selection.columnName,
-          fieldHelper: selection.queryResultsPath
+          fieldHelper: selection.queryResultsPath,
         });
       }
     });
@@ -89,19 +84,15 @@ export class SelectAnalyzer {
   }
 }
 
-class SelectVisitor
-  extends AbstractParseTreeVisitor<void>
-  implements SoqlParserVisitor<void> {
+class SelectVisitor extends AbstractParseTreeVisitor<void> implements SoqlParserVisitor<void> {
+  protected static AGGREGATEEXPR_PREFIX = 'expr';
   public selections: Selection[] = [];
   protected currentNamespace = '';
   protected currentObjectName = '';
   protected currentAggregateExpression = 0;
-  protected static AGGREGATEEXPR_PREFIX = 'expr';
   protected isInnerQuery = false;
 
-  public visitSoqlSelectInnerQueryExpr(
-    ctx: Parser.SoqlSelectInnerQueryExprContext
-  ): void {
+  public visitSoqlSelectInnerQueryExpr(ctx: Parser.SoqlSelectInnerQueryExprContext): void {
     this.isInnerQuery = true;
     ctx.soqlInnerQuery().accept(this);
     this.isInnerQuery = false;
@@ -122,18 +113,13 @@ class SelectVisitor
     ctx.soqlSelectClause().accept(this);
   }
 
-  public visitSoqlSelectColumnExpr(
-    ctx: Parser.SoqlSelectColumnExprContext
-  ): void {
+  public visitSoqlSelectColumnExpr(ctx: Parser.SoqlSelectColumnExprContext): void {
     const fieldText = ctx.soqlField().text;
     const isAggregateExpression = fieldText.includes('(');
     const aliasText = ctx.soqlAlias()?.text;
     let queryResultsPath: string[] = [];
     if (isAggregateExpression) {
-      queryResultsPath.push(
-        aliasText ||
-          `${SelectVisitor.AGGREGATEEXPR_PREFIX}${this.currentAggregateExpression}`
-      );
+      queryResultsPath.push(aliasText || `${SelectVisitor.AGGREGATEEXPR_PREFIX}${this.currentAggregateExpression}`);
     } else {
       queryResultsPath = `${fieldText}`.split('.');
     }
@@ -142,12 +128,13 @@ class SelectVisitor
       queryResultsPath,
       objectName: this.currentObjectName,
       columnName: aliasText || `${this.currentNamespace}${fieldText}`,
-      isSubQuerySelection: this.isInnerQuery
+      isSubQuerySelection: this.isInnerQuery,
     });
     if (isAggregateExpression) {
       this.currentAggregateExpression++;
     }
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-empty-function
   protected defaultResult(): void {}
 }

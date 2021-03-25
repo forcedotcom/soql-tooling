@@ -3,14 +3,14 @@
   "compilerOptions": {
     "emitDecoratorMetadata": true,
     "experimentalDecorators": true,
-    "preserveConstEnums": true,
-    "strict": true,
-    "resolveJsonModule": true,
     "lib": ["es2018", "dom", "esnext.asynciterable"],
     "module": "commonjs",
     "moduleResolution": "node",
-    "target": "es2017",
-    "sourceMap": true
+    "preserveConstEnums": true,
+    "resolveJsonModule": true,
+    "sourceMap": true,
+    "strict": true,
+    "target": "es2017"
   },
   "exclude": ["node_modules", "../../node_modules"]
 }

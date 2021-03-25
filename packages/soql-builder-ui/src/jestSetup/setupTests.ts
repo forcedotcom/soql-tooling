@@ -1,19 +1,20 @@
 export class VsCodeApi {
-    public state;
-    public message;
-    getState() {
-        return this.state;
-    }
-    setState(state: string) {
-        this.state=state;
-    }
-    postMessage(message: string) {
-        this.message = message;
-    }
+  public state: string;
+  public message: string;
+  public getState(): string {
+    return this.state;
+  }
+  public setState(state: string): void {
+    this.state = state;
+  }
+  public postMessage(message: string): void {
+    this.message = message;
+  }
 }
 export const vscodeInstance = new VsCodeApi();
-export function acquireVsCodeApi() {
-    return vscodeInstance;
+export function acquireVsCodeApi(): VsCodeApi {
+  return vscodeInstance;
 }
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
 global.acquireVsCodeApi = acquireVsCodeApi;

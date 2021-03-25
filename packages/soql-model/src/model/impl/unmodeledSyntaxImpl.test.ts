@@ -15,7 +15,10 @@ describe('UnmodeledSyntaxImpl should', () => {
   });
   it('return stored syntax for toSoqlSyntax()', () => {
     const expected = 'keith';
-    const actual = new Impl.UnmodeledSyntaxImpl(expected, { reasonCode: 'unmodeled:fake', message: 'fake SOQL' }).toSoqlSyntax();
+    const actual = new Impl.UnmodeledSyntaxImpl(expected, {
+      reasonCode: 'unmodeled:fake',
+      message: 'fake SOQL',
+    }).toSoqlSyntax();
     expect(actual).toEqual(expected);
   });
 });

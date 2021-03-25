@@ -10,29 +10,21 @@ import * as Impl from '.';
 describe('HeaderCommentsImpl should', () => {
   it('store comments text', () => {
     const expected = { text: '// Comment line 1\n//Comment line 2\n' };
-    const actual = new Impl.HeaderCommentsImpl(
-      '// Comment line 1\n//Comment line 2\n'
-    );
+    const actual = new Impl.HeaderCommentsImpl('// Comment line 1\n//Comment line 2\n');
     expect(actual).toEqual(expected);
   });
 
   it('return the comment string on toSoqlSyntax()', () => {
     const expected = '// Comment line 1\n//Comment line 2\n';
-    const actual = new Impl.HeaderCommentsImpl(
-      '// Comment line 1\n//Comment line 2\n'
-    ).toSoqlSyntax();
+    const actual = new Impl.HeaderCommentsImpl('// Comment line 1\n//Comment line 2\n').toSoqlSyntax();
     expect(actual).toEqual(expected);
   });
 
   it('return the empty string on toSoqlSyntax() when no comments', () => {
-    let actual = new Impl.HeaderCommentsImpl(
-      (null as unknown) as string
-    ).toSoqlSyntax();
+    let actual = new Impl.HeaderCommentsImpl((null as unknown) as string).toSoqlSyntax();
     expect(actual).toEqual('');
 
-    actual = new Impl.HeaderCommentsImpl(
-      (undefined as unknown) as string
-    ).toSoqlSyntax();
+    actual = new Impl.HeaderCommentsImpl((undefined as unknown) as string).toSoqlSyntax();
     expect(actual).toEqual('');
 
     actual = new Impl.HeaderCommentsImpl('').toSoqlSyntax();

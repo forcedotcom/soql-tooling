@@ -10,16 +10,24 @@
       "packages/*"
     ]
   },
-  "dependencies": {},
   "devDependencies": {
     "@commitlint/cli": "^11.0.0",
     "@commitlint/config-conventional": "^11.0.0",
     "@salesforce/dev-config": "1.4.1",
-    "husky": "4.3.8",
+    "@salesforce/prettier-config": "^0.0.2",
+    "@typescript-eslint/eslint-plugin": "^4.17.0",
+    "@typescript-eslint/parser": "^4.17.0",
+    "eslint": "^7.21.0",
+    "eslint-config-prettier": "^8.1.0",
+    "eslint-config-salesforce": "^0.1.0",
+    "eslint-config-salesforce-typescript": "^0.2.0",
+    "eslint-plugin-jsdoc": "^32.3.0",
+    "eslint-plugin-prettier": "^3.3.1",
+    "husky": "4",
     "lerna": "^3.19.0",
+    "prettier": "^2.2.1",
     "shx": "^0.3.3",
-    "tslint": "^5.8.0",
-    "typescript": "^4.0.3"
+    "typescript": "^4.2.3"
   },
   "scripts": {
     "build": "lerna run build",
@@ -30,7 +38,8 @@
   },
   "husky": {
     "hooks": {
-      "commit-msg": "commitlint -E HUSKY_GIT_PARAMS"
+      "commit-msg": "commitlint -E HUSKY_GIT_PARAMS",
+      "pre-push": "yarn run lint"
     }
   }
 }

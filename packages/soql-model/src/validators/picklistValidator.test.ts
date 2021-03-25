@@ -12,8 +12,8 @@ import { PicklistValidator } from './picklistValidator';
 describe('PicklistValidator should', () => {
   const options = {
     type: SObjectFieldType.Picklist,
-    picklistValues: ["'A'", "'B'"]
-  }
+    picklistValues: ["'A'", "'B'"],
+  };
   it('return valid result when input is contained in picklist vales', () => {
     const expected = { isValid: true };
     const actual = new PicklistValidator(options).validate("'B'");

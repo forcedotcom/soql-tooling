@@ -9,22 +9,23 @@
 import { LightningElement, api } from 'lwc';
 
 export default class From extends LightningElement {
-  @api sobjects: string[];
-  @api hasError = false;
-  @api isLoading = false;
-  selectPlaceHolderText = 'Search object...'; //i18n
-  _selectedObject: string[] = [];
+  @api public sobjects: string[];
+  @api public hasError = false;
+  @api public isLoading = false;
+  public selectPlaceHolderText = 'Search object...'; // i18n
+  public _selectedObject: string[] = [];
 
   @api
-  get selected() {
+  public get selected(): string {
     return this._selectedObject[0];
   }
 
-  set selected(objectName: string) {
+  public set selected(objectName: string) {
     this._selectedObject = objectName ? [objectName] : [];
   }
 
-  handleSobjectSelection(e) {
+  /* eslint-disable @typescript-eslint/no-unsafe-member-access,@typescript-eslint/no-unsafe-call,@typescript-eslint/no-unsafe-assignment */
+  public handleSobjectSelection(e): void {
     e.preventDefault();
     const selectedSobject = e.detail.value;
     if (selectedSobject && selectedSobject.length) {
@@ -34,4 +35,5 @@ export default class From extends LightningElement {
       this.dispatchEvent(sObjectSelected);
     }
   }
+  /* eslint-enable @typescript-eslint/no-unsafe-member-access,@typescript-eslint/no-unsafe-call,@typescript-eslint/no-unsafe-assignment */
 }

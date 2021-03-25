@@ -5,8 +5,8 @@
  * For full license text, see LICENSE.txt file in the repo root or https://opensource.org/licenses/BSD-3-Clause
  */
 
-import * as Impl from '.';
 import { ConditionOperator, LiteralType } from '../model';
+import * as Impl from '.';
 
 describe('FieldCompareConditionImpl should', () => {
   it('store field, operator, and value', () => {
@@ -19,7 +19,7 @@ describe('FieldCompareConditionImpl should', () => {
     expect(actual).toEqual(expected);
   });
   it('return field, operator, and value separated by spaces for toSoqlSyntax()', () => {
-    const expected = `field = 'abc'`;
+    const expected = "field = 'abc'";
     const actual = new Impl.FieldCompareConditionImpl(
       new Impl.FieldRefImpl('field'),
       ConditionOperator.Equals,

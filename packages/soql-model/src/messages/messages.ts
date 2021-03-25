@@ -5,6 +5,9 @@
  * For full license text, see LICENSE.txt file in the repo root or https://opensource.org/licenses/BSD-3-Clause
  */
 
+/* eslint-disable camelcase */
+// prettier-ignore
+// eslint-disable-next-line @typescript-eslint/no-namespace
 export namespace Messages {
   export const error_empty = 'Incomplete SOQL statement. The SELECT and FROM clauses are required.'
   export const error_noSelect = 'A SELECT clause is required.';

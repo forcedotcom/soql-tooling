@@ -11,7 +11,6 @@ import { ToolingSDK } from '../services/toolingSDK';
 import { MessageServiceFactory } from '../services/message/messageServiceFactory';
 
 import { ToolingModelService } from '../services/toolingModelService';
-// eslint-disable-next-line no-unused-vars
 import { IMessageService } from '../services/message/iMessageService';
 import {
   MessageType,
@@ -29,47 +28,52 @@ import { lwcIndexableArray } from '../services/lwcUtils';
 
 export default class App extends LightningElement {
   @track
-  sObjects: string[] = [];
-  @track
-  fields: string[] = [];
-  toolingSDK: ToolingSDK;
-  modelService: ToolingModelService;
-  messageService: IMessageService;
-  theme = 'light';
-  sobjectMetadata: any;
-  notifications = [];
+  public query: ToolingModelJson = ToolingModelService.toolingModelTemplate;
 
-  get shouldBlockQueryBuilder() {
-    return ( this.hasUnrecoverableError || this.hasUnsupportedMessage ) && this.dismissNotifications === false;
+  @track
+  public sObjects: string[] = [];
+  @track
+  public fields: string[] = [];
+  public toolingSDK: ToolingSDK;
+  public modelService: ToolingModelService;
+  public messageService: IMessageService;
+  public theme = 'light';
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  public sobjectMetadata: any;
+  public notifications = [];
+
+  public get shouldBlockQueryBuilder(): boolean {
+    return (
+      (this.hasUnrecoverableError || this.hasUnsupportedMessage) &&
+      this.dismissNotifications === false
+    );
   }
-  get showUnsupportedNotification() {
+  public get showUnsupportedNotification(): boolean {
     return !this.hasUnrecoverableError && this.hasUnsupportedMessage;
   }
-  get showSyntaxErrorNotification() {
+  public get showSyntaxErrorNotification(): boolean {
     return this.hasUnrecoverableError;
   }
-  hasUnsupportedMessage = false;
-  hasRecoverableFieldsError = false;
-  hasRecoverableFromError = false;
-  hasRecoverableLimitError = false;
-  hasRecoverableError = true;
-  hasUnrecoverableError = false;
-  isFromLoading = false;
-  isFieldsLoading = false;
-  isQueryRunning = false;
-  dismissNotifications = false;
+  public hasUnsupportedMessage = false;
+  public hasRecoverableFieldsError = false;
+  public hasRecoverableFromError = false;
+  public hasRecoverableLimitError = false;
+  public hasRecoverableError = true;
+  public hasUnrecoverableError = false;
+  public isFromLoading = false;
+  public isFieldsLoading = false;
+  public isQueryRunning = false;
+  public dismissNotifications = false;
 
-  @track
-  query: ToolingModelJson = ToolingModelService.toolingModelTemplate;
-
-  constructor() {
+  public constructor() {
     super();
     this.messageService = MessageServiceFactory.create();
     this.toolingSDK = new ToolingSDK(this.messageService);
     this.modelService = new ToolingModelService(this.messageService);
   }
 
-  connectedCallback() {
+  /* eslint-disable @typescript-eslint/no-unsafe-assignment,@typescript-eslint/no-unsafe-member-access,@typescript-eslint/no-unsafe-call,@typescript-eslint/no-unsafe-return */
+  public connectedCallback(): void {
     this.modelService.UIModel.subscribe(this.uiModelSubscriber.bind(this));
 
     this.toolingSDK.sobjects.subscribe((objs: string[]) => {
@@ -77,6 +81,7 @@ export default class App extends LightningElement {
       this.sObjects = objs;
     });
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     this.toolingSDK.sobjectMetadata.subscribe((sobjectMetadata: any) => {
       this.isFieldsLoading = false;
       this.fields =
@@ -93,7 +98,7 @@ export default class App extends LightningElement {
     this.modelService.restoreViewState();
   }
 
-  renderedCallback() {
+  public renderedCallback(): void {
     const themeClass = getBodyClass();
     if (themeClass.indexOf('vscode-dark') > -1) {
       this.theme = 'dark';
@@ -102,21 +107,26 @@ export default class App extends LightningElement {
     }
   }
 
-  uiModelSubscriber(newQuery: ToolingModelJson) {
+  /* eslint-disable @typescript-eslint/no-unsafe-assignment */
+  public uiModelSubscriber(newQuery: ToolingModelJson): void {
     // only re-render if incoming soql statement is different
     if (this.query.originalSoqlStatement !== newQuery.originalSoqlStatement) {
-      this.notifications = lwcIndexableArray<string>([...this.inspectUnsupported(newQuery.unsupported), ...this.inspectErrors(newQuery.errors)]);
+      this.notifications = lwcIndexableArray<string>([
+        ...this.inspectUnsupported(newQuery.unsupported),
+        ...this.inspectErrors(newQuery.errors)
+      ]);
       this.loadSObjectMetadata(newQuery);
       this.query = newQuery;
     }
   }
+  /* eslint-enable @typescript-eslint/no-unsafe-assignment,@typescript-eslint/no-unsafe-member-access,@typescript-eslint/no-unsafe-call,@typescript-eslint/no-unsafe-return */
 
-  loadSObjectDefinitions() {
+  public loadSObjectDefinitions(): void {
     this.isFromLoading = true;
     this.toolingSDK.loadSObjectDefinitions();
   }
 
-  loadSObjectMetadata(newQuery) {
+  public loadSObjectMetadata(newQuery: ToolingModelJson): void {
     const previousSObject = this.query ? this.query.sObject : '';
     const newSObject = newQuery.sObject;
     // if empty sobject, clear fields
@@ -138,12 +148,13 @@ export default class App extends LightningElement {
     }
   }
 
-  inspectErrors(errors) {
+  /* eslint-disable @typescript-eslint/no-unsafe-member-access,@typescript-eslint/no-explicit-any */
+  public inspectErrors(errors: any[]): unknown[] {
     this.hasRecoverableFieldsError = false;
     this.hasRecoverableFromError = false;
     this.hasRecoverableLimitError = false;
     this.hasUnrecoverableError = false;
-    let messages = [];
+    const messages = [];
     errors.forEach((error) => {
       if (recoverableErrors[error.type]) {
         this.hasRecoverableError = true;
@@ -164,25 +175,28 @@ export default class App extends LightningElement {
     return messages;
   }
 
-  inspectUnsupported(unsupported) {
+  /* eslint-disable @typescript-eslint/no-unsafe-assignment,@typescript-eslint/no-unsafe-call,@typescript-eslint/no-unsafe-return*/
+  public inspectUnsupported(unsupported): any {
     const filteredUnsupported = unsupported
       // this reason is often associated with a parse error, so snuffing it out instead of double notifications
-      .filter(unsup => unsup.reason.reasonCode !== 'unmodeled:empty-condition')
-      .map(unsup => {
+      .filter(
+        (unsup) => unsup.reason.reasonCode !== 'unmodeled:empty-condition'
+      )
+      .map((unsup) => {
         return unsup.reason.message;
       });
-      this.hasUnsupportedMessage = (filteredUnsupported.length > 0);
-      return filteredUnsupported;
+    this.hasUnsupportedMessage = filteredUnsupported.length > 0;
+    return filteredUnsupported;
   }
   /* ---- SOBJECT HANDLERS ---- */
-  handleObjectChange(e) {
+  public handleObjectChange(e): void {
     const selectedSObjectName = e.detail.selectedSobject;
     this.onSObjectChanged(selectedSObjectName);
     // when triggered by the ui, send message
     this.modelService.setSObject(selectedSObjectName);
   }
 
-  onSObjectChanged(sobjectName: string) {
+  public onSObjectChanged(sobjectName: string): void {
     if (sobjectName) {
       this.fields = [];
       this.isFieldsLoading = true;
@@ -190,38 +204,38 @@ export default class App extends LightningElement {
     }
   }
   /* ---- FIELD HANDLERS ---- */
-  handleFieldSelected(e) {
+  public handleFieldSelected(e): void {
     this.modelService.setFields(e.detail.fields);
   }
 
   /* ---- ORDER BY HANDLERS ---- */
-  handleOrderBySelected(e) {
+  public handleOrderBySelected(e): void {
     this.modelService.addUpdateOrderByField(e.detail);
   }
-  handleOrderByRemoved(e) {
+  public handleOrderByRemoved(e): void {
     this.modelService.removeOrderByField(e.detail.field);
   }
   /* ---- LIMIT HANDLERS ---- */
-  handleLimitChanged(e) {
+  public handleLimitChanged(e): void {
     this.modelService.changeLimit(e.detail.limit);
   }
   /* ---- WHERE HANDLERS ---- */
-  handleWhereSelection(e) {
+  public handleWhereSelection(e): void {
     this.modelService.upsertWhereFieldExpr(e.detail);
   }
-  handleAndOrSelection(e) {
+  public handleAndOrSelection(e): void {
     this.modelService.setAndOr(e.detail);
   }
-  handleRemoveWhereCondition(e) {
+  public handleRemoveWhereCondition(e): void {
     this.modelService.removeWhereFieldCondition(e.detail);
   }
 
   /* ---- MISC HANDLERS ---- */
-  handleDismissNotifications() {
+  public handleDismissNotifications(): void {
     this.dismissNotifications = true;
   }
 
-  handleRunQuery() {
+  public handleRunQuery(): void {
     this.isQueryRunning = true;
     const runQueryEvent: SoqlEditorEvent = { type: MessageType.RUN_SOQL_QUERY };
     this.messageService.sendMessage(runQueryEvent);

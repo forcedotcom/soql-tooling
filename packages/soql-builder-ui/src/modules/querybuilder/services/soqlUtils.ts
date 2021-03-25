@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unsafe-assignment,@typescript-eslint/no-unsafe-member-access,@typescript-eslint/no-unsafe-call,@typescript-eslint/no-unsafe-return */
 /*
  * Copyright (c) 2020, salesforce.com, inc.
  * All rights reserved.
@@ -12,7 +13,6 @@ import {
   ModelSerializer,
   ModelDeserializer
 } from '@salesforce/soql-model';
-import { SoqlEditorEvent } from './message/soqlEditorEvent';
 import { SELECT_COUNT, ToolingModelJson } from './model';
 
 export function convertSoqlToUiModel(soql: string): ToolingModelJson {
@@ -21,6 +21,7 @@ export function convertSoqlToUiModel(soql: string): ToolingModelJson {
   return uimodel;
 }
 
+// eslint-disable-next-line complexity
 export function convertSoqlModelToUiModel(
   queryModel: Soql.Query
 ): ToolingModelJson {
@@ -33,13 +34,15 @@ export function convertSoqlModelToUiModel(
     queryModel.select &&
     (queryModel.select as Soql.SelectExprs).selectExpressions
       ? (queryModel.select as Soql.SelectExprs).selectExpressions
-        .filter((expr) => !SoqlModelUtils.containsUnmodeledSyntax(expr))
-        .map((expr) => {
-          if (expr.field.fieldName) {
-            return expr.field.fieldName;
-          }
-          return undefined;
-        })
+          .filter((expr) => !SoqlModelUtils.containsUnmodeledSyntax(expr))
+          .map((expr) => {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+            if (expr.field.fieldName) {
+              // eslint-disable-next-line @typescript-eslint/no-unsafe-return,@typescript-eslint/no-unsafe-member-access
+              return expr.field.fieldName;
+            }
+            return undefined;
+          })
       : [SELECT_COUNT];
 
   const sObject = queryModel.from && queryModel.from.sobjectName;
@@ -68,6 +71,7 @@ export function convertSoqlModelToUiModel(
         .filter((expr) => !SoqlModelUtils.containsUnmodeledSyntax(expr))
         .map((expression) => {
           return {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
             field: expression.field.fieldName,
             order: expression.order,
             nulls: expression.nullsOrder
@@ -83,7 +87,7 @@ export function convertSoqlModelToUiModel(
   for (const key in queryModel) {
     // eslint-disable-next-line no-prototype-builtins
     if (queryModel.hasOwnProperty(key)) {
-      // @ts-ignore
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment,@typescript-eslint/no-unsafe-assignment
       const prop = queryModel[key];
       if (typeof prop === 'object') {
         if (SoqlModelUtils.containsUnmodeledSyntax(prop)) {
@@ -94,7 +98,7 @@ export function convertSoqlModelToUiModel(
   }
 
   const toolingModelTemplate: ToolingModelJson = {
-    headerComments: headerComments,
+    headerComments,
     sObject: sObject || '',
     fields: fields || [],
     where: where || { conditions: [], andOr: undefined },
@@ -117,7 +121,9 @@ export function convertUiModelToSoql(uiModel: ToolingModelJson): string {
 
 function convertUiModelToSoqlModel(uiModel: ToolingModelJson): Soql.Query {
   let select: Soql.Select;
-  const isSelectCount = uiModel.fields.length === 1 && uiModel.fields[0].toLowerCase() === SELECT_COUNT.toLowerCase();
+  const isSelectCount =
+    uiModel.fields.length === 1 &&
+    uiModel.fields[0].toLowerCase() === SELECT_COUNT.toLowerCase();
   if (isSelectCount) {
     select = new Impl.SelectCountImpl();
   } else {
@@ -131,7 +137,7 @@ function convertUiModelToSoqlModel(uiModel: ToolingModelJson): Soql.Query {
   if (uiModel.where && uiModel.where.conditions.length) {
     const simpleGroupArray = uiModel.where.conditions.map((condition) => {
       const uiModelCondition = condition.condition;
-      let returnCondition = undefined;
+      let returnCondition;
 
       const field =
         uiModelCondition.field && uiModelCondition.field.fieldName
@@ -144,6 +150,7 @@ function convertUiModelToSoqlModel(uiModel: ToolingModelJson): Soql.Query {
         Includes = 2
       }
       let conditionType = ConditionType.FieldCompare;
+      // eslint-disable-next-line default-case
       switch (uiModelCondition.operator) {
         case Soql.ConditionOperator.In:
         case Soql.ConditionOperator.NotIn: {
@@ -169,6 +176,7 @@ function convertUiModelToSoqlModel(uiModel: ToolingModelJson): Soql.Query {
         : undefined;
 
       if (field && compareValue) {
+        // eslint-disable-next-line default-case
         switch (conditionType) {
           case ConditionType.FieldCompare: {
             returnCondition = new Impl.FieldCompareConditionImpl(
@@ -283,7 +291,7 @@ export function displayValueToSoqlStringLiteral(displayString: string): string {
 const WILD_CARD = '%';
 
 /* LIKE_START ABC% */
-export function isLikeStart(value: string) {
+export function isLikeStart(value: string): boolean {
   if (value && value.length) {
     value = soqlStringLiteralToDisplayValue(value);
     if (value.endsWith(WILD_CARD) && !value.startsWith(WILD_CARD)) {
@@ -293,7 +301,7 @@ export function isLikeStart(value: string) {
   return false;
 }
 /* LIKE_END %ABC */
-export function isLikeEnds(value: string) {
+export function isLikeEnds(value: string): boolean {
   if (value && value.length) {
     value = soqlStringLiteralToDisplayValue(value);
     if (value.startsWith(WILD_CARD) && !value.endsWith(WILD_CARD)) {
@@ -303,7 +311,7 @@ export function isLikeEnds(value: string) {
   return false;
 }
 /* LIKE_CONTAINS %ABC% */
-export function isLikeContains(value: string) {
+export function isLikeContains(value: string): boolean {
   if (value && value.length) {
     value = soqlStringLiteralToDisplayValue(value);
     if (value.startsWith(WILD_CARD) && value.endsWith(WILD_CARD)) {
@@ -316,7 +324,7 @@ export function isLikeContains(value: string) {
 export function addWildCardToValue(
   operatorValue: Soql.UiOperatorValue,
   rawValue: string
-) {
+): string {
   let value = stripWildCardPadding(rawValue);
   switch (operatorValue) {
     case Soql.UiOperatorValue.LIKE_START:
@@ -334,21 +342,21 @@ export function addWildCardToValue(
   return value;
 }
 
-export function stripWildCardPadding(rawStr: string) {
+export function stripWildCardPadding(rawStr: string): string {
   let value = rawStr;
   value = trimWildCardRight(value);
   value = trimWildCardLeft(value);
   return value;
 }
 
-function trimWildCardLeft(rawStr: string) {
+function trimWildCardLeft(rawStr: string): string {
   if (!rawStr.startsWith(WILD_CARD)) {
     return rawStr;
   }
   return trimWildCardLeft(rawStr.substring(1));
 }
 
-function trimWildCardRight(rawStr: string) {
+function trimWildCardRight(rawStr: string): string {
   if (!rawStr.endsWith(WILD_CARD)) {
     return rawStr;
   }

@@ -35,7 +35,7 @@ describe('ValidatorFactory should', () => {
       { type: SObjectFieldType.String },
       { type: SObjectFieldType.TextArea },
       { type: SObjectFieldType.Time },
-      { type: SObjectFieldType.Url }
+      { type: SObjectFieldType.Url },
     ];
     const expected = [
       'DefaultValidator',
@@ -65,7 +65,7 @@ describe('ValidatorFactory should', () => {
       'DefaultValidator',
     ];
 
-    const actual = options.map(option => ValidatorFactory.getFieldInputValidator(option).constructor.name);
+    const actual = options.map((option) => ValidatorFactory.getFieldInputValidator(option).constructor.name);
     expect(actual).toEqual(expected);
   });
   it('return operator validator OperatorValidator regardless of field type', () => {
@@ -94,7 +94,7 @@ describe('ValidatorFactory should', () => {
       { type: SObjectFieldType.String },
       { type: SObjectFieldType.TextArea },
       { type: SObjectFieldType.Time },
-      { type: SObjectFieldType.Url }
+      { type: SObjectFieldType.Url },
     ];
     const expected = [
       'OperatorValidator',
@@ -124,7 +124,7 @@ describe('ValidatorFactory should', () => {
       'OperatorValidator',
     ];
 
-    const actual = options.map(option => ValidatorFactory.getOperatorValidator(option).constructor.name);
+    const actual = options.map((option) => ValidatorFactory.getOperatorValidator(option).constructor.name);
     expect(actual).toEqual(expected);
   });
 
@@ -154,7 +154,7 @@ describe('ValidatorFactory should', () => {
       { type: SObjectFieldType.String },
       { type: SObjectFieldType.TextArea },
       { type: SObjectFieldType.Time },
-      { type: SObjectFieldType.Url }
+      { type: SObjectFieldType.Url },
     ];
     const expected = [
       'MultipleInputValidator',
@@ -184,7 +184,7 @@ describe('ValidatorFactory should', () => {
       'MultipleInputValidator',
     ];
 
-    const actual = options.map(option => ValidatorFactory.getFieldMultipleInputValidator(option).constructor.name);
+    const actual = options.map((option) => ValidatorFactory.getFieldMultipleInputValidator(option).constructor.name);
     expect(actual).toEqual(expected);
   });
 });

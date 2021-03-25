@@ -5,8 +5,8 @@
  * For full license text, see LICENSE.txt file in the repo root or https://opensource.org/licenses/BSD-3-Clause
  */
 
-import * as Impl from '.';
 import { LiteralType } from '../model';
+import * as Impl from '.';
 
 describe('LiteralImpl should', () => {
   it('store the literal type and value', () => {

@@ -140,6 +140,7 @@ export const operatorOptions: OperatorOption[] = [
     displayValue: 'like',
     modelValue: Soql.ConditionOperator.Like,
     predicate: (conditon: JsonMap): boolean => {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
       const value = conditon.compareValue.value;
       return (
         conditon.operator === Soql.ConditionOperator.Like &&
@@ -152,6 +153,7 @@ export const operatorOptions: OperatorOption[] = [
     displayValue: 'starts with',
     modelValue: Soql.ConditionOperator.Like,
     predicate: (conditon: JsonMap): boolean => {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
       const value = conditon.compareValue.value;
       return (
         conditon.operator === Soql.ConditionOperator.Like && isLikeStart(value)
@@ -163,6 +165,7 @@ export const operatorOptions: OperatorOption[] = [
     displayValue: 'ends with',
     modelValue: Soql.ConditionOperator.Like,
     predicate: (conditon: JsonMap): boolean => {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
       const value = conditon.compareValue.value;
       return (
         conditon.operator === Soql.ConditionOperator.Like && isLikeEnds(value)
@@ -174,6 +177,7 @@ export const operatorOptions: OperatorOption[] = [
     displayValue: 'contains',
     modelValue: Soql.ConditionOperator.Like,
     predicate: (conditon: JsonMap): boolean => {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
       const value = conditon.compareValue.value;
       return (
         conditon.operator === Soql.ConditionOperator.Like &&

@@ -1,3 +1,9 @@
+/* eslint-disable camelcase */
+/* eslint-disable @typescript-eslint/no-unsafe-call */
+/* eslint-disable @typescript-eslint/no-unsafe-member-access */
+/* eslint-disable @typescript-eslint/ban-ts-comment */
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
+/* eslint-disable @typescript-eslint/explicit-function-return-type */
 /*
  *  Copyright (c) 2020, salesforce.com, inc.
  *  All rights reserved.
@@ -6,9 +12,9 @@
  *
  */
 
-import { VscodeMessageService } from './vscodeMessageService';
 import { getWindow } from '../globals';
-import { SoqlEditorEvent, MessageType } from './soqlEditorEvent';
+import { VscodeMessageService } from './vscodeMessageService';
+import { MessageType } from './soqlEditorEvent';
 
 describe('VscodeMessageService', () => {
   let vsCodeApi;
@@ -16,11 +22,11 @@ describe('VscodeMessageService', () => {
   let vscodeMessageService;
   let window;
   const messageType = 'message';
-  let accountQuery = {
+  const accountQuery = {
     sObject: 'Account',
     fields: []
   };
-  let postMessagePayload = (type?: string, payload?: string) => {
+  const postMessagePayload = (type?: string, payload?: string) => {
     return {
       data: {
         type: type || MessageType.TEXT_SOQL_CHANGED,

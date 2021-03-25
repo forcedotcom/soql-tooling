@@ -8,13 +8,12 @@
 import * as Soql from '../model';
 import { SoqlModelObjectImpl } from './soqlModelObjectImpl';
 
-export class HeaderCommentsImpl
-  extends SoqlModelObjectImpl
-  implements Soql.HeaderComments {
+export class HeaderCommentsImpl extends SoqlModelObjectImpl implements Soql.HeaderComments {
   public constructor(public text: string) {
     super();
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   public toSoqlSyntax(options?: Soql.SyntaxOptions): string {
     return this.text || '';
   }

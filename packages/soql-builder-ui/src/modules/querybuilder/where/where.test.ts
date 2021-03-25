@@ -1,3 +1,11 @@
+/* eslint-disable @typescript-eslint/require-await */
+/* eslint-disable @typescript-eslint/no-unsafe-call */
+/* eslint-disable @typescript-eslint/no-unsafe-member-access */
+/* eslint-disable @typescript-eslint/explicit-function-return-type */
+/* eslint-disable @typescript-eslint/explicit-member-accessibility */
+/* eslint-disable @typescript-eslint/no-unsafe-return */
+/* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
 /*
  *  Copyright (c) 2020, salesforce.com, inc.
  *  All rights reserved.
@@ -11,16 +19,8 @@ import Where from 'querybuilder/where';
 import { AndOr } from '../services/model';
 
 class WhereExpressionManager {
-  andOr;
-  modelTemplate;
-
-  constructor() {
-    this.andOr = undefined;
-    this.modelTemplate = {
-      conditions: [],
-      andOr: this.andOr
-    };
-  }
+  public andOr;
+  public modelTemplate;
 
   public condition1 = {
     condition: {
@@ -35,7 +35,7 @@ class WhereExpressionManager {
     condition: {
       field: { fieldName: 'Id' },
       operator: '>',
-      compareValue: { type: 'NUMBER', value: "123456" }
+      compareValue: { type: 'NUMBER', value: '123456' }
     },
     index: 1
   };
@@ -44,34 +44,42 @@ class WhereExpressionManager {
     condition: {
       field: undefined,
       operator: undefined,
-      compareValue: { type: 'NUMBER', value: "123456" }
+      compareValue: { type: 'NUMBER', value: '123456' }
     },
     index: 2
   };
 
-  setAndOr(value: string) {
+  public constructor() {
+    this.andOr = undefined;
+    this.modelTemplate = {
+      conditions: [],
+      andOr: this.andOr
+    };
+  }
+
+  public setAndOr(value: string): void {
     this.andOr = value;
   }
 
-  getEmptyModel() {
+  public getEmptyModel(): any {
     return this.modelTemplate;
   }
 
-  getModelWithOneCondition() {
+  public getModelWithOneCondition(): any {
     return {
       conditions: [this.condition1],
       andOr: this.andOr
     };
   }
 
-  getModelWithTwoConditions() {
+  getModelWithTwoConditions(): any {
     return {
       conditions: [this.condition1, this.condition2],
       andOr: this.andOr
     };
   }
 
-  getModelWithIncompleteConditions() {
+  getModelWithIncompleteConditions(): any {
     return {
       conditions: [this.condition1, this.condition2, this.incompleteCondition],
       andOr: this.andOr
@@ -136,7 +144,9 @@ describe('Where', () => {
 
       const conditionStore = whereCmp.whereExpr.conditions;
       expect(conditionStore.length).toBe(1);
-      expect(conditionStore[0].condition).toEqual(modelManager.condition1.condition);
+      expect(conditionStore[0].condition).toEqual(
+        modelManager.condition1.condition
+      );
       expect(conditionStore[0].index).toBe(modelManager.condition1.index);
     });
 
@@ -152,9 +162,13 @@ describe('Where', () => {
 
       const conditionStore = whereCmp.whereExpr.conditions;
       expect(conditionStore.length).toBe(2);
-      expect(conditionStore[0].condition).toEqual(modelManager.condition1.condition);
+      expect(conditionStore[0].condition).toEqual(
+        modelManager.condition1.condition
+      );
       expect(conditionStore[0].index).toBe(modelManager.condition1.index);
-      expect(conditionStore[1].condition).toEqual(modelManager.condition2.condition);
+      expect(conditionStore[1].condition).toEqual(
+        modelManager.condition2.condition
+      );
       expect(conditionStore[1].index).toBe(modelManager.condition2.index);
     });
 

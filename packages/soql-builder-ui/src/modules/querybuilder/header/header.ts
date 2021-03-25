@@ -8,9 +8,9 @@
 
 import { LightningElement, api } from 'lwc';
 export default class Header extends LightningElement {
-  @api isRunning = false;
+  @api public isRunning = false;
 
-  handleRunQuery(e: Event) {
+  public handleRunQuery(e: Event): void {
     e.preventDefault();
     const runEvent = new CustomEvent('header__run_query');
     this.dispatchEvent(runEvent);

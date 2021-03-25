@@ -5,8 +5,8 @@
  * For full license text, see LICENSE.txt file in the repo root or https://opensource.org/licenses/BSD-3-Clause
  */
 
-import * as Impl from '.';
 import { SyntaxOptions } from '../model';
+import * as Impl from '.';
 
 describe('SoqlModelObjectImpl should', () => {
   const testModelObject = new Impl.UnmodeledSyntaxImpl('mick', { reasonCode: 'unmodeled:fake', message: 'fake SOQL' });
@@ -14,9 +14,7 @@ describe('SoqlModelObjectImpl should', () => {
     const expectedSyntaxOptions = new SyntaxOptions();
     expectedSyntaxOptions.indent = 50;
     expectedSyntaxOptions.wrapColumn = 50;
-    const actualSyntaxOptions = testModelObject.getSyntaxOptions(
-      expectedSyntaxOptions
-    );
+    const actualSyntaxOptions = testModelObject.getSyntaxOptions(expectedSyntaxOptions);
     expect(actualSyntaxOptions).toBe(expectedSyntaxOptions);
   });
   it('create default SyntaxOptions if none are passed in', () => {

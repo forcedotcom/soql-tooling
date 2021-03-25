@@ -15,9 +15,7 @@ describe('FieldRefImpl should', () => {
   });
   it('return field name for toSoqlSyntax()', () => {
     const expected = 'rolling';
-    const actual = new Impl.FieldRefImpl(
-      'rolling',
-    ).toSoqlSyntax();
+    const actual = new Impl.FieldRefImpl('rolling').toSoqlSyntax();
     expect(actual).toEqual(expected);
   });
 });

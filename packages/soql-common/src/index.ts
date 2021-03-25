@@ -5,8 +5,7 @@
  * For full license text, see LICENSE.txt file in the repo root or https://opensource.org/licenses/BSD-3-Clause
  */
 export * as soqlComments from './soqlComments';
-//import * as soqlParser from 'soql-parser';
+// import * as soqlParser from 'soql-parser';
 
-//export soqlComments;
-//export { soqlParser };
-
+// export soqlComments;
+// export { soqlParser };

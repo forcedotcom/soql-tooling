@@ -14,6 +14,7 @@ export class FieldRefImpl extends SoqlModelObjectImpl implements Soql.FieldRef {
     super();
     this.fieldName = fieldName;
   }
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   public toSoqlSyntax(options?: Soql.SyntaxOptions): string {
     return this.fieldName;
   }

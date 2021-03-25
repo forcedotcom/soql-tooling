@@ -5,9 +5,10 @@
  * For full license text, see LICENSE.txt file in the repo root or https://opensource.org/licenses/BSD-3-Clause
  */
 
-import * as Impl from '.';
-import * as Soql from '../model';
 import { EOL } from 'os';
+import * as Soql from '../model';
+import * as Impl from '.';
+
 describe('QueryImpl should', () => {
   it('store query components as appropriate model objects', () => {
     const expected = {
@@ -17,32 +18,32 @@ describe('QueryImpl should', () => {
         condition: {
           field: { fieldName: 'paint_it' },
           operator: '=',
-          compareValue: { type: 'STRING', value: "'black'" }
-        }
+          compareValue: { type: 'STRING', value: "'black'" },
+        },
       },
       with: {
         unmodeledSyntax: 'gimme shelter',
-        reason: Soql.REASON_UNMODELED_WITH
+        reason: Soql.REASON_UNMODELED_WITH,
       },
       groupBy: {
         unmodeledSyntax: 'start me up',
-        reason: Soql.REASON_UNMODELED_GROUPBY
+        reason: Soql.REASON_UNMODELED_GROUPBY,
       },
       orderBy: { orderByExpressions: [{ field: { fieldName: 'angie' } }] },
       limit: { limit: 5 },
       offset: {
         unmodeledSyntax: 'wild horses',
-        reason: Soql.REASON_UNMODELED_OFFSET
+        reason: Soql.REASON_UNMODELED_OFFSET,
       },
       bind: { unmodeledSyntax: 'miss you', reason: Soql.REASON_UNMODELED_BIND },
       recordTrackingType: {
         unmodeledSyntax: 'satisfaction',
-        reason: Soql.REASON_UNMODELED_RECORDTRACKING
+        reason: Soql.REASON_UNMODELED_RECORDTRACKING,
       },
       update: {
         unmodeledSyntax: 'under my thumb',
-        reason: Soql.REASON_UNMODELED_UPDATE
-      }
+        reason: Soql.REASON_UNMODELED_UPDATE,
+      },
     };
     const actual = new Impl.QueryImpl(
       new Impl.SelectExprsImpl([]),
@@ -51,52 +52,24 @@ describe('QueryImpl should', () => {
         new Impl.FieldCompareConditionImpl(
           new Impl.FieldRefImpl(expected.where.condition.field.fieldName),
           Soql.ConditionOperator.Equals,
-          new Impl.LiteralImpl(
-            Soql.LiteralType.String,
-            expected.where.condition.compareValue.value
-          )
+          new Impl.LiteralImpl(Soql.LiteralType.String, expected.where.condition.compareValue.value)
         )
       ),
-      new Impl.UnmodeledSyntaxImpl(
-        expected.with.unmodeledSyntax,
-        Soql.REASON_UNMODELED_WITH
-      ),
-      new Impl.UnmodeledSyntaxImpl(
-        expected.groupBy.unmodeledSyntax,
-        Soql.REASON_UNMODELED_GROUPBY
-      ),
+      new Impl.UnmodeledSyntaxImpl(expected.with.unmodeledSyntax, Soql.REASON_UNMODELED_WITH),
+      new Impl.UnmodeledSyntaxImpl(expected.groupBy.unmodeledSyntax, Soql.REASON_UNMODELED_GROUPBY),
       new Impl.OrderByImpl([
-        new Impl.OrderByExpressionImpl(
-          new Impl.FieldRefImpl(
-            expected.orderBy.orderByExpressions[0].field.fieldName
-          )
-        )
+        new Impl.OrderByExpressionImpl(new Impl.FieldRefImpl(expected.orderBy.orderByExpressions[0].field.fieldName)),
       ]),
       new Impl.LimitImpl(expected.limit.limit),
-      new Impl.UnmodeledSyntaxImpl(
-        expected.offset.unmodeledSyntax,
-        Soql.REASON_UNMODELED_OFFSET
-      ),
-      new Impl.UnmodeledSyntaxImpl(
-        expected.bind.unmodeledSyntax,
-        Soql.REASON_UNMODELED_BIND
-      ),
-      new Impl.UnmodeledSyntaxImpl(
-        expected.recordTrackingType.unmodeledSyntax,
-        Soql.REASON_UNMODELED_RECORDTRACKING
-      ),
-      new Impl.UnmodeledSyntaxImpl(
-        expected.update.unmodeledSyntax,
-        Soql.REASON_UNMODELED_UPDATE
-      )
+      new Impl.UnmodeledSyntaxImpl(expected.offset.unmodeledSyntax, Soql.REASON_UNMODELED_OFFSET),
+      new Impl.UnmodeledSyntaxImpl(expected.bind.unmodeledSyntax, Soql.REASON_UNMODELED_BIND),
+      new Impl.UnmodeledSyntaxImpl(expected.recordTrackingType.unmodeledSyntax, Soql.REASON_UNMODELED_RECORDTRACKING),
+      new Impl.UnmodeledSyntaxImpl(expected.update.unmodeledSyntax, Soql.REASON_UNMODELED_UPDATE)
     );
     expect(actual).toEqual(expected);
   });
   it('return query string, one line per clause with all but SELECT clause indented for toSoqlSyntax()', () => {
-    const expected =
-      `SELECT ${EOL}` +
-      `  FROM songs${EOL}` +
-      `  WHERE paint_it = 'black'${EOL}`;
+    const expected = `SELECT ${EOL}` + `  FROM songs${EOL}` + `  WHERE paint_it = 'black'${EOL}`;
     const actual = new Impl.QueryImpl(
       new Impl.SelectExprsImpl([]),
       new Impl.FromImpl('songs'),

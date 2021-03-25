@@ -14,26 +14,37 @@ interface SObjectField {
   picklistValues: string[];
 }
 
+/* eslint-disable @typescript-eslint/no-unsafe-return */
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
+/* eslint-disable @typescript-eslint/no-unsafe-call */
+/* eslint-disable @typescript-eslint/no-unsafe-member-access */
 export class SObjectTypeUtils {
   protected fieldMap: { [key: string]: SObjectField };
   protected typeMap: { [key: string]: Soql.SObjectFieldType };
-  constructor(protected sobjectMetadata: any) {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  public constructor(protected sobjectMetadata: any) {
     this.fieldMap = {};
-    if (sobjectMetadata && sobjectMetadata.fields && Array.isArray(sobjectMetadata.fields)) {
-      sobjectMetadata.fields.forEach(field => {
+    if (
+      sobjectMetadata &&
+      sobjectMetadata.fields &&
+      Array.isArray(sobjectMetadata.fields)
+    ) {
+      sobjectMetadata.fields.forEach((field) => {
         this.fieldMap[field.name.toLowerCase()] = {
           name: field.name,
           type: field.type,
-          picklistValues: (field.picklistValues && Array.isArray(field.picklistValues))
-            ? field.picklistValues.map(picklistValue => picklistValue.value)
-            : []
-        }
+          picklistValues:
+            field.picklistValues && Array.isArray(field.picklistValues)
+              ? field.picklistValues.map((picklistValue) => picklistValue.value)
+              : []
+        };
       });
     }
     this.typeMap = {};
-    Object.keys(Soql.SObjectFieldType).forEach(key => {
-      this.typeMap[Soql.SObjectFieldType[key].toLowerCase()] = Soql.SObjectFieldType[key];
-    })
+    Object.keys(Soql.SObjectFieldType).forEach((key) => {
+      this.typeMap[Soql.SObjectFieldType[key].toLowerCase()] =
+        Soql.SObjectFieldType[key];
+    });
   }
 
   public getType(fieldName: string): Soql.SObjectFieldType {

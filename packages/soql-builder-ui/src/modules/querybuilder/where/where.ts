@@ -20,24 +20,25 @@ interface ModifierGroupNode extends Node {
 }
 
 export default class Where extends LightningElement {
-  @api isLoading = false;
-  @api whereFields: string[];
-  @api sobjectMetadata: any;
-  @track _conditionsStore: JsonMap[] = [];
-  _andOr = AndOr.AND;
-  conditionTemplate: ConditionTemplate = {
+  @api public isLoading = false;
+  @api public whereFields: string[];
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  @api public sobjectMetadata: any;
+  @track public _conditionsStore: JsonMap[] = [];
+  public _andOr = AndOr.AND;
+  public conditionTemplate: ConditionTemplate = {
     condition: {
       operator: '='
     },
     index: this.templateIndex
   };
-  lastModifierGroupIsComplete = false;
+  public lastModifierGroupIsComplete = false;
 
-  @api get whereExpr(): JsonMap {
+  @api public get whereExpr(): JsonMap {
     return { conditions: this._conditionsStore, andOr: this._andOr };
   }
 
-  set whereExpr(where: JsonMap) {
+  public set whereExpr(where: JsonMap) {
     if (where.conditions && where.conditions.length) {
       this._conditionsStore = where.conditions;
     } else {
@@ -49,41 +50,41 @@ export default class Where extends LightningElement {
     }
   }
 
-  get templateIndex(): number {
+  public get templateIndex(): number {
     return this._conditionsStore.length;
   }
 
-  headerSelectedClass = ' header__btn--selected';
-  get andBtnClassList() {
+  public headerSelectedClass = ' header__btn--selected';
+  public get andBtnClassList(): string {
     let andClassList = 'header__btn header__btn--and';
     andClassList += this._andOr === AndOr.AND ? this.headerSelectedClass : '';
 
     return andClassList;
   }
 
-  get orBtnClassList() {
+  public get orBtnClassList(): string {
     let orClassList = 'header__btn header__btn--or';
     orClassList += this._andOr === AndOr.OR ? this.headerSelectedClass : '';
 
     return orClassList;
   }
 
-  get addBtnClassList() {
+  public get addBtnClassList(): string {
     const disabledBtnClass = 'btn--disabled';
     let classList = '';
     classList += !this.lastModifierGroupIsComplete ? disabledBtnClass : '';
     return classList;
   }
 
-  renderedCallback() {
+  public renderedCallback(): void {
     this.checkLastModifierGroup();
   }
 
-  getModfierGroupsRendered(): NodeList {
+  public getModfierGroupsRendered(): NodeList {
     return this.template.querySelectorAll('querybuilder-where-modifier-group');
   }
 
-  checkLastModifierGroup() {
+  public checkLastModifierGroup(): void {
     const modfierGroupsRendered = this.getModfierGroupsRendered();
 
     if (this.getModfierGroupsRendered().length) {
@@ -96,7 +97,7 @@ export default class Where extends LightningElement {
     }
   }
 
-  handleAddModGroup(e) {
+  public handleAddModGroup(e: { preventDefault: () => void }): void {
     e.preventDefault();
     const newTemplate = {
       ...this.conditionTemplate,
@@ -105,7 +106,9 @@ export default class Where extends LightningElement {
     this._conditionsStore = [...this._conditionsStore, newTemplate];
   }
 
-  handleSetAndOr(e) {
+  /* eslint-disable @typescript-eslint/no-unsafe-member-access,@typescript-eslint/no-unsafe-call,@typescript-eslint/no-unsafe-assignment */
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any,@typescript-eslint/explicit-module-boundary-types
+  public handleSetAndOr(e: any): void {
     e.preventDefault();
     const selectedValue = e.target.value;
     const isValidValue =
@@ -126,8 +129,9 @@ export default class Where extends LightningElement {
     }
   }
 
-  handleModifierGroupSelection(e) {
+  public handleModifierGroupSelection(e): void {
     e.preventDefault();
+    // eslint-disable-next-line camelcase
     const where__group_selectionEvent = new CustomEvent(
       'where__group_selection',
       {

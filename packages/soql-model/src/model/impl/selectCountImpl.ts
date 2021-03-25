@@ -8,11 +8,11 @@
 import * as Soql from '../model';
 import { SoqlModelObjectImpl } from './soqlModelObjectImpl';
 
-export class SelectCountImpl extends SoqlModelObjectImpl
-  implements Soql.SelectCount {
+export class SelectCountImpl extends SoqlModelObjectImpl implements Soql.SelectCount {
   public constructor() {
     super();
   }
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   public toSoqlSyntax(options?: Soql.SyntaxOptions): string {
     return 'SELECT COUNT()';
   }

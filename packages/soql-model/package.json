@@ -9,6 +9,7 @@
   "scripts": {
     "build": "tsc --project .",
     "clean": "shx rm -rf lib && shx rm -rf node_modules",
+    "lint": "eslint src/",
     "test": "jest --runInBand",
     "test:unit:coverage": "jest --runInBand --coverage"
   },

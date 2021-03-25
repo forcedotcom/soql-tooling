@@ -5,7 +5,7 @@
  * For full license text, see LICENSE.txt file in the repo root or https://opensource.org/licenses/BSD-3-Clause
  */
 export function splitMultiInputValues(input: string): string[] {
-  let values: string[] = [];
+  const values: string[] = [];
 
   // split at comma; for string input, watch out for commas in quotes
   let isInString = false;
@@ -16,7 +16,7 @@ export function splitMultiInputValues(input: string): string[] {
     switch (ch) {
       case "'": {
         if (isInString) {
-          const isEscaped = prev === "\\";
+          const isEscaped = prev === '\\';
           currentValue += ch;
           if (!isEscaped) {
             isInString = false;
@@ -30,7 +30,7 @@ export function splitMultiInputValues(input: string): string[] {
         }
         break;
       }
-      case ",": {
+      case ',': {
         if (isInString) {
           currentValue += ch;
         } else {

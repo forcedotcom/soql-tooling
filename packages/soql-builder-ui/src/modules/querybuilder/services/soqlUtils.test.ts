@@ -1,9 +1,13 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
+/* eslint-disable @typescript-eslint/no-unsafe-member-access */
 /*
  * Copyright (c) 2020, salesforce.com, inc.
  * All rights reserved.
  * Licensed under the BSD 3-Clause license.
  * For full license text, see LICENSE.txt file in the repo root or https://opensource.org/licenses/BSD-3-Clause
  */
+import { EOL } from 'os';
 import { Soql } from '@salesforce/soql-model';
 import {
   convertUiModelToSoql,
@@ -17,7 +21,6 @@ import {
   stripWildCardPadding
 } from './soqlUtils';
 import { SELECT_COUNT, ToolingModelJson } from './model';
-import { EOL } from 'os';
 
 describe('SoqlUtils', () => {
   const uiModelOne: ToolingModelJson = {
@@ -148,7 +151,7 @@ describe('SoqlUtils', () => {
 
   it('transforms Soql to UI Model', () => {
     const transformedUiModel = convertSoqlToUiModel(soqlOne);
-    let expectedUiModel = { ...uiModelOne } as any;
+    const expectedUiModel = { ...uiModelOne } as any;
     delete expectedUiModel.originalSoqlStatement;
     expect(JSON.stringify(transformedUiModel)).toEqual(
       JSON.stringify(expectedUiModel)
@@ -157,7 +160,7 @@ describe('SoqlUtils', () => {
 
   it('transforms SOQL to UI Model with SELECT COUNT() clause', () => {
     const transformedUiModel = convertSoqlToUiModel(soqlCount);
-    let expected = { ...uiModelCount } as any;
+    const expected = { ...uiModelCount } as any;
     delete expected.originalSoqlStatement;
     expect(JSON.stringify(transformedUiModel)).toEqual(
       JSON.stringify(expected)
@@ -268,7 +271,7 @@ describe('SoqlUtils', () => {
     });
 
     it('addWildCardToValue() should clean value & add % in right place', () => {
-      let rawValue = 'ABC';
+      const rawValue = 'ABC';
       expect(
         addWildCardToValue(Soql.UiOperatorValue.LIKE_START, rawValue)
       ).toEqual('ABC%');

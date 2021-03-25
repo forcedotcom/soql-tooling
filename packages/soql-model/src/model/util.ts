@@ -8,20 +8,21 @@
 import * as Impl from './impl';
 import { AndOr, Condition } from './model';
 
+// eslint-disable-next-line @typescript-eslint/no-namespace
 export namespace SoqlModelUtils {
   /**
    * This method returns quickly as soon as it finds unmodeled syntax.
+   *
    * @param model
    */
-  export function containsUnmodeledSyntax(model: object): boolean {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  export function containsUnmodeledSyntax(model: Record<string, any>): boolean {
     if (isUnmodeledSyntax(model)) {
       return true;
     }
     for (const property in model) {
-      if (typeof (model as any)[property] === 'object') {
-        const hasUnmodeledSyntax = containsUnmodeledSyntax(
-          (model as any)[property]
-        );
+      if (typeof model[property] === 'object') {
+        const hasUnmodeledSyntax = containsUnmodeledSyntax(model[property]);
         if (hasUnmodeledSyntax) {
           return true;
         }
@@ -32,19 +33,23 @@ export namespace SoqlModelUtils {
 
   /**
    * This method determins whether the model object is an instance of unmodeled syntax, without checking property objects.
+   *
    * @param model
    */
-  export function isUnmodeledSyntax(model: object): boolean {
-    return ('unmodeledSyntax' in model);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  export function isUnmodeledSyntax(model: Record<string, any>): boolean {
+    return 'unmodeledSyntax' in model;
   }
 
   /**
    * This method collects all the unmodelled syntax it finds into a collection and returns it.
+   *
    * @param model
    * @param collector
    */
   export function getUnmodeledSyntax(
-    model: object,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    model: Record<string, any>,
     collector?: Impl.UnmodeledSyntaxImpl[]
   ): Impl.UnmodeledSyntaxImpl[] {
     collector = collector || [];
@@ -53,24 +58,21 @@ export namespace SoqlModelUtils {
       return collector;
     }
     for (const property in model) {
-      if (typeof (model as any)[property] === 'object') {
-        getUnmodeledSyntax((model as any)[property], collector);
+      if (typeof model[property] === 'object') {
+        getUnmodeledSyntax(model[property], collector);
       }
     }
     return collector;
   }
 
-  export function containsError(model: object): boolean {
-    if (
-      'errors' in model &&
-      Array.isArray((model as any).errors) &&
-      (model as any).errors.length > 0
-    ) {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  export function containsError(model: Record<string, any>): boolean {
+    if ('errors' in model && Array.isArray(model.errors) && model.errors.length > 0) {
       return true;
     }
     for (const property in model) {
-      if (typeof (model as any)[property] === 'object') {
-        const hasError = containsError((model as any)[property]);
+      if (typeof model[property] === 'object') {
+        const hasError = containsError(model[property]);
         if (hasError) {
           return true;
         }
@@ -79,22 +81,16 @@ export namespace SoqlModelUtils {
     return false;
   }
 
-  export function simpleGroupToArray(
-    condition: Condition
-  ): { conditions: Condition[]; andOr?: AndOr } {
+  export function simpleGroupToArray(condition: Condition): { conditions: Condition[]; andOr?: AndOr } {
     if (!isSimpleGroup(condition)) {
       throw Error('not simple group');
     }
     condition = stripNesting(condition);
     let conditions: Condition[] = [];
-    let andOr: AndOr | undefined = undefined;
+    let andOr: AndOr | undefined;
     if (condition instanceof Impl.AndOrConditionImpl) {
-      conditions = conditions.concat(
-        simpleGroupToArray(condition.leftCondition).conditions
-      );
-      conditions = conditions.concat(
-        simpleGroupToArray(condition.rightCondition).conditions
-      );
+      conditions = conditions.concat(simpleGroupToArray(condition.leftCondition).conditions);
+      conditions = conditions.concat(simpleGroupToArray(condition.rightCondition).conditions);
       andOr = condition.andOr;
     } else {
       conditions.push(condition);
@@ -102,10 +98,7 @@ export namespace SoqlModelUtils {
     return { conditions, andOr };
   }
 
-  export function arrayToSimpleGroup(
-    conditions: Condition[],
-    andOr?: AndOr
-  ): Condition {
+  export function arrayToSimpleGroup(conditions: Condition[], andOr?: AndOr): Condition {
     if (conditions.length > 1 && andOr === undefined) {
       throw Error('no operator supplied for conditions');
     }
@@ -117,11 +110,7 @@ export namespace SoqlModelUtils {
       return conditions[0];
     } else {
       const [left, ...rest] = conditions;
-      return new Impl.AndOrConditionImpl(
-        left as Condition,
-        andOr as AndOr,
-        arrayToSimpleGroup(rest, andOr)
-      );
+      return new Impl.AndOrConditionImpl(left, andOr as AndOr, arrayToSimpleGroup(rest, andOr));
     }
   }
 
@@ -153,16 +142,14 @@ export namespace SoqlModelUtils {
     );
   }
 
-  export function getKeyByValue(
-    object: { [key: string]: string },
-    value: string
-  ): string | undefined {
+  export function getKeyByValue(object: { [key: string]: string }, value: string): string | undefined {
     return Object.keys(object).find((key: string) => object[key] === value);
   }
 
+  // eslint-disable-next-line no-inner-declarations
   function stripNesting(condition: Condition): Condition {
     while (condition instanceof Impl.NestedConditionImpl) {
-      condition = (condition as Impl.NestedConditionImpl).condition;
+      condition = condition.condition;
     }
     return condition;
   }

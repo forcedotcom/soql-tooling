@@ -15,7 +15,7 @@ import { StringValidator } from './stringValidator';
 import { DefaultValidator, MultipleInputValidator, OperatorValidator, ValidateOptions, Validator } from './validator';
 
 export class ValidatorFactory {
-  static getFieldInputValidator(options: ValidateOptions): Validator {
+  public static getFieldInputValidator(options: ValidateOptions): Validator {
     switch (options.type) {
       case SObjectFieldType.Boolean: {
         return new BooleanValidator(options);
@@ -46,11 +46,11 @@ export class ValidatorFactory {
     return new DefaultValidator(options);
   }
 
-  static getOperatorValidator(options: ValidateOptions): Validator {
+  public static getOperatorValidator(options: ValidateOptions): Validator {
     return new OperatorValidator(options);
   }
 
-  static getFieldMultipleInputValidator(options: ValidateOptions): MultipleInputValidator {
+  public static getFieldMultipleInputValidator(options: ValidateOptions): MultipleInputValidator {
     return new MultipleInputValidator(options, this.getFieldInputValidator(options));
   }
 }

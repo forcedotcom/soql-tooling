@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
+/* eslint-disable @typescript-eslint/ban-ts-comment */
 /*
  *  Copyright (c) 2020, salesforce.com, inc.
  *  All rights reserved.
@@ -16,11 +18,11 @@ describe('Message Service Factory', () => {
     const original = global.acquireVsCodeApi;
     // @ts-ignore
     global.acquireVsCodeApi = undefined;
-    let standardMessageService = MessageServiceFactory.create();
+    const standardMessageService = MessageServiceFactory.create();
     expect(standardMessageService.constructor).toBe(StandaloneMessageService);
     // @ts-ignore
     global.acquireVsCodeApi = original;
-    let vscodeMessageService = MessageServiceFactory.create();
+    const vscodeMessageService = MessageServiceFactory.create();
     expect(vscodeMessageService.constructor).toBe(VscodeMessageService);
   });
 });

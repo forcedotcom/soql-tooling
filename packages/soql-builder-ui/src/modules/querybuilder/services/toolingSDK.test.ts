@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-unsafe-call */
+/* eslint-disable @typescript-eslint/no-unsafe-member-access */
 /*
  *  Copyright (c) 2020, salesforce.com, inc.
  *  All rights reserved.
@@ -15,10 +17,11 @@ import { MessageType } from './message/soqlEditorEvent';
 describe('Tooling SDK Service', () => {
   let toolingSDK: ToolingSDK;
   let messageService: IMessageService;
-  let window = getWindow();
+  const window = getWindow();
   let vscode;
 
-  function postMessageFromVSCode(message) {
+  function postMessageFromVSCode(message): void {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     const messageEvent = new MessageEvent('message', { data: message });
     window.dispatchEvent(messageEvent);
   }

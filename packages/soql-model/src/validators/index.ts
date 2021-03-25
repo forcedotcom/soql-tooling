@@ -6,10 +6,5 @@
  */
 
 export { splitMultiInputValues } from './inputUtils';
-export {
-  MultipleInputValidator,
-  ValidateOptions,
-  ValidateResult,
-  Validator
-} from './validator';
+export { MultipleInputValidator, ValidateOptions, ValidateResult, Validator } from './validator';
 export { ValidatorFactory } from './validatorFactory';

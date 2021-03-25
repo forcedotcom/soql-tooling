@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unsafe-member-access */
 import { Soql } from '@salesforce/soql-model';
 import { createQueryTelemetry } from './telemetryUtils';
 import { ToolingModelJson } from './toolingModelService';
@@ -28,6 +29,7 @@ describe('Telemetry Utils', () => {
     reason: Soql.REASON_UNMODELED_FUNCTIONREFERENCE
   };
 
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
   const query = ({
     sObject: 'account',
     fields: ['Id', 'Name'],

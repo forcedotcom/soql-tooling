@@ -1,3 +1,9 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable @typescript-eslint/explicit-module-boundary-types */
+/* eslint-disable @typescript-eslint/no-unsafe-return */
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
+/* eslint-disable @typescript-eslint/no-unsafe-call */
+/* eslint-disable @typescript-eslint/no-unsafe-member-access */
 /*
  *  Copyright (c) 2020, salesforce.com, inc.
  *  All rights reserved.
@@ -13,7 +19,7 @@ import {
   splitMultiInputValues
 } from '@salesforce/soql-model';
 import { JsonMap } from '@salesforce/types';
-import { operatorOptions } from '../services/model';
+import { OperatorOption, operatorOptions } from '../services/model';
 import { SObjectTypeUtils } from '../services/sobjectUtils';
 import {
   displayValueToSoqlStringLiteral,
@@ -27,47 +33,51 @@ const DEFAULT_OPERATOR_INPUT_VALUE = 'EQ';
 const DEFAULT_CRITERIA_INPUT_VALUE = '';
 
 export default class WhereModifierGroup extends LightningElement {
-  @api allFields: string[];
-  @api isLoading = false;
-  @api index;
-  @track _currentFieldSelection;
-  @track _criteriaDisplayValue;
-  sobjectTypeUtils: SObjectTypeUtils;
-  fieldEl: HTMLSelectElement;
-  operatorEl: HTMLSelectElement;
-  criteriaEl: HTMLInputElement;
-  operatorErrorMessage = '';
-  criteriaErrorMessage = '';
-  hasOperatorError = false;
-  hasCriteriaError = false;
-  selectPlaceHolderText = 'Search Fields...'; //i18n
-  _allModifiersHaveValue: boolean = false;
-  _sobjectMetadata: any;
-  _condition: JsonMap;
-  _currentOperatorValue: string;
-  handleSelectionEvent: () => void;
+  @api public allFields: string[];
+  @api public isLoading = false;
+  @api public index;
+  @track public _currentFieldSelection;
+  @track public _criteriaDisplayValue;
+  public sobjectTypeUtils: SObjectTypeUtils;
+  public fieldEl: HTMLSelectElement;
+  public operatorEl: HTMLSelectElement;
+  public criteriaEl: HTMLInputElement;
+  public operatorErrorMessage = '';
+  public criteriaErrorMessage = '';
+  public hasOperatorError = false;
+  public hasCriteriaError = false;
+  public selectPlaceHolderText = 'Search Fields...'; // i18n
+  public _allModifiersHaveValue = false;
+  public _sobjectMetadata: any;
+  public _condition: JsonMap;
+  public _currentOperatorValue: string;
+  public handleSelectionEvent: () => void;
 
   @api
-  get sobjectMetadata() {
+  public get sobjectMetadata(): any {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
     return this._sobjectMetadata;
   }
-  set sobjectMetadata(sobjectMetadata: any) {
+  public set sobjectMetadata(sobjectMetadata: any) {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     this._sobjectMetadata = sobjectMetadata;
     this.sobjectTypeUtils = new SObjectTypeUtils(sobjectMetadata);
     this.resetErrorFlagsAndMessages();
   }
 
   @api // this need to be public so parent can read value
-  get allModifiersHaveValue() {
+  public get allModifiersHaveValue(): boolean {
     return this._allModifiersHaveValue;
   }
 
   @api
-  get condition(): JsonMap {
+  public get condition(): JsonMap {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
     return this._condition;
   }
 
-  set condition(condition: JsonMap) {
+  public set condition(condition: JsonMap) {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     this._condition = condition;
     this._criteriaDisplayValue = '';
 
@@ -106,7 +116,7 @@ export default class WhereModifierGroup extends LightningElement {
     }
   }
   /* ======= CSS CLASS METHODS ======= */
-  get operatorClasses() {
+  public get operatorClasses(): string {
     let classes = 'modifier__item modifier__operator';
     classes = this.hasOperatorError
       ? classes + ' tooltip tooltip--error'
@@ -114,7 +124,7 @@ export default class WhereModifierGroup extends LightningElement {
     return classes;
   }
 
-  get criteriaClasses() {
+  public get criteriaClasses(): string {
     let classes = 'modifier__item modifier__criteria';
     classes = this.hasCriteriaError
       ? classes + ' tooltip tooltip--error'
@@ -122,12 +132,12 @@ export default class WhereModifierGroup extends LightningElement {
     return classes;
   }
   /* --------------------------------- */
-  constructor() {
+  public constructor() {
     super();
     this.handleSelectionEvent = debounce(selectionEventHandler.bind(this), 500);
   }
   /* ======= LIFECYCLE HOOKS ======= */
-  renderedCallback() {
+  public renderedCallback(): void {
     this.fieldEl = this.template.querySelector('querybuilder-custom-select');
     this.operatorEl = this.template.querySelector(
       '[data-el-where-operator-input]'
@@ -139,16 +149,16 @@ export default class WhereModifierGroup extends LightningElement {
   }
 
   /* ======= FIELDS ======= */
-  get _selectedField() {
+  public get _selectedField(): any[] {
     return this._currentFieldSelection ? [this._currentFieldSelection] : [];
   }
 
-  get defaultFieldOptionText() {
+  public get defaultFieldOptionText(): string {
     // TODO: i18n
     return this.isLoading ? 'Loading...' : 'Select Field...';
   }
 
-  getFieldName(): string | undefined {
+  public getFieldName(): string | undefined {
     return this.condition &&
       this.condition.field &&
       this.condition.field.fieldName
@@ -157,23 +167,23 @@ export default class WhereModifierGroup extends LightningElement {
   }
 
   /* ======= OPERATORS ======= */
-  get hasSelectedOperator() {
+  public get hasSelectedOperator(): boolean {
     return !!this._currentOperatorValue;
   }
   // consumed in UI template for rendering
-  get _selectedOperator() {
+  public get _selectedOperator(): OperatorOption | undefined {
     return operatorOptions.find(
       (option) => option.value === this._currentOperatorValue
     );
   }
 
-  get filteredOperators() {
+  public get filteredOperators(): OperatorOption[] {
     return operatorOptions.filter((option) => {
       return option.value !== this._currentOperatorValue;
     });
   }
 
-  toOperatorModelValue(value: string): string | undefined {
+  public toOperatorModelValue(value: string): string | undefined {
     const matchingOption = operatorOptions.find(
       (option) => option.value === value
     );
@@ -181,17 +191,17 @@ export default class WhereModifierGroup extends LightningElement {
   }
 
   /* ======= CRITERIA ======= */
-  get criteriaDisplayValue(): string | undefined {
+  public get criteriaDisplayValue(): string | undefined {
     return this._criteriaDisplayValue;
   }
 
   /* ======= UTILITIES ======= */
-  resetErrorFlagsAndMessages() {
+  public resetErrorFlagsAndMessages(): void {
     this.operatorErrorMessage = this.criteriaErrorMessage = '';
     this.hasOperatorError = this.hasCriteriaError = false;
   }
 
-  checkAllModifiersHaveValues(): Boolean {
+  public checkAllModifiersHaveValues(): boolean {
     const allHaveValues = Boolean(
       this.fieldEl.value[0] && this.operatorEl.value && this.criteriaEl.value
     );
@@ -199,7 +209,7 @@ export default class WhereModifierGroup extends LightningElement {
     return allHaveValues;
   }
 
-  isMulipleValueOperator(operatorValue: string): boolean {
+  public isMulipleValueOperator(operatorValue: string): boolean {
     return (
       operatorValue === Soql.UiOperatorValue.IN ||
       operatorValue === Soql.UiOperatorValue.NOT_IN ||
@@ -208,20 +218,22 @@ export default class WhereModifierGroup extends LightningElement {
     );
   }
 
-  isSpecialLikeCondition(operatorValue: string): boolean {
+  public isSpecialLikeCondition(operatorValue: string): boolean {
     return (
       operatorValue === Soql.UiOperatorValue.LIKE_START ||
       operatorValue === Soql.UiOperatorValue.LIKE_END ||
       operatorValue === Soql.UiOperatorValue.LIKE_CONTAINS
     );
   }
+
   // This is the value displayed in modifier <input>
-  displayValue(
+  public displayValue(
     type: Soql.LiteralType,
     rawValue: string,
     operatorValue?: string
   ): string {
     let displayValue = rawValue;
+    // eslint-disable-next-line default-case
     switch (type) {
       case Soql.LiteralType.String: {
         displayValue = soqlStringLiteralToDisplayValue(rawValue);
@@ -234,7 +246,7 @@ export default class WhereModifierGroup extends LightningElement {
     return displayValue;
   }
   // This is represents the compareValue in the SOQL Query
-  normalizeInput(
+  public normalizeInput(
     type: Soql.SObjectFieldType,
     value: string,
     operatorValue?: Soql.UiOperatorValue
@@ -257,7 +269,7 @@ export default class WhereModifierGroup extends LightningElement {
           // treat like string
           if (value.toLowerCase().trim() !== 'null') {
             if (this.isSpecialLikeCondition(operatorValue)) {
-              let wildCardValue = addWildCardToValue(operatorValue, value);
+              const wildCardValue = addWildCardToValue(operatorValue, value);
               normalized = displayValueToSoqlStringLiteral(wildCardValue);
             } else {
               normalized = displayValueToSoqlStringLiteral(normalized);
@@ -270,13 +282,13 @@ export default class WhereModifierGroup extends LightningElement {
     return normalized;
   }
 
-  getSObjectFieldType(fieldName: string): Soql.SObjectFieldType {
+  public getSObjectFieldType(fieldName: string): Soql.SObjectFieldType {
     return this.sobjectTypeUtils
       ? this.sobjectTypeUtils.getType(fieldName)
       : Soql.SObjectFieldType.AnyType;
   }
 
-  getPicklistValues(fieldName: string): string[] {
+  public getPicklistValues(fieldName: string): string[] {
     // values need to be quoted
     return this.sobjectTypeUtils
       ? this.sobjectTypeUtils
@@ -285,42 +297,43 @@ export default class WhereModifierGroup extends LightningElement {
       : [];
   }
 
-  getCriteriaType(
+  public getCriteriaType(
     type: Soql.SObjectFieldType,
     value: string
   ): Soql.LiteralType {
     let criteriaType = Soql.LiteralType.String;
     if (value.toLowerCase() === 'null') {
       return Soql.LiteralType.NULL;
-    } else {
-      switch (type) {
-        case Soql.SObjectFieldType.Boolean: {
-          criteriaType = Soql.LiteralType.Boolean;
-          break;
-        }
-        case Soql.SObjectFieldType.Currency: {
-          criteriaType = Soql.LiteralType.Currency;
-          break;
-        }
-        case Soql.SObjectFieldType.DateTime:
-        case Soql.SObjectFieldType.Date:
-        case Soql.SObjectFieldType.Time: {
-          criteriaType = Soql.LiteralType.Date;
-          break;
-        }
-        case Soql.SObjectFieldType.Integer:
-        case Soql.SObjectFieldType.Long:
-        case Soql.SObjectFieldType.Percent:
-        case Soql.SObjectFieldType.Double: {
-          criteriaType = Soql.LiteralType.Number;
-          break;
-        }
+    }
+    // eslint-disable-next-line default-case
+    switch (type) {
+      case Soql.SObjectFieldType.Boolean: {
+        criteriaType = Soql.LiteralType.Boolean;
+        break;
+      }
+      case Soql.SObjectFieldType.Currency: {
+        criteriaType = Soql.LiteralType.Currency;
+        break;
+      }
+      case Soql.SObjectFieldType.DateTime:
+      case Soql.SObjectFieldType.Date:
+      case Soql.SObjectFieldType.Time: {
+        criteriaType = Soql.LiteralType.Date;
+        break;
+      }
+      case Soql.SObjectFieldType.Integer:
+      case Soql.SObjectFieldType.Long:
+      case Soql.SObjectFieldType.Percent:
+      case Soql.SObjectFieldType.Double: {
+        criteriaType = Soql.LiteralType.Number;
+        break;
       }
     }
+
     return criteriaType;
   }
 
-  validateInput(): boolean {
+  public validateInput(): boolean {
     if (this.checkAllModifiersHaveValues()) {
       this.resetErrorFlagsAndMessages();
 
@@ -384,6 +397,7 @@ export default class WhereModifierGroup extends LightningElement {
               value
             };
           });
+          // eslint-disable-next-line @lwc/lwc/no-api-reassignments
           this.condition = {
             ...conditionTemplate,
             values
@@ -392,6 +406,7 @@ export default class WhereModifierGroup extends LightningElement {
           // Do not trigger update. User is still typing or not finished their input.
         }
       } else {
+        // eslint-disable-next-line @lwc/lwc/no-api-reassignments
         this.condition = {
           ...conditionTemplate,
           compareValue: {
@@ -405,7 +420,7 @@ export default class WhereModifierGroup extends LightningElement {
     return true;
   }
   /* ======= EVENT HANDLERS ======= */
-  handleConditionRemoved(e) {
+  public handleConditionRemoved(e): void {
     // reset inputs to defaults
     this._currentFieldSelection = DEFAULT_FIELD_INPUT_VALUE;
     this._currentOperatorValue = DEFAULT_OPERATOR_INPUT_VALUE;
@@ -425,7 +440,7 @@ export default class WhereModifierGroup extends LightningElement {
   }
 }
 
-function selectionEventHandler(e) {
+function selectionEventHandler(e): void {
   e.preventDefault();
   // note: this.validateInput() will change state by setting this.condition
   if (this.checkAllModifiersHaveValues() && this.validateInput()) {

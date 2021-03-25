@@ -6,27 +6,28 @@
  *
  */
 
-export function getWindow() {
+export function getWindow(): Window {
   return window;
 }
 
-export function getBodyClass() {
+export function getBodyClass(): string | null {
   return window.document.body.getAttribute('class');
 }
 
-export function getLocalStorage() {
+export function getLocalStorage(): Storage {
   return localStorage;
 }
 
-export function hasVscode() {
+/* eslint-disable @typescript-eslint/ban-ts-comment,@typescript-eslint/no-unsafe-assignment,@typescript-eslint/no-unsafe-call */
+
+export function hasVscode(): boolean {
   // @ts-ignore
-  // eslint-disable-next-line no-undef
   return 'undefined' !== typeof acquireVsCodeApi;
 }
 
-let vsCode = undefined;
+let vsCode;
 
-export function getVscode() {
+export function getVscode(): unknown {
   if (hasVscode()) {
     if (!vsCode) {
       // @ts-ignore

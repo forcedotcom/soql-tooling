@@ -4,6 +4,8 @@
  * Licensed under the BSD 3-Clause license.
  * For full license text, see LICENSE.txt file in the repo root or https://opensource.org/licenses/BSD-3-Clause
  */
+/* eslint-disable @typescript-eslint/no-empty-interface */
+
 import { UnmodeledSyntaxReason } from './unmodeled';
 
 export interface ModelError {
@@ -32,7 +34,7 @@ export enum ErrorType {
   NOCOMPAREVALUE = 'NOCOMPAREVALUE',
   NOCOMPAREOPERATOR = 'NOCOMPAREOPERATOR',
   INCOMPLETEMULTIVALUELIST = 'INCOMPLETEMULTIVALUELIST',
-  UNEXPECTEDEOF = 'UNEXPECTEDEOF'
+  UNEXPECTEDEOF = 'UNEXPECTEDEOF',
 }
 
 export enum SObjectFieldType {
@@ -60,7 +62,7 @@ export enum SObjectFieldType {
   String = 'string',
   TextArea = 'textarea',
   Time = 'time',
-  Url = 'url'
+  Url = 'url',
 }
 
 export enum UiOperatorValue {
@@ -78,17 +80,17 @@ export enum UiOperatorValue {
   IN = 'IN',
   NOT_IN = 'NOT_IN',
   INCLUDES = 'INCLUDES',
-  EXCLUDES = 'EXCLUDES'
+  EXCLUDES = 'EXCLUDES',
 }
 
 export interface SoqlModelObject {
-  toSoqlSyntax(options?: SyntaxOptions): string;
   errors?: ModelError[];
+  toSoqlSyntax(options?: SyntaxOptions): string;
 }
 
 export class SyntaxOptions {
-  wrapColumn: number = 80;
-  indent: number = 2;
+  public wrapColumn = 80;
+  public indent = 2;
 }
 
 export interface Query extends SoqlModelObject {
@@ -160,17 +162,17 @@ export interface OrderByExpression extends SoqlModelObject {
 
 export enum Order {
   Ascending = 'ASC',
-  Descending = 'DESC'
+  Descending = 'DESC',
 }
 
 export enum NullsOrder {
   First = 'NULLS FIRST',
-  Last = 'NULLS LAST'
+  Last = 'NULLS LAST',
 }
 
 export enum AndOr {
   And = 'AND',
-  Or = 'OR'
+  Or = 'OR',
 }
 
 export enum ConditionOperator {
@@ -185,7 +187,7 @@ export enum ConditionOperator {
   In = 'IN',
   NotIn = 'NOT IN',
   Includes = 'INCLUDES',
-  Excludes = 'EXCLUDES'
+  Excludes = 'EXCLUDES',
 }
 
 export interface CompareValue extends SoqlModelObject {
@@ -199,7 +201,7 @@ export enum LiteralType {
   Date = 'DATE',
   Null = 'NULL',
   Number = 'NUMBER',
-  String = 'STRING'
+  String = 'STRING',
 }
 
 export interface Literal extends CompareValue {

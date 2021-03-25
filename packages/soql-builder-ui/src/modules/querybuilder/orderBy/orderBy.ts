@@ -9,18 +9,19 @@
 import { LightningElement, api } from 'lwc';
 import { JsonMap } from '@salesforce/ts-types';
 export default class OrderBy extends LightningElement {
-  @api orderByFields: string[];
-  @api selectedOrderByFields: JsonMap[] = [];
-  @api hasError = false; // currently not used, no specific order by errors
-  @api isLoading = false;
-  selectPlaceHolderText = 'Search fields...'; //i18n
+  @api public orderByFields: string[];
+  @api public selectedOrderByFields: JsonMap[] = [];
+  @api public hasError = false; // currently not used, no specific order by errors
+  @api public isLoading = false;
+  public selectPlaceHolderText = 'Search fields...'; // i18n
 
-  get defaultOptionText() {
+  public get defaultOptionText(): string {
     // TODO: i18n
     return this.isLoading ? 'Loading...' : 'Select fields...';
   }
 
-  handleOrderBySelected(e) {
+  /* eslint-disable @typescript-eslint/no-unsafe-member-access,@typescript-eslint/no-unsafe-call,@typescript-eslint/no-unsafe-assignment */
+  public handleOrderBySelected(e): void {
     e.preventDefault();
     const orderbyFieldEl = this.template.querySelector(
       'querybuilder-custom-select'
@@ -43,11 +44,12 @@ export default class OrderBy extends LightningElement {
     }
   }
 
-  handleOrderByRemoved(e) {
+  public handleOrderByRemoved(e): void {
     e.preventDefault();
     const orderByRemovedEvent = new CustomEvent('orderby__removed', {
       detail: { field: e.target.dataset.field }
     });
     this.dispatchEvent(orderByRemovedEvent);
   }
+  /* eslint-enable @typescript-eslint/no-unsafe-member-access,@typescript-eslint/no-unsafe-call,@typescript-eslint/no-unsafe-assignment */
 }

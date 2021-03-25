@@ -12,6 +12,7 @@ export class LiteralImpl extends SoqlModelObjectImpl implements Soql.Literal {
   public constructor(public type: Soql.LiteralType, public value: string) {
     super();
   }
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   public toSoqlSyntax(options?: Soql.SyntaxOptions): string {
     return this.value;
   }
