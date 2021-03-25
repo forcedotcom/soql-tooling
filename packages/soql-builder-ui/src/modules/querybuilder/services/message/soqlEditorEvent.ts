@@ -1,7 +1,6 @@
 import { TelemetryModelJson } from '../telemetryUtils';
 import { ToolingModelJson } from '../toolingModelService';
 
-/* eslint-disable no-unused-vars */
 export enum MessageType {
   UI_ACTIVATED = 'ui_activated',
   UI_SOQL_CHANGED = 'ui_soql_changed',

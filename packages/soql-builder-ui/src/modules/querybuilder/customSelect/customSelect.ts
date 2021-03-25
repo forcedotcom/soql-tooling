@@ -1,4 +1,3 @@
-/* eslint-disable no-underscore-dangle */
 import { api, track, LightningElement } from 'lwc';
 
 /**

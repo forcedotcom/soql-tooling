@@ -11,7 +11,6 @@ import { ToolingSDK } from '../services/toolingSDK';
 import { MessageServiceFactory } from '../services/message/messageServiceFactory';
 
 import { ToolingModelService } from '../services/toolingModelService';
-// eslint-disable-next-line no-unused-vars
 import { IMessageService } from '../services/message/iMessageService';
 import {
   MessageType,

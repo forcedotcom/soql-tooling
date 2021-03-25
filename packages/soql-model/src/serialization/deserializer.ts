@@ -64,7 +64,7 @@ interface KnownError {
   predicate: (error: ParserError, context?: ParseTree) => boolean;
 }
 
-// eslint-disable @typescript-eslint/no-unused-vars
+/* eslint-disable @typescript-eslint/no-unused-vars */
 class ErrorIdentifier {
   protected parseTree: ParseTree;
   protected nodesWithExceptionsAndErrorNodes: ParseTree[];
@@ -72,7 +72,6 @@ class ErrorIdentifier {
     {
       type: Soql.ErrorType.EMPTY,
       message: Messages.error_empty,
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       predicate: (error): boolean =>
         this.parseTree instanceof ParserRuleContext && this.parseTree.start.type === Token.EOF,
     },
@@ -223,10 +222,10 @@ class ErrorIdentifier {
     {
       type: Soql.ErrorType.UNEXPECTEDEOF,
       message: Messages.error_unexpectedEOF,
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       predicate: (error, context): boolean => error.getToken()?.type === Token.EOF,
     },
   ];
+  /* eslint-enable @typescript-eslint/no-unused-vars */
 
   public constructor(parseTree: ParseTree) {
     this.parseTree = parseTree;

@@ -10,7 +10,6 @@ import { List, Map } from 'immutable';
 import { JsonMap } from '@salesforce/ts-types';
 import { isLikeStart, isLikeEnds, isLikeContains } from '../services/soqlUtils';
 
-/* eslint-disable no-unused-vars */
 export enum ModelProps {
   SOBJECT = 'sObject',
   FIELDS = 'fields',
@@ -28,7 +27,6 @@ export enum AndOr {
   AND = 'AND',
   OR = 'OR'
 }
-/* eslint-enable no-unused-vars */
 
 export const SELECT_COUNT = 'COUNT()';
 
@@ -63,7 +61,6 @@ export interface OperatorOption {
   value: string;
   displayValue: string;
   modelValue: Soql.ConditionOperator;
-  // eslint-disable-next-line no-unused-vars
   predicate: (condition: JsonMap) => boolean;
 }
 

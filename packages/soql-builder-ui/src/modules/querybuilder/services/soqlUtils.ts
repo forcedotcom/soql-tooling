@@ -1,5 +1,4 @@
 /* eslint-disable @typescript-eslint/no-unsafe-assignment,@typescript-eslint/no-unsafe-member-access,@typescript-eslint/no-unsafe-call,@typescript-eslint/no-unsafe-return */
-/* eslint-disable no-unused-vars */
 /*
  * Copyright (c) 2020, salesforce.com, inc.
  * All rights reserved.
@@ -14,7 +13,6 @@ import {
   ModelSerializer,
   ModelDeserializer
 } from '@salesforce/soql-model';
-import { SoqlEditorEvent } from './message/soqlEditorEvent';
 import { SELECT_COUNT, ToolingModelJson } from './model';
 
 export function convertSoqlToUiModel(soql: string): ToolingModelJson {

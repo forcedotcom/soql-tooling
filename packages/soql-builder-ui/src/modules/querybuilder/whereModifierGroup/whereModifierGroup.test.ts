@@ -1,4 +1,3 @@
-/* eslint-disable no-unused-expressions */
 /* eslint-disable @lwc/lwc/prefer-custom-event */
 /* eslint-disable no-console */
 /* eslint-disable @typescript-eslint/no-unsafe-return */

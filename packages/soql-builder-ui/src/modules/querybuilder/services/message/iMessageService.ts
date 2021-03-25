@@ -12,9 +12,7 @@ import { SoqlEditorEvent } from './soqlEditorEvent';
 
 export interface IMessageService {
   messagesToUI: Observable<SoqlEditorEvent>;
-  // eslint-disable-next-line no-unused-vars
   sendMessage(message: SoqlEditorEvent): void;
-  // eslint-disable-next-line no-unused-vars
   setState(state: JsonMap): void;
   getState(): JsonMap;
 }
