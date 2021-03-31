@@ -30,18 +30,20 @@ header.header {
   display: flex;
   justify-content: space-around;
   margin-top: 5px;
-  padding-right: 2.5em;
 }
 
 .header__labels p {
-  margin: 0 0.5em 0 0;
+  margin: 0;
 }
 /* better align labels with correct elements below */
 .header__labels p.header__label__field {
-  margin-left: 45px;
+  margin-left: 1rem;
 }
 .header__labels p.header__label__operator {
-  margin-left: 21px;
+  margin-right: 0.5rem;
+}
+.header__labels p.header__label__value {
+  margin-right: 2.75rem;
 }
 
 .header__btn--group {
