@@ -1,5 +1,12 @@
 # Changelog
 
+### [0.2.2](https://www.github.com/forcedotcom/soql-tooling/compare/soql-model-v0.2.1...soql-model-v0.2.2) (2021-03-31)
+
+
+### Bug Fixes
+
+* Support Build/Run in Windows Environment ([#231](https://www.github.com/forcedotcom/soql-tooling/issues/231)) ([ecb5c7b](https://www.github.com/forcedotcom/soql-tooling/commit/ecb5c7ba2f48b2b010ba8f3ace08c218b0fc06fe))
+
 ### [0.2.1](https://www.github.com/forcedotcom/soql-tooling/compare/v0.2.0...v0.2.1) (2021-03-01)
 
 
