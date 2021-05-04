@@ -12,6 +12,7 @@ interface SObjectField {
   name: string;
   type: string;
   picklistValues: string[];
+  nillable: boolean;
 }
 
 /* eslint-disable @typescript-eslint/no-unsafe-return */
@@ -36,7 +37,8 @@ export class SObjectTypeUtils {
           picklistValues:
             field.picklistValues && Array.isArray(field.picklistValues)
               ? field.picklistValues.map((picklistValue) => picklistValue.value)
-              : []
+              : [],
+          nillable: field.nillable
         };
       });
     }
@@ -62,5 +64,13 @@ export class SObjectTypeUtils {
   public getPicklistValues(fieldName: string): string[] {
     const field = this.fieldMap[fieldName.toLowerCase()];
     return field ? field.picklistValues : [];
+  }
+
+  public getNillable(fieldName: string): boolean {
+    const field = this.fieldMap[fieldName.toLowerCase()];
+    if (field) {
+      return field.nillable;
+    }
+    return undefined;
   }
 }
