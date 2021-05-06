@@ -12,9 +12,13 @@ export class PicklistValidator extends Validator {
     let isValid = true;
     let message;
     if (this.options.picklistValues) {
-      isValid = this.options.picklistValues.includes(input);
+      const validValues = [...this.options.picklistValues];
+      if (this.options.nillable) {
+        validValues.push('null');
+      }
+      isValid = validValues.includes(input);
       if (!isValid) {
-        const commaSeparatedValues = this.options.picklistValues.reduce((soFar, next) => {
+        const commaSeparatedValues = validValues.reduce((soFar, next) => {
           if (soFar.length > 0) {
             soFar += ', ';
           }

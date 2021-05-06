@@ -80,8 +80,15 @@ describe('WhereModifierGroup should', () => {
     modifierGroup = createElement('querybuilder-where-modifier-group', {
       is: WhereModifierGroup
     });
+
     // set up cmp api properties here
     modifierGroup.allFields = ['foo', 'bar'];
+    modifierGroup.sobjectMetadata = {
+      fields: [
+        { name: 'foo', type: 'string' },
+        { name: 'bar', type: 'string' }
+      ]
+    };
   });
 
   afterEach(() => {
@@ -380,6 +387,110 @@ describe('WhereModifierGroup should', () => {
       { type: 'BOOLEAN', value: 'TRUE' },
       { type: 'BOOLEAN', value: 'FALSE' }
     ]);
+  });
+
+  it('handle picklists', () => {
+    modifierGroup.condition = {
+      field: { fieldName: 'foo' },
+      operator: '=',
+      compareValue: {
+        type: 'STRING',
+        value: 'xyz'
+      }
+    };
+    modifierGroup.sobjectMetadata = {
+      fields: [
+        {
+          name: 'foo',
+          type: 'picklist',
+          picklistValues: [{ value: 'Testing1' }, { value: 'Testing2' }]
+        }
+      ]
+    };
+    let resultingCriteria;
+    const handler = (e) => {
+      resultingCriteria = e.detail.condition.compareValue;
+    };
+    modifierGroup.addEventListener('modifiergroupselection', handler);
+    document.body.appendChild(modifierGroup);
+
+    const { criteriaInputEl } = getModifierElements();
+    criteriaInputEl.value = 'Testing2';
+    criteriaInputEl.dispatchEvent(new Event('input'));
+
+    expect(resultingCriteria).toEqual({ type: 'STRING', value: "'Testing2'" });
+  });
+
+  it('handle null in picklists when field is nillable', () => {
+    modifierGroup.condition = {
+      field: { fieldName: 'foo' },
+      operator: '=',
+      compareValue: {
+        type: 'STRING',
+        value: 'xyz2'
+      }
+    };
+    modifierGroup.sobjectMetadata = {
+      fields: [
+        {
+          name: 'foo',
+          type: 'picklist',
+          picklistValues: [{ value: 'Testing1' }, { value: 'Testing2' }],
+          nillable: true
+        }
+      ]
+    };
+    let resultingCriteria;
+    const handler = (e) => {
+      resultingCriteria = e.detail.condition.compareValue;
+    };
+    modifierGroup.addEventListener('modifiergroupselection', handler);
+    document.body.appendChild(modifierGroup);
+
+    const { criteriaInputEl } = getModifierElements();
+    expect(criteriaInputEl.value).toEqual('xyz2');
+    criteriaInputEl.value = 'null';
+    criteriaInputEl.dispatchEvent(new Event('input'));
+
+    expect(resultingCriteria).toEqual({ type: 'NULL', value: 'null' });
+  });
+
+  it('handle null in picklists when field is NOT nillable', () => {
+    modifierGroup.condition = {
+      field: { fieldName: 'foo' },
+      operator: '=',
+      compareValue: {
+        type: 'STRING',
+        value: 'xyz3'
+      }
+    };
+    modifierGroup.sobjectMetadata = {
+      fields: [
+        {
+          name: 'foo',
+          type: 'picklist',
+          picklistValues: [{ value: 'Testing1' }, { value: 'Testing2' }],
+          nillable: false
+        }
+      ]
+    };
+
+    const handler = jest.fn();
+    modifierGroup.addEventListener('modifiergroupselection', handler);
+    document.body.appendChild(modifierGroup);
+
+    const { criteriaInputEl } = getModifierElements();
+    expect(criteriaInputEl.value).toEqual('xyz3');
+    criteriaInputEl.value = 'null';
+    criteriaInputEl.dispatchEvent(new Event('input'));
+
+    expect(handler).not.toHaveBeenCalled();
+    return Promise.resolve().then(() => {
+      const operatorContainerEl = modifierGroup.shadowRoot.querySelector(
+        '[data-el-where-criteria]'
+      );
+      expect(operatorContainerEl.className).toContain('error');
+    });
   });
 
   it('set error class on invalid operator input', async () => {

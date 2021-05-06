@@ -235,14 +235,14 @@ export default class WhereModifierGroup extends LightningElement {
     let displayValue = rawValue;
     // eslint-disable-next-line default-case
     switch (type) {
-      case Soql.LiteralType.String: {
+      case Soql.LiteralType.String:
         displayValue = soqlStringLiteralToDisplayValue(rawValue);
         if (this.isSpecialLikeCondition(operatorValue)) {
           displayValue = stripWildCardPadding(displayValue);
         }
         break;
-      }
     }
+
     return displayValue;
   }
   // This is represents the compareValue in the SOQL Query
@@ -303,7 +303,7 @@ export default class WhereModifierGroup extends LightningElement {
   ): Soql.LiteralType {
     let criteriaType = Soql.LiteralType.String;
     if (value.toLowerCase() === 'null') {
-      return Soql.LiteralType.NULL;
+      return Soql.LiteralType.Null;
     }
     // eslint-disable-next-line default-case
     switch (type) {
@@ -350,10 +350,12 @@ export default class WhereModifierGroup extends LightningElement {
       );
       const critType = this.getCriteriaType(type, normalizedInput);
       const picklistValues = this.getPicklistValues(fieldName);
+      const nillable = this.sobjectTypeUtils.getNillable(fieldName);
 
       const validateOptions = {
         type,
-        picklistValues
+        picklistValues,
+        nillable
       };
 
       const isMultiInput = this.isMulipleValueOperator(
