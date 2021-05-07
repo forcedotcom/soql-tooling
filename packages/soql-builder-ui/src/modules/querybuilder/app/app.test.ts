@@ -178,6 +178,69 @@ describe('App should', () => {
     });
   });
 
+  describe('FIELD SELECTION', () => {
+    it('should send message to vs code with Field Selection event', () => {
+      messageService.messagesToUI.next(createSoqlEditorEvent(accountQuery));
+      const fields = app.shadowRoot.querySelector('querybuilder-fields');
+      const postMessageSpy = jest.spyOn(messageService, 'sendMessage');
+      const eventPayload = {
+        detail: { fields: ['Id', 'Name'] }
+      };
+
+      fields.dispatchEvent(new CustomEvent('fields__selected', eventPayload));
+      expect(postMessageSpy).toHaveBeenCalled();
+
+      expect((postMessageSpy.mock.calls[0][0] as SoqlEditorEvent).type).toEqual(
+        MessageType.UI_SOQL_CHANGED
+      );
+      expect(
+        (postMessageSpy.mock.calls[0][0] as SoqlEditorEvent).payload
+      ).toContain('SELECT ' + eventPayload.detail.fields.join(', '));
+    });
+
+    it('should send message to vs code with Clear All Fields event', () => {
+      messageService.messagesToUI.next(createSoqlEditorEvent(accountQuery));
+      const fields = app.shadowRoot.querySelector('querybuilder-fields');
+      const postMessageSpy = jest.spyOn(messageService, 'sendMessage');
+      const eventPayload = {};
+
+      fields.dispatchEvent(new CustomEvent('fields__clearall', eventPayload));
+      expect(postMessageSpy).toHaveBeenCalled();
+
+      expect((postMessageSpy.mock.calls[0][0] as SoqlEditorEvent).type).toEqual(
+        MessageType.UI_SOQL_CHANGED
+      );
+      expect(
+        (postMessageSpy.mock.calls[0][0] as SoqlEditorEvent).payload
+      ).not.toContain('SELECT Id');
+    });
+
+    it('should send message to vs code with Select All Fields event', () => {
+      const accountFields = ['Id', 'Name', 'Blah'];
+      messageService.messagesToUI.next(createSoqlEditorEvent(accountQuery));
+
+      messageService.messagesToUI.next({
+        type: MessageType.SOBJECT_METADATA_RESPONSE,
+        payload: {
+          fields: accountFields.map((f) => ({ name: f }))
+        }
+      });
+      const fields = app.shadowRoot.querySelector('querybuilder-fields');
+      const postMessageSpy = jest.spyOn(messageService, 'sendMessage');
+      const eventPayload = {};
+
+      fields.dispatchEvent(new CustomEvent('fields__selectall', eventPayload));
+      expect(postMessageSpy).toHaveBeenCalled();
+
+      expect((postMessageSpy.mock.calls[0][0] as SoqlEditorEvent).type).toEqual(
+        MessageType.UI_SOQL_CHANGED
+      );
+      expect(
+        (postMessageSpy.mock.calls[0][0] as SoqlEditorEvent).payload
+      ).toContain('SELECT ' + accountFields.sort().join(', '));
+    });
+  });
+
   describe('HANDLE METADATA', () => {
     it('load sobjects immediately but not fields', () => {
       expect(app.isFromLoading).toEqual(true);

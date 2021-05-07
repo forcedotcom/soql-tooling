@@ -10,9 +10,18 @@
 
 import { LightningElement, api } from 'lwc';
 import { SELECT_COUNT } from '../services/model';
+
+const SELECT_ALL_OPTION = '* (ALL)';
+const CLEAR_OPTION = '- Clear Selection -';
+
 export default class Fields extends LightningElement {
   @api public set fields(fields: string[]) {
-    this._displayFields = [SELECT_COUNT, ...fields];
+    this._displayFields = [
+      CLEAR_OPTION,
+      SELECT_ALL_OPTION,
+      SELECT_COUNT,
+      ...fields
+    ];
   }
   public get fields(): string[] {
     return this._displayFields;
@@ -30,16 +39,26 @@ export default class Fields extends LightningElement {
       // COUNT() and other fields are mutually exclusive
       if (e.detail.value.toLowerCase() === SELECT_COUNT.toLowerCase()) {
         selection.push(SELECT_COUNT);
+        const fieldSelectedEvent = new CustomEvent('fields__selected', {
+          detail: { fields: selection }
+        });
+        this.dispatchEvent(fieldSelectedEvent);
+      } else if (e.detail.value === SELECT_ALL_OPTION) {
+        const fieldSelectAllEvent = new CustomEvent('fields__selectall', {});
+        this.dispatchEvent(fieldSelectAllEvent);
+      } else if (e.detail.value === CLEAR_OPTION) {
+        const fieldClearAllEvent = new CustomEvent('fields__clearall', {});
+        this.dispatchEvent(fieldClearAllEvent);
       } else {
         selection = this.selectedFields.filter(
           (value) => value.toLowerCase() !== SELECT_COUNT.toLowerCase()
         );
         selection.push(e.detail.value);
+        const fieldSelectedEvent = new CustomEvent('fields__selected', {
+          detail: { fields: selection }
+        });
+        this.dispatchEvent(fieldSelectedEvent);
       }
-      const fieldSelectedEvent = new CustomEvent('fields__selected', {
-        detail: { fields: selection }
-      });
-      this.dispatchEvent(fieldSelectedEvent);
     }
   }
 

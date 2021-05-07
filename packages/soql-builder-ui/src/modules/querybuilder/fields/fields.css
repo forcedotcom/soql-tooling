@@ -10,5 +10,11 @@
 
 select[multiple] {
   height: auto;
+  max-height: 4em;
   padding: 3px;
+}
+
+.selected-fields-container {
+  max-height: 10em;
+  overflow-y: scroll;
 }

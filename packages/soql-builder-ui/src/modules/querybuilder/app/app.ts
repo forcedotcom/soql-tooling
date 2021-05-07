@@ -207,6 +207,12 @@ export default class App extends LightningElement {
   public handleFieldSelected(e): void {
     this.modelService.setFields(e.detail.fields);
   }
+  public handleFieldSelectAll(): void {
+    this.modelService.setFields(this.fields);
+  }
+  public handleFieldClearAll(): void {
+    this.modelService.setFields([]);
+  }
 
   /* ---- ORDER BY HANDLERS ---- */
   public handleOrderBySelected(e): void {
