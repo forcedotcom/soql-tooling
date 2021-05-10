@@ -11,7 +11,7 @@
 import { LightningElement, api } from 'lwc';
 import { SELECT_COUNT } from '../services/model';
 
-const SELECT_ALL_OPTION = '* (ALL)';
+const SELECT_ALL_OPTION = 'ALL FIELDS';
 const CLEAR_OPTION = '- Clear Selection -';
 
 export default class Fields extends LightningElement {

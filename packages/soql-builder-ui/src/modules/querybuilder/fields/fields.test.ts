@@ -46,7 +46,7 @@ describe('Fields', () => {
 
       expect(dataOptions.length).toEqual(6);
       expect(dataOptions[0].textContent).toEqual('- Clear Selection -');
-      expect(dataOptions[1].textContent).toEqual('* (ALL)');
+      expect(dataOptions[1].textContent).toEqual('ALL FIELDS');
       expect(dataOptions[2].textContent).toEqual('COUNT()');
       expect(dataOptions[3].textContent).toEqual('foo');
       expect(dataOptions[4].textContent).toEqual('bar');
@@ -123,7 +123,7 @@ describe('Fields', () => {
     );
     customSelect.dispatchEvent(
       new CustomEvent('option__selection', {
-        detail: { value: '* (ALL)' }
+        detail: { value: 'ALL FIELDS' }
       })
     );
 
