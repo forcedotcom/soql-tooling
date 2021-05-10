@@ -21,10 +21,10 @@ describe('HeaderCommentsImpl should', () => {
   });
 
   it('return the empty string on toSoqlSyntax() when no comments', () => {
-    let actual = new Impl.HeaderCommentsImpl((null as unknown) as string).toSoqlSyntax();
+    let actual = new Impl.HeaderCommentsImpl(null as unknown as string).toSoqlSyntax();
     expect(actual).toEqual('');
 
-    actual = new Impl.HeaderCommentsImpl((undefined as unknown) as string).toSoqlSyntax();
+    actual = new Impl.HeaderCommentsImpl(undefined as unknown as string).toSoqlSyntax();
     expect(actual).toEqual('');
 
     actual = new Impl.HeaderCommentsImpl('').toSoqlSyntax();

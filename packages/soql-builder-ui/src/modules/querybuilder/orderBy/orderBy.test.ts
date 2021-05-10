@@ -101,9 +101,8 @@ describe('OrderBy should', () => {
     const handler = jest.fn();
     orderBy.addEventListener('orderby__removed', handler);
 
-    const selectedFieldCloseEl = orderBy.shadowRoot.querySelector(
-      "[data-field='foo']"
-    );
+    const selectedFieldCloseEl =
+      orderBy.shadowRoot.querySelector("[data-field='foo']");
     selectedFieldCloseEl.click();
 
     expect(handler).toHaveBeenCalled();
@@ -112,9 +111,8 @@ describe('OrderBy should', () => {
   it('render the selected orderby fields in the component', () => {
     document.body.appendChild(orderBy);
 
-    let selectedFieldEl = orderBy.shadowRoot.querySelectorAll(
-      '.selected-field'
-    );
+    let selectedFieldEl =
+      orderBy.shadowRoot.querySelectorAll('.selected-field');
     expect(selectedFieldEl.length).toBe(0);
 
     orderBy.selectedOrderByFields = [{ field: 'foo' }];

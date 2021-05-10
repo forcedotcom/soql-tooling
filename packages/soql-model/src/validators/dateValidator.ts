@@ -65,7 +65,8 @@ const parameterizedDateRangeLiteralPrefixes = [
 function isDatePattern(s: string): boolean {
   const DATE_ONLY_PATTERN = /^[1-4][0-9][0-9][0-9]-[0-1][0-9]-[0-3][0-9]$/;
   const DATE_TIME_UTC_PATTERN = /^[1-4][0-9][0-9][0-9]-[0-1][0-9]-[0-3][0-9][tT][0-2][0-9]:[0-5][0-9]:[0-5][0-9][zZ]$/;
-  const DATE_TIME_OFFSET_PATTERN = /^[1-4][0-9][0-9][0-9]-[0-1][0-9]-[0-3][0-9][tT][0-2][0-9]:[0-5][0-9]:[0-5][0-9][+-][0-1][0-9]:[0-5][0-9]$/;
+  const DATE_TIME_OFFSET_PATTERN =
+    /^[1-4][0-9][0-9][0-9]-[0-1][0-9]-[0-3][0-9][tT][0-2][0-9]:[0-5][0-9]:[0-5][0-9][+-][0-1][0-9]:[0-5][0-9]$/;
   return (
     DATE_ONLY_PATTERN.test(s.trim()) || DATE_TIME_UTC_PATTERN.test(s.trim()) || DATE_TIME_OFFSET_PATTERN.test(s.trim())
   );
