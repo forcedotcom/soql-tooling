@@ -1,5 +1,12 @@
 # Changelog
 
+### [0.2.3](https://www.github.com/forcedotcom/soql-tooling/compare/soql-model-v0.2.2...soql-model-v0.2.3) (2021-05-11)
+
+
+### Bug Fixes
+
+* allow "null" on nillable picklist field ([#247](https://www.github.com/forcedotcom/soql-tooling/issues/247)) ([7a38048](https://www.github.com/forcedotcom/soql-tooling/commit/7a38048ed7c6d52f5eb663cf4b1cb5b6dc4bf12c))
+
 ### [0.2.2](https://www.github.com/forcedotcom/soql-tooling/compare/soql-model-v0.2.1...soql-model-v0.2.2) (2021-03-31)
 
 
