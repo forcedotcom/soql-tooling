@@ -11,7 +11,7 @@
  */
 
 import { createElement } from 'lwc';
-import Fields from 'querybuilder/fields';
+import Fields, { SELECT_ALL_OPTION, CLEAR_OPTION } from 'querybuilder/fields';
 import { SELECT_COUNT } from '../services/model';
 
 describe('Fields', () => {
@@ -45,9 +45,9 @@ describe('Fields', () => {
         .shadowRoot.querySelectorAll('p[data-option-value]');
 
       expect(dataOptions.length).toEqual(6);
-      expect(dataOptions[0].textContent).toEqual('- Clear Selection -');
-      expect(dataOptions[1].textContent).toEqual('* (ALL)');
-      expect(dataOptions[2].textContent).toEqual('COUNT()');
+      expect(dataOptions[0].textContent).toEqual(CLEAR_OPTION);
+      expect(dataOptions[1].textContent).toEqual(SELECT_ALL_OPTION);
+      expect(dataOptions[2].textContent).toEqual(SELECT_COUNT);
       expect(dataOptions[3].textContent).toEqual('foo');
       expect(dataOptions[4].textContent).toEqual('bar');
       expect(dataOptions[5].textContent).toEqual('baz');
@@ -123,7 +123,7 @@ describe('Fields', () => {
     );
     customSelect.dispatchEvent(
       new CustomEvent('option__selection', {
-        detail: { value: '* (ALL)' }
+        detail: { value: 'ALL FIELDS' }
       })
     );
 
