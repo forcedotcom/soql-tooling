@@ -1,5 +1,18 @@
 # Changelog
 
+## [0.2.0](https://www.github.com/forcedotcom/soql-tooling/compare/soql-builder-ui-v0.1.1...soql-builder-ui-v0.2.0) (2021-05-11)
+
+
+### Features
+
+* add options to clear and select all fields ([#251](https://www.github.com/forcedotcom/soql-tooling/issues/251)) ([6c14855](https://www.github.com/forcedotcom/soql-tooling/commit/6c1485590345e865d569ad863b0ddee642023a08))
+
+
+### Bug Fixes
+
+* allow "null" on nillable picklist field ([#247](https://www.github.com/forcedotcom/soql-tooling/issues/247)) ([7a38048](https://www.github.com/forcedotcom/soql-tooling/commit/7a38048ed7c6d52f5eb663cf4b1cb5b6dc4bf12c))
+* change wording when Builder cannot handle complex query ([#248](https://www.github.com/forcedotcom/soql-tooling/issues/248)) ([ae4883e](https://www.github.com/forcedotcom/soql-tooling/commit/ae4883e1bf6379c54eb3ff3c25d86ecf757441d4))
+
 ### [0.1.1](https://www.github.com/forcedotcom/soql-tooling/compare/soql-builder-ui-v0.1.0...soql-builder-ui-v0.1.1) (2021-03-31)
 
 
