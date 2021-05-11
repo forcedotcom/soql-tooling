@@ -11,7 +11,7 @@
  */
 
 import { createElement } from 'lwc';
-import Fields from 'querybuilder/fields';
+import Fields, { SELECT_ALL_OPTION, CLEAR_OPTION } from 'querybuilder/fields';
 import { SELECT_COUNT } from '../services/model';
 
 describe('Fields', () => {
@@ -29,6 +29,29 @@ describe('Fields', () => {
     while (document.body.firstChild) {
       document.body.removeChild(document.body.firstChild);
     }
+  });
+
+  it('display options', () => {
+    document.body.appendChild(fields);
+
+    const searchField = fields.shadowRoot
+      .querySelector('querybuilder-custom-select')
+      .shadowRoot.querySelector('* input[name=search-bar]');
+    searchField.click();
+
+    return Promise.resolve().then(() => {
+      const dataOptions = fields.shadowRoot
+        .querySelector('querybuilder-custom-select')
+        .shadowRoot.querySelectorAll('p[data-option-value]');
+
+      expect(dataOptions.length).toEqual(6);
+      expect(dataOptions[0].textContent).toEqual(CLEAR_OPTION);
+      expect(dataOptions[1].textContent).toEqual(SELECT_ALL_OPTION);
+      expect(dataOptions[2].textContent).toEqual(SELECT_COUNT);
+      expect(dataOptions[3].textContent).toEqual('foo');
+      expect(dataOptions[4].textContent).toEqual('bar');
+      expect(dataOptions[5].textContent).toEqual('baz');
+    });
   });
 
   it('emits event when field is selected', () => {
@@ -61,18 +84,68 @@ describe('Fields', () => {
     expect(handler).toHaveBeenCalled();
   });
 
+  it('emits clear-all event when selected', () => {
+    document.body.appendChild(fields);
+
+    const clearAllHandler = jest.fn();
+    const selectHandler = jest.fn();
+    const selectAllHandler = jest.fn();
+    fields.addEventListener('fields__clearall', clearAllHandler);
+    fields.addEventListener('fields__selected', selectHandler);
+    fields.addEventListener('fields__selectall', selectAllHandler);
+
+    const customSelect = fields.shadowRoot.querySelector(
+      'querybuilder-custom-select'
+    );
+    customSelect.dispatchEvent(
+      new CustomEvent('option__selection', {
+        detail: { value: '- Clear Selection -' }
+      })
+    );
+
+    expect(clearAllHandler).toHaveBeenCalled();
+    expect(selectHandler).not.toHaveBeenCalled();
+    expect(selectAllHandler).not.toHaveBeenCalled();
+  });
+
+  it('emits select-all event when selected', () => {
+    document.body.appendChild(fields);
+
+    const clearAllHandler = jest.fn();
+    const selectHandler = jest.fn();
+    const selectAllHandler = jest.fn();
+    fields.addEventListener('fields__clearall', clearAllHandler);
+    fields.addEventListener('fields__selected', selectHandler);
+    fields.addEventListener('fields__selectall', selectAllHandler);
+
+    const customSelect = fields.shadowRoot.querySelector(
+      'querybuilder-custom-select'
+    );
+    customSelect.dispatchEvent(
+      new CustomEvent('option__selection', {
+        detail: { value: 'ALL FIELDS' }
+      })
+    );
+
+    expect(clearAllHandler).not.toHaveBeenCalled();
+    expect(selectHandler).not.toHaveBeenCalled();
+    expect(selectAllHandler).toHaveBeenCalled();
+  });
+
   it('renders COUNT() and the selected fields in the component', () => {
     document.body.appendChild(fields);
 
     let selectedFieldEl = fields.shadowRoot.querySelectorAll('.selected-field');
     expect(selectedFieldEl.length).toBe(0);
 
-    const fieldOptions = fields.fields;
-    fields.selectedFields = fieldOptions;
+    fields.selectedFields = ['foo', 'bar', 'baz'];
 
     return Promise.resolve().then(() => {
       selectedFieldEl = fields.shadowRoot.querySelectorAll('.selected-field');
-      expect(selectedFieldEl.length).toBe(4);
+      expect(selectedFieldEl.length).toBe(3);
+      expect(selectedFieldEl[0].textContent).toEqual('fooX');
+      expect(selectedFieldEl[1].textContent).toEqual('barX');
+      expect(selectedFieldEl[2].textContent).toEqual('bazX');
     });
   });
 
