@@ -47,9 +47,7 @@ main {
 }
 
 .warning-notification__message {
-  background-color: var(
-    --soql-red
-  );
+  background-color: var(--soql-red);
   color: var(--soql-white);
   font-size: small;
   padding: 1rem;

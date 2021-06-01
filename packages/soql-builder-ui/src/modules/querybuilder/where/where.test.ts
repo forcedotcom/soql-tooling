@@ -189,12 +189,10 @@ describe('Where', () => {
       document.body.appendChild(whereCmp);
       expect(whereCmp.testAndOr).toBe(AndOr.AND);
 
-      const andButton: HTMLButtonElement = whereCmp.shadowRoot.querySelector(
-        'button[value=AND]'
-      );
-      const orButton: HTMLButtonElement = whereCmp.shadowRoot.querySelector(
-        'button[value=OR]'
-      );
+      const andButton: HTMLButtonElement =
+        whereCmp.shadowRoot.querySelector('button[value=AND]');
+      const orButton: HTMLButtonElement =
+        whereCmp.shadowRoot.querySelector('button[value=OR]');
       expect(andButton.classList).toContain('header__btn--selected');
       expect(orButton.classList).not.toContain('header__btn--selected');
     });
@@ -205,12 +203,10 @@ describe('Where', () => {
       document.body.appendChild(whereCmp);
       expect(whereCmp.testAndOr).toBe(AndOr.OR);
 
-      const andButton: HTMLButtonElement = whereCmp.shadowRoot.querySelector(
-        'button[value=AND]'
-      );
-      const orButton: HTMLButtonElement = whereCmp.shadowRoot.querySelector(
-        'button[value=OR]'
-      );
+      const andButton: HTMLButtonElement =
+        whereCmp.shadowRoot.querySelector('button[value=AND]');
+      const orButton: HTMLButtonElement =
+        whereCmp.shadowRoot.querySelector('button[value=OR]');
       expect(andButton.classList).not.toContain('header__btn--selected');
       expect(orButton.classList).toContain('header__btn--selected');
     });
@@ -220,12 +216,10 @@ describe('Where', () => {
       document.body.appendChild(whereCmp);
 
       const handler = jest.fn();
-      const orButton: HTMLButtonElement = whereCmp.shadowRoot.querySelector(
-        'button[value=OR]'
-      );
-      const andButton: HTMLButtonElement = whereCmp.shadowRoot.querySelector(
-        'button[value=AND]'
-      );
+      const orButton: HTMLButtonElement =
+        whereCmp.shadowRoot.querySelector('button[value=OR]');
+      const andButton: HTMLButtonElement =
+        whereCmp.shadowRoot.querySelector('button[value=AND]');
 
       whereCmp.addEventListener('where__andor_selection', handler);
       orButton.click();
@@ -245,9 +239,8 @@ describe('Where', () => {
       const modfierGroups = whereCmp.shadowRoot.querySelectorAll(
         'querybuilder-where-modifier-group'
       );
-      const orButton: HTMLButtonElement = whereCmp.shadowRoot.querySelector(
-        'button[value=OR]'
-      );
+      const orButton: HTMLButtonElement =
+        whereCmp.shadowRoot.querySelector('button[value=OR]');
       whereCmp.addEventListener('where__andor_selection', handler);
 
       expect(modfierGroups.length).toBe(3);

@@ -30,14 +30,14 @@ describe('Telemetry Utils', () => {
   };
 
   // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-  const query = ({
+  const query = {
     sObject: 'account',
     fields: ['Id', 'Name'],
     orderBy: [{ field: 'Name', nulls: 'first', order: 'desc' }],
     limit: '1234',
     errors: [error1, error2],
     unsupported: [unsupported1, unsupported2]
-  } as unknown) as ToolingModelJson;
+  } as unknown as ToolingModelJson;
   it('should create telemetry model from soql model', () => {
     const telemetry = createQueryTelemetry(query);
     expect(telemetry.sObject).toEqual('standard');

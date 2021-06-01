@@ -33,7 +33,7 @@ import * as globals from '../services/globals';
 
 class TestMessageService implements IMessageService {
   public messagesToUI: Observable<SoqlEditorEvent> = new BehaviorSubject(
-    ({} as unknown) as SoqlEditorEvent
+    {} as unknown as SoqlEditorEvent
   );
   public sendMessage() {}
   public setState() {}
@@ -72,7 +72,8 @@ describe('App should', () => {
     return event;
   }
   beforeEach(() => {
-    messageService = (new TestMessageService() as unknown) as StandaloneMessageService;
+    messageService =
+      new TestMessageService() as unknown as StandaloneMessageService;
     // eslint-disable-next-line @typescript-eslint/unbound-method
     originalCreateFn = MessageServiceFactory.create;
     MessageServiceFactory.create = () => {

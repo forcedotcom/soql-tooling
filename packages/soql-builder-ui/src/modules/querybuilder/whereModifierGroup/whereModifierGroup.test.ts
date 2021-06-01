@@ -33,12 +33,10 @@ describe('WhereModifierGroup should', () => {
     const selectFieldEl = modifierGroup.shadowRoot.querySelector(
       'querybuilder-custom-select'
     );
-    const selectOperatorEl: HTMLSelectElement = modifierGroup.shadowRoot.querySelector(
-      '[data-el-where-operator-input]'
-    );
-    const criteriaInputEl: HTMLInputElement = modifierGroup.shadowRoot.querySelector(
-      '[data-el-where-criteria-input]'
-    );
+    const selectOperatorEl: HTMLSelectElement =
+      modifierGroup.shadowRoot.querySelector('[data-el-where-operator-input]');
+    const criteriaInputEl: HTMLInputElement =
+      modifierGroup.shadowRoot.querySelector('[data-el-where-criteria-input]');
 
     return {
       selectFieldEl,
@@ -48,11 +46,8 @@ describe('WhereModifierGroup should', () => {
   }
 
   function setModifiersToHaveAValue(scope: string) {
-    const {
-      selectFieldEl,
-      selectOperatorEl,
-      criteriaInputEl
-    } = getModifierElements();
+    const { selectFieldEl, selectOperatorEl, criteriaInputEl } =
+      getModifierElements();
 
     switch (scope) {
       case 'all':
@@ -196,11 +191,8 @@ describe('WhereModifierGroup should', () => {
     const clearConditionBtn = modifierGroup.shadowRoot.querySelector(
       '[data-el-where-delete]'
     );
-    const {
-      selectFieldEl,
-      selectOperatorEl,
-      criteriaInputEl
-    } = getModifierElements();
+    const { selectFieldEl, selectOperatorEl, criteriaInputEl } =
+      getModifierElements();
 
     expect(selectFieldEl.value[0]).toEqual('foo');
     expect(selectOperatorEl.value).toEqual('NOT_EQ');
@@ -257,11 +249,8 @@ describe('WhereModifierGroup should', () => {
     };
     document.body.appendChild(modifierGroup);
 
-    const {
-      selectFieldEl,
-      selectOperatorEl,
-      criteriaInputEl
-    } = getModifierElements();
+    const { selectFieldEl, selectOperatorEl, criteriaInputEl } =
+      getModifierElements();
     expect(selectFieldEl.value[0]).toEqual('foo');
     expect(selectOperatorEl.value).toEqual('NOT_EQ');
     expect(criteriaInputEl.value).toEqual('HELLO');

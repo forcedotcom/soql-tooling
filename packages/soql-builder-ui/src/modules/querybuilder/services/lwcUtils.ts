@@ -6,9 +6,7 @@ export type IndexableArrayItem<T> = {
 export type IndexableArray<T> = Array<IndexableArrayItem<T>>;
 
 export function lwcIndexableArray<T>(arr: unknown[]): IndexableArray<T> {
-  return arr.map(
-    (item: T, index: number): IndexableArrayItem<T> => {
-      return { index, item };
-    }
-  );
+  return arr.map((item: T, index: number): IndexableArrayItem<T> => {
+    return { index, item };
+  });
 }

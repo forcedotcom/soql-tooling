@@ -89,9 +89,9 @@ export default class Where extends LightningElement {
 
     if (this.getModfierGroupsRendered().length) {
       const lastGroupIndex = modfierGroupsRendered.length - 1;
-      const lastGroupIsComplete = (modfierGroupsRendered[
-        lastGroupIndex
-      ] as ModifierGroupNode).allModifiersHaveValue;
+      const lastGroupIsComplete = (
+        modfierGroupsRendered[lastGroupIndex] as ModifierGroupNode
+      ).allModifiersHaveValue;
 
       this.lastModifierGroupIsComplete = lastGroupIsComplete;
     }

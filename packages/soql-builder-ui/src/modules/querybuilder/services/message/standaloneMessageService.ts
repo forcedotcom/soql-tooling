@@ -39,7 +39,8 @@ class MockVscode {
 
 export class StandaloneMessageService
   extends VscodeMessageService
-  implements IMessageService {
+  implements IMessageService
+{
   public messagesToUI: BehaviorSubject<SoqlEditorEvent>;
   public localStorage;
   protected vscode;

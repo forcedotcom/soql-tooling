@@ -424,9 +424,8 @@ describe('Custom Select', () => {
         })
         .then(() => {
           expect(optionsList.children.length).toBe(1);
-          const optionValue = optionsList.firstChild.getAttribute(
-            DATA_OPTION_VALUE
-          );
+          const optionValue =
+            optionsList.firstChild.getAttribute(DATA_OPTION_VALUE);
           expect(optionValue).toBe(OPTION_FOO);
         });
     });

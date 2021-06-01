@@ -372,9 +372,8 @@ export default class WhereModifierGroup extends LightningElement {
         return false;
       }
 
-      const operatorValidator = ValidatorFactory.getOperatorValidator(
-        validateOptions
-      );
+      const operatorValidator =
+        ValidatorFactory.getOperatorValidator(validateOptions);
       result = operatorValidator.validate(op);
       if (!result.isValid) {
         this.errorMessage = this.operatorErrorMessage = result.message;
