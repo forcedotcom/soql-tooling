@@ -92,7 +92,7 @@ export default class WhereModifierGroup extends LightningElement {
 
     if (
       this._selectedOperator &&
-      this.isMulipleValueOperator(this._selectedOperator.value)
+      this.isMultipleValueOperator(this._selectedOperator.value)
     ) {
       if (Array.isArray(condition.values)) {
         this._criteriaDisplayValue = condition.values
@@ -209,7 +209,7 @@ export default class WhereModifierGroup extends LightningElement {
     return allHaveValues;
   }
 
-  public isMulipleValueOperator(operatorValue: string): boolean {
+  public isMultipleValueOperator(operatorValue: string): boolean {
     return (
       operatorValue === Soql.UiOperatorValue.IN ||
       operatorValue === Soql.UiOperatorValue.NOT_IN ||
@@ -252,7 +252,7 @@ export default class WhereModifierGroup extends LightningElement {
     operatorValue?: Soql.UiOperatorValue
   ): string {
     let normalized = value;
-    if (!this.isMulipleValueOperator(this._currentOperatorValue)) {
+    if (!this.isMultipleValueOperator(this._currentOperatorValue)) {
       switch (type) {
         case Soql.SObjectFieldType.Boolean:
         case Soql.SObjectFieldType.Integer:
@@ -358,7 +358,7 @@ export default class WhereModifierGroup extends LightningElement {
         nillable
       };
 
-      const isMultiInput = this.isMulipleValueOperator(
+      const isMultiInput = this.isMultipleValueOperator(
         this._currentOperatorValue
       );
 
