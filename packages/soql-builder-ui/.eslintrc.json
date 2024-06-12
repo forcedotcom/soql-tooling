@@ -9,7 +9,6 @@
     "@lwc/lwc/no-async-operation": "off",
     "@lwc/lwc/no-inner-html": "warn",
     "@lwc/lwc/no-document-query": "warn",
-    "no-underscore-dangle": "off",
-    "@typescript-eslint/no-unused-vars": "warn"
+    "no-underscore-dangle": "off"
   }
 }
