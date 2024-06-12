@@ -14,7 +14,7 @@
     "test:unit:coverage": "jest --runInBand --coverage"
   },
   "dependencies": {
-    "@salesforce/soql-common": "0.2.2",
+    "@salesforce/soql-common": "0.2.0",
     "antlr4ts": "^0.5.0-alpha.3"
   },
   "devDependencies": {
