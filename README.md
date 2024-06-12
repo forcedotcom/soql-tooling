@@ -1,4 +1,4 @@
-# SOQL Tooling
+# SOQL Tooling VS Code
 
 ## Introduction
 
