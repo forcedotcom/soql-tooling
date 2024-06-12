@@ -44,7 +44,7 @@
   "license": "BSD-3-Clause",
   "main": "dist/",
   "scripts": {
-    "build": "export NODE_OPTIONS=--openssl-legacy-provider && lwc-services build -w webpack.config.js -m production",
+    "build": "lwc-services build -w webpack.config.js -m production",
     "clean": "shx rm -rf package-lock.json && shx rm -rf dist && shx rm -rf node_modules",
     "publish:lwc": "npm publish .",
     "lint": "eslint ./src",
