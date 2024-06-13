@@ -13,7 +13,7 @@ export default class Limit extends LightningElement {
   @api public limit;
 
   /* eslint-disable @typescript-eslint/no-unsafe-assignment,@typescript-eslint/no-unsafe-call,@typescript-eslint/no-unsafe-member-access */
-  public handleLimitChange(e): void {
+  public handleLimitChange(e: Event): void {
     e.preventDefault();
     const limit = e.target.value;
     const sObjectSelected = new CustomEvent('limit__changed', {

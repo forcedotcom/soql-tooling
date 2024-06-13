@@ -25,7 +25,7 @@ export default class From extends LightningElement {
   }
 
   /* eslint-disable @typescript-eslint/no-unsafe-member-access,@typescript-eslint/no-unsafe-call,@typescript-eslint/no-unsafe-assignment */
-  public handleSobjectSelection(e): void {
+  public handleSobjectSelection(e: CustomEvent): void {
     e.preventDefault();
     const selectedSobject = e.detail.value;
     if (selectedSobject && selectedSobject.length) {

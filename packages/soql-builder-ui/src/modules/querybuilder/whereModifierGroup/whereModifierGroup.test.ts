@@ -1,4 +1,5 @@
 /* eslint-disable @lwc/lwc/prefer-custom-event */
+/* eslint-disable @lwc/lwc/no-inner-html */
 /* eslint-disable no-console */
 /* eslint-disable @typescript-eslint/no-unsafe-return */
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
