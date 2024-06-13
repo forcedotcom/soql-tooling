@@ -32,7 +32,7 @@ export default class Fields extends LightningElement {
   public selectPlaceHolderText = 'Search fields...'; // TODO: i18n
   public _displayFields: string[];
 
-  public handleFieldSelection(e): void {
+  public handleFieldSelection(e: CustomEvent): void {
     e.preventDefault();
     if (e.detail && e.detail.value) {
       let selection = [];
@@ -62,7 +62,7 @@ export default class Fields extends LightningElement {
     }
   }
 
-  public handleFieldRemoved(e): void {
+  public handleFieldRemoved(e: Event): void {
     e.preventDefault();
     const fieldRemovedEvent = new CustomEvent('fields__selected', {
       detail: {

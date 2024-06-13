@@ -129,7 +129,7 @@ export default class Where extends LightningElement {
     }
   }
 
-  public handleModifierGroupSelection(e): void {
+  public handleModifierGroupSelection(e: Event): void {
     e.preventDefault();
     // eslint-disable-next-line camelcase
     const where__group_selectionEvent = new CustomEvent(

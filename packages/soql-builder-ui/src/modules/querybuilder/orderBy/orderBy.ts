@@ -21,7 +21,7 @@ export default class OrderBy extends LightningElement {
   }
 
   /* eslint-disable @typescript-eslint/no-unsafe-member-access,@typescript-eslint/no-unsafe-call,@typescript-eslint/no-unsafe-assignment */
-  public handleOrderBySelected(e): void {
+  public handleOrderBySelected(e: Event): void {
     e.preventDefault();
     const orderbyFieldEl = this.template.querySelector(
       'querybuilder-custom-select'
@@ -44,7 +44,7 @@ export default class OrderBy extends LightningElement {
     }
   }
 
-  public handleOrderByRemoved(e): void {
+  public handleOrderByRemoved(e: Event): void {
     e.preventDefault();
     const orderByRemovedEvent = new CustomEvent('orderby__removed', {
       detail: { field: e.target.dataset.field }

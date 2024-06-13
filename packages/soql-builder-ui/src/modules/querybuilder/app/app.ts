@@ -7,6 +7,7 @@
  */
 
 import { LightningElement, track } from 'lwc';
+import { JsonMap } from '@salesforce/ts-types';
 import { ToolingSDK } from '../services/toolingSDK';
 import { MessageServiceFactory } from '../services/message/messageServiceFactory';
 
@@ -176,7 +177,7 @@ export default class App extends LightningElement {
   }
 
   /* eslint-disable @typescript-eslint/no-unsafe-assignment,@typescript-eslint/no-unsafe-call,@typescript-eslint/no-unsafe-return*/
-  public inspectUnsupported(unsupported): any {
+  public inspectUnsupported(unsupported: JsonMap[]): any {
     const filteredUnsupported = unsupported
       // this reason is often associated with a parse error, so snuffing it out instead of double notifications
       .filter(
@@ -189,7 +190,7 @@ export default class App extends LightningElement {
     return filteredUnsupported;
   }
   /* ---- SOBJECT HANDLERS ---- */
-  public handleObjectChange(e): void {
+  public handleObjectChange(e: CustomEvent): void {
     const selectedSObjectName = e.detail.selectedSobject;
     this.onSObjectChanged(selectedSObjectName);
     // when triggered by the ui, send message
@@ -204,7 +205,7 @@ export default class App extends LightningElement {
     }
   }
   /* ---- FIELD HANDLERS ---- */
-  public handleFieldSelected(e): void {
+  public handleFieldSelected(e: CustomEvent): void {
     this.modelService.setFields(e.detail.fields);
   }
   public handleFieldSelectAll(): void {
@@ -215,24 +216,24 @@ export default class App extends LightningElement {
   }
 
   /* ---- ORDER BY HANDLERS ---- */
-  public handleOrderBySelected(e): void {
+  public handleOrderBySelected(e: CustomEvent): void {
     this.modelService.addUpdateOrderByField(e.detail);
   }
-  public handleOrderByRemoved(e): void {
+  public handleOrderByRemoved(e: CustomEvent): void {
     this.modelService.removeOrderByField(e.detail.field);
   }
   /* ---- LIMIT HANDLERS ---- */
-  public handleLimitChanged(e): void {
+  public handleLimitChanged(e: CustomEvent): void {
     this.modelService.changeLimit(e.detail.limit);
   }
   /* ---- WHERE HANDLERS ---- */
-  public handleWhereSelection(e): void {
+  public handleWhereSelection(e: CustomEvent): void {
     this.modelService.upsertWhereFieldExpr(e.detail);
   }
-  public handleAndOrSelection(e): void {
+  public handleAndOrSelection(e: CustomEvent): void {
     this.modelService.setAndOr(e.detail);
   }
-  public handleRemoveWhereCondition(e): void {
+  public handleRemoveWhereCondition(e: CustomEvent): void {
     this.modelService.removeWhereFieldCondition(e.detail);
   }
 
