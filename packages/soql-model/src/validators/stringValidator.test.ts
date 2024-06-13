@@ -13,12 +13,20 @@ describe('StringValidator should', () => {
   const validator = new StringValidator({ type: SObjectFieldType.String });
   const validResult = { isValid: true };
   const notValidResult = { isValid: false, message: Messages.error_fieldInput_string };
+
   it('return valid result for string in single quotes', () => {
     expect(validator.validate("'foo'")).toEqual(validResult);
   });
+
+  it('return valid result when user input is NULL or null', () => {
+    expect(validator.validate("'null'")).toEqual(validResult);
+    expect(validator.validate("'NULL'")).toEqual(validResult);
+  });
+
   it('return not valid result for non-string value', () => {
     expect(validator.validate('foo')).toEqual(notValidResult);
   });
+
   it('return not valid result for string ending in escaped quote', () => {
     expect(validator.validate("'foo\\'")).toEqual(notValidResult);
   });
