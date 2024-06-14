@@ -1,11 +1,11 @@
 {
   "name": "@salesforce/soql-data-view",
   "version": "0.1.0",
-  "description": "This is the web assests for viewing SOQL Results",
+  "description": "This is the web assets for viewing SOQL Results",
   "main": "web/",
   "publishConfig": {
     "access": "public",
-    "registry": "http://registry.npmjs.org/"
+    "registry": "https://registry.npmjs.org/"
   },
   "scripts": {
     "test": "echo done"
