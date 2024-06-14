@@ -330,6 +330,30 @@ describe('WhereModifierGroup should', () => {
     expect(resultingCriteria).toEqual({ type: 'STRING', value: "'WORLD'" });
   });
 
+  it('normalize criteria input for strings, null value', () => {
+    modifierGroup.condition = {
+      field: { fieldName: 'foo' },
+      operator: '=',
+      compareValue: { type: 'STRING', value: 'null' }
+    };
+    modifierGroup.sobjectMetadata = {
+      fields: [{ name: 'foo', type: 'string' }]
+    };
+    let resultingCriteria;
+    const handler = (e) => {
+      resultingCriteria = e.detail.condition.compareValue;
+    };
+    modifierGroup.addEventListener('modifiergroupselection', handler);
+
+    document.body.appendChild(modifierGroup);
+
+    const { criteriaInputEl } = getModifierElements();
+    criteriaInputEl.value = 'null';
+    criteriaInputEl.dispatchEvent(new Event('input'));
+
+    expect(resultingCriteria).toEqual({ type: 'NULL', value: 'null' });
+  });
+
   it('normalize criteria input for non-strings', () => {
     modifierGroup.condition = {
       field: { fieldName: 'foo' },
@@ -539,6 +563,30 @@ describe('WhereModifierGroup should', () => {
         );
         expect(operatorContainerEl.className).not.toContain('error');
       });
+  });
+
+  it('allow user to filter by null with SObject type String', async () => {
+    modifierGroup.condition = {
+      field: { fieldName: 'NamespacePrefix' },
+      operator: '=',
+      compareValue: { type: 'STRING', value: 'null' }
+    };
+    modifierGroup.sobjectMetadata = {
+      fields: [{ name: 'NamespacePrefix', type: 'string' }]
+    };
+    const handler = jest.fn();
+    modifierGroup.addEventListener('modifiergroupselection', handler);
+    document.body.appendChild(modifierGroup);
+    const { criteriaInputEl } = getModifierElements();
+    criteriaInputEl.value = 'null';
+    criteriaInputEl.dispatchEvent(new Event('input'));
+    expect(handler).toHaveBeenCalled();
+    return Promise.resolve().then(() => {
+      const operatorContainerEl = modifierGroup.shadowRoot.querySelector(
+        '[data-el-where-criteria]'
+      );
+      expect(operatorContainerEl.className).not.toContain('error');
+    });
   });
 
   describe('LIKE CONDITIONS', () => {
