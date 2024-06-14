@@ -19,8 +19,9 @@ describe('StringValidator should', () => {
   });
 
   it('return valid result when user input is NULL or null', () => {
-    expect(validator.validate("'null'")).toEqual(validResult);
-    expect(validator.validate("'NULL'")).toEqual(validResult);
+    // input of 'null' is not normalized to " 'null' " like other strings
+    expect(validator.validate('null')).toEqual(validResult);
+    expect(validator.validate('NULL')).toEqual(validResult);
   });
 
   it('return not valid result for non-string value', () => {
