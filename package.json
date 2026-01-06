@@ -15,6 +15,7 @@
     "@commitlint/config-conventional": "^11.0.0",
     "@salesforce/dev-config": "1.4.1",
     "@salesforce/prettier-config": "^0.0.2",
+    "@types/node": "20.14.10",
     "@typescript-eslint/eslint-plugin": "^4.17.0",
     "@typescript-eslint/parser": "^4.17.0",
     "eslint": "^7.21.0",
@@ -27,7 +28,7 @@
     "lerna": "^3.19.0",
     "prettier": "^2.2.1",
     "shx": "^0.3.3",
-    "typescript": "^4.2.3"
+    "typescript": "5.9.3"
   },
   "scripts": {
     "build": "lerna run build",
