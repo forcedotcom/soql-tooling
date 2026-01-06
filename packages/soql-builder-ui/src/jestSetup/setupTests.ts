@@ -7,27 +7,27 @@ globalThis.global = globalThis;
 class LocalStorageMock {
   private store: Record<string, string> = {};
 
-  clear() {
+  public clear(): void {
     this.store = {};
   }
 
-  getItem(key: string) {
+  public getItem(key: string): string | null {
     return this.store[key] || null;
   }
 
-  setItem(key: string, value: string) {
+  public setItem(key: string, value: string): void {
     this.store[key] = String(value);
   }
 
-  removeItem(key: string) {
+  public removeItem(key: string): void {
     delete this.store[key];
   }
 
-  get length() {
+  public get length(): number {
     return Object.keys(this.store).length;
   }
 
-  key(index: number) {
+  public key(index: number): string | null {
     const keys = Object.keys(this.store);
     return keys[index] || null;
   }

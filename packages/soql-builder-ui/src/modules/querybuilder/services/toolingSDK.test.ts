@@ -36,7 +36,9 @@ describe('Tooling SDK Service', () => {
     // establish loaded SObject
     toolingSDK.loadSObjectMetatada('Help!');
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     const loadDefsSpy = jest.spyOn(toolingSDK, 'loadSObjectDefinitions');
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     const loadObjSpy = jest.spyOn(toolingSDK, 'loadSObjectMetatada');
 
     postMessageFromVSCode({ type: MessageType.CONNECTION_CHANGED });
