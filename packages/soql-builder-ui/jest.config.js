@@ -1,4 +1,4 @@
-/* 
+/*
 Running LWC in Jest requires specific configuration
 that lwc-services provides, so we do not import the BASE config
 like we do with the rest of the packages.
@@ -11,5 +11,8 @@ module.exports = {
   testMatch: ['**/*.+(spec|test).(ts|js)'],
   displayName: 'soql-builder-ui',
   verbose: true,
-  setupFiles: ['<rootDir>/src/jestSetup/setupTests.ts']
+  setupFiles: ['<rootDir>/src/jestSetup/setupTests.ts'],
+  testEnvironmentOptions: {
+    customExportConditions: ['node', 'node-addons']
+  }
 };
