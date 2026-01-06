@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.1.0](https://github.com/forcedotcom/soql-tooling/compare/v1.0.0...v1.1.0) (2026-01-06)
+
+
+### Features
+
+* the repo compiles and unit tests pass ([#295](https://github.com/forcedotcom/soql-tooling/issues/295)) ([8f1ad2b](https://github.com/forcedotcom/soql-tooling/commit/8f1ad2b1000694561889451827682489264c78c5))
+
 ## [0.2.0](https://www.github.com/forcedotcom/soql-tooling/compare/soql-builder-ui-v0.1.1...soql-builder-ui-v0.2.0) (2021-05-11)
 
 
